@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+
+pymysql
+sqlalchemy
+
+pandas
+matplotlib
+mpld3
+seaborn
+
+python-multipart
+scikit-learn
+datasets
+
+openpyxl
