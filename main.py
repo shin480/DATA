@@ -4,6 +4,7 @@ from starlette.staticfiles import StaticFiles
 import pandas as pd
 from util.db import get_engine
 from model.model_main import app as pipeline_app
+from datacleaning.cleaning import get_preprocessed_data
 
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
@@ -21,3 +22,8 @@ def read_table():
     print(df.head())
     return df.to_dict() # http://127.0.0.1:8000/read_table
 
+# 전처리 테스트
+@app.get('/cleaning')
+def data_cleaning():
+    result = get_preprocessed_data()  # 아까 만든 전처리 함수 호출
+    return result  # 처리 건수나 성공 메시지를 화면에 출력
