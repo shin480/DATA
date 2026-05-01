@@ -50,7 +50,7 @@ def get_preprocessed_data():
     logs = {"missing_fields": [], "url_duplicate": [], "meta_duplicate": [],
             "content_duplicate": [], "high_similarity": []}
 
-    required_fields = ['collected_at', 'title', 'raw_text', 'url', 'press']
+    required_fields = ['collected_at', 'title', 'raw_text', 'url', 'press', 'published_at']
 
     # 결측치 확인 로직
     def check_valid(row):
@@ -113,6 +113,7 @@ def get_preprocessed_data():
                 "clean_text": row['clean_text'],  # 정제된 필드
                 "press": row['press'],
                 "url": row['url'],
+                "published_at": row['published_at'],
                 "collected_at": row['collected_at']
             }
         })
