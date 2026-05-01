@@ -1,881 +1,384 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>DATA 다타</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DATA 다타 - AI 뉴스 인사이트</title>
 <style>
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+    /* [확실] 기본 스타일 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sans-serif; }
+    .page { width: 1440px; min-height: 100vh; margin: 0 auto; background: #050816; }
+
+    /* [확실] 헤더 */
+    .header {
+        height: 72px; padding: 0 64px; display: flex; align-items: center; justify-content: space-between;
+        background: #070b1a; border-bottom: 1px solid #111827;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: #00E5FF; text-decoration: none; }
+    .logo-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #00E5FF, #2563eb); display: flex; align-items: center; justify-content: center; color: #020617; font-weight: 900; }
+    .nav { display: flex; align-items: center; gap: 30px; color: #94a3b8; font-size: 15px; }
+    .nav a { text-decoration: none; color: inherit; transition: color 0.2s; }
+    .nav a:hover { color: #00E5FF; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .search-box { width: 260px; height: 38px; border-radius: 999px; background: #0f172a; border: 1px solid #1e293b; padding: 0 16px; color: #94a3b8; }
+    .header-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid #334155; background: transparent; color: #cbd5e1; cursor: pointer; }
+
+    /* [확실] 히어로 섹션 */
+    .main { padding: 40px 64px 80px; } 
+    .hero {
+        height: 400px; border-radius: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15), transparent 70%), #0f172a;
+        border: 1px solid #1e293b; margin-bottom: 40px; position: relative;
+    }
+    .hero-badge { display: inline-block; padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 13px; font-weight: 700; margin-bottom: 24px; }
+    .hero h1 { font-size: 48px; line-height: 1.3; color: #fff; font-weight: 800; margin-bottom: 20px; }
+    .hero h1 span { color: #00E5FF; }
+    .hero p { color: #94a3b8; font-size: 16px; margin-bottom: 32px; }
+    .hero-tags { display: flex; gap: 12px; }
+    .h-tag { padding: 8px 18px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 14px; text-decoration: none; }
+
+    /* [확실] 감성 분석 & 지배적 여론 그리드 */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; position: relative; }
+    .section-title-wrap span { color: #38bdf8; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+    .section-title-wrap h2 { margin-top: 10px; font-size: 32px; color: #fff; font-weight: 800; }
+    .section-desc { font-size: 14px; color: #64748b; margin-top: 8px; }
+    
+    .status-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; border-radius: 8px; background: rgba(244, 114, 114, 0.15); color: #f47272; font-size: 12px; font-weight: 700; }
+
+    .gauge-container { display: flex; justify-content: space-between; margin: 40px 0; }
+    .gauge-item { text-align: center; }
+    .gauge-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid #1e293b; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+    .gauge-circle.pos { border-top-color: #00E5FF; border-right-color: #00E5FF; } 
+    .gauge-circle.neg { border-color: #f47272; } 
+    .gauge-circle.neu { border-top-color: #fbbf24; } 
+    .gauge-circle .percent { font-size: 26px; font-weight: 800; color: #fff; }
+    .gauge-label { font-size: 12px; font-weight: 700; color: #64748b; }
+
+    .keyword-box { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 24px; margin-top: 20px; }
+    .keyword-box-title { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip { padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 13px; }
+
+    .opinion-card { background: rgba(255,255,255,0.03); border-radius: 24px; padding: 32px; margin-top: 25px; position: relative; min-height: 280px; }
+    .quote-icon { font-size: 32px; color: #38bdf8; margin-bottom: 20px; opacity: 0.5; }
+    .opinion-text { font-size: 20px; line-height: 1.6; color: #e2e8f0; font-weight: 500; }
+    .opinion-tags { position: absolute; bottom: 32px; left: 32px; display: flex; gap: 8px; }
+    .o-tag { padding: 6px 12px; border-radius: 6px; background: #1e293b; color: #94a3b8; font-size: 11px; }
+    .nav-btns { position: absolute; bottom: 32px; right: 32px; display: flex; gap: 12px; }
+    .nav-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; }
+
+    /* [확실] 감성 비교 섹션 */
+    .sentiment-compare { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
+    .sentiment-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+    .sentiment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .news-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; min-height: 320px; }
+    .news-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .media-name { font-size: 15px; font-weight: 700; color: #f8fafc; }
+    .s-badge { padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+    .s-badge.pos { background: rgba(0, 229, 255, 0.1); color: #00E5FF; }
+    .s-badge.neg { background: rgba(244, 114, 114, 0.1); color: #f47272; }
+    .s-badge.neu { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
+    .news-card h3 { font-size: 22px; line-height: 1.4; color: #fff; font-weight: 700; margin-bottom: 16px; word-break: keep-all; }
+    .news-card p { font-size: 14px; line-height: 1.6; color: #94a3b8; flex-grow: 1; margin-bottom: 24px; }
+    .action-btn { height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* [확실] 관점 분석 섹션 (초안 이미지 image_742922.png 스타일 완벽 반영) */
+    .viewpoint-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
+    .view-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-height: 440px; overflow: hidden; transition: max-height .6s ease; margin-top: 24px; }
+    .view-grid.expanded { max-height: 2500px; }
+    .view-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
+    .view-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .view-icon-box { width: 44px; height: 44px; border-radius: 50%; background: #0f172a; border: 2px solid; display: grid; place-items: center; font-size: 20px; }
+    .view-title-group .vt { font-size: 14px; font-weight: 700; }
+    .view-title-group .vp { font-size: 24px; font-weight: 900; }
+    .view-bar-bg { height: 6px; background: #334155; border-radius: 999px; overflow: hidden; margin-bottom: 15px; }
+    .view-bar-fill { height: 100%; border-radius: 999px; transition: width 0.8s ease; }
+    .reason-label { font-size: 11px; color: #38bdf8; font-weight: 700; margin-bottom: 8px; } /* 초안의 주요 근거 라벨 */
+    .view-reason { color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
+    .detail-btn { width: fit-content; padding: 0 12px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; font-size: 12px; cursor: pointer; }
+    .toggle-btn { width: 100%; height: 52px; margin-top: 28px; border-radius: 14px; border: 1px solid #1e293b; background: #111827; color: #38bdf8; font-weight: 600; font-size: 15px; cursor: pointer; }
+
+    /* [확실] 뉴스 그리드 */
+    .news-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 24px; }
+    .news-item-card { background: #111827; border: 1px solid #1e293b; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
+    .news-rank { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #00E5FF; margin-bottom: 15px; }
+    .news-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 12px; }
+    .news-summary { font-size: 13px; color: #94a3b8; line-height: 1.5; flex-grow: 1; }
+
+    /* 컬러 유틸리티 (초안 색상값) */
+    .c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
+    .c-purple { color: #a855f7; border-color: #a855f7; } .bg-purple { background: #a855f7; }
+    .c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
+    .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
+    .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
+
+    /* [확실] 지금 뜨는 뉴스 (image_153723.png 디자인 복구) */
+    .news-section { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-top: 40px; }
+    .news-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
+    .news-header h2 { font-size: 24px; color: #fff; font-weight: 800; }
+    .realtime-dot { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #94a3b8; }
+    .dot { width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; }
+
+    .news-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+    .news-item-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+    
+    .news-badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-bottom: 12px; padding: 4px 10px; border-radius: 6px; }
+    .badge-like { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+    .badge-dislike { color: #f47272; background: rgba(244, 114, 114, 0.1); }
+
+    .news-main-row { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-bottom: 20px; }
+    .news-rank-circle { min-width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #00E5FF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #00E5FF; }
+    .news-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: left; word-break: keep-all; }
+
+    .news-quote { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; text-align: left; }
+    
+    .reaction-row { display: flex; gap: 16px; margin-bottom: 20px; width: 100%; justify-content: flex-start; }
+    .react-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: #94a3b8; }
+    .react-item.up { color: #3b82f6; }
+    .react-item.down { color: #ef4444; }
+
+    .news-footer-btn { width: 100%; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #94a3b8; font-size: 13px; cursor: pointer; text-align: left; padding-left: 16px; }
+
+    /* 컬러 유틸리티 */
+    .c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
+    .c-purple { color: #a855f7; border-color: #a855f7; } .bg-purple { background: #a855f7; }
+    .c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
+    .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
+    .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: #030817;
-  font-family: "Pretendard", sans-serif;
-  padding-top: 76px;
-}
-
-.app {
-  width: 100%;
-  min-height: 100vh;
-  background: #030817;
-  color: #f8fafc;
-  padding-bottom: 80px;
-}
-
-.header {
-  height: 76px;
-  padding: 0 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #060b1a;
-  border-bottom: 1px solid #111827;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 9999;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 46px;
-}
-
-.logo-small {
-  font-size: 10px;
-  color: #64748b;
-}
-
-.logo-main {
-  font-size: 25px;
-  font-weight: 900;
-  color: #15d4ff;
-}
-
-.nav {
-  display: flex;
-  gap: 34px;
-}
-
-.nav a {
-  text-decoration: none;
-  color: #818ca3;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.search {
-  width: 230px;
-  height: 30px;
-  border-radius: 999px;
-  border: 1px solid #1f2a3d;
-  background: #070d1e;
-  color: #8b97ad;
-  padding: 0 15px;
-  font-size: 11px;
-}
-
-.login-btn {
-  height: 30px;
-  padding: 0 15px;
-  border: 0;
-  border-radius: 5px;
-  background: #13c8e8;
-  color: #03111d;
-  font-size: 11px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.join-btn {
-  height: 30px;
-  padding: 0 15px;
-  border-radius: 5px;
-  border: 1px solid #334155;
-  background: transparent;
-  color: #cbd5e1;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.main {
-  width: 784px;
-  margin: 0 auto;
-  padding-top: 24px;
-}
-
-.hero {
-  height: 260px;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #182438, #1d2b40);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-chip {
-  padding: 8px 18px;
-  border-radius: 999px;
-  background: rgba(20, 184, 220, 0.14);
-  border: 1px solid rgba(20, 184, 220, 0.35);
-  color: #54e6ff;
-  font-size: 11px;
-  font-weight: 800;
-  margin-bottom: 20px;
-}
-
-.hero h1 {
-  text-align: center;
-  font-size: 40px;
-  line-height: 1.16;
-  font-weight: 900;
-  letter-spacing: -2px;
-}
-
-.hero h1 span {
-  color: #58e5f5;
-}
-
-.hero p {
-  margin-top: 22px;
-  color: #b4bdce;
-  font-size: 13px;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 380px 380px;
-  gap: 28px;
-  margin-top: 24px;
-}
-
-.panel,
-.issue-section,
-.view-section,
-.news-section {
-  background: #111a2d;
-  border: 1px solid rgba(148, 163, 184, 0.13);
-  border-radius: 17px;
-  padding: 22px 18px;
-}
-
-.label {
-  color: #14d6ee;
-  font-size: 11px;
-  font-weight: 900;
-  margin-bottom: 10px;
-}
-
-.keyword-main {
-  font-size: 22px;
-  font-weight: 900;
-}
-
-.panel-title {
-  font-size: 21px;
-  font-weight: 900;
-}
-
-.circle-area {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 28px;
-}
-
-.circle-item {
-  width: 98px;
-  text-align: center;
-}
-
-.ring {
-  --p: 50;
-  --c: #5eead4;
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  position: relative;
-  background: conic-gradient(var(--c) calc(var(--p) * 1%), #314056 0);
-}
-
-.ring::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  background: #111a2d;
-  border-radius: 50%;
-}
-
-.ring span {
-  position: relative;
-  z-index: 1;
-  color: var(--c);
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.circle-label {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.positive-label { background: rgba(94,234,212,.14); color: #5eead4; }
-.negative-label { background: rgba(255,107,120,.14); color: #ff6b78; }
-.neutral-label { background: rgba(251,191,36,.14); color: #fbbf24; }
-
-.quote-box {
-  height: 180px;
-  margin-top: 16px;
-  border-radius: 10px;
-  background: #202d42;
-  padding: 28px;
-}
-
-.quote-text {
-  color: #f1f5f9;
-  font-size: 16px;
-  line-height: 1.6;
-  font-weight: 600;
-}
-
-.issue-section,
-.view-section,
-.news-section {
-  margin-top: 20px;
-}
-
-.issue-title,
-.view-title,
-.news-title {
-  font-size: 17px;
-  font-weight: 900;
-  margin-bottom: 18px;
-}
-
-.view-desc {
-  color: #64d8f7;
-  font-size: 11px;
-  margin-bottom: 18px;
-}
-
-.issue-grid,
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 13px;
-}
-
-.issue-card,
-.news-card {
-  background: #202d42;
-  border: 1px solid rgba(148, 163, 184, 0.13);
-  border-radius: 10px;
-  padding: 17px;
-}
-
-.issue-card h3,
-.news-card h3 {
-  font-size: 14px;
-  line-height: 1.35;
-}
-
-.issue-card p,
-.news-card p {
-  margin-top: 12px;
-  color: #9aa7bb;
-  font-size: 10px;
-  line-height: 1.45;
-}
-
-.small-btn,
-.view-btn {
-  margin-top: 12px;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid #475569;
-  background: transparent;
-  color: #cbd5e1;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-.view-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 13px;
-  max-height: 178px;
-  overflow: hidden;
-  transition: max-height 0.35s ease;
-}
-
-.view-grid.open {
-  max-height: 760px;
-}
-
-.view-card {
-  height: 178px;
-  border-radius: 10px;
-  background: #202d42;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  padding: 13px;
-}
-
-.view-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.view-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid currentColor;
-  font-size: 23px;
-}
-
-.view-name {
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.view-percent {
-  font-size: 22px;
-  font-weight: 900;
-  color: #f8fafc;
-}
-
-.view-bar {
-  height: 6px;
-  background: #3a465b;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 16px;
-}
-
-.view-fill {
-  height: 100%;
-  border-radius: 999px;
-}
-
-.view-badge {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  font-size: 9px;
-  font-weight: 900;
-}
-
-.view-reason {
-  margin-top: 9px;
-  color: #b7c0d0;
-  font-size: 10px;
-  line-height: 1.4;
-}
-
-.toggle-btn {
-  width: 100%;
-  height: 34px;
-  margin-top: 21px;
-  border-radius: 9px;
-  border: 1px solid #24314a;
-  background: transparent;
-  color: #37bdf8;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.teal { color: #2dd4bf; }
-.purple { color: #a78bfa; }
-.blue { color: #4aa3ff; }
-.orange { color: #fb923c; }
-.yellow { color: #fbbf24; }
-
-.bg-teal { background: #2dd4bf; }
-.bg-purple { background: #a78bfa; }
-.bg-blue { background: #4aa3ff; }
-.bg-orange { background: #fb923c; }
-.bg-yellow { background: #fbbf24; }
-
-.badge-teal { background: rgba(45,212,191,.15); color: #2dd4bf; }
-.badge-purple { background: rgba(167,139,250,.15); color: #a78bfa; }
-.badge-blue { background: rgba(74,163,255,.15); color: #4aa3ff; }
-.badge-orange { background: rgba(251,146,60,.15); color: #fb923c; }
-.badge-yellow { background: rgba(251,191,36,.15); color: #fbbf24; }
-
-.detail-wrap {
-  width: 800px;
-  margin: 40px auto;
-}
-
-.back {
-  color: #38bdf8;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.detail-title-area {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
-.detail-icon {
-  width: 110px;
-  height: 110px;
-  border-radius: 999px;
-  border: 1px solid #2dd4bf;
-  display: grid;
-  place-items: center;
-  font-size: 52px;
-  color: #2dd4bf;
-  background: rgba(45,212,191,.12);
-}
-
-.detail-title h1 {
-  font-size: 34px;
-}
-
-.detail-title span {
-  color: #2dd4bf;
-  margin-left: 18px;
-}
-
-.detail-title p {
-  margin-top: 14px;
-  color: #94a3b8;
-}
-
-.detail-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.detail-box {
-  background: #111a2d;
-  border: 1px solid rgba(148, 163, 184, 0.13);
-  border-radius: 17px;
-  padding: 24px;
-  margin-top: 18px;
-}
-
-.analysis-card {
-  margin-top: 18px;
-  border: 1px solid #2dd4bf;
-  background: rgba(45,212,191,.1);
-  border-radius: 12px;
-  padding: 22px;
-}
-
-.analysis-card h3 {
-  color: #2dd4bf;
-  margin-bottom: 14px;
-}
-
-.sentiment-line {
-  display: flex;
-  height: 10px;
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 20px;
-}
-
-.pos { width: 40%; background: #2dd4bf; }
-.mid { width: 40%; background: #64748b; }
-.neg { width: 20%; background: #fb7185; }
-
-.percent-row {
-  display: flex;
-  justify-content: space-around;
-  text-align: center;
-  margin-top: 22px;
-}
-
-.keyword-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 20px;
-}
-
-.keyword-tags span {
-  padding: 9px 18px;
-  border-radius: 999px;
-  background: rgba(20,184,220,.18);
-  color: #58e5f5;
-  font-weight: 800;
-}
-
-.article-row {
-  display: grid;
-  grid-template-columns: 70px 1fr 80px 100px;
-  align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid #1e293b;
-  color: #cbd5e1;
-}
-
-.header-menu {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.hidden {
-  display: none;
-}
-
-.footer {
-  width: 100%;
-  height: 92px;
-  background: #030817;
-  border-top: 1px solid #111827;
-  display: flex;
-  align-items: center;
-}
-
-.footer-inner {
-  width: 1180px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 26px;
-}
-
-.footer-mark {
-  width: 44px;
-  height: 44px;
-  border: 5px solid #f8fafc;
-  border-radius: 20px 6px 20px 6px;
-  position: relative;
-}
-
-.footer-mark span {
-  position: absolute;
-  left: 9px;
-  top: 5px;
-  color: #f8fafc;
-  font-size: 20px;
-  font-weight: 900;
-}
-
-.footer-link {
-  border: none;
-  background: transparent;
-  color: #f8fafc;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.footer-divider {
-  width: 1px;
-  height: 34px;
-  background: rgba(248, 250, 252, 0.8);
-}
-
-.footer-copy {
-  color: #f8fafc;
-  font-size: 15px;
-}
-
-.footer-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.footer-modal.hidden {
-  display: none;
-}
-
-.footer-modal-box {
-  width: 780px;
-  height: 480px;
-  padding: 36px;
-  border-radius: 22px;
-  background: #202331;
-}
-
-.footer-modal-content {
-  height: 340px;
-  padding: 28px;
-  background: #07111f;
-  color: #f8fafc;
-  font-size: 15px;
-  line-height: 1.8;
-  overflow-y: auto;
-}
-
-.footer-modal-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.footer-modal-content::-webkit-scrollbar-thumb {
-  background: #22c7dd;
-  border-radius: 999px;
-}
-
-.footer-modal-btn {
-  display: block;
-  width: 160px;
-  height: 44px;
-  margin: 20px auto 0;
-  border: none;
-  border-radius: 999px;
-  background: #27b6cc;
-  color: #020617;
-  font-size: 16px;
-  font-weight: 900;
-  cursor: pointer;
-}
 </style>
 </head>
-
 <body>
-
-<div class="app">
-
-  <header class="header">
-    <div class="header-left">
-      <div class="logo">
-        <div class="logo-small">뉴스를 이해하는 방식</div>
-        <div class="logo-main">DATA 다타</div>
-      </div>
-
-      <nav class="nav">
-        <a href="#">뉴스흐름</a>
-        <a href="#">키워드</a>
-        <a href="#">뉴스</a>
-      </nav>
-    </div>
-    <div class="header-right">
-      <input class="search" placeholder="예: 금리, 취업, 전세, 반도체">
-
-      <!-- 로그인 전 -->
-      <div id="guestMenu" class="header-menu">
-        <button class="login-btn" onclick="location.href='/view/login.html'">로그인</button>
-        <button class="join-btn" onclick="location.href='/view/terms.html'">회원가입</button>
-      </div>
-
-      <!-- 로그인 후 -->
-      <div id="userMenu" class="header-menu hidden">
-        <button class="login-btn">마이페이지</button>
-        <button class="join-btn logout-btn">로그아웃</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="main">
-
-    <section class="hero">
-      <div class="hero-chip">같은 이슈를 여러 관점으로 보기</div>
-      <h1>
-        뉴스, 그냥 읽지 말고<br>
-        <span>이해하고 활용하세요</span>
-      </h1>
-      <p>키워드를 검색하면 핵심 요약, 관점 차이, 해석을 제공합니다.</p>
-    </section>
-
-    <section class="row">
-      <div class="panel">
-        <div class="label">핵심 키워드</div>
-        <div class="keyword-main">금리</div>
-
-        <div class="circle-area">
-          <div class="circle-item">
-            <div class="ring" style="--p:30; --c:#5eead4;"><span>30%</span></div>
-            <div class="circle-label positive-label">긍정</div>
-          </div>
-
-          <div class="circle-item">
-            <div class="ring" style="--p:55; --c:#ff6b78;"><span>55%</span></div>
-            <div class="circle-label negative-label">부정</div>
-          </div>
-
-          <div class="circle-item">
-            <div class="ring" style="--p:15; --c:#fbbf24;"><span>15%</span></div>
-            <div class="circle-label neutral-label">중립</div>
-          </div>
+<div class="page">
+    <header class="header">
+        <div class="header-left"><a href="#" class="logo"><div class="logo-mark">D</div><div>DATA 다타</div></a></div>
+        <nav class="nav"><a href="#">뉴스흐름</a><a href="#">키워드</a><a href="#">뉴스</a><a href="#">AI분석</a></nav>
+        <div class="header-right">
+            <input class="search-box" placeholder="예: 금리, 취업, 전세, 반도체" />
+            <button class="header-btn">마이페이지</button><button class="header-btn">로그아웃</button>
         </div>
-      </div>
+    </header>
 
-      <div class="panel">
-        <div class="label">관점 요약</div>
-        <div class="panel-title">오늘의 지배적 여론</div>
+    <main class="main">
+        <!-- 히어로 섹션 -->
+        <section class="hero">
+            <div class="hero-badge">같은 이슈를 여러 관점으로 보기</div>
+            <h1>뉴스, 그냥 읽지 말고<br /><span>이해하고 활용하세요</span></h1>
+            <p>키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설, 실생활 영향까지 한 번에 보여줍니다.</p>
+            <div class="hero-tags">
+                <a href="#" class="h-tag">#금리</a><a href="#" class="h-tag">#환율</a><a href="#" class="h-tag">#취업</a>
+                <a href="#" class="h-tag">#부동산</a><a href="#" class="h-tag">#물가</a><a href="#" class="h-tag">#전세</a>
+            </div>
+        </section>
 
-        <div class="quote-box">
-          <div class="quote-text">
-            금리 인하는 단기적으로 소비와 투자를 자극할 수 있으나,
-            장기적으로는 가계부채 리스크를 키울 수 있습니다.
-          </div>
-        </div>
-      </div>
-    </section>
+        <!-- 상단 데이터 그리드 -->
+        <section class="grid-2">
+            <div class="card">
+                <div class="section-title-wrap"><span>1위 키워드</span><h2>금리</h2></div>
+                <div class="status-badge">부정 표현 비율 높음</div>
+                <div class="gauge-container">
+                    <div class="gauge-item"><div class="gauge-circle pos"><span class="percent">30%</span></div><span class="gauge-label">긍정</span></div>
+                    <div class="gauge-item"><div class="gauge-circle neg"><span class="percent">55%</span></div><span class="gauge-label">부정</span></div>
+                    <div class="gauge-item"><div class="gauge-circle neu"><span class="percent">15%</span></div><span class="gauge-label">중립</span></div>
+                </div>
+                <div class="keyword-box">
+                    <div class="keyword-box-title">주요 키워드</div>
+                    <div class="chip-group">
+                        <span class="chip">기준금리</span><span class="chip">대출</span><span class="chip">물가</span>
+                        <span class="chip">환율</span><span class="chip">소비</span><span class="chip">주식시장</span>
+                    </div>
+                </div>
+            </div>
 
-    <section class="issue-section">
-      <div class="label">경향 비교</div>
-      <div class="issue-title">같은 이슈, 다른 해석</div>
+            <div class="card">
+                <div class="section-title-wrap"><span>관점 요약</span><h2>오늘의 지배적 여론</h2></div>
+                <div class="opinion-card">
+                    <div class="quote-icon">“</div>
+                    <div class="opinion-text">금리 인하는 단기적으로 소비, 투자를 자극할 수 있으나, 장기적으로는 가계부채 리스크를 키울 수 있습니다.</div>
+                    <div class="quote-icon" style="text-align:right">”</div>
+                    <div class="opinion-tags"><span class="o-tag">경제적 관점</span><span class="o-tag">중립</span></div>
+                    <div class="nav-btns"><div class="nav-btn"><</div><div class="nav-btn">></div></div>
+                </div>
+            </div>
+        </section>
 
-      <div class="issue-grid">
-        <div class="issue-card">
-          <h3>시장 안정 기대</h3>
-          <p>금리 조정이 소비 심리 회복 계기가 될 수 있다는 해석입니다.</p>
-          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
-        </div>
+        <!-- 감성 비교 섹션 -->
+        <section class="sentiment-compare">
+            <div class="sentiment-header">
+                <div class="section-title-wrap"><span>감성 비교</span><h2>같은 이슈, 다른 해석</h2></div>
+                <div class="section-desc">언론사별로 어떤 톤과 시각을 사용하는지 비교합니다.</div>
+            </div>
+            <div class="sentiment-grid">
+                <div class="news-card">
+                    <div class="news-card-top"><span class="media-name">언론사 A</span><span class="s-badge pos">긍정</span></div>
+                    <h3>미국 기준금리 동결... 시장은 안도 분위기</h3>
+                    <p>기준금리 동결 발표 이후 금융시장이 안정을 찾고 있다는 분석이 나왔다.</p>
+                    <button class="action-btn">상세 보기</button>
+                </div>
+                <div class="news-card">
+                    <div class="news-card-top"><span class="media-name">언론사 B</span><span class="s-badge neg">부정</span></div>
+                    <h3>금리 부담 여전... 서민 대출 이자 압박 지속</h3>
+                    <p>동결에도 불구하고 고금리 상황이 이어지며 서민 부담이 계속된다는 지적이 제기됐다.</p>
+                    <button class="action-btn">상세 보기</button>
+                </div>
+                <div class="news-card">
+                    <div class="news-card-top"><span class="media-name">언론사 C</span><span class="s-badge neu">중립</span></div>
+                    <h3>금리 동결, 향후 물가 흐름이 핵심 변수</h3>
+                    <p>전문가들은 금리 동결 자체보다 향후 물가와 소비 흐름을 더 중요하게 보고 있다.</p>
+                    <button class="action-btn">상세 보기</button>
+                </div>
+            </div>
+        </section>
 
-        <div class="issue-card">
-          <h3>가계부채 확대 우려</h3>
-          <p>대출 증가와 부동산 시장 과열 가능성을 우려하는 관점입니다.</p>
-          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
-        </div>
+<!-- 2차 관점 분석 -->
+        <section class="viewpoint-box">
+            <div class="section-title-wrap"><span>관점 비교</span><h2>2차 관점 분석</h2></div>
+            <div class="view-grid" id="viewGrid"></div>
+            <button class="toggle-btn" id="toggleBtn" onclick="toggleView()">전체 18개 관점 보기 ∨</button>
+        </section>
 
-        <div class="issue-card">
-          <h3>정책 효과 관망</h3>
-          <p>금리 변화 효과는 경기, 물가, 환율에 따라 다르게 나타납니다.</p>
-          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="view-section">
-      <div class="label">관점 비교</div>
-      <div class="view-title">2차 관점 분석</div>
-      <div class="view-desc">이 이슈를 바라보는 세부 관점을 18가지로 분류하여 비중을 분석했습니다.</div>
-
-      <div class="view-grid" id="viewGrid"></div>
-
-      <button class="toggle-btn" id="toggleBtn" onclick="toggleView()">전체 18개 관점 보기 ∨</button>
-    </section>
-
-    <section class="news-section">
-      <div class="news-title">지금 뜨는 뉴스</div>
-
-      <div class="news-grid">
-        <div class="news-card">
-          <h3>금리 인하 영향</h3>
-          <p>금리 정책 변화에 따른 시장 반응이 엇갈리고 있습니다.</p>
-          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
-        </div>
-
-        <div class="news-card">
-          <h3>기업 투자 확대</h3>
-          <p>기업들이 금리 흐름에 맞춰 투자 계획을 조정하고 있습니다.</p>
-          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
-        </div>
-
-        <div class="news-card">
-          <h3>환율 변화</h3>
-          <p>환율 변동성이 금융시장 주요 변수로 떠오르고 있습니다.</p>
-          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
-        </div>
-      </div>
-    </section>
-
-  </main>
+        <!-- 지금 뜨는 뉴스 (이미지 디자인 완벽 복구) -->
+        <section class="news-section">
+            <div class="news-header">
+                <h2>지금 뜨는 뉴스</h2>
+                <div class="realtime-dot"><div class="dot"></div>실시간 반응순</div>
+            </div>
+            <div class="news-grid">
+                <!-- 카드 1 -->
+                <div class="news-item-card">
+                    <div class="news-badge badge-dislike">👎 싫어요 특색</div>
+                    <div class="news-main-row">
+                        <div class="news-rank-circle">1</div>
+                        <div class="news-title">송미령 "'농촌 에너지 대전환 TF' 가동... 중동전쟁 대응"</div>
+                    </div>
+                    <div class="news-quote">"금리 정책 대응이 늦고 규제 완화 시점이 적절치 않았음"</div>
+                    <div class="reaction-row">
+                        <div class="react-item up">👍 888</div>
+                        <div class="react-item down">👎 999</div>
+                    </div>
+                    <button class="news-footer-btn">상세 보기 ></button>
+                </div>
+                <!-- 카드 2 -->
+                <div class="news-item-card">
+                    <div class="news-badge badge-like">👍 좋아요 특색</div>
+                    <div class="news-main-row">
+                        <div class="news-rank-circle">2</div>
+                        <div class="news-title">LG화학, 고기능 소재로 차이나플라스 2년 연속 수상</div>
+                    </div>
+                    <div class="news-quote">"무리한 대출과 과소비 등 개인의 금융 습관 문제"</div>
+                    <div class="reaction-row">
+                        <div class="react-item up">👍 982</div>
+                        <div class="react-item down">👎 777</div>
+                    </div>
+                    <button class="news-footer-btn">상세 보기 ></button>
+                </div>
+                <!-- 카드 3 -->
+                <div class="news-item-card">
+                    <div class="news-badge badge-dislike">👎 싫어요 특색</div>
+                    <div class="news-main-row">
+                        <div class="news-rank-circle">3</div>
+                        <div class="news-title">CJ제일제당, 베트남 최대 유통사 '박화 산'과 맞손... "K-푸드 확장 가속"</div>
+                    </div>
+                    <div class="news-quote">"부동산 시장 구조와 금융 시스템의 근본적 문제"</div>
+                    <div class="reaction-row">
+                        <div class="react-item up">👍 666</div>
+                        <div class="react-item down">👎 876</div>
+                    </div>
+                    <button class="news-footer-btn">상세 보기 ></button>
+                </div>
+                <!-- 카드 4 -->
+                <div class="news-item-card">
+                    <div class="news-badge badge-like">👍 좋아요 특색</div>
+                    <div class="news-main-row">
+                        <div class="news-rank-circle">4</div>
+                        <div class="news-title">중신용자 위한 중금리 대출 확대... 사잇돌 금리도 최대 5.2%p↓</div>
+                    </div>
+                    <div class="news-quote">"기업의 투자 위축과 고용 창출 부족"</div>
+                    <div class="reaction-row">
+                        <div class="react-item up">👍 645</div>
+                        <div class="react-item down">👎 444</div>
+                    </div>
+                    <button class="news-footer-btn">상세 보기 ></button>
+                </div>
+                <!-- 카드 5 -->
+                <div class="news-item-card">
+                    <div class="news-badge badge-dislike">👎 싫어요 특색</div>
+                    <div class="news-main-row">
+                        <div class="news-rank-circle">5</div>
+                        <div class="news-title">"포크도 무조건 여기서 사" 가맹점주 부담 키웠다... 샐러디, 공정위 제재</div>
+                    </div>
+                    <div class="news-quote">"미국 금리 인상 등 외부 충격의 영향"</div>
+                    <div class="reaction-row">
+                        <div class="react-item up">👍 542</div>
+                        <div class="react-item down">👎 999</div>
+                    </div>
+                    <button class="news-footer-btn">상세 보기 ></button>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<!-- <script src="/js/common.js"></script> 필요시 주석 해제하여 사용 -->
-
 <script>
-const viewpoints = [
-  { title: "정부 관점", percent: 24, reason: "금리 정책 대응이 늦고 규제 완화 시점이 적절치 않았음", icon: "🏛", color: "teal" },
-  { title: "개인 관점", percent: 18, reason: "무리한 대출과 과소비 등 개인의 금융 습관 문제", icon: "♡", color: "purple" },
-  { title: "복합 관점", percent: 14, reason: "부동산 시장 구조와 금융 시스템의 근본적 문제", icon: "◎", color: "blue" },
-  { title: "기업 관점", percent: 11, reason: "기업의 투자 위축과 고용 창출 부족", icon: "▣", color: "orange" },
-  { title: "외부 관점", percent: 9, reason: "미국 금리 인상 등 외부 충격의 영향", icon: "◎", color: "yellow" },
-  { title: "기대", percent: 24, reason: "정책 변화에 따른 경기 회복 가능성에 주목", icon: "☆", color: "teal" },
-  { title: "성과 예찬", percent: 9, reason: "정책 효과와 시장 안정 신호를 긍정적으로 평가", icon: "♕", color: "purple" },
-  { title: "비판적 태도", percent: 14, reason: "정책 방향과 실행 시점에 대한 비판적 해석", icon: "☵", color: "blue" },
-  { title: "우려", percent: 9, reason: "부채 증가와 시장 불안 가능성에 대한 경계", icon: "△", color: "orange" },
-  { title: "결과 분석", percent: 24, reason: "정책 이후 나타난 시장 반응과 지표 변화를 분석", icon: "▥", color: "teal" },
-  { title: "전망 분석", percent: 18, reason: "향후 금리 흐름과 경기 방향성을 예측", icon: "⌁", color: "purple" },
-  { title: "단순 전달", percent: 14, reason: "정책 발표와 수치 변화를 사실 중심으로 전달", icon: "▤", color: "blue" },
-  { title: "대응 분석", percent: 11, reason: "정부와 기업의 대응 전략을 중심으로 해석", icon: "⚙", color: "orange" },
-  { title: "원인 분석", percent: 18, reason: "금리 변화의 배경과 구조적 원인을 설명", icon: "⌕", color: "yellow" },
-  { title: "시장 자율 강조", percent: 24, reason: "정부 개입보다 시장 조정 기능을 중시하는 관점", icon: "⚖", color: "teal" },
-  { title: "정부 개입 강조", percent: 11, reason: "정책적 개입과 조정이 필요하다는 입장", icon: "▥", color: "purple" },
-  { title: "정책 요인(국내)", percent: 18, reason: "국내 정책 결정과 제도 변화의 영향을 중심으로 분석", icon: "⌖", color: "blue" },
-  { title: "외부 요인(글로벌)", percent: 14, reason: "미국 금리, 환율, 글로벌 경기 흐름의 영향을 반영", icon: "◎", color: "orange" }
+/* [확실] 5-4-5-4 그룹 정렬 스크립트 */
+const groups = [
+    { name: "주체", items: [
+        { title: "정부 관점", percent: 24, reason: "금리 정책 대응이 늦고 규제 완화 시점이 부적절함", icon: "🏛️", color: "teal" },
+        { title: "개인 관점", percent: 18, reason: "무리한 대출과 과소비 등 개인의 금융 습관 문제", icon: "👤", color: "purple" },
+        { title: "복합 관점", percent: 14, reason: "부동산 시장 구조와 금융 시스템의 근본적 문제", icon: "◎", color: "blue" },
+        { title: "기업 관점", percent: 11, reason: "기업의 투자 위축과 고용 창출 부족", icon: "💼", color: "orange" },
+        { title: "외부 관점", percent: 9, reason: "미국 금리 인상 등 외부 충격의 영향", icon: "🌐", color: "yellow" }
+    ]},
+    { name: "감성", items: [
+        { title: "기대", percent: 24, reason: "금리 정책 대응이 늦고 규제 완화 시점이 부적절함", icon: "⭐", color: "teal" },
+        { title: "성과 예찬", percent: 9, reason: "미국 금리 인상 등 외부 충격의 영향", icon: "🏆", color: "purple" },
+        { title: "비판적 태도", percent: 14, reason: "부동산 시장 구조와 금융 시스템의 근본적 문제", icon: "💬", color: "blue" },
+        { title: "우려", percent: 9, reason: "미국 금리 인상 등 외부 충격의 영향", icon: "⚠️", color: "orange" }
+    ]},
+    { name: "분석", items: [
+        { title: "결과 분석", percent: 24, reason: "금리 정책 대응이 늦고 규제 완화 시점이 부적절함", icon: "📊", color: "teal" },
+        { title: "전망 분석", percent: 18, reason: "무리한 대출과 과소비 등 개인의 금융 습관 문제", icon: "📈", color: "purple" },
+        { title: "단순 전달", percent: 14, reason: "부동산 시장 구조와 금융 시스템의 근본적 문제", icon: "📰", color: "blue" },
+        { title: "대응 분석", percent: 11, reason: "기업의 투자 위축과 고용 창출 부족", icon: "⚙️", color: "orange" },
+        { title: "원인 분석", percent: 18, reason: "무리한 대출과 과소비 등 개인의 금융 습관 문제", icon: "🔍", color: "yellow" }
+    ]},
+    { name: "요인", items: [
+        { title: "시장 자율 강조", percent: 24, reason: "금리 정책 대응이 늦고 규제 완화 시점이 부적절함", icon: "⚖️", color: "teal" },
+        { title: "정부 개입 강조", percent: 11, reason: "기업의 투자 위축과 고용 창출 부족", icon: "🏢", color: "purple" },
+        { title: "정책 요인(국내)", percent: 18, reason: "무리한 대출과 과소비 등 개인의 금융 습관 문제", icon: "📍", color: "blue" },
+        { title: "중립", percent: 5, reason: "객관적 사실 위주의 보도로 중립 유지", icon: "⚖️", color: "yellow" }
+    ]}
 ];
 
 const viewGrid = document.getElementById("viewGrid");
-
-if (viewGrid) {
-  viewGrid.innerHTML = viewpoints.map(item => `
-    <div class="view-card">
-      <div class="view-head">
-        <div class="view-icon ${item.color}">${item.icon}</div>
-        <div>
-          <div class="view-name ${item.color}">${item.title}</div>
-          <div class="view-percent">${item.percent}%</div>
-        </div>
-      </div>
-
-      <div class="view-bar">
-        <div class="view-fill bg-${item.color}" style="width:${item.percent * 2.8}%"></div>
-      </div>
-
-      <div class="view-badge badge-${item.color}">주요 근거</div>
-      <div class="view-reason">“${item.reason}”</div>
-
-      <button class="view-btn" onclick="goViewpointDetail('${item.title}', ${item.percent})">
-        상세 보기 〉
-      </button>
-    </div>
-  `).join("");
-}
+let htmlContent = "";
+groups.forEach(group => {
+    group.items.forEach(item => {
+        htmlContent += `
+            <div class="view-card">
+                <div class="view-top">
+                    <div class="view-icon-box c-${item.color}">${item.icon}</div>
+                    <div class="view-title-group"><div class="vt c-${item.color}">${item.title}</div><div class="vp c-${item.color}">${item.percent}%</div></div>
+                </div>
+                <div class="view-bar-bg"><div class="view-bar-fill bg-${item.color}" style="width:${item.percent}%"></div></div>
+                <div class="reason-label">주요 근거</div>
+                <div class="view-reason">"${item.reason}"</div>
+                <button class="detail-btn">상세 보기 ></button>
+            </div>`;
+    });
+    if (group.items.length === 4) htmlContent += `<div class="view-spacer" style="visibility:hidden;"></div>`;
+});
+viewGrid.innerHTML = htmlContent;
 
 function toggleView() {
-  const grid = document.getElementById("viewGrid");
-  const btn = document.getElementById("toggleBtn");
-
-  grid.classList.toggle("open");
-
-  if (grid.classList.contains("open")) {
-    btn.innerHTML = "접기 ︿";
-  } else {
-    btn.innerHTML = "전체 18개 관점 보기 ∨";
-  }
-}
-
-function goViewpointDetail(title, percent) {
-  localStorage.setItem("viewpoint_title", title);
-  localStorage.setItem("viewpoint_percent", percent);
-  location.href = "/view/viewpoint-detail.html";
+    const grid = document.getElementById("viewGrid");
+    const btn = document.getElementById("toggleBtn");
+    grid.classList.toggle("expanded");
+    btn.innerText = grid.classList.contains("expanded") ? "접기 ∧" : "전체 18개 관점 보기 ∨";
 }
 </script>
-
-<div id="footer"></div>
 </body>
 </html>
