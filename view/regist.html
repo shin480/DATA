@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA 회원가입</title>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --card-color: #0F172A;
+            --input-bg: #020617;
+            --cyan-point: #00E5FF;
+            --text-main: #FFFFFF;
+            --text-sub: #8B949E;
+            --error-red: #F43F5E;
+            --border: 1px solid #30363D;
+            --border-radius: 12px;
+        }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-main);
+            font-family: 'Pretendard', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; padding: 20px;
+        }
+
+        .join-card {
+            background-color: var(--card-color); width: 100%; max-width: 500px;
+            padding: 50px 40px; border-radius: 24px; border: var(--border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center;
+        }
+
+        .logo { color: var(--cyan-point); font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+        .subtitle { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .desc { color: var(--text-sub); font-size: 12px; margin-bottom: 40px; }
+
+        .form-group { text-align: left; margin-bottom: 28px; position: relative; }
+        .row-group { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; margin-bottom: 4px; }
+        .label { display: block; color: var(--cyan-point); font-size: 11px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
+
+        input, select {
+            width: 100%; height: 48px; padding: 14px 16px; 
+            background-color: var(--input-bg); border: var(--border); 
+            border-radius: var(--border-radius); color: var(--text-main); 
+            font-size: 14px; box-sizing: border-box; outline: none;
+        }
+
+        .email-input-wrap { display: flex; gap: 10px; }
+        
+        .btn {
+            height: 48px; padding: 0 16px; border-radius: var(--border-radius); 
+            border: none; font-weight: bold; cursor: pointer; font-size: 13px; 
+            white-space: nowrap; transition: 0.2s; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        #emailActionBtn, #btnVerifyCert { min-width: 110px; }
+
+        .btn-cyan { background-color: var(--cyan-point); color: #000; }
+        .btn-timer { background-color: #1E293B; color: var(--error-red); cursor: not-allowed; border: 1px solid #30363D; }
+        .btn-resend { background-color: #1E293B; color: var(--cyan-point); border: 1px solid var(--cyan-point); }
+
+        .btn-submit {
+            width: 100%; background-color: var(--cyan-point); color: #000;
+            font-size: 15px; font-weight: bold; margin-top: 10px; height: 56px;
+        }
+
+        .status-msg { 
+            font-size: 11px; font-weight: 500; display: none;
+            position: absolute; bottom: -18px; left: 0; 
+        }
+        .status-msg.error { color: var(--error-red); }
+        .status-msg.success { color: #22C55E; }
+
+        .footer-link { color: var(--text-sub); font-size: 13px; margin-top: 30px; display: block; text-decoration: none; }
+        .footer-link strong { color: var(--cyan-point); }
+
+        /* [확실] 커스텀 모달 스타일 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: var(--card-color); border: var(--border);
+            padding: 30px; border-radius: 20px; text-align: center;
+            width: 90%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(20px); transition: 0.3s;
+        }
+        .modal-content.active { transform: translateY(0); }
+        .modal-text { margin-bottom: 25px; line-height: 1.5; font-size: 15px; }
+        .modal-btn { width: 100%; padding: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="join-card">
+        <div class="logo">DATA</div>
+        <div class="subtitle">새로운 계정 만들기</div>
+        <p class="desc">당신의 데이터를 가치 있게 만드는 첫 걸음</p>
+
+        <form id="joinForm">
+            <div class="form-group">
+                <label class="label">Name</label>
+                <input type="text" placeholder="성함을 입력해주세요" required>
+            </div>
+
+            <div class="row-group">
+                <div class="form-group">
+                    <label class="label">Birth Date</label>
+                    <input type="text" placeholder="YYYYMMDD" required maxlength="8">
+                </div>
+                <div class="form-group">
+                    <label class="label">Gender</label>
+                    <select required>
+                        <option value="" disabled selected>선택하세요</option>
+                        <option value="male">남성</option>
+                        <option value="female">여성</option>
+                        <option value="private">공개안함</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="label">Email Address</label>
+                <div class="email-input-wrap">
+                    <input type="email" id="userEmail" placeholder="admin@data.com" required>
+                    <button type="button" class="btn btn-cyan" id="emailActionBtn">인증번호 받기</button>
+                </div>
+                <div class="status-msg error" id="emailError">⚠️ 이미 가입된 이메일입니다!</div>
+
+                <div id="certInputArea" style="display: none; margin-top: 10px;">
+                    <div class="email-input-wrap">
+                        <input type="text" id="certNum" placeholder="인증번호 입력">
+                        <button type="button" class="btn btn-cyan" id="btnVerifyCert">확인</button>
+                    </div>
+                </div>
+                <div class="status-msg success" id="emailSuccess">✔️ 이메일 인증완료</div>
+            </div>
+
+            <div class="form-group">
+                <label class="label">Password</label>
+                <input type="password" id="userPw" placeholder="8자 이상의 비밀번호" required minlength="8">
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="userPwCheck" placeholder="비밀번호 재확인" required>
+                <div class="status-msg error" id="pwMatchError">⚠️ 비밀번호가 일치하지 않습니다.</div>
+            </div>
+
+            <button type="submit" class="btn btn-submit">계정 생성하기</button>
+        </form>
+
+        <a href="#" class="footer-link">이미 계정이 있으신가요? <strong>로그인</strong></a>
+    </div>
+
+    <!-- [확실] 커스텀 모달 구조 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <div class="modal-text" id="modalMessage">메시지 내용</div>
+            <button class="btn btn-cyan modal-btn" id="modalCloseBtn">확인</button>
+        </div>
+    </div>
+
+    <script>
+        const emailActionBtn = document.getElementById('emailActionBtn');
+        const userEmailInput = document.getElementById('userEmail');
+        const certInputArea = document.getElementById('certInputArea');
+        const emailError = document.getElementById('emailError');
+        const emailSuccess = document.getElementById('emailSuccess');
+        const btnVerifyCert = document.getElementById('btnVerifyCert');
+        
+        // 모달 관련 요소
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalContent = document.getElementById('modalContent');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        let timerInterval;
+        let timeLeft = 180;
+
+        // [확실] 커스텀 알림창 함수
+        function showModal(msg) {
+            modalMessage.innerText = msg;
+            modalOverlay.style.display = 'flex';
+            setTimeout(() => modalContent.classList.add('active'), 10);
+        }
+
+        modalCloseBtn.addEventListener('click', () => {
+            modalContent.classList.remove('active');
+            setTimeout(() => modalOverlay.style.display = 'none', 300);
+        });
+
+        function updateButtonTimer() {
+            emailActionBtn.disabled = true;
+            emailActionBtn.classList.remove('btn-cyan', 'btn-resend');
+            emailActionBtn.classList.add('btn-timer');
+            
+            timeLeft = 180;
+            certInputArea.style.display = 'block';
+
+            if(timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                let min = Math.floor(timeLeft / 60);
+                let sec = timeLeft % 60;
+                emailActionBtn.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    switchToResendMode();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function switchToResendMode() {
+            emailActionBtn.disabled = false;
+            emailActionBtn.textContent = "↺ 재발송";
+            emailActionBtn.classList.remove('btn-timer');
+            emailActionBtn.classList.add('btn-resend');
+        }
+
+        emailActionBtn.addEventListener('click', () => {
+            if(!userEmailInput.value) return showModal('이메일을 입력해주세요.');
+            
+            if(userEmailInput.value === 'admin@data.com') {
+                emailError.style.display = 'block';
+                return;
+            }
+            
+            emailError.style.display = 'none';
+            showModal('인증번호가 발송되었습니다.');
+            updateButtonTimer();
+        });
+
+        btnVerifyCert.addEventListener('click', () => {
+            const code = document.getElementById('certNum').value;
+            if(code === "1234") {
+                clearInterval(timerInterval);
+                certInputArea.style.display = 'none';
+                emailSuccess.style.display = 'block';
+                
+                emailActionBtn.disabled = true;
+                emailActionBtn.textContent = "인증 완료";
+                emailActionBtn.classList.remove('btn-timer', 'btn-resend');
+                emailActionBtn.classList.add('btn-cyan');
+                userEmailInput.readOnly = true;
+            } else {
+                showModal('인증번호가 일치하지 않습니다.\n(테스트용: 1234)');
+            }
+        });
+
+        const pw = document.getElementById('userPw');
+        const pwCheck = document.getElementById('userPwCheck');
+        const pwError = document.getElementById('pwMatchError');
+
+        [pw, pwCheck].forEach(el => el.addEventListener('input', () => {
+            pwError.style.display = (pw.value && pwCheck.value && pw.value !== pwCheck.value) ? 'block' : 'none';
+        }));
+    </script>
+</body>
+</html>
