@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>DATA 다타</title>
+<style>
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #030817;
+  font-family: "Pretendard", sans-serif;
+  padding-top: 76px;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+  background: #030817;
+  color: #f8fafc;
+  padding-bottom: 80px;
+}
+
+.header {
+  height: 76px;
+  padding: 0 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #060b1a;
+  border-bottom: 1px solid #111827;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 46px;
+}
+
+.logo-small {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.logo-main {
+  font-size: 25px;
+  font-weight: 900;
+  color: #15d4ff;
+}
+
+.nav {
+  display: flex;
+  gap: 34px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #818ca3;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search {
+  width: 230px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid #1f2a3d;
+  background: #070d1e;
+  color: #8b97ad;
+  padding: 0 15px;
+  font-size: 11px;
+}
+
+.login-btn {
+  height: 30px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 5px;
+  background: #13c8e8;
+  color: #03111d;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.join-btn {
+  height: 30px;
+  padding: 0 15px;
+  border-radius: 5px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.main {
+  width: 784px;
+  margin: 0 auto;
+  padding-top: 24px;
+}
+
+.hero {
+  height: 260px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #182438, #1d2b40);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-chip {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(20, 184, 220, 0.14);
+  border: 1px solid rgba(20, 184, 220, 0.35);
+  color: #54e6ff;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  text-align: center;
+  font-size: 40px;
+  line-height: 1.16;
+  font-weight: 900;
+  letter-spacing: -2px;
+}
+
+.hero h1 span {
+  color: #58e5f5;
+}
+
+.hero p {
+  margin-top: 22px;
+  color: #b4bdce;
+  font-size: 13px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 380px 380px;
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.panel,
+.issue-section,
+.view-section,
+.news-section {
+  background: #111a2d;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 17px;
+  padding: 22px 18px;
+}
+
+.label {
+  color: #14d6ee;
+  font-size: 11px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.keyword-main {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.panel-title {
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.circle-area {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+}
+
+.circle-item {
+  width: 98px;
+  text-align: center;
+}
+
+.ring {
+  --p: 50;
+  --c: #5eead4;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background: conic-gradient(var(--c) calc(var(--p) * 1%), #314056 0);
+}
+
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  background: #111a2d;
+  border-radius: 50%;
+}
+
+.ring span {
+  position: relative;
+  z-index: 1;
+  color: var(--c);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.circle-label {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.positive-label { background: rgba(94,234,212,.14); color: #5eead4; }
+.negative-label { background: rgba(255,107,120,.14); color: #ff6b78; }
+.neutral-label { background: rgba(251,191,36,.14); color: #fbbf24; }
+
+.quote-box {
+  height: 180px;
+  margin-top: 16px;
+  border-radius: 10px;
+  background: #202d42;
+  padding: 28px;
+}
+
+.quote-text {
+  color: #f1f5f9;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.issue-section,
+.view-section,
+.news-section {
+  margin-top: 20px;
+}
+
+.issue-title,
+.view-title,
+.news-title {
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 18px;
+}
+
+.view-desc {
+  color: #64d8f7;
+  font-size: 11px;
+  margin-bottom: 18px;
+}
+
+.issue-grid,
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+}
+
+.issue-card,
+.news-card {
+  background: #202d42;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 10px;
+  padding: 17px;
+}
+
+.issue-card h3,
+.news-card h3 {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.issue-card p,
+.news-card p {
+  margin-top: 12px;
+  color: #9aa7bb;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.small-btn,
+.view-btn {
+  margin-top: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.view-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 13px;
+  max-height: 178px;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.view-grid.open {
+  max-height: 760px;
+}
+
+.view-card {
+  height: 178px;
+  border-radius: 10px;
+  background: #202d42;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 13px;
+}
+
+.view-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  font-size: 23px;
+}
+
+.view-name {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.view-percent {
+  font-size: 22px;
+  font-weight: 900;
+  color: #f8fafc;
+}
+
+.view-bar {
+  height: 6px;
+  background: #3a465b;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.view-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.view-badge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.view-reason {
+  margin-top: 9px;
+  color: #b7c0d0;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.toggle-btn {
+  width: 100%;
+  height: 34px;
+  margin-top: 21px;
+  border-radius: 9px;
+  border: 1px solid #24314a;
+  background: transparent;
+  color: #37bdf8;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.teal { color: #2dd4bf; }
+.purple { color: #a78bfa; }
+.blue { color: #4aa3ff; }
+.orange { color: #fb923c; }
+.yellow { color: #fbbf24; }
+
+.bg-teal { background: #2dd4bf; }
+.bg-purple { background: #a78bfa; }
+.bg-blue { background: #4aa3ff; }
+.bg-orange { background: #fb923c; }
+.bg-yellow { background: #fbbf24; }
+
+.badge-teal { background: rgba(45,212,191,.15); color: #2dd4bf; }
+.badge-purple { background: rgba(167,139,250,.15); color: #a78bfa; }
+.badge-blue { background: rgba(74,163,255,.15); color: #4aa3ff; }
+.badge-orange { background: rgba(251,146,60,.15); color: #fb923c; }
+.badge-yellow { background: rgba(251,191,36,.15); color: #fbbf24; }
+
+.detail-wrap {
+  width: 800px;
+  margin: 40px auto;
+}
+
+.back {
+  color: #38bdf8;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.detail-title-area {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.detail-icon {
+  width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  border: 1px solid #2dd4bf;
+  display: grid;
+  place-items: center;
+  font-size: 52px;
+  color: #2dd4bf;
+  background: rgba(45,212,191,.12);
+}
+
+.detail-title h1 {
+  font-size: 34px;
+}
+
+.detail-title span {
+  color: #2dd4bf;
+  margin-left: 18px;
+}
+
+.detail-title p {
+  margin-top: 14px;
+  color: #94a3b8;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.detail-box {
+  background: #111a2d;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 17px;
+  padding: 24px;
+  margin-top: 18px;
+}
+
+.analysis-card {
+  margin-top: 18px;
+  border: 1px solid #2dd4bf;
+  background: rgba(45,212,191,.1);
+  border-radius: 12px;
+  padding: 22px;
+}
+
+.analysis-card h3 {
+  color: #2dd4bf;
+  margin-bottom: 14px;
+}
+
+.sentiment-line {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.pos { width: 40%; background: #2dd4bf; }
+.mid { width: 40%; background: #64748b; }
+.neg { width: 20%; background: #fb7185; }
+
+.percent-row {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  margin-top: 22px;
+}
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.keyword-tags span {
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(20,184,220,.18);
+  color: #58e5f5;
+  font-weight: 800;
+}
+
+.article-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 80px 100px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #1e293b;
+  color: #cbd5e1;
+}
+
+.header-menu {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.footer {
+  width: 100%;
+  height: 92px;
+  background: #030817;
+  border-top: 1px solid #111827;
+  display: flex;
+  align-items: center;
+}
+
+.footer-inner {
+  width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.footer-mark {
+  width: 44px;
+  height: 44px;
+  border: 5px solid #f8fafc;
+  border-radius: 20px 6px 20px 6px;
+  position: relative;
+}
+
+.footer-mark span {
+  position: absolute;
+  left: 9px;
+  top: 5px;
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.footer-link {
+  border: none;
+  background: transparent;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 34px;
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.footer-copy {
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.footer-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.footer-modal.hidden {
+  display: none;
+}
+
+.footer-modal-box {
+  width: 780px;
+  height: 480px;
+  padding: 36px;
+  border-radius: 22px;
+  background: #202331;
+}
+
+.footer-modal-content {
+  height: 340px;
+  padding: 28px;
+  background: #07111f;
+  color: #f8fafc;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow-y: auto;
+}
+
+.footer-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.footer-modal-content::-webkit-scrollbar-thumb {
+  background: #22c7dd;
+  border-radius: 999px;
+}
+
+.footer-modal-btn {
+  display: block;
+  width: 160px;
+  height: 44px;
+  margin: 20px auto 0;
+  border: none;
+  border-radius: 999px;
+  background: #27b6cc;
+  color: #020617;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-small">뉴스를 이해하는 방식</div>
+        <div class="logo-main">DATA 다타</div>
+      </div>
+
+      <nav class="nav">
+        <a href="#">뉴스흐름</a>
+        <a href="#">키워드</a>
+        <a href="#">뉴스</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <input class="search" placeholder="예: 금리, 취업, 전세, 반도체">
+
+      <!-- 로그인 전 -->
+      <div id="guestMenu" class="header-menu">
+        <button class="login-btn" onclick="location.href='/view/login.html'">로그인</button>
+        <button class="join-btn" onclick="location.href='/view/terms.html'">회원가입</button>
+      </div>
+
+      <!-- 로그인 후 -->
+      <div id="userMenu" class="header-menu hidden">
+        <button class="login-btn">마이페이지</button>
+        <button class="join-btn logout-btn">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <section class="hero">
+      <div class="hero-chip">같은 이슈를 여러 관점으로 보기</div>
+      <h1>
+        뉴스, 그냥 읽지 말고<br>
+        <span>이해하고 활용하세요</span>
+      </h1>
+      <p>키워드를 검색하면 핵심 요약, 관점 차이, 해석을 제공합니다.</p>
+    </section>
+
+    <section class="row">
+      <div class="panel">
+        <div class="label">핵심 키워드</div>
+        <div class="keyword-main">금리</div>
+
+        <div class="circle-area">
+          <div class="circle-item">
+            <div class="ring" style="--p:30; --c:#5eead4;"><span>30%</span></div>
+            <div class="circle-label positive-label">긍정</div>
+          </div>
+
+          <div class="circle-item">
+            <div class="ring" style="--p:55; --c:#ff6b78;"><span>55%</span></div>
+            <div class="circle-label negative-label">부정</div>
+          </div>
+
+          <div class="circle-item">
+            <div class="ring" style="--p:15; --c:#fbbf24;"><span>15%</span></div>
+            <div class="circle-label neutral-label">중립</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="label">관점 요약</div>
+        <div class="panel-title">오늘의 지배적 여론</div>
+
+        <div class="quote-box">
+          <div class="quote-text">
+            금리 인하는 단기적으로 소비와 투자를 자극할 수 있으나,
+            장기적으로는 가계부채 리스크를 키울 수 있습니다.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="issue-section">
+      <div class="label">경향 비교</div>
+      <div class="issue-title">같은 이슈, 다른 해석</div>
+
+      <div class="issue-grid">
+        <div class="issue-card">
+          <h3>시장 안정 기대</h3>
+          <p>금리 조정이 소비 심리 회복 계기가 될 수 있다는 해석입니다.</p>
+          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
+        </div>
+
+        <div class="issue-card">
+          <h3>가계부채 확대 우려</h3>
+          <p>대출 증가와 부동산 시장 과열 가능성을 우려하는 관점입니다.</p>
+          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
+        </div>
+
+        <div class="issue-card">
+          <h3>정책 효과 관망</h3>
+          <p>금리 변화 효과는 경기, 물가, 환율에 따라 다르게 나타납니다.</p>
+          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view-section">
+      <div class="label">관점 비교</div>
+      <div class="view-title">2차 관점 분석</div>
+      <div class="view-desc">이 이슈를 바라보는 세부 관점을 18가지로 분류하여 비중을 분석했습니다.</div>
+
+      <div class="view-grid" id="viewGrid"></div>
+
+      <button class="toggle-btn" id="toggleBtn" onclick="toggleView()">전체 18개 관점 보기 ∨</button>
+    </section>
+
+    <section class="news-section">
+      <div class="news-title">지금 뜨는 뉴스</div>
+
+      <div class="news-grid">
+        <div class="news-card">
+          <h3>금리 인하 영향</h3>
+          <p>금리 정책 변화에 따른 시장 반응이 엇갈리고 있습니다.</p>
+          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
+        </div>
+
+        <div class="news-card">
+          <h3>기업 투자 확대</h3>
+          <p>기업들이 금리 흐름에 맞춰 투자 계획을 조정하고 있습니다.</p>
+          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
+        </div>
+
+        <div class="news-card">
+          <h3>환율 변화</h3>
+          <p>환율 변동성이 금융시장 주요 변수로 떠오르고 있습니다.</p>
+          <button class="small-btn" onclick="location.href='/view/article-detail.html'">상세 보기</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- <script src="/js/common.js"></script> 필요시 주석 해제하여 사용 -->
+
+<script>
+const viewpoints = [
+  { title: "정부 관점", percent: 24, reason: "금리 정책 대응이 늦고 규제 완화 시점이 적절치 않았음", icon: "🏛", color: "teal" },
+  { title: "개인 관점", percent: 18, reason: "무리한 대출과 과소비 등 개인의 금융 습관 문제", icon: "♡", color: "purple" },
+  { title: "복합 관점", percent: 14, reason: "부동산 시장 구조와 금융 시스템의 근본적 문제", icon: "◎", color: "blue" },
+  { title: "기업 관점", percent: 11, reason: "기업의 투자 위축과 고용 창출 부족", icon: "▣", color: "orange" },
+  { title: "외부 관점", percent: 9, reason: "미국 금리 인상 등 외부 충격의 영향", icon: "◎", color: "yellow" },
+  { title: "기대", percent: 24, reason: "정책 변화에 따른 경기 회복 가능성에 주목", icon: "☆", color: "teal" },
+  { title: "성과 예찬", percent: 9, reason: "정책 효과와 시장 안정 신호를 긍정적으로 평가", icon: "♕", color: "purple" },
+  { title: "비판적 태도", percent: 14, reason: "정책 방향과 실행 시점에 대한 비판적 해석", icon: "☵", color: "blue" },
+  { title: "우려", percent: 9, reason: "부채 증가와 시장 불안 가능성에 대한 경계", icon: "△", color: "orange" },
+  { title: "결과 분석", percent: 24, reason: "정책 이후 나타난 시장 반응과 지표 변화를 분석", icon: "▥", color: "teal" },
+  { title: "전망 분석", percent: 18, reason: "향후 금리 흐름과 경기 방향성을 예측", icon: "⌁", color: "purple" },
+  { title: "단순 전달", percent: 14, reason: "정책 발표와 수치 변화를 사실 중심으로 전달", icon: "▤", color: "blue" },
+  { title: "대응 분석", percent: 11, reason: "정부와 기업의 대응 전략을 중심으로 해석", icon: "⚙", color: "orange" },
+  { title: "원인 분석", percent: 18, reason: "금리 변화의 배경과 구조적 원인을 설명", icon: "⌕", color: "yellow" },
+  { title: "시장 자율 강조", percent: 24, reason: "정부 개입보다 시장 조정 기능을 중시하는 관점", icon: "⚖", color: "teal" },
+  { title: "정부 개입 강조", percent: 11, reason: "정책적 개입과 조정이 필요하다는 입장", icon: "▥", color: "purple" },
+  { title: "정책 요인(국내)", percent: 18, reason: "국내 정책 결정과 제도 변화의 영향을 중심으로 분석", icon: "⌖", color: "blue" },
+  { title: "외부 요인(글로벌)", percent: 14, reason: "미국 금리, 환율, 글로벌 경기 흐름의 영향을 반영", icon: "◎", color: "orange" }
+];
+
+const viewGrid = document.getElementById("viewGrid");
+
+if (viewGrid) {
+  viewGrid.innerHTML = viewpoints.map(item => `
+    <div class="view-card">
+      <div class="view-head">
+        <div class="view-icon ${item.color}">${item.icon}</div>
+        <div>
+          <div class="view-name ${item.color}">${item.title}</div>
+          <div class="view-percent">${item.percent}%</div>
+        </div>
+      </div>
+
+      <div class="view-bar">
+        <div class="view-fill bg-${item.color}" style="width:${item.percent * 2.8}%"></div>
+      </div>
+
+      <div class="view-badge badge-${item.color}">주요 근거</div>
+      <div class="view-reason">“${item.reason}”</div>
+
+      <button class="view-btn" onclick="goViewpointDetail('${item.title}', ${item.percent})">
+        상세 보기 〉
+      </button>
+    </div>
+  `).join("");
+}
+
+function toggleView() {
+  const grid = document.getElementById("viewGrid");
+  const btn = document.getElementById("toggleBtn");
+
+  grid.classList.toggle("open");
+
+  if (grid.classList.contains("open")) {
+    btn.innerHTML = "접기 ︿";
+  } else {
+    btn.innerHTML = "전체 18개 관점 보기 ∨";
+  }
+}
+
+function goViewpointDetail(title, percent) {
+  localStorage.setItem("viewpoint_title", title);
+  localStorage.setItem("viewpoint_percent", percent);
+  location.href = "/view/viewpoint-detail.html";
+}
+</script>
+
+<div id="footer"></div>
+</body>
+</html>
