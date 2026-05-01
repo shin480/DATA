@@ -10,9 +10,11 @@ from bs4 import BeautifulSoup
 from elasticsearch import Elasticsearch, helpers
 
 from util.logger import Logger
+from util.db import get_engine
+from util.es import get_es
 
 logger = Logger().get_logger(__name__)
-es = Elasticsearch("http://192.168.0.23:9200/")
+es = get_es() # 예나가 만든 es 모듈로 수정
 
 INDEX_NAME = "article_raw"
 # True = 테스트 모드 / False = 운영 모드
@@ -32,22 +34,8 @@ def to_iso(dt):
 
     return dt.isoformat()
 
-
-def get_db():
-    conn = pymysql.connect(
-        host="192.168.0.23",
-        port=3306,
-        user="web_user",
-        password="pass",
-        database="data_platform",
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor
-    )
-    return conn
-
-
 def save_log(code_id):
-    conn = get_db()
+    conn = get_engine() # 예나가 만든 db 모듈로 수정
     cursor = conn.cursor()
 
     sql = """
@@ -65,7 +53,7 @@ def save_log(code_id):
 
 
 def finish_log(job_id, total_count, fail_count):
-    conn = get_db()
+    conn = get_engine()
     cursor = conn.cursor()
 
     sql = """
@@ -82,7 +70,7 @@ def finish_log(job_id, total_count, fail_count):
 
 
 def save_error(job_id, error_code, message, url):
-    conn = get_db()
+    conn = get_engine()
     cursor = conn.cursor()
 
     error_message = f"{message} | url={url}" if url else message
