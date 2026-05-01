@@ -108,7 +108,7 @@ def run_classification_pipeline():
                     }
                 },
                 "_source": ["article_id", "title", "clean_text"],
-                "sort":    [{"published_at": "asc"}],
+                "sort":    [{"collected_at": "asc"}],
                 "size":    BATCH_SIZE,
             },
         )

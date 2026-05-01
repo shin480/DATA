@@ -3,12 +3,17 @@ from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 import pandas as pd
 from util.db import get_engine
+from model.model_main import app as pipeline_app
+from datacleaning.cleaning import get_preprocessed_data
+
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
+# 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
+app.mount("/pipeline", pipeline_app)
 
 @app.get("/")
 def main():
-    return RedirectResponse("view/index.html")
+    return RedirectResponse("/view/main.html")
 
 # 테이블 내용 가져오기 테스트
 @app.get('/read_table')
@@ -16,3 +21,9 @@ def read_table():
     df = pd.read_sql_table(table_name='users', con=get_engine())
     print(df.head())
     return df.to_dict() # http://127.0.0.1:8000/read_table
+
+# 전처리 테스트
+@app.get('/cleaning')
+def data_cleaning():
+    result = get_preprocessed_data()  # 아까 만든 전처리 함수 호출
+    return result  # 처리 건수나 성공 메시지를 화면에 출력
