@@ -20,7 +20,7 @@ from model.services.error_logger import log_pipeline_error
 logger = logging.getLogger(__name__)
 
 MODEL_NAME   = "monologg/koelectra-base-finetuned-sentiment"
-BATCH_SIZE   = 32
+BATCH_SIZE   = 1000
 MAX_LENGTH   = 512
 IDX_TO_LABEL = {0: "negative", 1: "neutral", 2: "positive"}
 KEYWORD_BOOST = 0.15
@@ -50,13 +50,18 @@ def _load_keyword_dict() -> dict[str, tuple[str, float]]:
     sentiment_labels 키워드는 Admin CSV 업로드로 관리합니다.
     현재는 routers/admin.py 에서 MySQL sentiment_labels 테이블로 관리하므로
     MySQL에서 읽어옵니다.
+    테이블이 없거나 연결 실패 시 빈 딕셔너리 반환 (키워드 보정 없이 진행).
     """
-    from model.database import get_db
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT keyword, sentiment, weight FROM sentiment_labels")
-            rows = cur.fetchall()
-    return {r["keyword"]: (r["sentiment"], r["weight"]) for r in rows}
+    try:
+        from model.database import get_db
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT keyword, sentiment, weight FROM sentiment_labels")
+                rows = cur.fetchall()
+        return {r["keyword"]: (r["sentiment"], r["weight"]) for r in rows}
+    except Exception as e:
+        logger.warning(f"sentiment_labels 로드 실패, 키워드 보정 없이 진행: {e}")
+        return {}
 
 
 def _apply_keyword_boost(probs, text, keyword_dict):

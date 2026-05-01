@@ -26,9 +26,9 @@ from model.services.scope_title import trigger_scope_title
 logger = logging.getLogger(__name__)
 
 SIMILARITY_THRESHOLD = 0.65
-BATCH_SIZE           = 100
+BATCH_SIZE           = 1000
 SCOPE_ID_PREFIX_FMT  = "%Y%m%d"
-TFIDF_MAX_FEATURES   = 4096
+TFIDF_MAX_FEATURES   = 768
 
 INDEX_NEWS   = "news_economy"
 INDEX_SCOPES = "news_scopes"
