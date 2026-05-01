@@ -8,3 +8,6 @@
 /*
 # .gitignore는 무시
 !*.gitignore
+
+__pycache__/
+*.pyc
