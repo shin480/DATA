@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA Login</title>
+    <style>
+        /* [확실] 다른 페이지와 변수명 및 컬러 팔레트 통일 */
+        :root {
+            --bg-color: #020617;       /* 전체 배경 */
+            --card-color: #0F172A;     /* 로그인 박스 배경 */
+            --input-bg: #020617;       /* 입력창 배경 (다른 페이지와 동일하게 변경) */
+            --cyan-point: #00E5FF;     /* 메인 포인트 컬러 */
+            --text-main: #FFFFFF;
+            --text-sub: #8B949E;
+            --border: 1px solid #30363D;
+            --border-radius: 12px;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 40px;
+        }
+
+        /* [확실] 전체 박스 크기 및 여백을 이용약관/회원가입 페이지와 동일하게 설정 */
+        .login-card {
+            background-color: var(--card-color);
+            width: 100%;
+            max-width: 400px;         /* 규격 통일 */
+            padding: 20px 40px;      /* 여백 통일 */
+            border-radius: 24px;
+            border: var(--border);
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding-top: 50px;
+        }
+
+        .logo {
+            color: var(--cyan-point);
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .desc {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 25px;
+        }
+
+        /* [확실] 입력 폼 스타일 */
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .label {
+            display: block;
+            font-size: 11px;
+            color: var(--cyan-point);
+            margin-bottom: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            height: 48px;
+            padding: 14px 16px;
+            background-color: var(--input-bg);
+            border: var(--border);
+            border-radius: var(--border-radius);
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--cyan-point);
+        }
+
+        /* [확실] 버튼 스타일 */
+        .btn-login {
+            width: 100%;
+            height: 52px;
+            background-color: var(--cyan-point);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-login:hover {
+            opacity: 0.9;
+        }
+
+        .btn-signup {
+            width: 100%;
+            height: 48px;
+            background-color: transparent;
+            border: var(--border);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            color: var(--text-sub);
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+        }
+
+        /* [확실] 하단 링크 */
+        .footer-links {
+            margin-top: 25px;
+            font-size: 12px;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .footer-links a {
+            color: var(--cyan-point);
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo">DATA</div>
+        <div class="subtitle">반갑습니다!</div>
+        <p class="desc">데이터 분석의 새로운 기준, DATA에 로그인하세요.</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="label">Email Address</label>
+                <input type="email" id="email" placeholder="admin@data.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="label">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-login">로그인</button>
+            <button type="button" class="btn-signup" onclick="location.href='#'">회원가입</button>
+        </form>
+
+        <div class="footer-links">
+            비밀번호를 잊으셨나요?<br>
+            <a href="#">비밀번호 찾기</a>
+        </div>
+    </div>
+
+    <script>
+        /* [확실] 간단한 로그인 인터랙션 */
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            alert(email + '님, 분석 리포트 준비를 시작할까요?');
+        });
+    </script>
+
+</body>
+</html>

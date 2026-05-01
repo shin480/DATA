@@ -18,23 +18,35 @@
         }
 
         body {
-            background-color: var(--bg-color); color: var(--text-main);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             font-family: 'Pretendard', sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; margin: 0; padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
         .join-card {
-            background-color: var(--card-color); width: 100%; max-width: 500px;
-            padding: 50px 40px; border-radius: 24px; border: var(--border);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center;
+            background-color: var(--card-color);
+            width: 100%;
+            max-width: 480px;
+            max-height: 1000px;
+            padding: 20px 40px;
+            border-radius: 24px;
+            border: var(--border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            text-align: center;
+            padding-top: 50px;
         }
 
         .logo { color: var(--cyan-point); font-size: 28px; font-weight: 800; margin-bottom: 10px; }
         .subtitle { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
-        .desc { color: var(--text-sub); font-size: 12px; margin-bottom: 40px; }
+        .desc { color: var(--text-sub); font-size: 12px; margin-bottom: 20px; }
 
-        .form-group { text-align: left; margin-bottom: 28px; position: relative; }
+        .form-group { text-align: left; margin-bottom: 20px; position: relative; }
         .row-group { display: grid; grid-template-columns: 1.6fr 1fr; gap: 15px; margin-bottom: 4px; }
         .label { display: block; color: var(--cyan-point); font-size: 11px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
 
