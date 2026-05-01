@@ -22,3 +22,4 @@ openpyxl
 beautifulsoup4
 httpx
 apscheduler
+feedparser
