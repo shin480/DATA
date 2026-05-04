@@ -139,6 +139,8 @@
   /* 너무 작으면 여기서 숫자를 키워보세요 (8px~12px 권장) */
 
     </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 
@@ -348,7 +350,7 @@
 
             <div class="term-item">
                 <label class="term-header">
-                    <input type="checkbox">
+                    <input type="checkbox" class="optional-check" name="1">
                     <span>5. 개인정보 제3자 제공 동의 (선택)</span>
                 </label>
                 <div class="term-content">
@@ -359,7 +361,7 @@
 
         <div class="buttons">
             <button class="btn-all" id="allAgreeBtn">전체 동의</button>
-            <button class="btn-next" id="nextBtn" disabled>다음</button>
+            <button class="btn-next" id="nextBtn" disabled onclick="next()">다음</button>
         </div>
     </div>
 
@@ -368,6 +370,7 @@
         const nextBtn = document.getElementById('nextBtn');
         const checkboxes = document.querySelectorAll('input[type="checkbox"]');
         const requiredChecks = document.querySelectorAll('.required-check');
+        const optionalChecks = document.querySelectorAll('.optional-check');
 
         allBtn.addEventListener('click', () => {
             const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -388,6 +391,23 @@
                 nextBtn.disabled = true;
                 nextBtn.classList.remove('active');
             }
+        }
+
+        async function next(){
+            const allRequiredChecked = Array.from(requiredChecks).every(cb => cb.checked);
+            const optionalStatus = {};
+            const optionalStatusList = Array.from(optionalChecks)
+                .filter(cb => cb.checked) // 체크된 것만 골라서
+                .map(cb => cb.name);      // 이름(name)만 추출: ["1", "2"]
+
+
+            let params = {
+                "optionalChecksList":optionalStatusList,
+                "requiredChecks":allRequiredChecked
+            }
+            let {data} = await axios.post('/terms',params);
+            console.log(data);
+            location.href = './regist';
         }
     </script>
 </body>
