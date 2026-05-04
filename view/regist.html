@@ -104,6 +104,8 @@
         .modal-text { margin-bottom: 25px; line-height: 1.5; font-size: 15px; }
         .modal-btn { width: 100%; padding: 12px; }
     </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 
@@ -112,7 +114,7 @@
         <div class="subtitle">새로운 계정 만들기</div>
         <p class="desc">당신의 데이터를 가치 있게 만드는 첫 걸음</p>
 
-        <form id="joinForm">
+        <form id="joinForm" onsubmit="event.preventDefault(); create_account();">
             <div class="form-group">
                 <label class="label">Name</label>
                 <input type="text" placeholder="성함을 입력해주세요" required>
@@ -229,39 +231,109 @@
 
         function switchToResendMode() {
             emailActionBtn.disabled = false;
+            clearInterval(timerInterval);
             emailActionBtn.textContent = "↺ 재발송";
             emailActionBtn.classList.remove('btn-timer');
             emailActionBtn.classList.add('btn-resend');
+
+            btnVerifyCert.disabled = true;
         }
 
-        emailActionBtn.addEventListener('click', () => {
-            if(!userEmailInput.value) return showModal('이메일을 입력해주세요.');
+        function incorrectResendMode() { //사용자가 인증번호 틀렸을 때 변화
+            emailActionBtn.disabled = false;
+            clearInterval(timerInterval);
+            emailActionBtn.textContent = "↺ 재발송";
+            emailActionBtn.classList.remove('btn-timer');
+            emailActionBtn.classList.add('btn-resend');
+
+            // 3. [인증번호 확인] 버튼 -> 비활성화
+            certInputArea.style.display = 'none';
+        }
+
+        emailActionBtn.addEventListener('click', () => { //인증번호 받기 버튼 클릭 시
+            if(!userEmailInput.value) return showModal('이메일을 입력해주세요.'); // 아무것도 적히지 않은 경우
             
-            if(userEmailInput.value === 'admin@data.com') {
-                emailError.style.display = 'block';
-                return;
-            }
+            // 2. [연타 방지] 버튼 즉시 비활성화
+            emailActionBtn.disabled = true;
+            //if(userEmailInput.value === 'admin@data.com') {
+            //    emailError.style.display = 'block';
+            //    return;
+            //}
             
-            emailError.style.display = 'none';
-            showModal('인증번호가 발송되었습니다.');
-            updateButtonTimer();
+            //emailError.style.display = 'none';
+            //showModal('인증번호가 발송되었습니다.');
+
+            const params = {"email": userEmailInput.value};
+            axios.post('/send_cert',params).then(({data})=>{
+                if(data.duplicate){
+                    emailError.style.display = 'block';
+                    console.log(data.duplicate);
+                    // 중복이라면 이메일을 수정해서 다시 눌러야 하므로 버튼을 풀어줍니다.
+                    emailActionBtn.disabled = false;
+                    return;
+                }
+
+                // 2. 발송 결과 처리 (중복이 아닐 때)
+                emailError.style.display = 'none';
+
+                if (data.success) {
+                    // [성공] 인증번호가 정상 발송된 경우
+                    showModal('인증번호가 발송되었습니다.');
+                    updateButtonTimer();
+                } else {
+                    // [실패] 횟수 초과(5회) 혹은 기타 발송 오류
+                    // 서버에서 보낸 "오늘 발송 가능 횟수(5회)를 초과했습니다." 메시지가 출력됩니다.
+                    showModal(data.message);
+                    emailActionBtn.disabled = false; // 다시 시도할 수 있게 버튼 활성화
+                }
+                
+
+            }).catch(err => {
+                // 서버가 꺼져있거나 네트워크 문제일 때도 버튼 비활성화 풀기.
+                showModal('서버 통신 중 오류가 발생했습니다.');
+                emailActionBtn.disabled = false;
+            });
+            // updateButtonTimer();
         });
 
         btnVerifyCert.addEventListener('click', () => {
             const code = document.getElementById('certNum').value;
-            if(code === "1234") {
-                clearInterval(timerInterval);
-                certInputArea.style.display = 'none';
-                emailSuccess.style.display = 'block';
-                
-                emailActionBtn.disabled = true;
-                emailActionBtn.textContent = "인증 완료";
-                emailActionBtn.classList.remove('btn-timer', 'btn-resend');
-                emailActionBtn.classList.add('btn-cyan');
-                userEmailInput.readOnly = true;
-            } else {
-                showModal('인증번호가 일치하지 않습니다.\n(테스트용: 1234)');
-            }
+            //if(code === "1234") {
+            //    clearInterval(timerInterval);
+            //    certInputArea.style.display = 'none';
+            //    emailSuccess.style.display = 'block';
+               
+            //    emailActionBtn.disabled = true;
+            //    emailActionBtn.textContent = "인증 완료";
+            //    emailActionBtn.classList.remove('btn-timer', 'btn-resend');
+            //    emailActionBtn.classList.add('btn-cyan');
+            //    userEmailInput.readOnly = true;
+            //} else {
+            //    showModal('인증번호가 일치하지 않습니다.\n(테스트용: 1234)');
+            //}
+
+            const params = {"code": code, "email": userEmailInput.value};
+            axios.post('/verify_cert',params).then(({data})=>{
+                if(data.success){
+                    clearInterval(timerInterval);
+                    certInputArea.style.display = 'none';
+                    emailSuccess.style.display = 'block';
+               
+                    emailActionBtn.disabled = true;
+                    emailActionBtn.textContent = "인증 완료";
+                    emailActionBtn.classList.remove('btn-timer', 'btn-resend');
+                    emailActionBtn.classList.add('btn-cyan');
+                    userEmailInput.readOnly = true;
+                    return;
+                }else{
+                    showModal('인증번호가 일치하지 않습니다.');
+                    incorrectResendMode()
+                }
+            }).catch(err => {
+                // 서버가 꺼져있거나 네트워크 문제일 때도 버튼 비활성화 풀기.
+                showModal('서버 통신 중 오류가 발생했습니다.');
+                emailActionBtn.disabled = false;
+            });
         });
 
         const pw = document.getElementById('userPw');
@@ -271,6 +343,52 @@
         [pw, pwCheck].forEach(el => el.addEventListener('input', () => {
             pwError.style.display = (pw.value && pwCheck.value && pw.value !== pwCheck.value) ? 'block' : 'none';
         }));
+
+        async function create_account(){
+            if (emailSuccess.style.display !== 'block') {
+                showModal('이메일 인증을 완료해주세요.');
+                return;
+            }
+    
+            if (pw.value !== pwCheck.value) {
+                showModal('비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            // 모든 검증 통과 시 서버 전송
+            console.log("회원가입");
+            const params = {
+                "name": document.querySelector('input[placeholder="성함을 입력해주세요"]').value,
+                "birth": document.querySelector('input[placeholder="YYYYMMDD"]').value,
+                "gender": document.querySelector('select').value,
+                "email": userEmailInput.value,
+                "pw": pw.value
+            };
+
+            try {
+                const { data } = await axios.post("/regist", params);
+
+                if (data.success) {
+                    showModal('회원가입이 완료되었습니다!');
+                    // 가입 성공 시 로그인 페이지로 이동
+                    setTimeout(() => { location.href = './login.html'; }, 1500);
+                } else {
+                    // [추가] 약관 동의가 누락된 경우의 처리
+                    if (data.message.includes("약관")) {
+                        showModal('약관 동의 정보가 만료되었거나 누락되었습니다. 약관 페이지로 이동합니다.');
+                        setTimeout(() => {
+                            location.href = './terms.html'; // 실제 약관 페이지 경로로 수정하세요
+                        }, 1500);
+                    } else {
+                        // 중복 이메일 등 기타 에러 메시지 출력
+                        showModal(data.message);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                showModal('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            }
+        }
     </script>
 </body>
 </html>
