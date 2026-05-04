@@ -1,48 +1,64 @@
 """
-KoELECTRA 감성 분류 서비스
+KR-FinBert-SC 감성 분류 서비스
 
 흐름:
   1. ES news_economy에서 sentiment=NULL / scopeID 존재 레코드 polling
-  2. KoELECTRA 추론
-  3. sentiment_labels(ES 관리) 키워드로 점수 보정
+  2. KR-FinBert-SC 추론 (한국 경제 뉴스 특화 모델)
+  3. sentiment_labels(MySQL 관리) 키워드로 점수 보정
   4. news_economy.sentiment, sentiment_score upsert
+
+[수정 이력]
+- 모델 교체: monologg/koelectra-base-finetuned-sentiment → snunlp/KR-FinBert-SC
+  · 기존 모델: 네이버 영화 리뷰 기반 2-class → 뉴스 도메인 부적합
+  · 변경 모델: 한국 경제 뉴스 72개 매체 + 증권사 애널리스트 리포트 학습, 2-class
+- IDX_TO_LABEL: 모델 config.id2label 기준 동적 로딩으로 변경 (하드코딩 제거)
+- neutral 처리: gap 기반 후처리 유지 (NEUTRAL_GAP_THRESHOLD 기본값 0.2)
+- 토크나이저: ElectraTokenizer → BertTokenizer 변경
 """
 
 import logging
 from typing import Optional
 
 import torch
-from transformers import ElectraForSequenceClassification, ElectraTokenizer
+from transformers import BertForSequenceClassification, BertTokenizer
 
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME   = "monologg/koelectra-base-finetuned-sentiment"
+MODEL_NAME   = "snunlp/KR-FinBert-SC"
 BATCH_SIZE   = 1000
 MAX_LENGTH   = 512
-IDX_TO_LABEL = {0: "negative", 1: "neutral", 2: "positive"}
+
+# neutral 판정 임계값: negative/positive 확률 차이 < 이 값이면 neutral
+# 0.2 → 0.15 → 0.1로 조정 (neutral 과다 보정)
+NEUTRAL_GAP_THRESHOLD = 0.1
+
 KEYWORD_BOOST = 0.15
 
-INDEX_NEWS   = "news_economy"
+INDEX_NEWS = "news_economy"
 
-_tokenizer: Optional[ElectraTokenizer] = None
-_model:     Optional[ElectraForSequenceClassification] = None
-_device:    Optional[torch.device] = None
+_tokenizer: Optional[BertTokenizer]                  = None
+_model:     Optional[BertForSequenceClassification]  = None
+_device:    Optional[torch.device]                   = None
+_id2label:  Optional[dict]                           = None  # config에서 동적 로딩
 
 
 def _load_model():
-    global _tokenizer, _model, _device
+    global _tokenizer, _model, _device, _id2label
     if _model is not None:
         return
-    logger.info(f"KoELECTRA 모델 로딩: {MODEL_NAME}")
+    logger.info(f"KR-FinBert-SC 모델 로딩: {MODEL_NAME}")
     _device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    _tokenizer = ElectraTokenizer.from_pretrained(MODEL_NAME)
-    _model     = ElectraForSequenceClassification.from_pretrained(MODEL_NAME)
+    _tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    _model     = BertForSequenceClassification.from_pretrained(MODEL_NAME)
     _model.to(_device)
     _model.eval()
-    logger.info(f"모델 로딩 완료 (device: {_device})")
+
+    # 라벨 매핑을 모델 config에서 동적으로 로딩 (하드코딩 오류 방지)
+    _id2label = {int(k): v.lower() for k, v in _model.config.id2label.items()}
+    logger.info(f"모델 로딩 완료 (device: {_device}, labels: {_id2label})")
 
 
 def _load_keyword_dict() -> dict[str, tuple[str, float]]:
@@ -64,16 +80,38 @@ def _load_keyword_dict() -> dict[str, tuple[str, float]]:
         return {}
 
 
-def _apply_keyword_boost(probs, text, keyword_dict):
+def _apply_keyword_boost(probs: dict, text: str, keyword_dict: dict) -> dict:
+    """
+    키워드 보정: negative/positive 확률에만 적용.
+    neutral은 모델 출력이 아닌 후처리로 결정되므로 보정 대상에서 제외.
+    """
     boosted = dict(probs)
     for keyword, (sentiment, weight) in keyword_dict.items():
-        if keyword in text:
+        if keyword in text and sentiment in boosted:
             boost = KEYWORD_BOOST * weight
             boosted[sentiment] = min(1.0, boosted[sentiment] + boost)
     total = sum(boosted.values())
     if total > 0:
         boosted = {k: v / total for k, v in boosted.items()}
     return boosted
+
+
+def _apply_gap_neutral(probs: dict) -> tuple[str, float]:
+    """
+    gap 기반 neutral 후처리.
+    - negative/positive 확률 차이 < NEUTRAL_GAP_THRESHOLD → neutral
+    - sentiment_score: neutral이면 1 - gap (모델 불확실성 반영)
+    """
+    p_neg = probs.get("negative", 0.0)
+    p_pos = probs.get("positive", 0.0)
+    gap   = abs(p_pos - p_neg)
+
+    if gap < NEUTRAL_GAP_THRESHOLD:
+        return "neutral", round(1.0 - gap, 6)
+    elif p_pos > p_neg:
+        return "positive", round(p_pos, 6)
+    else:
+        return "negative", round(p_neg, 6)
 
 
 def predict_single(title: str, content: str, keyword_dict: dict) -> tuple[str, float]:
@@ -85,11 +123,10 @@ def predict_single(title: str, content: str, keyword_dict: dict) -> tuple[str, f
     with torch.no_grad():
         logits = _model(**inputs).logits
     probs_t = torch.softmax(logits, dim=1)[0].cpu().numpy()
-    probs   = {IDX_TO_LABEL[i]: float(p) for i, p in enumerate(probs_t)}
+    probs   = {_id2label[i]: float(p) for i, p in enumerate(probs_t)}
     if keyword_dict:
         probs = _apply_keyword_boost(probs, title + content[:300], keyword_dict)
-    sentiment = max(probs, key=probs.get)
-    return sentiment, probs[sentiment]
+    return _apply_gap_neutral(probs)
 
 
 def run_sentiment_pipeline():

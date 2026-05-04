@@ -38,7 +38,7 @@ def _get_gemini_model():
     global _gemini_model
     if _gemini_model is None:
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        _gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+        _gemini_model = genai.GenerativeModel("gemini-2.5-flash-lite")
     return _gemini_model
 
 

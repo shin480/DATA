@@ -544,8 +544,13 @@ function toast(msg) {
 
 // ── DEV MODE ──────────────────────────────────────────
 // 로컬 미리보기용. 서버 없이 더미 데이터로 모든 탭을 확인할 수 있습니다.
-// 배포 시에는 false 로 바꾸거나 그대로 두면 자동으로 실서버 API를 사용합니다.
-const DEV_MODE = window.location.protocol === 'file:';
+// true: 더미 데이터 사용 / false: 실서버 API 사용
+const DEV_MODE = false;
+
+// ── API BASE URL ───────────────────────────────────────
+// 실서버 주소를 여기에 입력하세요. 빈 문자열이면 현재 도메인 기준 상대경로로 요청합니다.
+// 예) 'http://localhost:8000' 또는 'https://api.your-domain.com'
+const API_BASE_URL = '';
 
 const DUMMY = {
   confidence: {
@@ -650,7 +655,7 @@ function devFetch(path, opts={}) {
   }, 400));
 }
 
-function apiBase() { return ''; }
+function apiBase() { return API_BASE_URL; }
 
 // ── 탭 전환 ──────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(btn => {
