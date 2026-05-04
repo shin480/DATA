@@ -15,6 +15,8 @@ from pydantic import BaseModel
 from regist.emailvalidation import check_email_duplicate, send_cert_email, verify_certification_number
 from regist.regist import regist_user
 
+from login.login import login_user
+
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
@@ -80,4 +82,10 @@ def regist(info: Dict[str,Any], req: Request):
     print(info)
     result = regist_user(info, req)
     print(result)
+    return result
+
+@app.post("/login")
+def login(info: Dict[str,Any], req: Request):
+    print(f"로그인 시도: {info.get('email')}")
+    result = login_user(info, req)
     return result

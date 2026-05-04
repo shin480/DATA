@@ -143,9 +143,9 @@
             margin-top: 5px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-
     <div class="login-card">
         <div class="logo">DATA</div>
         <div class="subtitle">반갑습니다!</div>
@@ -172,14 +172,42 @@
         </div>
     </div>
 
-    <script>
-        /* [확실] 간단한 로그인 인터랙션 */
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            alert(email + '님, 분석 리포트 준비를 시작할까요?');
-        });
-    </script>
+    
 
 </body>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // HTML input 요소에서 값 추출
+        const emailValue = document.getElementById('email').value;
+        const passwordValue = document.getElementById('password').value;
+
+        // 1. 요청 파라미터 구성 
+        // 백엔드(login.py)에서 info.get("pw")로 받기로 했으므로 키값을 "pw"로 맞춥니다.
+        const params = {
+            "email": emailValue,
+            "pw": passwordValue
+        };
+
+        try {
+            // 2. 백엔드 login 엔드포인트로 데이터 전송
+            const { data } = await axios.post("/login", params);
+
+            if (data.success) {
+                // 로그인 성공 시 메시지 출력 후 페이지 이동
+                alert(data.message); 
+                
+                // 천호 과정 메인 페이지 또는 분석 리포트 페이지로 이동
+                location.href = './main.html'; 
+            } else {
+                // 로그인 실패 시 (비밀번호 불일치, 계정 없음 등)
+                alert(data.message);
+            }
+        } catch (err) {
+            console.error("로그인 에러 상세:", err);
+            alert('서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+    });
+</script>
 </html>
