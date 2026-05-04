@@ -8,7 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from model.database import get_es
 from model.services.classifier import run_classification_pipeline
-from model.services.scope_title import run_scope_title_batch
+from model.services.scope_title import run_scope_title_batch, enqueue_missing_scope_titles
 from model.services.scope_summarizer import run_scope_summary_batch
 from model.services.sentiment import run_sentiment_pipeline
 from model.services.summarizer import run_summary_pipeline
@@ -39,6 +39,18 @@ def trigger_sentiment(background_tasks: BackgroundTasks):
 def trigger_scope_titles(background_tasks: BackgroundTasks):
     background_tasks.add_task(run_scope_title_batch)
     return {"message": "scopeTitle 배치 처리 시작됨 (백그라운드)"}
+
+
+@router.post("/scope-titles/recover")
+def recover_scope_titles(background_tasks: BackgroundTasks):
+    """scopeTitle 누락 scope를 queue에 일괄 등록 후 배치 처리합니다."""
+    def _recover():
+        import time
+        enqueue_missing_scope_titles()
+        time.sleep(2)  # ES 인덱싱 반영 대기
+        run_scope_title_batch()
+    background_tasks.add_task(_recover)
+    return {"message": "scopeTitle 복구 시작됨 (백그라운드)"}
 
 
 @router.post("/summarize")
@@ -102,6 +114,12 @@ def get_classification_status():
         no_scope_summary = _count(INDEX_SCOPES, {
             "bool": {"must_not": {"exists": {"field": "scope_summary"}}}
         })
+        no_scope_title = _count(INDEX_SCOPES, {
+            "bool": {"must_not": {"exists": {"field": "scopeTitle"}}}
+        })
+        has_scope_title = _count(INDEX_SCOPES, {
+            "bool": {"must": {"exists": {"field": "scopeTitle"}}}
+        })
 
         # 감성 분포
         agg_res = es.search(
@@ -126,12 +144,14 @@ def get_classification_status():
         return {
             "unclassified_news":      unclassified,
             "no_sentiment_news":      no_sentiment,
+            "no_scope_title":         no_scope_title,
+            "has_scope_title":        has_scope_title,
             "no_summary_news":        no_summary,
             "no_keywords_news":       no_keywords,
             "no_scope_keywords":      no_scope_keywords,
+            "sentiment_distribution": sentiment_dist,
             "no_scope_summary":       no_scope_summary,
             "total_scopes":           total_scopes,
-            "sentiment_distribution": sentiment_dist,
         }
 
     except Exception as e:
