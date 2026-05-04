@@ -6,14 +6,16 @@ scopeTitle 생성 서비스 (Gemini)
   - news_count >  3 : scope_refresh_queue에 등록 → 30분 배치 처리
 
 [수정 이력]
-- 모델 교체: gemini-2.5-flash-lite → gemini-2.5-flash-lite (free tier 할당량 확보)
+- 모델 교체: gemini-2.0-flash → gemini-2.5-flash-lite
 - trigger_scope_title: 즉시 생성 실패 시 queue 자동 등록으로 변경 (유실 방지)
 - _enqueue: 중복 방지 queue 등록 함수 분리
 - enqueue_missing_scope_titles: scopeTitle 없는 scope 일괄 queue 등록 복구 함수 추가
+- API 키 로테이션: 7개 키 순환 사용 (429/일일 한도 초과 시 자동 교체)
 """
 
 import logging
 import os
+import time
 from datetime import datetime, timezone
 
 import google.generativeai as genai
@@ -29,15 +31,38 @@ INDEX_NEWS        = "news_economy"
 INDEX_SCOPES      = "news_scopes"
 INDEX_QUEUE       = "scope_refresh_queue"
 
-_model = None
+# API 키 로테이션 (7개)
+_API_KEYS = [
+    os.getenv("GOOGLE_API_KEY_1"),
+    os.getenv("GOOGLE_API_KEY_2"),
+    os.getenv("GOOGLE_API_KEY_3"),
+    os.getenv("GOOGLE_API_KEY_4"),
+    os.getenv("GOOGLE_API_KEY_5"),
+    os.getenv("GOOGLE_API_KEY_6"),
+    os.getenv("GOOGLE_API_KEY_7"),
+]
+_key_index = 0
+_model     = None
 
 
-def get_model():
-    global _model
+def _get_model():
+    global _model, _key_index
     if _model is None:
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        key = _API_KEYS[_key_index]
+        if not key:
+            raise RuntimeError(f"GOOGLE_API_KEY_{_key_index + 1} 환경변수 없음")
+        genai.configure(api_key=key)
         _model = genai.GenerativeModel("gemini-2.5-flash-lite")
+        logger.info(f"Gemini 모델 초기화 (key index: {_key_index})")
     return _model
+
+
+def _rotate_key():
+    """429 / 일일 한도 초과 시 다음 키로 교체"""
+    global _key_index, _model
+    _key_index = (_key_index + 1) % len(_API_KEYS)
+    _model     = None
+    logger.warning(f"API 키 교체 → index {_key_index}")
 
 
 def generate_scope_title(es, scope_id: str):
@@ -63,10 +88,22 @@ def generate_scope_title(es, scope_id: str):
             "조건:\n- 30자 이내\n- 핵심 사실만 담을 것\n- 중립적인 톤\n- 제목만 출력\n\n"
             "뉴스 제목들:\n" + "\n".join(f"- {t}" for t in titles)
         )
-        try:
-            scope_title = get_model().generate_content(prompt).text.strip()
-        except Exception as e:
-            logger.error(f"Gemini API 오류 (scope_id={scope_id}): {e}")
+        # 키 로테이션 포함 재시도 (최대 7회)
+        for attempt in range(len(_API_KEYS)):
+            try:
+                scope_title = _get_model().generate_content(prompt).text.strip()
+                break
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str or "quota" in err_str.lower():
+                    logger.warning(f"Gemini 할당량 초과 (scope_id={scope_id}, attempt={attempt + 1}): 키 교체")
+                    _rotate_key()
+                    time.sleep(2)
+                else:
+                    logger.error(f"Gemini API 오류 (scope_id={scope_id}): {e}")
+                    return None
+        else:
+            logger.error(f"모든 API 키 소진 (scope_id={scope_id})")
             return None
 
     es.update(
@@ -116,7 +153,6 @@ def trigger_scope_title(es, scope_id: str, news_count: int):
     if news_count <= NEWS_COUNT_DIRECT:
         result = generate_scope_title(es, scope_id)
         if result is None:
-            # 즉시 생성 실패 시 queue에 등록하여 배치 재처리
             logger.warning(f"즉시 생성 실패, queue 등록: {scope_id}")
             _enqueue(es, scope_id)
     else:
@@ -188,7 +224,6 @@ def run_scope_title_batch():
             scope_id = hit["_source"]["scopeID"]
             now_utc  = datetime.now(timezone.utc).isoformat()
 
-            # processing 상태로 변경
             es.update(index=INDEX_QUEUE, id=doc_id,
                       body={"doc": {"status": "processing"}})
             try:
@@ -199,6 +234,8 @@ def run_scope_title_batch():
                 logger.error(f"scopeTitle 생성 실패 scopeID={scope_id}: {e}")
                 es.update(index=INDEX_QUEUE, id=doc_id,
                           body={"doc": {"status": "pending"}})
+
+            time.sleep(10)  # gemini-2.5-flash-lite RPM 대응
 
         es.close()
         logger.info(f"scopeTitle 배치 처리 완료: {len(hits)}건")

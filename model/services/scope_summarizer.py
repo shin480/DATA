@@ -37,15 +37,34 @@ DUPLICATE_THRESHOLD    = 0.85
 INDEX_NEWS             = "news_economy"
 INDEX_SCOPES           = "news_scopes"
 
-_model = None
+# API 키 로테이션 (7개)
+_API_KEYS = [
+    os.getenv("GOOGLE_API_KEY_1"),
+    os.getenv("GOOGLE_API_KEY_2"),
+    os.getenv("GOOGLE_API_KEY_3"),
+    os.getenv("GOOGLE_API_KEY_4"),
+    os.getenv("GOOGLE_API_KEY_5"),
+    os.getenv("GOOGLE_API_KEY_6"),
+    os.getenv("GOOGLE_API_KEY_7"),
+]
+_key_index   = 0
+_gemini_model = None
 
 
-def _get_model():
-    global _model
-    if _model is None:
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        _model = genai.GenerativeModel("gemini-2.5-flash-lite")
-    return _model
+def _rotate_key():
+    global _key_index, _gemini_model
+    _key_index    = (_key_index + 1) % len(_API_KEYS)
+    _gemini_model = None
+    import logging
+    logging.getLogger(__name__).warning(f"API 키 교체 → index {_key_index}")
+
+
+def _get_gemini_model():
+    global _gemini_model, _key_index
+    if _gemini_model is None:
+        genai.configure(api_key=_API_KEYS[_key_index])
+        _gemini_model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    return _gemini_model
 
 
 def _split_sentences(text):
