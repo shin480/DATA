@@ -516,19 +516,21 @@
   </div>
 
 <script>
-const userInfo = {
-  name: "홍길동",
-  birthDate: "19900315",
-  gender: "남성",
-  email: "admin@data.com",
-  passwordChanged: false
-};
 
 function loadUserInfo() {
-  document.getElementById("userName").innerText = userInfo.name;
-  document.getElementById("userBirth").innerText = userInfo.birthDate;
-  document.getElementById("userGender").innerText = userInfo.gender;
-  document.getElementById("userEmail").innerText = userInfo.email;
+  // 1. 세션 저장소에서 로그인 시 저장했던 정보를 가져옵니다.
+  const name = sessionStorage.getItem("user_name");
+  const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email"); // 로그인 시 저장한 키값 확인
+  const role = sessionStorage.getItem("user_role");
+  const birth = sessionStorage.getItem("user_birth") || "정보 없음";
+  const gender = sessionStorage.getItem("user_gender") || "정보 없음";
+
+  // 2. 화면에 데이터 뿌리기
+  // 존재 여부를 체크해서 에러를 방지합니다.
+  if(document.getElementById("userName")) document.getElementById("userName").innerText = name || "미인증 사용자";
+  if(document.getElementById("userBirth")) document.getElementById("userBirth").innerText = birth;
+  if(document.getElementById("userGender")) document.getElementById("userGender").innerText = gender;
+  if(document.getElementById("userEmail")) document.getElementById("userEmail").innerText = email || "이메일 정보 없음";
 }
 
 function validatePasswordInput(input) {

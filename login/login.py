@@ -47,7 +47,10 @@ def login_user(info: Dict[str, Any], req: Request):
                         "user": {
                         "access_token": "session-active",
                         "user_name": result.name,
-                        "user_role": result.role  # 이 값이 프론트엔드의 sessionStorage('user_role')로 들어갑니다.
+                        "user_id": result.user_id,
+                        "user_role": result.role,  # 이 값이 프론트엔드의 sessionStorage('user_role')로 들어갑니다.
+                        "user_birth": str(result.birth_date) if result.birth_date else "",  # 추가
+                        "user_gender": result.gender if result.gender else ""  # 추가
                 }}
             else:
                 return {"success": False, "message": "이메일 또는 비밀번호가 일치하지 않습니다."}

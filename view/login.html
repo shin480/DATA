@@ -201,6 +201,9 @@
                 sessionStorage.setItem("access_token", data.user.access_token); // "session-active"
                 sessionStorage.setItem("user_name", data.user.user_name);
                 sessionStorage.setItem("user_role", data.user.user_role);
+                sessionStorage.setItem("user_id", data.user.user_id);
+                sessionStorage.setItem("user_birth", data.user.user_birth);
+                sessionStorage.setItem("user_gender", data.user.user_gender);
                 // 메인 페이지 또는 분석 리포트 페이지로 이동
                 location.href = './main.html'; 
             } else {
