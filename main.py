@@ -17,6 +17,8 @@ from regist.regist import regist_user
 
 from login.login import login_user
 
+from forgotPassword.temppassword import send_temporary_password
+
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
@@ -89,3 +91,9 @@ def login(info: Dict[str,Any], req: Request):
     print(f"로그인 시도: {info.get('email')}")
     result = login_user(info, req)
     return result
+
+@app.post("/find_password")
+def find_password(info: Dict[str,Any], req: Request):
+    result = send_temporary_password(info["email"])
+    return result
+
