@@ -6,9 +6,15 @@ from sqlalchemy import text
 from regist.hashing import hash_password
 from email.message import EmailMessage
 import smtplib
+import os
+from dotenv import load_dotenv
 
-SENDER_EMAIL = "data260417@gmail.com"
-SENDER_PASSWORD = "zvalcyxiydtnzewi"
+# env 파일에 있는 변수들을 파이썬 환경으로 불러옵니다.
+load_dotenv()
+
+# os 모듈을 사용해 환경변수에서 값을 쏙쏙 뽑아옵니다.
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
 # --- [추가] 임시 비밀번호 생성 함수 ---
 def generate_temp_password(length=8):
@@ -37,7 +43,6 @@ def send_temporary_password(email: str):
     # 3. DB 업데이트 (users 테이블의 password 컬럼 업데이트)
     conn = get_engine()
     try:
-        # 실제 서비스 시에는 temp_pw를 해싱(암호화)해서 저장하는 것이 원칙입니다.
         sql = text("UPDATE users SET password = :pw WHERE user_id = :email")
         conn.execute(sql, {"pw": hashed_temp_pw, "email": email})
         conn.commit()
