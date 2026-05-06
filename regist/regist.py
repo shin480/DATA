@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from typing import Any, Dict
 from sqlalchemy import text
 from util.db import get_engine
+from regist.hashing import hash_password
 
 
 def regist_user(info: Dict[str, Any], req: Request):
@@ -17,15 +18,29 @@ def regist_user(info: Dict[str, Any], req: Request):
         # 2. 기본 정보 추출
         email = info.get("email")
         # ... (name, birth, gender, pw 등 추출)
+        user_password = info.get("pw")
+        birth = info.get("birth")
+        name = info.get("name")
+        gender = info.get("gender")
 
         conn = get_engine()
+
+        # 2-1. 사용자가 입력한 평문 비밀번호를 해싱합니다.
+        hashed_pw = hash_password(user_password)
 
         # 3. users 테이블 가입
         user_sql = text("""
             INSERT INTO users (name, birth_date, gender, user_id, password)
             VALUES (:name, :birth, :gender, :email, :pw)
         """)
-        conn.execute(user_sql, info)
+
+        conn.execute(user_sql, {
+            "name": name,
+            "birth": birth,
+            "gender": gender,
+            "email": email,
+            "pw": hashed_pw  # 해싱된 비밀번호 전달
+        })
 
         user_id = email  # user_id가 이메일인 경우
 

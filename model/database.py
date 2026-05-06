@@ -63,13 +63,26 @@ def _get_session():
 @contextmanager
 def get_db():
     """MySQL 세션 컨텍스트 매니저. 에러 로그 저장 전용."""
-    session = _get_session()
-    conn    = session.connection().connection
+    import pymysql.cursors
+
+    session  = _get_session()
+    raw_conn = session.connection().connection
+
+    class DictConnWrapper:
+        def cursor(self):
+            return raw_conn.cursor(pymysql.cursors.DictCursor)
+        def commit(self):
+            return raw_conn.commit()
+        def rollback(self):
+            return raw_conn.rollback()
+        def __getattr__(self, name):
+            return getattr(raw_conn, name)
+
     try:
-        yield conn
-        session.commit()
+        yield DictConnWrapper()
+        raw_conn.commit()
     except Exception:
-        session.rollback()
+        raw_conn.rollback()
         raise
     finally:
         session.close()
