@@ -3,7 +3,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk as es_bulk
 
 # 접속 정보 설정
-ES_HOST = "http://192.168.0.23:9200"
+ES_HOST = "http://100.99.254.68:9200"
 
 # 전역 객체로 관리 (SQLAlchemy의 engine 역할)
 es_client = Elasticsearch(ES_HOST)
