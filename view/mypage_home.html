@@ -126,9 +126,20 @@
       display: grid;
       grid-template-columns: 38px 1fr auto;
       gap: 12px;
-      padding: 12px 0;
+      padding: 12px 20px;
       border-bottom: 1px solid #101a30;
       align-items: center;
+      cursor: pointer; /* 마우스 커서 손가락 모양 */
+      transition: background 0.2s ease, transform 0.1s ease; /* 부드러운 변화 */
+      border-radius: 8px;
+    }
+
+    .news-item:hover {
+    background: #111a33; /* 살짝 밝아지는 배경 */
+    }
+
+    .news-item:active {
+    transform: scale(0.99); /* 클릭 시 살짝 눌리는 느낌 */
     }
 
     .news-item:last-child {
@@ -226,10 +237,22 @@
     .mini-news {
       display: flex;
       justify-content: space-between;
-      padding: 9px 0;
+      padding: 9px 10px;
       border-bottom: 1px solid #121c31;
       font-size: 13px;
       color: #b8c8e6;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-radius: 6px;
+    }
+
+    .mini-news:hover {
+    background: #131d36;
+    color: #42bfff; /* 글자색 강조 */
+    }
+
+    .mini-news:hover .date {
+    color: #70baff; /* 날짜 색상도 함께 강조 */
     }
 
     .mini-news span:first-child {
@@ -237,6 +260,10 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+
+    .mini-news:last-child {
+    border-bottom: none;
     }
 
     .date {
