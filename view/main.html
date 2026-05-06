@@ -382,7 +382,6 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
     </div>
 
     <nav class="nav">
-      <a href="/view/main.html">뉴스흐름</a>
       <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
       <a data-login-page="/view/article_list.html" href="#">뉴스</a>
       <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
@@ -475,9 +474,10 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 <span class="o-tag"></span>
 </div>
 <div class="nav-btns">
-<div class="nav-btn">&lt;</div>
-<div class="nav-btn">&gt;</div>
-</div>
+                    <div class="nav-btn" onclick="prevOpinion()">&lt;</div>
+                    <div class="nav-btn" onclick="nextOpinion()">&gt;</div>
+                </div>
+
 </div>
 </div>
 </section>
