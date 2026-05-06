@@ -409,6 +409,7 @@
   flex-direction: column;
 }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -566,7 +567,7 @@ function checkPasswordMatch() {
 }
 
 /* 회원 정보 수정 */
-function updateUserInfo() {
+async function updateUserInfo() {
   const pw1 = document.getElementById("password1").value;
   const pw2 = document.getElementById("passwordCheck").value;
 
@@ -600,12 +601,32 @@ function updateUserInfo() {
     return;
   }
 
-  /* 임시 API 처리 */
-  console.log("회원정보 수정 API 호출 예정", {
-    password: pw1
-  });
+  /* 비밀번호 변경 */
+  // 세션에서 현재 사용자의 이메일(ID) 가져오기
+  const email = sessionStorage.getItem("user_id");
 
-  alert("회원정보 수정이 완료되었습니다.");
+  try {
+    // 백엔드로 비밀번호 변경 요청 전송
+    const response = await axios.post("/update_password", {
+      email: email,
+      new_pw: pw1
+    });
+
+    if (response.data.success) {
+      // 입력칸 초기화
+      document.getElementById("password1").value = "";
+      document.getElementById("passwordCheck").value = "";
+      document.getElementById("passwordError").style.display = "none";
+      alert("회원정보 수정이 완료되었습니다.");
+    } else {
+      alert("실패: " + response.data.message);
+    }
+  } catch (err) {
+    console.error("비밀번호 변경 중 에러:", err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+
+  
 
   document.getElementById("password1").value = "";
   document.getElementById("passwordCheck").value = "";
