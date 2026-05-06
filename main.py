@@ -20,7 +20,7 @@ from login.login import login_user
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
-# app.mount("/pipeline", pipeline_app)
+app.mount("/pipeline", pipeline_app)
 
 app.add_middleware(SessionMiddleware, secret_key="motmachugetjyo")
 
