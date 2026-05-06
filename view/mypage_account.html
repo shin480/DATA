@@ -634,7 +634,7 @@ async function updateUserInfo() {
 }
 
 /* 회원 탈퇴 */
-function deleteUser() {
+async function deleteUser() {
   const confirmDelete = confirm(
     "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 회원 정보와 활동 내역이 삭제됩니다."
   );
@@ -643,13 +643,33 @@ function deleteUser() {
     return;
   }
 
-  /* 임시 API 처리 */
-  console.log("회원 탈퇴 API 호출 예정");
+  // 1. sessionStorage에 저장된 user_id(이메일)를 가져옴
+  const user_id = sessionStorage.getItem("user_id");
 
-  alert("회원 탈퇴가 완료되었습니다. 메인화면으로 이동합니다.");
+  try {
+    // 2. 백엔드 탈퇴 엔드포인트로 데이터 전송
+    // 백엔드 deleteaccount.py의 info.get("email")과 키값을 맞춥니다.
+    const response = await axios.post("/delete_account", {
+      "user_id": user_id
+    });
 
-  /* 자동 로그아웃 후 메인화면 이동 */
-  location.href = "main.html";
+    if (response.data.success) {
+      alert(response.data.message);
+      
+      // 3. 로그아웃 처리: 브라우저 저장소 싹 비우기
+      sessionStorage.clear();
+      localStorage.clear();
+
+      // 4. 메인화면으로 이동
+      location.href = "./main.html";
+    } else {
+      alert("탈퇴 실패: " + response.data.message);
+    }
+  } catch (err) {
+    console.error("탈퇴 중 에러 발생:", err);
+    alert("서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
+  }
+  
 }
 
 window.onload = function () {
