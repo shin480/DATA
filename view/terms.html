@@ -393,7 +393,7 @@
             }
         }
 
-        async function next(){
+        async function next(){ // 다음버튼 눌렀을 때 체크 리스트 전송 후 세션생성 해 회원가입창으로 이동
             const allRequiredChecked = Array.from(requiredChecks).every(cb => cb.checked);
             const optionalStatus = {};
             const optionalStatusList = Array.from(optionalChecks)
@@ -407,7 +407,7 @@
             }
             let {data} = await axios.post('/terms',params);
             console.log(data);
-            location.href = './regist';
+            location.href = './regist.html';
         }
     </script>
 </body>

@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from fastapi import FastAPI
 from starlette.requests import Request
@@ -11,6 +11,11 @@ from util.db import get_engine
 from model.model_main import app as pipeline_app
 from datacleaning.cleaning import get_preprocessed_data
 from pydantic import BaseModel
+
+from regist.emailvalidation import check_email_duplicate, send_cert_email, verify_certification_number
+from regist.regist import regist_user
+
+from login.login import login_user
 
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
@@ -48,7 +53,39 @@ def terms(info: TermsRequest, req: Request):
     req.session["optionalChecksList"] = info.optionalChecksList
     return info
 
-@app.get("/regist")  # 브라우저가 /regist로 접속하면
-def show_regist_page(req: Request):
-    # templates 폴더에 있는 regist.html을 찾아서 브라우저에게 던져줌!
-    return {"request": req}
+@app.post('/send_cert')
+def send_cert(info:Dict[str,str],req: Request):
+    dup = check_email_duplicate(info["email"])
+    if not dup:
+        result = send_cert_email(info["email"])
+        if result["success"]:
+            # 반환받은 번호를 세션에 저장
+            req.session["cert_code"] = result["code"]
+            req.session["cert_email"] = info["email"]
+            # 성공 응답 전송
+            result["duplicate"] = False
+            return result
+        else:
+            # 메일 서버 문제 등으로 발송 실패 시
+            result["duplicate"] = False
+            return result
+    # 중복된 이메일인 경우
+    return {"duplicate": True, "success": False}
+
+@app.post('/verify_cert')
+def verify_cert(info:Dict[str,str],req: Request):
+    result = verify_certification_number(info["email"], info["code"])
+    return result
+
+@app.post("/regist")
+def regist(info: Dict[str,Any], req: Request):
+    print(info)
+    result = regist_user(info, req)
+    print(result)
+    return result
+
+@app.post("/login")
+def login(info: Dict[str,Any], req: Request):
+    print(f"로그인 시도: {info.get('email')}")
+    result = login_user(info, req)
+    return result
