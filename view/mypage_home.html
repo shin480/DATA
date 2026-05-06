@@ -644,6 +644,7 @@
   color:#73829d;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -1079,6 +1080,32 @@ loadNotice();
    Header / Footer 이벤트
 ========================= */
 
+async function pwconfirm(){
+  const password = document.getElementById("pwInput").value.trim();
+  // 1. 세션에서 로그인된 사용자 ID 가져오기 (누구인지 알아야 하니까요!)
+  const user_id = sessionStorage.getItem("user_id");
+
+  try {
+    // 백엔드로 비밀번호 확인 요청
+    const {data} = await axios.post("/pw_check", {
+      user_id: user_id,
+      password: password
+    });
+
+    if (data.success) {
+      alert("본인 인증에 성공하였습니다.");
+      location.href = "/view/mypage_account.html";
+    } else {
+      alert("실패: " + data.message);
+    }
+  } catch (err) {
+    console.error("비밀번호 확인 중 에러:", err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+  return;
+}
+
+
 document.addEventListener("click", function (e) {
 
   const primaryUserBtn = e.target.closest("#primaryUserBtn");
@@ -1094,17 +1121,34 @@ document.addEventListener("click", function (e) {
   const pwCancelBtn = e.target.closest("#pwCancelBtn");
 
   if (accountPageBtn) {
-  const modal = document.getElementById("pwModal");
-  const input = document.getElementById("pwInput");
+    // async 함수로 감싸서 서버 응답을 기다립니다.
+    (async () => {
+        try {
+            // 1. 서버에 10분 내 인증 기록이 있는지 확인 (GET 요청)
+            const { data } = await axios.post("/pw_check_time");
 
-  modal.classList.remove("hidden");
+            if (data.is_authenticated) {
+                // 2. 인증이 유효하면 바로 마이페이지로 이동
+                location.href = "/view/mypage_account.html";
+            } else {
+                // 3. 인증이 없거나 만료되었으면 비밀번호 입력 모달 표시
+                const modal = document.getElementById("pwModal");
+                const input = document.getElementById("pwInput");
 
-  setTimeout(() => {
-    input.focus();
-  }, 50);
+                modal.classList.remove("hidden");
 
-  return;
-}
+                setTimeout(() => {
+                    input.focus();
+                }, 50);
+            }
+        } catch (err) {
+            console.error("인증 상태 확인 에러:", err);
+            alert("서버 통신 중 오류가 발생했습니다.");
+        }
+    })();
+
+    return;
+  }
 
 if (pwCancelBtn) {
   document.getElementById("pwModal").classList.add("hidden");
@@ -1112,22 +1156,7 @@ if (pwCancelBtn) {
   return;
 }
 
-if (pwConfirmBtn) {
-  const password = document.getElementById("pwInput").value.trim();
 
-  if (!password) {
-    alert("비밀번호를 입력해주세요.");
-    return;
-  }
-
-  if (password === "1234") {
-    location.href = "/view/mypage_account.html";
-  } else {
-    alert("비밀번호가 일치하지 않습니다.");
-  }
-
-  return;
-}
 
   /* 마이페이지 */
   if (primaryUserBtn) {
@@ -1251,7 +1280,7 @@ if (pwConfirmBtn) {
 
     <div class="pw-modal-btns">
 
-      <button class="pw-confirm-btn" id="pwConfirmBtn">
+      <button class="pw-confirm-btn" id="pwConfirmBtn" onclick="pwconfirm()">
         확인
       </button>
 

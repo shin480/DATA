@@ -35,7 +35,7 @@ def login_user(info: Dict[str, Any], req: Request):
                 # 3. 세션 저장 (결과 객체 필드명 주의)
                 user_info = {
                     "name": result.name,
-                    "email": result.user_id,
+                    "user_id": result.user_id,
                     # 테이블에 없는 정보는 일단 빈값이나 세션 유지용으로만 둠
                     "role": result.role,  # DB에서 가져온 권한 정보 (예: 'USER', 'ADMIN')
                     "birth": str(result.birth_date) if result.birth_date else "", # 날짜 객체일 경우 문자열 변환
@@ -53,7 +53,10 @@ def login_user(info: Dict[str, Any], req: Request):
                         "user_gender": result.gender if result.gender else ""  # 추가
                 }}
             else:
-                return {"success": False, "message": "이메일 또는 비밀번호가 일치하지 않습니다."}
+                return {"success": False, "message": "아이디 또는 비밀번호가 일치하지 않습니다."}
+        else:
+            return {"success": False, "message": "아이디 또는 비밀번호가 일치하지 않습니다."}
+
 
     except Exception as e:
         print(f"🚨 로그인 로직 에러: {e}")
