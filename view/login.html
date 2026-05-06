@@ -203,8 +203,11 @@
             if (data.success) {
                 // 로그인 성공 시 메시지 출력 후 페이지 이동
                 alert(data.message); 
-                
-                // 천호 과정 메인 페이지 또는 분석 리포트 페이지로 이동
+                // common.js의 getLoginInfo()가 찾을 수 있도록 서버가 준 정보를 저장합니다.
+                sessionStorage.setItem("access_token", data.user.access_token); // "session-active"
+                sessionStorage.setItem("user_name", data.user.user_name);
+                sessionStorage.setItem("user_role", data.user.user_role);
+                // 메인 페이지 또는 분석 리포트 페이지로 이동
                 location.href = './main.html'; 
             } else {
                 // 로그인 실패 시 (비밀번호 불일치, 계정 없음 등)

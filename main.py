@@ -97,3 +97,10 @@ def find_password(info: Dict[str,Any], req: Request):
     result = send_temporary_password(info["email"])
     return result
 
+@app.get("/check-auth")
+def check_auth(req: Request):
+    user = req.session.get("user")
+    if user:
+        # 세션에 정보가 있으면 로그인 상태
+        return {"is_logged_in": True, "user": user}
+    return {"is_logged_in": False}
