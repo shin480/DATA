@@ -524,7 +524,11 @@ const SENT_LABEL = { positive:'긍정', negative:'부정', neutral:'중립' };
 
 // 상단 공통 유틸에 이스케이프 함수 추가
 function escTitle(t) {
-  return (t || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ');
+  return (t || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, '&#39;')
+    .replace(/"/g, '&quot;')
+    .replace(/\r?\n/g, ' ');
 }
 
 // DOM 헬퍼
@@ -666,6 +670,19 @@ function devFetch(path, opts={}) {
 }
 
 function apiBase() { return API_BASE_URL; }
+
+// ── 감성 정정 이벤트 위임 (DOM 상시 존재 요소에 부착) ──
+document.addEventListener('click', function(e) {
+  const corrBtn   = e.target.closest('.corr-btn');
+  const detailBtn = e.target.closest('.detail-btn');
+  if (corrBtn && window._corrItems) {
+    const n = window._corrItems[parseInt(corrBtn.dataset.idx)];
+    if (n) openModal(n.newsID, n.title, n.model_sentiment, n.model_score||0, corrBtn.dataset.target);
+  } else if (detailBtn && window._corrItems) {
+    const n = window._corrItems[parseInt(detailBtn.dataset.idx)];
+    if (n) openDetailModal(n.newsID);
+  }
+});
 
 // ── 탭 전환 ──────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(btn => {
@@ -948,11 +965,16 @@ function renderCorrectionList(d) {
     return;
   }
 
-  html('corr-list', d.items.map(n => {
+  // 데이터를 전역 임시 저장 후 data-idx로 참조 (특수문자 이슈 방지)
+  window._corrItems = d.items;
+
+  const cardsHtml = d.items.map((n, idx) => {
     const isCorrected = !!n.corrected_sentiment;
     const scoreCol = scoreHex(n.model_score || 0);
     const pct = ((n.model_score||0)*100).toFixed(1);
-
+    const btns = LABELS.filter(l => l !== n.model_sentiment).map(l =>
+      `<button class="btn btn-sm corr-btn" data-idx="${idx}" data-target="${l}">${SENT_LABEL[l]}(${l})로 정정</button>`
+    ).join('');
     return `<div class="card ${isCorrected?'corrected':''}">
       <div class="card-title">${n.title}</div>
       <div class="card-meta">
@@ -967,13 +989,13 @@ function renderCorrectionList(d) {
         <span style="font-size:12px;font-weight:500;color:${scoreCol};width:40px">${(n.model_score||0).toFixed(3)}</span>
       </div>
       <div class="correct-btns">
-        ${LABELS.filter(l => l !== n.model_sentiment).map(l =>
-          `<button class="btn btn-sm" onclick="openModal('${n.newsID}','${escTitle(n.title)}','${n.model_sentiment}',${n.model_score||0},'${l}')">${SENT_LABEL[l]}(${l})로 정정</button>`
-        ).join('')}
-        <button class="btn btn-sm" style="margin-left:auto;color:var(--text3)" onclick="openDetailModal('${n.newsID}')">본문 보기</button>
+        ${btns}
+        <button class="btn btn-sm detail-btn" data-idx="${idx}" style="margin-left:auto;color:var(--text3)">본문 보기</button>
       </div>
     </div>`;
-  }).join(''));
+  }).join('');
+
+  html('corr-list', cardsHtml);
 
   // 페이지네이션
   let pages = '';

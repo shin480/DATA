@@ -50,6 +50,14 @@ app = FastAPI(
     description="경제 뉴스 scopeID 클러스터링 + KoELECTRA 감성 분류",
     version="1.0.0",
 )
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(classify_router)
 app.include_router(admin_router)
