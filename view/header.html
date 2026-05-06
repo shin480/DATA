@@ -1,0 +1,45 @@
+<header class="header">
+  <div class="header-left">
+    <a href="/view/main.html" class="logo">
+      <div class="logo-mark">D</div>
+      <div>DATA 다타</div>
+    </a>
+  </div>
+
+  <nav class="nav">
+    <a href="#" data-login-page="/view/keyword_detail.html">키워드</a>
+    <a href="#" data-login-page="/view/article_list.html">뉴스</a>
+    <a href="#" data-login-page="/view/keyword_detail.html">AI분석</a>
+  </nav>
+
+  <div class="header-right">
+    <div class="main-search-wrap">
+      <input
+        class="search-box"
+        id="commonSearchInput"
+        autocomplete="off"
+        placeholder="예: 금리, 취업, 전세, 반도체"
+      >
+
+      <div id="searchSuggestBox" class="search-suggest-box hidden">
+        <div class="search-suggest-list" id="searchSuggestList"></div>
+      </div>
+    </div>
+
+    <button id="loginBtn" class="header-btn" type="button">
+      로그인
+    </button>
+
+    <button id="joinBtn" class="header-btn" type="button">
+      회원가입
+    </button>
+
+    <button id="primaryUserBtn" class="header-btn hidden" type="button">
+      마이페이지
+    </button>
+
+    <button id="logoutBtn" class="header-btn hidden" type="button">
+      로그아웃
+    </button>
+  </div>
+</header>

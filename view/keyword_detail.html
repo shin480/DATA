@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DATA 다타 - AI 뉴스 인사이트</title>
+<title>키워드 상세보기 | DATA 다타</title>
 <style>
 /* ===== common.css ===== */
 /* ==============================
@@ -237,7 +237,8 @@
     padding: 0 18px;
   }
 }
-
+</style>
+<style>
 /* ===== main.css ===== */
 /* [확실] 기본 스타일 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -369,245 +370,644 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
 .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
 </style>
+<style>
+/* ===== keyword_detail.css ===== */
+/* ==============================
+   Keyword Detail Page
+============================== */
+
+.keyword-detail-page {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 130px 24px 120px;
+  background: #020817;
+  color: #f8fafc;
+}
+
+.keyword-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid #00d5ff;
+  border-radius: 999px;
+  color: #00d5ff;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 18px;
+}
+
+.keyword-title {
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+}
+
+.keyword-desc {
+  color: #7891b5;
+  font-size: 14px;
+  margin-bottom: 36px;
+}
+
+
+/* ==============================
+   Common Card / Grid
+============================== */
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+.keyword-card {
+  background: linear-gradient(180deg, #111c31, #0d1729);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.25);
+}
+
+.section-label {
+  color: #22d3ee;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+
+/* ==============================
+   Summary
+============================== */
+
+.summary-title {
+  font-size: 23px;
+  line-height: 1.45;
+  font-weight: 900;
+  margin-bottom: 24px;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-box {
+  background: #1d293d;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.stat-label {
+  color: #8aa0bf;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  color: #eaf6ff;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.stat-value.cyan {
+  color: #22d3ee;
+}
+
+
+/* ==============================
+   Sentiment
+============================== */
+
+.sentiment-card {
+  min-height: 250px;
+}
+
+.sentiment-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: center;
+  gap: 24px;
+  min-height: 170px;
+}
+
+.sentiment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-left: 4px;
+}
+
+.sentiment-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 21px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.sentiment-item .dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sentiment-item.positive {
+  color: #34d6cc;
+}
+
+.sentiment-item.positive .dot {
+  background: #34d6cc;
+}
+
+.sentiment-item.neutral {
+  color: #94a3b8;
+}
+
+.sentiment-item.neutral .dot {
+  background: #94a3b8;
+}
+
+.sentiment-item.negative {
+  color: #ff6578;
+}
+
+.sentiment-item.negative .dot {
+  background: #ff6578;
+}
+
+.donut-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.donut {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #34d6cc 0 50%,
+    #94a3b8 50% 60%,
+    #ff6578 60% 100%
+  );
+  position: relative;
+}
+
+.donut::after {
+  content: "";
+  position: absolute;
+  inset: 42px;
+  border-radius: 50%;
+  background: #0d1729;
+}
+
+
+/* ==============================
+   Perspective
+============================== */
+
+.perspective-card {
+  margin-bottom: 22px;
+}
+
+.perspective-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 28px;
+}
+
+.perspective-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.news-card {
+  background: #202c40;
+  border-radius: 14px;
+  padding: 18px;
+  min-height: 180px;
+}
+
+.news-card.positive {
+  border-left: 6px solid #34d6cc;
+}
+
+.news-card.neutral {
+  border-left: 6px solid #94a3b8;
+}
+
+.news-card.negative {
+  border-left: 6px solid #ff6578;
+}
+
+.news-type {
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 16px;
+}
+
+.news-type.positive {
+  color: #34d6cc;
+}
+
+.news-type.neutral {
+  color: #94a3b8;
+}
+
+.news-type.negative {
+  color: #ff6578;
+}
+
+.news-meta-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.news-meta {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  flex: 1;
+}
+
+.meta-pill {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 8px;
+  padding: 5px 9px;
+  color: #dbeafe;
+  font-size: 11px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  background: transparent;
+}
+
+.meta-pill.active {
+  border-color: #22d3ee;
+  color: #ffffff;
+  background: rgba(34, 211, 238, 0.14);
+}
+
+.meta-pill.positive-active {
+  border-color: #34d6cc;
+  color: #34d6cc;
+}
+
+.meta-pill.neutral-active {
+  border-color: #94a3b8;
+  color: #dbeafe;
+}
+
+.meta-pill.negative-active {
+  border-color: #ff6578;
+  color: #ff6578;
+}
+
+.meta-arrow {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #111827;
+  color: #dbeafe;
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  flex: 0 0 auto;
+}
+
+.meta-arrow.show {
+  display: block;
+}
+
+.news-title-roller {
+  background: #0e1728;
+  border-radius: 8px;
+  height: 46px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.news-title-track {
+  will-change: transform;
+}
+
+.news-title-item {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 13px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.4;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34d6cc 0 63%, #94a3b8 63% 87%, #ff6578 87% 100%);
+  margin-bottom: 8px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9fb2d4;
+}
+
+
+/* ==============================
+   Reference Articles
+============================== */
+
+.reference-label {
+  color: #22d3ee;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  margin: 20px 0 12px;
+}
+
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.article-card {
+  background: #101b31;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 14px;
+  padding: 22px;
+  min-height: 106px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  transition: 0.2s;
+}
+
+.article-card.highlight {
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.35);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.45);
+}
+
+.article-source {
+  color: #22d3ee;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 16px;
+}
+
+.article-title {
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.article-desc {
+  color: #7891b5;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.original-btn {
+  align-self: center;
+  min-width: 86px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: #1e293b;
+  color: #dbeafe;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.original-btn:hover {
+  background: #334155;
+}
+
+
+/* ==============================
+   Toast
+============================== */
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #0f172a;
+  border: 1px solid rgba(34, 211, 238, 0.6);
+  color: #e0f2fe;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: none;
+  z-index: 1000;
+}
+
+
+/* ==============================
+   Light Mode
+============================== */
+
+body.light-mode .keyword-detail-page {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+body.light-mode .keyword-desc,
+body.light-mode .article-desc {
+  color: #64748b !important;
+}
+
+body.light-mode .keyword-card,
+body.light-mode .article-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .summary-title,
+body.light-mode .perspective-title,
+body.light-mode .article-title {
+  color: #0f172a !important;
+}
+
+body.light-mode .stat-box,
+body.light-mode .news-card,
+body.light-mode .news-title-roller {
+  background: #f1f5f9 !important;
+}
+
+body.light-mode .stat-value,
+body.light-mode .news-title-item {
+  color: #0f172a !important;
+}
+
+body.light-mode .donut::after {
+  background: #ffffff !important;
+}
+
+body.light-mode .meta-pill {
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-mode .score-row {
+  color: #64748b !important;
+}
+
+body.light-mode .original-btn {
+  background: #ecfeff !important;
+  color: #0891b2 !important;
+  border: 1px solid #67e8f9;
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 980px) {
+  .top-grid,
+  .perspective-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .sentiment-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .sentiment-list {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .article-card {
+    flex-direction: column;
+  }
+}
+</style>
 </head>
 <body>
 <div class="page">
-    <div id="header">
-  <header class="header">
-    <div class="header-left">
-      <a class="logo" href="/view/main.html">
-        <div class="logo-mark">D</div>
-        <div>DATA 다타</div>
-      </a>
-    </div>
-
-    <nav class="nav">
-      <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
-      <a data-login-page="/view/article_list.html" href="#">뉴스</a>
-      <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
-    </nav>
-
-    <div class="header-right">
-      <div class="main-search-wrap">
-        <input autocomplete="off" class="search-box" id="commonSearchInput" placeholder="예: 금리, 취업, 전세, 반도체"/>
-        <div class="search-suggest-box hidden" id="searchSuggestBox">
-          <div class="search-suggest-list" id="searchSuggestList"></div>
-      </div>
-    </div>
-
-    <button class="header-btn" id="loginBtn" type="button">로그인</button>
-    <button class="header-btn" id="joinBtn" type="button">회원가입</button>
-    <button class="header-btn hidden" id="primaryUserBtn" type="button">마이페이지</button>
-    <button class="header-btn hidden" id="logoutBtn" type="button">로그아웃</button>
-  </div>
-</header>
+<div id="header"><header class="header">
+<div class="header-left">
+<a class="logo" href="/view/main.html">
+<div class="logo-mark">D</div>
+<div>DATA 다타</div>
+</a>
 </div>
-
-<main class="main">
-<!-- 히어로 섹션 -->
-<section class="hero">
-<div class="hero-badge">같은 이슈를 여러 관점으로 보기</div>
-<h1>뉴스, 그냥 읽지 말고<br/><span>이해하고 활용하세요</span></h1>
-<p>키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설, 실생활 영향까지 한 번에 보여줍니다.</p>
-<div class="hero-tags">
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
+<nav class="nav">
+<a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
+<a data-login-page="/view/article_list.html" href="#">뉴스</a>
+<a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
+</nav>
+<div class="header-right">
+<div class="main-search-wrap">
+<input autocomplete="off" class="search-box" id="commonSearchInput" placeholder="예: 금리, 취업, 전세, 반도체"/>
+<div class="search-suggest-box hidden" id="searchSuggestBox">
+<div class="search-suggest-list" id="searchSuggestList"></div>
 </div>
+</div>
+<button class="header-btn" id="loginBtn" type="button">
+      로그인
+    </button>
+<button class="header-btn" id="joinBtn" type="button">
+      회원가입
+    </button>
+<button class="header-btn hidden" id="primaryUserBtn" type="button">
+      마이페이지
+    </button>
+<button class="header-btn hidden" id="logoutBtn" type="button">
+      로그아웃
+    </button>
+</div>
+</header></div>
+<main class="keyword-detail-page">
+<section>
+<span class="keyword-badge">ECONOMY</span>
+<h1 class="keyword-title" id="keywordTitle">금리</h1>
+<p class="keyword-desc" id="keywordDesc">
+        총 28개의 언론사 데이터 기반으로 AI가 분석한 결과입니다.
+      </p>
 </section>
-
-<!-- 상단 데이터 그리드 -->
-<section class="grid-2">
-<div class="card">
-<div class="section-title-wrap">
-<span>1위 키워드</span>
-<h2></h2>
+<section class="top-grid">
+<article class="keyword-card">
+<div class="section-label">CORE SUMMARY</div>
+<h2 class="summary-title" id="coreSummary"></h2>
+<div class="summary-stats">
+<div class="stat-box">
+<div class="stat-label">AI 분석</div>
+<div class="stat-value cyan" id="analysisCount"></div>
 </div>
-<div class="status-badge"></div>
-<div class="gauge-container">
-<div class="gauge-item">
-<div class="gauge-circle pos">
-<span class="percent"></span>
+<div class="stat-box">
+<div class="stat-label">뉴스</div>
+<div class="stat-value" id="newsCount"></div>
 </div>
-<span class="gauge-label">긍정</span>
-</div>
-<div class="gauge-item">
-<div class="gauge-circle neg">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">부정</span>
-</div>
-<div class="gauge-item">
-<div class="gauge-circle neu">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">중립</span>
+<div class="stat-box">
+<div class="stat-label">여론 흐름</div>
+<div class="stat-value" id="mainFlow"></div>
 </div>
 </div>
-<div class="keyword-box">
-<div class="keyword-box-title">주요 키워드</div>
-<div class="chip-group">
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
+</article>
+<article class="keyword-card sentiment-card">
+<div class="section-label">PUBLIC SENTIMENT</div>
+<div class="sentiment-layout">
+<div class="sentiment-list">
+<div class="sentiment-item positive">
+<span class="dot"></span>
+<span id="positiveLabel"></span>
+</div>
+<div class="sentiment-item neutral">
+<span class="dot"></span>
+<span id="neutralLabel"></span>
+</div>
+<div class="sentiment-item negative">
+<span class="dot"></span>
+<span id="negativeLabel"></span>
 </div>
 </div>
-</div>
-
-<div class="card">
-<div class="section-title-wrap">
-<span>관점 요약</span>
-<h2>오늘의 지배적 여론</h2>
-</div>
-<div class="opinion-card">
-<div class="quote-icon">“</div>
-<div class="opinion-text"></div>
-<div class="quote-icon" style="text-align:right">”</div>
-<div class="opinion-tags">
-<span class="o-tag"></span>
-<span class="o-tag"></span>
-</div>
-<div class="nav-btns">
-                    <div class="nav-btn" onclick="prevOpinion()">&lt;</div>
-                    <div class="nav-btn" onclick="nextOpinion()">&gt;</div>
-                </div>
-
+<div class="donut-wrap">
+<div class="donut" id="sentimentDonut"></div>
 </div>
 </div>
+</article>
 </section>
-
-<!-- 감성 비교 섹션 -->
-<section class="sentiment-compare">
-<div class="sentiment-header">
-<div class="section-title-wrap">
-<span>감성 비교</span>
-<h2>같은 이슈, 다른 해석</h2>
-</div>
-<div class="section-desc">언론사별로 어떤 톤과 시각을 사용하는지 비교합니다.</div>
-</div>
-<div class="sentiment-grid">
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge pos">긍정</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge neg">부정</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge neu">중립</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-</div>
+<section class="keyword-card perspective-card">
+<div class="section-label">PERSPECTIVE CONTRAST</div>
+<h2 class="perspective-title">같은 이슈, 다른 시각</h2>
+<div class="perspective-grid" id="perspectiveGrid"></div>
 </section>
-
-<!-- 2차 관점 분석 -->
-<section class="viewpoint-box">
-<div class="section-title-wrap">
-<span>관점 비교</span>
-<h2>2차 관점 분석</h2>
-</div>
-<div class="view-grid" id="viewGrid"></div>
-<button class="toggle-btn" id="toggleBtn" onclick="toggleView()" type="button">
-        전체 18개 관점 보기 ∨
-      </button>
-</section>
-
-<!-- 지금 뜨는 뉴스 -->
-<section class="news-section">
-<div class="news-header">
-<h2>지금 뜨는 뉴스</h2>
-<div class="realtime-dot">
-<div class="dot"></div>실시간 반응순</div>
-</div>
-<div class="news-grid">
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">1</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-like"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">2</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">3</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-like"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">4</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">5</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-</div>
+<section>
+<div class="reference-label">REFERENCE ARTICLES</div>
+<div class="article-list" id="articleList"></div>
 </section>
 </main>
 <div id="footer"><footer class="footer">
@@ -634,8 +1034,8 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 </div>
 </footer></div>
 </div>
+<div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 <script>
 /* ===== common.js ===== */
 // ==============================
@@ -1141,140 +1541,476 @@ window.closeFooterModal = function () {
 
   modal.classList.add("hidden");
 };
+</script>
+<script>
+/* ===== keyword_detail.js ===== */
+// ==============================
+// 로그인 체크
+// ==============================
+(function checkKeywordDetailAuth() {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
 
-/* ===== main.js ===== */
+  if (!token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.href = "/view/login.html";
+  }
+})();
 
-/* 
-   [확실] 기준 데이터 (마스터 템플릿)
-   - 타이틀, 아이콘, 색상, 순서는 여기서 관리합니다.
-   - 서버 데이터와 매핑하기 위해 고유 'id'를 추가했습니다.
-*/
-const groups = [
-    { name: "주체", items: [
-        { id: "gov", title: "정부 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏛️", color: "teal" },
-        { id: "ind", title: "개인 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "👤", color: "purple" },
-        { id: "complex", title: "복합 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "◎", color: "blue" },
-        { id: "corp", title: "기업 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "💼", color: "orange" },
-        { id: "ext", title: "외부 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🌐", color: "yellow" }
-    ]},
-    { name: "감성", items: [
-        { id: "exp", title: "기대", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⭐", color: "teal" },
-        { id: "praise", title: "성과 예찬", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏆", color: "purple" },
-        { id: "crit", title: "비판적 태도", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "💬", color: "blue" },
-        { id: "worry", title: "우려", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚠️", color: "orange" }
-    ]},
-    { name: "분석", items: [
-        { id: "res", title: "결과 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📊", color: "teal" },
-        { id: "fore", title: "전망 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📈", color: "purple" },
-        { id: "simp", title: "단순 전달", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📰", color: "blue" },
-        { id: "resp", title: "대응 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚙️", color: "orange" },
-        { id: "cause", title: "원인 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🔍", color: "yellow" }
-    ]},
-    { name: "요인", items: [
-        { id: "mkt", title: "시장 자율 강조", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚖️", color: "teal" },
-        { id: "intr", title: "정부 개입 강조", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏢", color: "purple" },
-        { id: "pol", title: "정책 요인(국내)", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📍", color: "blue" },
-        { id: "neu", title: "중립", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚖️", color: "yellow" }
-    ]}
+
+// ==============================
+// 임시 데이터
+// ==============================
+const keywordData = {
+  category: "ECONOMY",
+  keyword: "금리",
+  pressCount: 28,
+  summary: "금리 인하로 인한 경기 회복 기대감과 시장 불확실성 우려가 공존합니다.",
+  aiCount: 3,
+  newsCount: 28,
+  flow: "정부 책임",
+  sentiment: {
+    positive: 50,
+    neutral: 10,
+    negative: 40
+  }
+};
+
+const perspectives = [
+  {
+    type: "긍정 관점",
+    className: "positive",
+    articles: [
+      { code: "E", press: "경제A", title: "기준금리 인하에 소비 심리 회복 기대" },
+      { code: "N", press: "경향신문", title: "한은 금리 인하, 내수 회복의 마중물 될 것" },
+      { code: "B", press: "비교됨", title: "금리 완화로 기업 투자 부담 줄어든다" },
+      { code: "M", press: "매일경제", title: "금리 완화 기대감에 투자 심리 개선 흐름" }
+    ],
+    positive: 63,
+    neutral: 24,
+    negative: 13
+  },
+  {
+    type: "중립 관점",
+    className: "neutral",
+    articles: [
+      { code: "E", press: "경제A", title: "금리 인하 효과는 경기 흐름에 따라 달라질 전망" },
+      { code: "N", press: "경향신문", title: "한은 금리 인하, 시장 영향은 제한적일 가능성" },
+      { code: "B", press: "증권B", title: "금융시장 반응은 아직 관망세" },
+      { code: "S", press: "서울경제", title: "금리 인하 이후 시장 흐름은 추가 지표가 변수" }
+    ],
+    positive: 45,
+    neutral: 42,
+    negative: 13
+  },
+  {
+    type: "부정 관점",
+    className: "negative",
+    articles: [
+      { code: "E", press: "경제A", title: "금리 인하에도 가계부채 부담은 여전" },
+      { code: "N", press: "경향신문", title: "한은 금리 인하, 대출 규제와 맞물려 효과 제한" },
+      { code: "B", press: "비교됨", title: "시장 불확실성 커져 정책 효과 반감 우려" },
+      { code: "H", press: "한국경제", title: "금리 인하 기대에도 부채 리스크는 지속" }
+    ],
+    positive: 23,
+    neutral: 31,
+    negative: 46
+  }
 ];
 
-/* [확실] 화면에 카드를 그리는 핵심 렌더링 함수 */
-function renderViewGrid(data) {
-    const viewGrid = document.getElementById("viewGrid");
-    if (!viewGrid) return;
+let articles = [
+  {
+    source: "AI 분석",
+    title: "한은, 금리 전격 인하… '내수 회복에 총력'",
+    desc: "한국은행이 기준금리를 인하하며 경기 부양 의지를 드러냈습니다. 시장은 즉각 환영하는 분위기며...",
+    link: "#",
+    highlight: true
+  },
+  {
+    source: "시사저널 B",
+    title: "금리 내렸지만 대출 규제는 강화… 실효성 논란",
+    desc: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들에게 제공하는 효과는 미미할 것이라는 분석입니다.",
+    link: "#",
+    highlight: false
+  },
+  {
+    source: "경제신문 C",
+    title: "금리 동결 가능성도 여전… 향후 물가가 변수",
+    desc: "향후 물가 흐름에 따라 금리 정책의 방향이 다시 달라질 수 있다는 전망이 나옵니다.",
+    link: "#",
+    highlight: false
+  }
+];
 
-    let htmlContent = "";
+let rollingTimers = [];
 
-    data.forEach(group => {
-        group.items.forEach(item => {
-            htmlContent += `
-                <div class="view-card">
-                    <div class="view-top">
-                        <div class="view-icon-box c-${item.color}">${item.icon}</div>
-                        <div class="view-title-group">
-                            <div class="vt c-${item.color}">${item.title}</div>
-                            <div class="vp c-${item.color}">${item.percent}%</div>
-                        </div>
-                    </div>
-                    <div class="view-bar-bg">
-                        <div class="view-bar-fill bg-${item.color}" style="width:${item.percent}%"></div>
-                    </div>
-                    <div class="reason-label">주요 근거</div>
-                    <div class="view-reason">"${item.reason}"</div>
-                    <button
-                      class="detail-btn"
-                      data-title="${item.title}"
-                      data-percent="${item.percent}"
-                    >
-                      상세 보기 >
-                    </button>
-                </div>`;
-        });
 
-        // 5-4-5-4 그리드 정렬을 위한 스페이서 로직 유지
-        if (group.items.length === 4) {
-            htmlContent += `<div class="view-spacer" style="visibility:hidden;"></div>`;
-        }
-    });
+// ==============================
+// Toast
+// ==============================
+function showToast(message) {
+  const toast = document.getElementById("toast");
 
-    viewGrid.innerHTML = htmlContent;
+  if (!toast) {
+    alert(message);
+    return;
+  }
+
+  toast.textContent = message;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2000);
 }
 
-/* [확실] 백엔드 데이터를 가져와서 groups와 병합하는 함수 */
-async function loadAnalysisData() {
-    try {
-        // 백엔드 API 호출 (실제 FastAPI 주소로 변경하세요)
-        // const { data: mlResults } = await axios.get("/api/v1/analysis");
-        
-        // 예시용 가짜 데이터 (서버에서 올 데이터 구조)
-        const mockServerData = {
-            "gov": { "percent": 0, "reason": "데이터를 불러오는 중입니다..." },
-            "ind": { "percent": 20, "reason": "데이터를 불러오는 중입니다..." }
-            // ... 나머지 id들도 서버에서 온다고 가정
-        };
 
-        // 기준 데이터(groups)를 깊은 복사하여 수치 업데이트
-        const updatedData = JSON.parse(JSON.stringify(groups));
-        
-        updatedData.forEach(group => {
-            group.items.forEach(item => {
-                if (mockServerData[item.id]) {
-                    item.percent = mockServerData[item.id].percent;
-                    item.reason = mockServerData[item.id].reason;
-                }
-            });
+// ==============================
+// Keyword Render
+// ==============================
+function renderKeyword() {
+  const badge = document.querySelector(".keyword-badge");
+  const title = document.getElementById("keywordTitle");
+  const desc = document.getElementById("keywordDesc");
+  const summary = document.getElementById("coreSummary");
+  const analysisCount = document.getElementById("analysisCount");
+  const newsCount = document.getElementById("newsCount");
+  const mainFlow = document.getElementById("mainFlow");
+
+  if (badge) badge.textContent = keywordData.category;
+  if (title) title.textContent = keywordData.keyword;
+
+  if (desc) {
+    desc.textContent = `총 ${keywordData.pressCount}개의 언론사 데이터 기반으로 AI가 분석한 결과입니다.`;
+  }
+
+  if (summary) summary.textContent = keywordData.summary;
+  if (analysisCount) analysisCount.textContent = `${keywordData.aiCount}건`;
+  if (newsCount) newsCount.textContent = `${keywordData.newsCount}건`;
+  if (mainFlow) mainFlow.textContent = keywordData.flow;
+
+  renderSentiment();
+}
+
+
+function renderSentiment() {
+  const positive = keywordData.sentiment.positive;
+  const neutral = keywordData.sentiment.neutral;
+  const negative = keywordData.sentiment.negative;
+
+  const positiveLabel = document.getElementById("positiveLabel");
+  const neutralLabel = document.getElementById("neutralLabel");
+  const negativeLabel = document.getElementById("negativeLabel");
+  const donut = document.getElementById("sentimentDonut");
+
+  if (positiveLabel) positiveLabel.textContent = `긍정 : ${positive}%`;
+  if (neutralLabel) neutralLabel.textContent = `중립 : ${neutral}%`;
+  if (negativeLabel) negativeLabel.textContent = `부정 : ${negative}%`;
+
+  if (donut) {
+    donut.style.background = `
+      conic-gradient(
+        #34d6cc 0 ${positive}%,
+        #94a3b8 ${positive}% ${positive + neutral}%,
+        #ff6578 ${positive + neutral}% 100%
+      )
+    `;
+  }
+}
+
+
+// ==============================
+// Perspective Render
+// ==============================
+function renderPerspectives() {
+  const grid = document.getElementById("perspectiveGrid");
+
+  if (!grid) return;
+
+  grid.innerHTML = perspectives.map((item, index) => {
+    const cardArticles = item.articles?.length
+      ? item.articles
+      : [{ code: "-", press: "언론사 없음", title: "제목 없음" }];
+
+    const rollingArticles = cardArticles.length > 1
+      ? [...cardArticles, cardArticles[0]]
+      : cardArticles;
+
+    return `
+      <div class="news-card ${item.className}">
+        <div class="news-type ${item.className}">● ${item.type}</div>
+
+        <div class="news-meta-wrap">
+          <button class="meta-arrow" id="metaPrev${index}" onclick="movePressList(${index}, -1)">‹</button>
+
+          <div class="news-meta" id="pressList${index}">
+            ${cardArticles.map((article, articleIndex) => `
+              <span
+                class="meta-pill ${articleIndex === 0 ? "active " + item.className + "-active" : ""}"
+                id="pressPill${index}_${articleIndex}"
+                onclick="selectPerspectiveArticle(${index}, ${articleIndex})"
+              >
+                ${article.code} ${article.press}
+              </span>
+            `).join("")}
+          </div>
+
+          <button class="meta-arrow" id="metaNext${index}" onclick="movePressList(${index}, 1)">›</button>
+        </div>
+
+        <div class="news-title-roller">
+          <div class="news-title-track" id="titleTrack${index}">
+            ${rollingArticles.map(article => `
+              <div class="news-title-item">${article.title}</div>
+            `).join("")}
+          </div>
+        </div>
+
+        <div class="score-bar" style="
+          background:linear-gradient(
+            90deg,
+            #34d6cc 0 ${item.positive}%,
+            #94a3b8 ${item.positive}% ${item.positive + item.neutral}%,
+            #ff6578 ${item.positive + item.neutral}% 100%
+          );
+        "></div>
+
+        <div class="score-row">
+          <span>긍정 ${item.positive}%</span>
+          <span>중립 ${item.neutral}%</span>
+          <span>부정 ${item.negative}%</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  checkPressArrow();
+  startRolling();
+}
+
+
+function selectPerspectiveArticle(cardIndex, articleIndex) {
+  const track = document.getElementById(`titleTrack${cardIndex}`);
+
+  if (!track) return;
+
+  track.dataset.current = articleIndex;
+
+  track.style.transition = "transform 0.4s ease";
+  track.style.transform = `translateY(-${46 * articleIndex}px)`;
+
+  updateActivePress(cardIndex, articleIndex);
+}
+
+
+function updateActivePress(cardIndex, articleIndex) {
+  const cardType = perspectives[cardIndex].className;
+  const list = document.getElementById(`pressList${cardIndex}`);
+  const pills = document.querySelectorAll(`[id^="pressPill${cardIndex}_"]`);
+
+  pills.forEach((pill, index) => {
+    pill.classList.remove(
+      "active",
+      "positive-active",
+      "neutral-active",
+      "negative-active"
+    );
+
+    if (index === articleIndex) {
+      pill.classList.add("active", `${cardType}-active`);
+
+      if (list) {
+        pill.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest"
         });
-
-        // 화면 갱신
-        renderViewGrid(updatedData);
-        console.log("분석 데이터 로드 및 렌더링 완료 [확실]");
-
-    } catch (err) {
-        console.error("데이터 로드 에러:", err);
-        // 에러 시 초기 템플릿(로딩중 표시)이라도 출력
-        renderViewGrid(groups);
+      }
     }
+  });
 }
 
-/* 기존 토글 기능 유지 */
-function toggleView() {
-    const grid = document.getElementById("viewGrid");
-    const btn = document.getElementById("toggleBtn");
 
-    if (!grid || !btn) return;
+function movePressList(cardIndex, direction) {
+  const list = document.getElementById(`pressList${cardIndex}`);
 
-    grid.classList.toggle("expanded");
-    btn.innerText = grid.classList.contains("expanded")
-        ? "접기 ∧"
-        : "전체 18개 관점 보기 ∨";
+  if (!list) return;
+
+  list.scrollLeft += direction * 100;
 }
 
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. 먼저 '로딩 중' 상태의 화면을 한 번 그립니다.
-    renderViewGrid(groups);
-    // 2. 그 다음 실제 데이터를 서버에서 가져옵니다.
-    loadAnalysisData();
+
+function checkPressArrow() {
+  perspectives.forEach((item, index) => {
+    const list = document.getElementById(`pressList${index}`);
+    const prev = document.getElementById(`metaPrev${index}`);
+    const next = document.getElementById(`metaNext${index}`);
+
+    if (!list || !prev || !next) return;
+
+    if (list.scrollWidth > list.clientWidth) {
+      prev.classList.add("show");
+      next.classList.add("show");
+    } else {
+      prev.classList.remove("show");
+      next.classList.remove("show");
+    }
+  });
+}
+
+
+// ==============================
+// Article Render
+// ==============================
+function renderArticles() {
+  const list = document.getElementById("articleList");
+
+  if (!list) return;
+
+  list.innerHTML = articles.map(article => `
+    <article class="article-card ${article.highlight ? "highlight" : ""}">
+      <div>
+        <div class="article-source">${article.source}</div>
+        <h3 class="article-title">${article.title}</h3>
+        <p class="article-desc">${article.desc}</p>
+      </div>
+
+      <button class="original-btn" onclick="openOriginal('${article.link}')">
+        원문 보기
+      </button>
+    </article>
+  `).join("");
+}
+
+
+function openOriginal(link) {
+  if (link === "#") {
+    showToast("서버 연결 전 임시 원문 링크입니다.");
+    return;
+  }
+
+  location.href = link;
+}
+
+
+// ==============================
+// 검색 처리
+// ==============================
+function applyKeywordSearch(value) {
+  keywordData.keyword = value;
+  keywordData.summary = `${value} 관련 뉴스의 긍정·부정·중립 흐름을 AI가 임시 분석했습니다.`;
+  keywordData.pressCount = Math.floor(Math.random() * 30) + 10;
+  keywordData.newsCount = Math.floor(Math.random() * 50) + 10;
+  keywordData.aiCount = Math.floor(Math.random() * 5) + 1;
+
+  keywordData.flow =
+    ["정부 책임", "기업 책임", "시장 자율", "원인 분석", "전망 분석"]
+    [Math.floor(Math.random() * 5)];
+
+  const positive = Math.floor(Math.random() * 60) + 20;
+  const neutral = Math.floor(Math.random() * 20) + 5;
+  let negative = 100 - positive - neutral;
+
+  if (negative < 0) negative = 0;
+
+  keywordData.sentiment = {
+    positive,
+    neutral,
+    negative
+  };
+
+  articles.unshift({
+    source: "AI 분석",
+    title: `${value} 관련 주요 이슈 분석 결과`,
+    desc: `${value} 키워드를 포함한 뉴스 데이터가 임시로 분석되었습니다. 실제 서버 연결 시 검색 결과 기반으로 교체됩니다.`,
+    link: "#",
+    highlight: true
+  });
+
+  articles = articles.slice(0, 10);
+
+  renderKeyword();
+  renderArticles();
+
+  showToast("임시 검색 결과가 생성되었습니다.");
+}
+
+
+function readKeywordFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const keyword = params.get("keyword");
+
+  if (keyword) {
+    applyKeywordSearch(keyword);
+  }
+}
+
+
+// ==============================
+// Rolling
+// ==============================
+function startRolling() {
+  rollingTimers.forEach(timer => clearInterval(timer));
+  rollingTimers = [];
+
+  const tracks = document.querySelectorAll(".news-title-track");
+
+  tracks.forEach((track, cardIndex) => {
+    const items = track.children.length;
+    const realCount = items - 1;
+
+    if (realCount <= 0) return;
+
+    track.dataset.current = "0";
+
+    const timer = setInterval(() => {
+      let current = Number(track.dataset.current || 0);
+
+      current++;
+
+      track.style.transition = "transform 0.6s ease";
+      track.style.transform = `translateY(-${46 * current}px)`;
+
+      if (current === realCount) {
+        updateActivePress(cardIndex, 0);
+
+        setTimeout(() => {
+          track.style.transition = "none";
+          track.style.transform = "translateY(0)";
+          track.dataset.current = "0";
+        }, 650);
+      } else {
+        track.dataset.current = String(current);
+        updateActivePress(cardIndex, current);
+      }
+    }, 2500);
+
+    rollingTimers.push(timer);
+  });
+}
+
+
+// ==============================
+// 전역 함수
+// ==============================
+window.openOriginal = openOriginal;
+window.movePressList = movePressList;
+window.selectPerspectiveArticle = selectPerspectiveArticle;
+
+
+// ==============================
+// 최초 실행
+// ==============================
+document.addEventListener("DOMContentLoaded", function () {
+  renderKeyword();
+  renderPerspectives();
+  renderArticles();
+  readKeywordFromUrl();
+
+  window.addEventListener("resize", checkPressArrow);
 });
 </script>
 </body>

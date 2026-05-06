@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DATA 다타 - AI 뉴스 인사이트</title>
+<title>뉴스 상세보기 | DATA 다타</title>
 <style>
 /* ===== common.css ===== */
 /* ==============================
@@ -237,7 +237,6 @@
     padding: 0 18px;
   }
 }
-
 /* ===== main.css ===== */
 /* [확실] 기본 스타일 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -369,246 +368,424 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
 .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
 </style>
+<style>
+/* ===== article_detail.css ===== */
+/* ==============================
+   Article Detail Page
+============================== */
+
+.article-detail-page {
+  min-height: 100vh;
+  padding: 130px 24px 100px;
+  background: #050916;
+  color: #dce8ff;
+}
+
+.article-detail-wrap {
+  width: 1280px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.back-btn {
+  margin-bottom: 28px;
+  border: 0;
+  background: transparent;
+  color: #7e95ba;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  color: #22d3ee;
+}
+
+.article-category {
+  margin-bottom: 14px;
+  color: #10d9ff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+}
+
+.article-detail-title {
+  margin: 0 0 20px;
+  color: #f8fafc;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.35;
+  letter-spacing: -1.2px;
+}
+
+.article-meta {
+  margin-bottom: 34px;
+  color: #7f8ea9;
+  font-size: 14px;
+}
+
+.article-meta span {
+  margin-right: 18px;
+}
+
+.article-line {
+  height: 1px;
+  margin: 34px 0;
+  background: #16223b;
+}
+
+
+/* ==============================
+   Content
+============================== */
+
+.content-box {
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 18px;
+  padding: 28px 32px;
+  color: #d8e6ff;
+  font-size: 17px;
+  line-height: 2;
+}
+
+.source-wrap {
+  margin: 34px 0;
+  text-align: center;
+}
+
+.source-btn {
+  border: 0;
+  border-radius: 10px;
+  background: #1b2b47;
+  color: #dce8ff;
+  padding: 14px 28px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.source-btn:hover {
+  background: #22385d;
+}
+
+
+/* ==============================
+   Vote
+============================== */
+
+.vote-wrap {
+  padding: 18px 0 24px;
+  text-align: center;
+}
+
+.vote-title {
+  margin-bottom: 28px;
+  color: #f8fafc;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.vote-box {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+.vote-btn {
+  width: 220px;
+  height: 95px;
+  border: 0;
+  border-radius: 50px;
+  background: #111d35;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vote-btn span {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.vote-btn:hover {
+  transform: translateY(-2px);
+}
+
+.vote-btn.active {
+  background: #19d8ff;
+  color: #00131f;
+}
+
+.vote-btn.active span {
+  color: #00131f;
+}
+
+
+/* ==============================
+   Deep Reading
+============================== */
+
+.deep-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 52px 0 22px;
+  color: #f8fafc;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.deep-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.deep-card {
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 18px;
+  padding: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.deep-card:hover {
+  transform: translateY(-3px);
+  border-color: #2f6dff;
+}
+
+.deep-tag {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.deep-tag.positive {
+  background: #0f3341;
+  color: #15d9ff;
+}
+
+.deep-tag.negative {
+  background: #331318;
+  color: #ff6070;
+}
+
+.deep-tag.neutral {
+  background: #2e2f39;
+  color: #c8d0e0;
+}
+
+.deep-text {
+  color: #dce8ff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+
+/* ==============================
+   Light Mode
+============================== */
+
+body.light-mode .article-detail-page {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+body.light-mode .back-btn {
+  color: #64748b !important;
+}
+
+body.light-mode .back-btn:hover,
+body.light-mode .article-category {
+  color: #06b6d4 !important;
+}
+
+body.light-mode .article-detail-title,
+body.light-mode .vote-title,
+body.light-mode .deep-title {
+  color: #0f172a !important;
+}
+
+body.light-mode .article-meta {
+  color: #64748b !important;
+}
+
+body.light-mode .article-line {
+  background: #e2e8f0 !important;
+}
+
+body.light-mode .content-box,
+body.light-mode .deep-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .source-btn {
+  background: #ecfeff !important;
+  color: #0891b2 !important;
+  border: 1px solid #67e8f9;
+}
+
+body.light-mode .vote-btn {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .vote-btn span {
+  color: #64748b !important;
+}
+
+body.light-mode .vote-btn.active {
+  background: #22d3ee !important;
+  color: #020817 !important;
+}
+
+body.light-mode .vote-btn.active span {
+  color: #020817 !important;
+}
+
+body.light-mode .deep-text {
+  color: #0f172a !important;
+}
+
+body.light-mode .deep-tag.positive {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
+}
+
+body.light-mode .deep-tag.negative {
+  background: #ffe4e6 !important;
+  color: #e11d48 !important;
+}
+
+body.light-mode .deep-tag.neutral {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 900px) {
+  .article-detail-page {
+    padding: 150px 18px 80px;
+  }
+
+  .article-detail-title {
+    font-size: 32px;
+  }
+
+  .vote-box {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .vote-btn {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .deep-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 </head>
 <body>
 <div class="page">
-    <div id="header">
-  <header class="header">
-    <div class="header-left">
-      <a class="logo" href="/view/main.html">
-        <div class="logo-mark">D</div>
-        <div>DATA 다타</div>
-      </a>
-    </div>
-
-    <nav class="nav">
-      <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
-      <a data-login-page="/view/article_list.html" href="#">뉴스</a>
-      <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
-    </nav>
-
-    <div class="header-right">
-      <div class="main-search-wrap">
-        <input autocomplete="off" class="search-box" id="commonSearchInput" placeholder="예: 금리, 취업, 전세, 반도체"/>
-        <div class="search-suggest-box hidden" id="searchSuggestBox">
-          <div class="search-suggest-list" id="searchSuggestList"></div>
-      </div>
-    </div>
-
-    <button class="header-btn" id="loginBtn" type="button">로그인</button>
-    <button class="header-btn" id="joinBtn" type="button">회원가입</button>
-    <button class="header-btn hidden" id="primaryUserBtn" type="button">마이페이지</button>
-    <button class="header-btn hidden" id="logoutBtn" type="button">로그아웃</button>
-  </div>
-</header>
+<div id="header"><header class="header">
+<div class="header-left">
+<a class="logo" href="/view/main.html">
+<div class="logo-mark">D</div>
+<div>DATA 다타</div>
+</a>
 </div>
-
-<main class="main">
-<!-- 히어로 섹션 -->
-<section class="hero">
-<div class="hero-badge">같은 이슈를 여러 관점으로 보기</div>
-<h1>뉴스, 그냥 읽지 말고<br/><span>이해하고 활용하세요</span></h1>
-<p>키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설, 실생활 영향까지 한 번에 보여줍니다.</p>
-<div class="hero-tags">
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-</div>
-</section>
-
-<!-- 상단 데이터 그리드 -->
-<section class="grid-2">
-<div class="card">
-<div class="section-title-wrap">
-<span>1위 키워드</span>
-<h2></h2>
-</div>
-<div class="status-badge"></div>
-<div class="gauge-container">
-<div class="gauge-item">
-<div class="gauge-circle pos">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">긍정</span>
-</div>
-<div class="gauge-item">
-<div class="gauge-circle neg">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">부정</span>
-</div>
-<div class="gauge-item">
-<div class="gauge-circle neu">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">중립</span>
+<nav class="nav">
+<a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
+<a data-login-page="/view/article_list.html" href="#">뉴스</a>
+<a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
+</nav>
+<div class="header-right">
+<div class="main-search-wrap">
+<input autocomplete="off" class="search-box" id="commonSearchInput" placeholder="예: 금리, 취업, 전세, 반도체"/>
+<div class="search-suggest-box hidden" id="searchSuggestBox">
+<div class="search-suggest-list" id="searchSuggestList"></div>
 </div>
 </div>
-<div class="keyword-box">
-<div class="keyword-box-title">주요 키워드</div>
-<div class="chip-group">
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
+<button class="header-btn" id="loginBtn" type="button">
+      로그인
+    </button>
+<button class="header-btn" id="joinBtn" type="button">
+      회원가입
+    </button>
+<button class="header-btn hidden" id="primaryUserBtn" type="button">
+      마이페이지
+    </button>
+<button class="header-btn hidden" id="logoutBtn" type="button">
+      로그아웃
+    </button>
 </div>
-</div>
-</div>
-
-<div class="card">
-<div class="section-title-wrap">
-<span>관점 요약</span>
-<h2>오늘의 지배적 여론</h2>
-</div>
-<div class="opinion-card">
-<div class="quote-icon">“</div>
-<div class="opinion-text"></div>
-<div class="quote-icon" style="text-align:right">”</div>
-<div class="opinion-tags">
-<span class="o-tag"></span>
-<span class="o-tag"></span>
-</div>
-<div class="nav-btns">
-                    <div class="nav-btn" onclick="prevOpinion()">&lt;</div>
-                    <div class="nav-btn" onclick="nextOpinion()">&gt;</div>
-                </div>
-
-</div>
-</div>
-</section>
-
-<!-- 감성 비교 섹션 -->
-<section class="sentiment-compare">
-<div class="sentiment-header">
-<div class="section-title-wrap">
-<span>감성 비교</span>
-<h2>같은 이슈, 다른 해석</h2>
-</div>
-<div class="section-desc">언론사별로 어떤 톤과 시각을 사용하는지 비교합니다.</div>
-</div>
-<div class="sentiment-grid">
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge pos">긍정</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge neg">부정</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge neu">중립</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-</div>
-</section>
-
-<!-- 2차 관점 분석 -->
-<section class="viewpoint-box">
-<div class="section-title-wrap">
-<span>관점 비교</span>
-<h2>2차 관점 분석</h2>
-</div>
-<div class="view-grid" id="viewGrid"></div>
-<button class="toggle-btn" id="toggleBtn" onclick="toggleView()" type="button">
-        전체 18개 관점 보기 ∨
+</header></div>
+<main class="article-detail-page">
+<div class="article-detail-wrap">
+<button class="back-btn" onclick="history.back()" type="button">
+        ← 이전 페이지로
       </button>
-</section>
-
-<!-- 지금 뜨는 뉴스 -->
-<section class="news-section">
-<div class="news-header">
-<h2>지금 뜨는 뉴스</h2>
-<div class="realtime-dot">
-<div class="dot"></div>실시간 반응순</div>
+<div class="article-category">ECONOMIC NEWS</div>
+<h1 class="article-detail-title" id="newsTitle"></h1>
+<div class="article-meta">
+<span id="newsDate"></span>
+<span id="newsPress"></span>
+<span id="newsReporter"></span>
 </div>
-<div class="news-grid">
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">1</div>
-<div class="news-title"></div>
+<div class="article-line"></div>
+<article class="content-box" id="newsContent"></article>
+<div class="source-wrap">
+<button class="source-btn" onclick="goSource()" type="button">
+          🔗 원문 보기
+        </button>
 </div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-like"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">2</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">3</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-like"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">4</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">5</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
+<div class="article-line"></div>
+<section class="vote-wrap">
+<div class="vote-title">
+          이 기사의 관점에 대해 어떻게 생각하세요?
+        </div>
+<div class="vote-box">
+<button class="vote-btn" id="likeBtn" onclick="selectVote('like')" type="button">
+            👍 동의해요
+            <span id="likeCount">0</span>
+</button>
+<button class="vote-btn" id="hateBtn" onclick="selectVote('hate')" type="button">
+            👎 반대해요
+            <span id="hateCount">0</span>
+</button>
 </div>
 </section>
+<div class="article-line"></div>
+<section>
+<div class="deep-title">
+          💡 깊이 읽기
+        </div>
+<div class="deep-grid" id="deepGrid"></div>
+</section>
+</div>
 </main>
 <div id="footer"><footer class="footer">
 <div class="footer-inner">
@@ -635,7 +812,6 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 </footer></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 <script>
 /* ===== common.js ===== */
 // ==============================
@@ -1141,140 +1317,155 @@ window.closeFooterModal = function () {
 
   modal.classList.add("hidden");
 };
+</script>
+<script>
+/* ===== article_detail.js ===== */
+// ==============================
+// 기사 상세 접근 체크
+// ==============================
+(function checkArticleDetailAuth() {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
 
-/* ===== main.js ===== */
+  if (!token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.href = "/view/login.html";
+  }
+})();
 
-/* 
-   [확실] 기준 데이터 (마스터 템플릿)
-   - 타이틀, 아이콘, 색상, 순서는 여기서 관리합니다.
-   - 서버 데이터와 매핑하기 위해 고유 'id'를 추가했습니다.
-*/
-const groups = [
-    { name: "주체", items: [
-        { id: "gov", title: "정부 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏛️", color: "teal" },
-        { id: "ind", title: "개인 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "👤", color: "purple" },
-        { id: "complex", title: "복합 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "◎", color: "blue" },
-        { id: "corp", title: "기업 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "💼", color: "orange" },
-        { id: "ext", title: "외부 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🌐", color: "yellow" }
-    ]},
-    { name: "감성", items: [
-        { id: "exp", title: "기대", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⭐", color: "teal" },
-        { id: "praise", title: "성과 예찬", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏆", color: "purple" },
-        { id: "crit", title: "비판적 태도", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "💬", color: "blue" },
-        { id: "worry", title: "우려", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚠️", color: "orange" }
-    ]},
-    { name: "분석", items: [
-        { id: "res", title: "결과 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📊", color: "teal" },
-        { id: "fore", title: "전망 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📈", color: "purple" },
-        { id: "simp", title: "단순 전달", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📰", color: "blue" },
-        { id: "resp", title: "대응 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚙️", color: "orange" },
-        { id: "cause", title: "원인 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🔍", color: "yellow" }
-    ]},
-    { name: "요인", items: [
-        { id: "mkt", title: "시장 자율 강조", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚖️", color: "teal" },
-        { id: "intr", title: "정부 개입 강조", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏢", color: "purple" },
-        { id: "pol", title: "정책 요인(국내)", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📍", color: "blue" },
-        { id: "neu", title: "중립", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚖️", color: "yellow" }
-    ]}
+
+// ==============================
+// 임시 데이터
+// ==============================
+const newsDetail = {
+  title: '',
+  date: "",
+  press: "",
+  reporter: "",
+  content:
+    "",
+  sourceUrl: "",
+  likeCount: ,
+  dislikeCount: 
+};
+
+const deepNews = [
+  {
+    type: "positive",
+    tag: "관련 뉴스",
+    title: "",
+    url: ""
+  },
+  {
+    type: "negative",
+    tag: "다른 시각 추천",
+    title: "",
+    url: ""
+  }
 ];
 
-/* [확실] 화면에 카드를 그리는 핵심 렌더링 함수 */
-function renderViewGrid(data) {
-    const viewGrid = document.getElementById("viewGrid");
-    if (!viewGrid) return;
+let currentVote = "";
 
-    let htmlContent = "";
 
-    data.forEach(group => {
-        group.items.forEach(item => {
-            htmlContent += `
-                <div class="view-card">
-                    <div class="view-top">
-                        <div class="view-icon-box c-${item.color}">${item.icon}</div>
-                        <div class="view-title-group">
-                            <div class="vt c-${item.color}">${item.title}</div>
-                            <div class="vp c-${item.color}">${item.percent}%</div>
-                        </div>
-                    </div>
-                    <div class="view-bar-bg">
-                        <div class="view-bar-fill bg-${item.color}" style="width:${item.percent}%"></div>
-                    </div>
-                    <div class="reason-label">주요 근거</div>
-                    <div class="view-reason">"${item.reason}"</div>
-                    <button
-                      class="detail-btn"
-                      data-title="${item.title}"
-                      data-percent="${item.percent}"
-                    >
-                      상세 보기 >
-                    </button>
-                </div>`;
-        });
+// ==============================
+// 뉴스 출력
+// ==============================
+function loadNewsDetail() {
+  const title = document.getElementById("newsTitle");
+  const date = document.getElementById("newsDate");
+  const press = document.getElementById("newsPress");
+  const reporter = document.getElementById("newsReporter");
+  const content = document.getElementById("newsContent");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("hateCount") || document.getElementById("dislikeCount");
 
-        // 5-4-5-4 그리드 정렬을 위한 스페이서 로직 유지
-        if (group.items.length === 4) {
-            htmlContent += `<div class="view-spacer" style="visibility:hidden;"></div>`;
-        }
-    });
-
-    viewGrid.innerHTML = htmlContent;
+  if (title) title.innerText = newsDetail.title;
+  if (date) date.innerText = "발행일 " + newsDetail.date;
+  if (press) press.innerText = "언론사 " + newsDetail.press;
+  if (reporter) reporter.innerText = "기자 " + newsDetail.reporter;
+  if (content) content.innerText = newsDetail.content;
+  if (likeCount) likeCount.innerText = newsDetail.likeCount.toLocaleString();
+  if (dislikeCount) dislikeCount.innerText = newsDetail.dislikeCount.toLocaleString();
 }
 
-/* [확실] 백엔드 데이터를 가져와서 groups와 병합하는 함수 */
-async function loadAnalysisData() {
-    try {
-        // 백엔드 API 호출 (실제 FastAPI 주소로 변경하세요)
-        // const { data: mlResults } = await axios.get("/api/v1/analysis");
-        
-        // 예시용 가짜 데이터 (서버에서 올 데이터 구조)
-        const mockServerData = {
-            "gov": { "percent": 0, "reason": "데이터를 불러오는 중입니다..." },
-            "ind": { "percent": 20, "reason": "데이터를 불러오는 중입니다..." }
-            // ... 나머지 id들도 서버에서 온다고 가정
-        };
 
-        // 기준 데이터(groups)를 깊은 복사하여 수치 업데이트
-        const updatedData = JSON.parse(JSON.stringify(groups));
-        
-        updatedData.forEach(group => {
-            group.items.forEach(item => {
-                if (mockServerData[item.id]) {
-                    item.percent = mockServerData[item.id].percent;
-                    item.reason = mockServerData[item.id].reason;
-                }
-            });
-        });
-
-        // 화면 갱신
-        renderViewGrid(updatedData);
-        console.log("분석 데이터 로드 및 렌더링 완료 [확실]");
-
-    } catch (err) {
-        console.error("데이터 로드 에러:", err);
-        // 에러 시 초기 템플릿(로딩중 표시)이라도 출력
-        renderViewGrid(groups);
-    }
+// ==============================
+// 원문 보기
+// ==============================
+function goSource() {
+  window.open(newsDetail.sourceUrl, "_blank");
 }
 
-/* 기존 토글 기능 유지 */
-function toggleView() {
-    const grid = document.getElementById("viewGrid");
-    const btn = document.getElementById("toggleBtn");
 
-    if (!grid || !btn) return;
+// ==============================
+// 좋아요 / 싫어요 토글
+// ==============================
+function selectVote(type) {
+  const likeBtn = document.getElementById("likeBtn");
+  const hateBtn = document.getElementById("hateBtn") || document.getElementById("dislikeBtn");
 
-    grid.classList.toggle("expanded");
-    btn.innerText = grid.classList.contains("expanded")
-        ? "접기 ∧"
-        : "전체 18개 관점 보기 ∨";
+  if (!likeBtn || !hateBtn) return;
+
+  if (currentVote === type) {
+    currentVote = "";
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+    return;
+  }
+
+  likeBtn.classList.remove("active");
+  hateBtn.classList.remove("active");
+
+  currentVote = type;
+
+  if (type === "like") {
+    likeBtn.classList.add("active");
+  }
+
+  if (type === "hate" || type === "dislike") {
+    hateBtn.classList.add("active");
+  }
 }
 
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. 먼저 '로딩 중' 상태의 화면을 한 번 그립니다.
-    renderViewGrid(groups);
-    // 2. 그 다음 실제 데이터를 서버에서 가져옵니다.
-    loadAnalysisData();
+
+// ==============================
+// 깊이 읽기
+// ==============================
+function loadDeepNews() {
+  const grid = document.getElementById("deepGrid");
+
+  if (!grid) return;
+
+  grid.innerHTML = deepNews.map(item => `
+    <div class="deep-card" onclick="location.href='${item.url}'">
+      <div class="deep-tag ${item.type}">
+        ${item.tag}
+      </div>
+
+      <div class="deep-text">
+        ${item.title}
+      </div>
+    </div>
+  `).join("");
+}
+
+
+// ==============================
+// 전역 함수 등록
+// ==============================
+window.goSource = goSource;
+window.selectVote = selectVote;
+
+
+// ==============================
+// 최초 실행
+// ==============================
+document.addEventListener("DOMContentLoaded", function () {
+  loadNewsDetail();
+  loadDeepNews();
 });
 </script>
 </body>

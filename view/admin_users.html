@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>관리자 회원정보 | DATA 다타</title>
+<style>
+/* ===== admin_users.css ===== */
+/* ==============================
+   Reset
+============================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  background: #020817;
+  color: #f8fafc;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+
+/* ==============================
+   Layout
+============================== */
+
+.admin-users-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #020817;
+}
+
+
+/* ==============================
+   Sidebar
+============================== */
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 270px;
+  background: #0b1020;
+  border-right: 1px solid #121a2d;
+  padding-top: 28px;
+  z-index: 100;
+}
+
+.logo-wrap {
+  padding: 0 24px 32px;
+  cursor: pointer;
+}
+
+.logo-small {
+  color: #6ddcff;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.logo-main {
+  color: #14d9ff;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.side-title-wrap {
+  padding: 0 24px 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #2f3748;
+}
+
+.side-title {
+  color: #6e7c98;
+  font-size: 13px;
+}
+
+.side-menu {
+  list-style: none;
+}
+
+.side-menu li {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 28px;
+  color: #6f7d98;
+  font-size: 15px;
+  border-left: 4px solid transparent;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.side-menu li:hover {
+  background: #10192b;
+}
+
+.side-menu li.active {
+  background: #132137;
+  color: #42bfff;
+  border-left-color: #24bfff;
+  font-weight: 700;
+}
+
+
+/* ==============================
+   Main
+============================== */
+
+.admin-users-main {
+  width: calc(100% - 270px);
+  margin-left: 270px;
+  min-height: 100vh;
+  background: #020817;
+}
+
+.admin-users-header {
+  height: 74px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 0 30px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: #020817;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.main-btn,
+.logout-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.main-btn:hover,
+.logout-btn:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.admin-users-content {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+
+
+/* ==============================
+   Card
+============================== */
+
+.admin-card,
+.chart-card,
+.reaction-card {
+  background: linear-gradient(180deg, #111c31, #0d1729);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
+.card-title {
+  color: #eaf6ff;
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 16px;
+}
+
+.sub-title {
+  color: #9be7ff;
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.usage-card {
+  margin-top: 18px;
+}
+
+
+/* ==============================
+   Filter
+============================== */
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-row label {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-right: 8px;
+}
+
+input,
+select {
+  height: 32px;
+  background: #050b1b;
+  color: #dbeafe;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+  padding: 0 12px;
+  outline: none;
+}
+
+input::placeholder {
+  color: #697996;
+}
+
+select {
+  border-radius: 8px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.search-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #22d3ee;
+  color: #06101f;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+
+/* ==============================
+   Table
+============================== */
+
+.table-box {
+  max-height: 245px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0b1426;
+}
+
+.table-box.large {
+  max-height: 310px;
+}
+
+.table-box::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-box::-webkit-scrollbar-track {
+  background: #0b1426;
+  border-radius: 999px;
+}
+
+.table-box::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 999px;
+  border: 2px solid #0b1426;
+}
+
+.table-box::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+th,
+td {
+  padding: 11px 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+  border-right: 1px solid rgba(148, 163, 184, 0.3);
+  color: #dbeafe;
+  font-size: 13px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+th:last-child,
+td:last-child {
+  border-right: none;
+}
+
+th {
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+td select {
+  width: 90px;
+  height: 28px;
+  border-radius: 6px;
+  background: #1f2b3d;
+}
+
+
+/* ==============================
+   Stats
+============================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+
+.stat-box {
+  background: #1c293d;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 13px;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+}
+
+.stat-box .label {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.stat-box .value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #99a6bb;
+}
+
+.cyan {
+  color: #20d6d2;
+}
+
+.purple {
+  color: #a78bfa;
+}
+
+.blue {
+  color: #93c5fd;
+}
+
+.orange {
+  color: #fb923c;
+}
+
+
+/* ==============================
+   Graph / Reaction
+============================== */
+
+.grid-section {
+  display: grid;
+  grid-template-columns: 1.25fr 0.85fr;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.chart-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chart-card,
+.reaction-card {
+  background: #111c31;
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.graph-box {
+  height: 150px;
+  background: #d1d5db;
+  color: #06101f;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 28px;
+  font-weight: 900;
+  position: relative;
+  overflow: hidden;
+}
+
+.graph-box svg {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+
+.reaction-title {
+  margin-right: auto;
+  margin-bottom: 0;
+}
+
+
+/* ==============================
+   Admin Log
+============================== */
+
+.log-card {
+  margin-top: 18px;
+}
+
+
+/* ==============================
+   Toast
+============================== */
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  color: #e0f2fe;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: none;
+  z-index: 2000;
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 1100px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+
+  .admin-users-main {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-users-layout {
+    flex-direction: column;
+  }
+
+  .grid-section {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-users-content {
+    padding: 20px 14px 80px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="admin-users-layout">
+<!-- 관리자 사이드바 -->
+<aside class="sidebar">
+<div class="logo-wrap" onclick="location.href='/view/admin_dashboard.html'">
+<div class="logo-small">뉴스를 이해하는 방식</div>
+<div class="logo-main">DATA 다타</div>
+</div>
+<div class="side-title-wrap">
+<div class="side-title">관리자 페이지</div>
+</div>
+<ul class="side-menu">
+<li onclick="location.href='/view/admin_dashboard.html'">
+        수집 정보
+      </li>
+<li class="active" onclick="location.href='/view/admin_users.html'">
+        회원 정보
+      </li>
+<li onclick="location.href='/view/admin_dashboard.html'">
+        모델 보정
+      </li>
+</ul>
+</aside>
+<!-- 오른쪽 관리자 본문 -->
+<main class="admin-users-main">
+<header class="admin-users-header">
+<button class="main-btn" onclick="location.href='/view/index.html'" type="button">
+        메인으로
+      </button>
+<button class="logout-btn" onclick="adminUsersLogout()" type="button">
+        로그아웃
+      </button>
+</header>
+<section class="admin-users-content">
+<!-- 사용자 검색 -->
+<article class="admin-card">
+<div class="filter-row">
+<label>사용자 검색</label>
+<input id="userKeyword" placeholder="아이디" type="text"/>
+<select id="roleFilter">
+<option value="전체">전체</option>
+<option value="일반">일반</option>
+<option value="관리자">관리자</option>
+<option value="최고관리자">최고관리자</option>
+</select>
+<button class="search-btn" onclick="searchUsers()" type="button">⌕</button>
+</div>
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>사용자ID</th>
+<th>이름</th>
+<th>가입일</th>
+<th>권한</th>
+<th>👍 / 👎</th>
+<th>최근 로그인</th>
+<th>권한 변경</th>
+</tr>
+</thead>
+<tbody id="userTable"></tbody>
+</table>
+</div>
+</article>
+<!-- 서비스 이용 현황 통계 -->
+<article class="admin-card usage-card">
+<h2 class="card-title">서비스 이용 현황 통계</h2>
+<div class="stats-grid">
+<div class="stat-box">
+<div class="label cyan">사용자 평균 체류시간</div>
+<div class="value" id="avgStay"></div>
+</div>
+<div class="stat-box">
+<div class="label purple">일일 접속자 수</div>
+<div class="value" id="dailyUser"></div>
+</div>
+<div class="stat-box">
+<div class="label blue">일일 누적 체류 시간</div>
+<div class="value" id="totalStay"></div>
+</div>
+<div class="stat-box">
+<div class="label orange">일일 누적 기사 조회수</div>
+<div class="value" id="articleView"></div>
+</div>
+</div>
+</article>
+<div class="grid-section">
+<div class="chart-stack">
+<article class="chart-card">
+<h2 class="sub-title">일일 조회수 추이</h2>
+<div class="graph-box">
+              그래프
+              <svg preserveaspectratio="none" viewbox="0 0 600 180">
+<polyline fill="none" points="0,140 80,120 160,130 240,80 320,95 400,55 500,70 600,35" stroke="#38bdf8" stroke-width="6"></polyline>
+</svg>
+</div>
+</article>
+<article class="chart-card">
+<h2 class="sub-title">신규 가입자 추이</h2>
+<div class="graph-box">
+              그래프
+              <svg preserveaspectratio="none" viewbox="0 0 600 180">
+<polyline fill="none" points="0,135 80,125 160,100 240,110 320,70 400,90 500,45 600,65" stroke="#a78bfa" stroke-width="6"></polyline>
+</svg>
+</div>
+</article>
+</div>
+<article class="reaction-card">
+<div class="filter-row">
+<h2 class="sub-title reaction-title">언론사별 콘텐츠 반응도</h2>
+<input id="reactionStart" type="date"/>
+<span>~</span>
+<input id="reactionEnd" type="date"/>
+</div>
+<div class="table-box large">
+<table>
+<thead>
+<tr>
+<th>언론사</th>
+<th>조회수</th>
+<th>좋아요</th>
+</tr>
+</thead>
+<tbody id="reactionTable"></tbody>
+</table>
+</div>
+</article>
+</div>
+<!-- 관리자 로그 검색 -->
+<article class="admin-card log-card">
+<div class="filter-row">
+<label>관리자 로그 검색</label>
+<input id="adminId" placeholder="관리자 아이디" type="text"/>
+<input id="actionName" placeholder="작업이름" type="text"/>
+<input id="logDate" type="date"/>
+<button class="search-btn" onclick="searchLogs()" type="button">⌕</button>
+</div>
+<div class="table-box large">
+<table>
+<thead>
+<tr>
+<th>일시</th>
+<th>관리자ID</th>
+<th>작업이름</th>
+<th>작업내용</th>
+</tr>
+</thead>
+<tbody id="logTable"></tbody>
+</table>
+</div>
+</article>
+</section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ===== admin_users.js ===== */
+// ==============================
+// 관리자 접근 체크
+// ==============================
+
+(function checkAdminUsersAuth() {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
+
+  const role =
+    sessionStorage.getItem("user_role") ||
+    localStorage.getItem("user_role") ||
+    sessionStorage.getItem("role") ||
+    localStorage.getItem("role");
+
+  const isAdmin =
+    role === "ADMIN" ||
+    role === "SUPERADMIN" ||
+    role === "admin" ||
+    role === "superadmin" ||
+    token === "admin-test-token";
+
+  if (!token) {
+    alert("로그인이 필요한 페이지입니다.");
+    location.href = "/view/login.html";
+    return;
+  }
+
+  if (!isAdmin) {
+    alert("관리자만 접근할 수 있습니다.");
+    location.href = "/view/index.html";
+  }
+})();
+
+
+// ==============================
+// 서버 연결 전 임시 데이터
+// ==============================
+
+let userData = [
+  { id: "zxcasd", name: "홍길동", join: "2024-12-12 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-12 12:12:12" },
+  { id: "zxcadd", name: "김철수", join: "2024-12-13 09:21:12", role: "관리자", like: 81, dislike: 23, login: "2024-12-15 10:31:42" },
+  { id: "user001", name: "이영희", join: "2024-12-14 17:42:22", role: "일반", like: 31, dislike: 77, login: "2024-12-16 08:11:12" },
+  { id: "admin01", name: "관리자A", join: "2024-11-01 11:00:00", role: "관리자", like: 12, dislike: 2, login: "2024-12-17 13:44:01" },
+  { id: "root01", name: "최고관리자", join: "2024-10-01 09:00:00", role: "최고관리자", like: 0, dislike: 0, login: "2024-12-17 18:01:22" },
+  { id: "zxcasd2", name: "박민수", join: "2024-12-15 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-17 12:12:12" },
+  { id: "zxcasd3", name: "정다은", join: "2024-12-16 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-18 12:12:12" },
+  { id: "zxcasd4", name: "오지훈", join: "2024-12-17 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-19 12:12:12" }
+];
+
+const reactionData = [
+  { press: "경향신문", views: 1, likes: 111 },
+  { press: "중앙일보", views: 31, likes: 91 },
+  { press: "한국경제", views: 102, likes: 301 },
+  { press: "연합뉴스", views: 72, likes: 184 },
+  { press: "한겨레", views: 46, likes: 123 },
+  { press: "매일경제", views: 91, likes: 211 },
+  { press: "조선일보", views: 55, likes: 67 },
+  { press: "서울경제", views: 41, likes: 99 },
+  { press: "머니투데이", views: 64, likes: 143 }
+];
+
+let logData = [
+  { date: "2026-04-27 22:22:22", admin: "asdfg12345@naver.com", action: "U1111", content: "aaa000@gmail.com에 관리자 권한 부여함." },
+  { date: "2026-04-27 22:25:12", admin: "asdfg12345@naver.com", action: "U1111", content: "bbb000@gmail.com에 관리자 권한 부여함." },
+  { date: "2026-04-27 22:31:01", admin: "admin01@data.com", action: "U1112", content: "사용자 목록을 조회함." },
+  { date: "2026-04-27 22:34:22", admin: "admin01@data.com", action: "U1113", content: "권한 필터 조건으로 회원 정보를 검색함." },
+  { date: "2026-04-27 22:40:52", admin: "root01@data.com", action: "U1111", content: "ccc000@gmail.com에 최고관리자 권한 부여함." },
+  { date: "2026-04-27 22:43:10", admin: "asdfg12345@naver.com", action: "U1111", content: "ddd000@gmail.com에 관리자 권한 부여함." },
+  { date: "2026-04-27 22:51:33", admin: "asdfg12345@naver.com", action: "U1111", content: "eee000@gmail.com에 일반 권한으로 변경함." }
+];
+
+
+// ==============================
+// 공통 함수
+// ==============================
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+
+  if (!toast) {
+    alert(message);
+    return;
+  }
+
+  toast.textContent = message;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2200);
+}
+
+function adminUsersLogout() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_name");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userName");
+
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("user_name");
+  sessionStorage.removeItem("user_role");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("userName");
+
+  location.href = "/view/index.html";
+}
+
+
+// ==============================
+// 사용자 테이블
+// ==============================
+
+function renderUsers(data = userData) {
+  const tbody = document.getElementById("userTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = data.map(user => `
+    <tr>
+      <td>${user.id}</td>
+      <td>${user.name}</td>
+      <td>${user.join}</td>
+      <td>${user.role}</td>
+      <td>${user.like} / ${user.dislike}</td>
+      <td>${user.login}</td>
+      <td>
+        <select onchange="changeRole('${user.id}', this.value)">
+          <option value="일반" ${user.role === "일반" ? "selected" : ""}>일반</option>
+          <option value="관리자" ${user.role === "관리자" ? "selected" : ""}>관리자</option>
+          <option value="최고관리자" ${user.role === "최고관리자" ? "selected" : ""}>최고관리자</option>
+        </select>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function searchUsers() {
+  const keyword = document.getElementById("userKeyword").value.trim().toLowerCase();
+  const role = document.getElementById("roleFilter").value;
+
+  let result = [...userData];
+
+  if (keyword) {
+    result = result.filter(user =>
+      user.id.toLowerCase().includes(keyword) ||
+      user.name.toLowerCase().includes(keyword)
+    );
+  }
+
+  if (role !== "전체") {
+    result = result.filter(user => user.role === role);
+  }
+
+  renderUsers(result);
+  showToast("임시 사용자 데이터가 조회되었습니다.");
+}
+
+function changeRole(userId, newRole) {
+  const target = userData.find(user => user.id === userId);
+
+  if (!target) return;
+
+  target.role = newRole;
+
+  logData.unshift({
+    date: new Date().toISOString().slice(0, 19).replace("T", " "),
+    admin: "current_admin@data.com",
+    action: "권한변경",
+    content: `${userId} 사용자의 권한을 ${newRole}(으)로 변경함.`
+  });
+
+  renderLogs();
+  showToast("권한 변경이 임시 저장되었습니다.");
+}
+
+
+// ==============================
+// 언론사별 반응도
+// ==============================
+
+function renderReaction() {
+  const tbody = document.getElementById("reactionTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = reactionData
+    .sort((a, b) => b.views - a.views)
+    .map(item => `
+      <tr>
+        <td>${item.press}</td>
+        <td>${item.views.toLocaleString()}</td>
+        <td>${item.likes.toLocaleString()}</td>
+      </tr>
+    `).join("");
+}
+
+
+// ==============================
+// 관리자 로그
+// ==============================
+
+function renderLogs(data = logData) {
+  const tbody = document.getElementById("logTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = data.map(log => `
+    <tr>
+      <td>${log.date}</td>
+      <td>${log.admin}</td>
+      <td>${log.action}</td>
+      <td class="log-content">${log.content}</td>
+    </tr>
+  `).join("");
+}
+
+function searchLogs() {
+  const adminId = document.getElementById("adminId").value.trim().toLowerCase();
+  const actionName = document.getElementById("actionName").value.trim().toLowerCase();
+
+  let result = [...logData];
+
+  if (adminId) {
+    result = result.filter(log => log.admin.toLowerCase().includes(adminId));
+  }
+
+  if (actionName) {
+    result = result.filter(log => log.action.toLowerCase().includes(actionName));
+  }
+
+  renderLogs(result);
+  showToast("임시 관리자 로그가 조회되었습니다.");
+}
+
+
+// ==============================
+// 날짜 초기화
+// ==============================
+
+function setToday() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const reactionStart = document.getElementById("reactionStart");
+  const reactionEnd = document.getElementById("reactionEnd");
+  const logDate = document.getElementById("logDate");
+
+  if (reactionStart) reactionStart.value = today;
+  if (reactionEnd) reactionEnd.value = today;
+  if (logDate) logDate.value = today;
+}
+
+
+// ==============================
+// 전역 등록
+// ==============================
+
+window.adminUsersLogout = adminUsersLogout;
+window.searchUsers = searchUsers;
+window.changeRole = changeRole;
+window.searchLogs = searchLogs;
+
+
+// ==============================
+// 최초 실행
+// ==============================
+
+document.addEventListener("DOMContentLoaded", function () {
+  setToday();
+  renderUsers();
+  renderReaction();
+  renderLogs();
+});
+</script>
+</body>
+</html>

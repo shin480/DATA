@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>관리자 대시보드 | DATA 다타</title>
+<style>
+/* ===== admin_dashboard.css ===== */
+/* ==============================
+   Reset
+============================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  background: #020817;
+  color: #f8fafc;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+
+/* ==============================
+   Layout
+============================== */
+
+.admin-dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #020817;
+}
+
+
+/* ==============================
+   Sidebar
+============================== */
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 270px;
+  background: #0b1020;
+  border-right: 1px solid #121a2d;
+  padding-top: 28px;
+  z-index: 100;
+}
+
+.logo-wrap {
+  padding: 0 24px 32px;
+  cursor: pointer;
+}
+
+.logo-small {
+  color: #6ddcff;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.logo-main {
+  color: #14d9ff;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.side-title-wrap {
+  padding: 0 24px 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #2f3748;
+}
+
+.side-title {
+  color: #6e7c98;
+  font-size: 13px;
+}
+
+.side-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.side-menu li {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 28px;
+  color: #6f7d98;
+  font-size: 15px;
+  border-left: 4px solid transparent;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.side-menu li:hover {
+  background: #10192b;
+}
+
+.side-menu li.active {
+  background: #132137;
+  color: #42bfff;
+  border-left-color: #24bfff;
+  font-weight: 700;
+}
+
+
+/* ==============================
+   Main
+============================== */
+
+.dashboard-main {
+  width: calc(100% - 270px);
+  margin-left: 270px;
+  min-height: 100vh;
+  background: #020817;
+}
+
+.dashboard-header {
+  height: 74px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 0 30px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: #020817;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.main-btn,
+.logout-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.main-btn:hover,
+.logout-btn:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.dashboard-content {
+  max-width: 1050px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+
+
+/* ==============================
+   Card / Grid
+============================== */
+
+.dashboard-card {
+  background: linear-gradient(180deg, #111c31, #0d1729);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
+.dashboard-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #9be7ff;
+  margin-bottom: 20px;
+}
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.section {
+  margin-top: 24px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.section-head .dashboard-title {
+  margin-bottom: 0;
+}
+
+
+/* ==============================
+   Filter
+============================== */
+
+.filter {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+input,
+select {
+  background: #0b1426;
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 9px;
+  padding: 11px 13px;
+  outline: none;
+}
+
+input[type="date"] {
+  color: #ffffff;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 10px;
+  background: #38bdf8;
+  color: #06101f;
+  font-weight: 900;
+  padding: 12px 24px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: #0ea5e9;
+}
+
+
+/* ==============================
+   Summary
+============================== */
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.summary-box {
+  min-height: 128px;
+  background: #0b1426;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+}
+
+.summary-box span {
+  color: #dbeafe;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.summary-box strong {
+  font-size: 32px;
+  color: #ffffff;
+}
+
+
+/* ==============================
+   Chart
+============================== */
+
+.chart-card {
+  text-align: center;
+}
+
+.donut {
+  width: 190px;
+  height: 190px;
+  margin: 10px auto 16px;
+  border-radius: 50%;
+  background: conic-gradient(#45ded2 0 60%, #f7c74d 60% 62%, #ff7070 62% 100%);
+  position: relative;
+}
+
+.donut::after {
+  content: "";
+  position: absolute;
+  inset: 42px;
+  border-radius: 50%;
+  background: #0d1729;
+}
+
+.legend {
+  font-size: 14px;
+  line-height: 1.8;
+  font-weight: 700;
+}
+
+
+/* ==============================
+   Table
+============================== */
+
+.table-box {
+  max-height: 300px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0b1426;
+}
+
+.table-box::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-box::-webkit-scrollbar-track {
+  background: #0b1426;
+  border-radius: 999px;
+}
+
+.table-box::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 999px;
+  border: 2px solid #0b1426;
+}
+
+.table-box::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  color: #dbeafe;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+th {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+td[title] {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ==============================
+   Buttons / Status
+============================== */
+
+.center {
+  text-align: center;
+  margin: 24px 0;
+}
+
+.outline-btn {
+  background: transparent;
+  color: #22d3ee;
+  border: 1px solid #22d3ee;
+  border-radius: 999px;
+  padding: 12px 22px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.outline-btn:hover {
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.status {
+  display: inline-block;
+  min-width: 54px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.status.error {
+  color: #ff6b6b;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.8);
+}
+
+.status.success {
+  color: #38ff93;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.8);
+}
+
+.status.live {
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.18);
+}
+
+.status.wait {
+  color: #facc15;
+  background: rgba(234, 179, 8, 0.18);
+}
+
+.btn-small {
+  padding: 7px 11px;
+  border-radius: 7px;
+  cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #0b1426;
+  color: #e5e7eb;
+  margin-right: 4px;
+}
+
+.btn-small:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.btn-delete {
+  color: #ff6b6b;
+  border-color: #ef4444;
+}
+
+.btn-success {
+  color: #38ff93;
+  border-color: #22c55e;
+}
+
+.add-btn {
+  background: #38bdf8;
+  color: #06101f;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.preview {
+  width: 120px;
+  height: 32px;
+  border-radius: 4px;
+  background: #24243a;
+  color: #94a3b8;
+  font-size: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* ==============================
+   Modal
+============================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.68);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-box {
+  width: 900px;
+  max-width: 94%;
+  background: #071020;
+  border-radius: 26px;
+  padding: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.modal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.modal-title {
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.close-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  font-size: 36px;
+  cursor: pointer;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 28px;
+  margin-bottom: 22px;
+  align-items: start;
+}
+
+.form-label strong {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.form-label p {
+  color: #94a3b8;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.required-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: #38bdf8;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+
+.upload-box {
+  width: 100%;
+  min-height: 150px;
+  border: 1.5px dashed rgba(148, 163, 184, 0.45);
+  border-radius: 18px;
+  padding: 34px 20px;
+  text-align: center;
+  color: #9fb2d4;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.upload-box strong,
+.upload-box span {
+  display: block;
+  max-width: 100%;
+  word-break: keep-all;
+}
+
+.help {
+  width: 100%;
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  text-align: right;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.cancel-btn,
+.submit-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 13px 28px;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.submit-btn {
+  background: #3b82f6;
+}
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #0f172a;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  color: #e0f2fe;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: none;
+  z-index: 2000;
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 1100px) {
+  .top-grid,
+  .mid-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+
+  .dashboard-main {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-dashboard-layout {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-content {
+    padding: 20px 14px 80px;
+  }
+
+  .section-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .modal-box {
+    padding: 24px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="admin-dashboard-layout">
+<!-- Sidebar -->
+<aside class="sidebar">
+<div class="logo-wrap" onclick="location.href='/view/admin_dashboard.html'">
+<div class="logo-small">뉴스를 이해하는 방식</div>
+<div class="logo-main">DATA 다타</div>
+</div>
+<div class="side-title-wrap">
+<div class="side-title">관리자 페이지</div>
+</div>
+<ul class="side-menu">
+<li class="active" onclick="location.href='/view/admin_dashboard.html'">
+        수집 정보
+      </li>
+<li onclick="location.href='/view/admin_users.html'">
+        회원 정보
+      </li>
+<li onclick="location.href='/view/admin_dashboard.html'">
+        모델 보정
+      </li>
+</ul>
+</aside>
+<!-- Main -->
+<main class="dashboard-main">
+<header class="dashboard-header">
+<button class="main-btn" onclick="location.href='/view/index.html'" type="button">
+        메인으로
+      </button>
+<button class="logout-btn" onclick="adminDashboardLogout()" type="button">
+        로그아웃
+      </button>
+</header>
+<section class="dashboard-content">
+<!-- 수집 요약 -->
+<section class="dashboard-card">
+<h1 class="dashboard-title">수집 정보</h1>
+<div class="filter">
+<input id="summaryStart" type="date"/>
+<span>~</span>
+<input id="summaryEnd" type="date"/>
+<button class="action-btn" onclick="searchSummary()" type="button">
+            조회
+          </button>
+<button class="outline-btn" onclick="runManualCollect()" type="button">
+            수동 수집 실행
+          </button>
+</div>
+<div class="summary-grid">
+<div class="summary-box">
+<span>수집 기사 수</span>
+<strong id="collectedCount"></strong>
+</div>
+<div class="summary-box">
+<span>제거 기사 수</span>
+<strong id="removedCount"></strong>
+</div>
+</div>
+</section>
+<!-- 언론사 / 스코프 -->
+<section class="top-grid section">
+<article class="dashboard-card">
+<h2 class="dashboard-title">언론사별 기사 수</h2>
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>언론사</th>
+<th>기사 수</th>
+</tr>
+</thead>
+<tbody id="pressTable"></tbody>
+</table>
+</div>
+</article>
+<article class="dashboard-card chart-card">
+<h2 class="dashboard-title">감성 분석 비율</h2>
+<div class="donut"></div>
+<div class="legend">
+<div style="color:#45ded2;"></div>
+<div style="color:#f7c74d;"></div>
+<div style="color:#ff7070;"></div>
+</div>
+</article>
+</section>
+<section class="dashboard-card section">
+<div class="section-head">
+<h2 class="dashboard-title">스코프별 기사 수</h2>
+</div>
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>ScopeTitle</th>
+<th>기사 수</th>
+</tr>
+</thead>
+<tbody id="scopeTable"></tbody>
+</table>
+</div>
+</section>
+<!-- 분석 정보 -->
+<section class="dashboard-card section">
+<div class="section-head">
+<h2 class="dashboard-title">분석 정보</h2>
+</div>
+<div class="filter">
+<select id="analysisType">
+<option value="전체">전체</option>
+<option value="성공 데이터">성공 데이터</option>
+<option value="에러 데이터">에러 데이터</option>
+</select>
+<input id="analysisStart" type="date"/>
+<span>~</span>
+<input id="analysisEnd" type="date"/>
+<button class="action-btn" onclick="searchAnalysis()" type="button">
+            조회
+          </button>
+</div>
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>기사ID</th>
+<th>기사 제목</th>
+<th>1차 분석</th>
+<th>2차 분석</th>
+<th>상태</th>
+<th>에러코드</th>
+<th>에러메시지</th>
+<th>시간</th>
+<th>관리</th>
+</tr>
+</thead>
+<tbody id="analysisTable"></tbody>
+</table>
+</div>
+</section>
+<!-- 배너 관리 -->
+<section class="dashboard-card section">
+<div class="section-head">
+<h2 class="dashboard-title">배너 관리</h2>
+<button class="add-btn" onclick="openModal()" type="button">
+            + 새 배너 등록
+          </button>
+</div>
+<div class="table-box">
+<table>
+<thead>
+<tr>
+<th>이미지</th>
+<th>배너 정보</th>
+<th>노출 기간</th>
+<th>상태</th>
+<th>관리</th>
+</tr>
+</thead>
+<tbody id="bannerTable"></tbody>
+</table>
+</div>
+</section>
+</section>
+</main>
+</div>
+<!-- 배너 등록/수정 모달 -->
+<div class="modal" id="bannerModal">
+<div class="modal-box">
+<div class="modal-top">
+<h2 class="modal-title" id="modalTitle">새 배너 등록</h2>
+<button class="close-btn" onclick="closeModal()" type="button">
+        ×
+      </button>
+</div>
+<div class="form-row">
+<div class="form-label">
+<strong>배너 제목 <span class="required-dot"></span></strong>
+<p>관리자 화면에서 구분할 배너 이름입니다.</p>
+</div>
+<input id="bannerTitle" placeholder="배너 제목" type="text"/>
+</div>
+<div class="form-row">
+<div class="form-label">
+<strong>연결 URL <span class="required-dot"></span></strong>
+<p>배너 클릭 시 이동할 주소입니다.</p>
+</div>
+<input id="bannerUrl" placeholder="https://example.com" type="text"/>
+</div>
+<div class="form-row">
+<div class="form-label">
+<strong>노출 기간 <span class="required-dot"></span></strong>
+<p>배너가 노출될 시작일과 종료일입니다.</p>
+</div>
+<div>
+<input id="bannerStart" type="date"/>
+<span> ~ </span>
+<input id="bannerEnd" type="date"/>
+</div>
+</div>
+<div class="form-row">
+<div class="form-label">
+<strong>배너 이미지 <span class="required-dot"></span></strong>
+<p>권장 비율은 10:1입니다.</p>
+</div>
+<label class="upload-box">
+<strong>이미지 업로드</strong>
+<span>PNG / JPG 파일 선택</span>
+<input accept="image/*" hidden="" id="bannerImage" type="file"/>
+</label>
+</div>
+<div class="help">
+      서버 연결 전에는 이미지 파일명이 임시로 저장됩니다.
+    </div>
+<div class="modal-actions">
+<button class="cancel-btn" onclick="closeModal()" type="button">
+        취소
+      </button>
+<button class="submit-btn" onclick="saveBanner()" type="button">
+        등록하기
+      </button>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ===== admin_dashboard.js ===== */
+// ==============================
+// 관리자 접근 체크
+// ==============================
+
+(function checkAdminDashboardAuth() {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
+
+  const role =
+    sessionStorage.getItem("user_role") ||
+    localStorage.getItem("user_role") ||
+    sessionStorage.getItem("role") ||
+    localStorage.getItem("role");
+
+  const isAdmin =
+    role === "ADMIN" ||
+    role === "SUPERADMIN" ||
+    role === "admin" ||
+    role === "superadmin" ||
+    token === "admin-test-token";
+
+  if (!token) {
+    alert("로그인이 필요한 페이지입니다.");
+    location.href = "/view/login.html";
+    return;
+  }
+
+  if (!isAdmin) {
+    alert("관리자만 접근할 수 있습니다.");
+    location.href = "/view/index.html";
+  }
+})();
+
+
+// ==============================
+// 임시 데이터
+// ==============================
+
+const pressData = [
+  { name: "경향신문", count: 1 },
+  { name: "중앙일보", count: 2222 },
+  { name: "한국경제", count: 1111111 },
+  { name: "연합뉴스", count: 84231 },
+  { name: "매일경제", count: 31920 },
+  { name: "한겨레", count: 11420 },
+  { name: "조선일보", count: 9511 }
+];
+
+const scopeData = [
+  { title: "ScopeTitle1", count: 1 },
+  { title: "ScopeTitle2", count: 2222 },
+  { title: "ScopeTitle3", count: 1111111 },
+  { title: "ScopeTitle4", count: 1111111 },
+  { title: "ScopeTitle5", count: 1111111 },
+  { title: "ScopeTitle6", count: 1111111 },
+  { title: "ScopeTitle7", count: 1111111 }
+];
+
+let analysisData = [
+  {
+    id: "ART-001",
+    title: "삼성전자 반도체 수출 목표 상향 조정",
+    first: "긍정",
+    second: "전망 분석",
+    status: "에러",
+    code: "E-101",
+    message: "분석 결과 저장 실패",
+    time: "2026-04-27 09:10"
+  },
+  {
+    id: "ART-002",
+    title: "금리 인하 기대감 속 증시 상승",
+    first: "긍정",
+    second: "결과 분석",
+    status: "성공",
+    code: "-",
+    message: "-",
+    time: "2026-04-27 10:20"
+  },
+  {
+    id: "ART-003",
+    title: "원자재 가격 상승으로 기업 부담 확대",
+    first: "부정",
+    second: "원인 분석",
+    status: "에러",
+    code: "E-204",
+    message: "2차 분류 누락",
+    time: "2026-04-27 11:35"
+  }
+];
+
+let bannerData = [
+  {
+    id: 1,
+    title: "신규 가입 프로모션",
+    url: "https://data.com/promo1",
+    start: "2026-04-27",
+    end: "2026-05-31",
+    imageName: "IMG (10:1)"
+  },
+  {
+    id: 2,
+    title: "여름맞이 특가 이벤트",
+    url: "https://data.com/event2",
+    start: "2026-06-01",
+    end: "2026-06-30",
+    imageName: "IMG (10:1)"
+  }
+];
+
+let editBannerId = null;
+
+
+// ==============================
+// 공통 함수
+// ==============================
+
+function formatNumber(num) {
+  return Number(num).toLocaleString("ko-KR");
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+
+  if (!toast) {
+    alert(message);
+    return;
+  }
+
+  toast.textContent = message;
+  toast.style.display = "block";
+
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 2200);
+}
+
+function validateDateRange(start, end) {
+  if (!start || !end) {
+    showToast("시작일과 종료일을 모두 선택해주세요.");
+    return false;
+  }
+
+  if (start > end) {
+    showToast("시작일은 종료일보다 늦을 수 없습니다.");
+    return false;
+  }
+
+  return true;
+}
+
+function getBannerStatus(start, end) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const s = new Date(start);
+  const e = new Date(end);
+
+  if (today < s) return "대기중";
+  if (today > e) return "종료";
+  return "게시중";
+}
+
+
+// ==============================
+// 렌더링
+// ==============================
+
+function renderPress() {
+  const tbody = document.getElementById("pressTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = pressData
+    .sort((a, b) => b.count - a.count)
+    .map(item => `
+      <tr>
+        <td>${item.name}</td>
+        <td>${formatNumber(item.count)}</td>
+      </tr>
+    `).join("");
+}
+
+function renderScope() {
+  const tbody = document.getElementById("scopeTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = scopeData
+    .sort((a, b) => b.count - a.count)
+    .map(item => `
+      <tr>
+        <td title="${item.title}">${item.title}</td>
+        <td>${formatNumber(item.count)}</td>
+      </tr>
+    `).join("");
+}
+
+function renderAnalysis(data = analysisData) {
+  const tbody = document.getElementById("analysisTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = data.map(item => {
+    const statusClass = item.status === "성공" ? "success" : "error";
+
+    return `
+      <tr>
+        <td>${item.id}</td>
+        <td title="${item.title}">${item.title}</td>
+        <td>${item.first}</td>
+        <td>${item.second}</td>
+        <td><span class="status ${statusClass}">${item.status}</span></td>
+        <td>${item.code}</td>
+        <td title="${item.message}">${item.message}</td>
+        <td>${item.time}</td>
+        <td>
+          ${
+            item.status === "에러"
+              ? `<button class="btn-small btn-delete" onclick="deleteAnalysis('${item.id}')">삭제</button>
+                 <button class="btn-small btn-success" onclick="retryAnalysis('${item.id}')">재실행</button>`
+              : "-"
+          }
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderBanner() {
+  const tbody = document.getElementById("bannerTable");
+
+  if (!tbody) return;
+
+  tbody.innerHTML = bannerData.map(item => {
+    const status = getBannerStatus(item.start, item.end);
+
+    const statusClass =
+      status === "게시중" ? "live" :
+      status === "대기중" ? "wait" : "error";
+
+    return `
+      <tr>
+        <td><div class="preview">${item.imageName}</div></td>
+        <td>
+          <strong>${item.title}</strong><br>
+          <span style="color:#38bdf8;font-size:13px;">${item.url}</span>
+        </td>
+        <td>${item.start} ~ ${item.end}</td>
+        <td><span class="status ${statusClass}">${status}</span></td>
+        <td>
+          <button class="btn-small" onclick="editBanner(${item.id})">수정</button>
+          <button class="btn-small btn-delete" onclick="deleteBanner(${item.id})">삭제</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+
+// ==============================
+// 조회 / 실행
+// ==============================
+
+function searchSummary() {
+  const start = document.getElementById("summaryStart").value;
+  const end = document.getElementById("summaryEnd").value;
+
+  if (!validateDateRange(start, end)) return;
+
+  const collectedCount = document.getElementById("collectedCount");
+  const removedCount = document.getElementById("removedCount");
+
+  if (collectedCount) {
+    collectedCount.textContent = Math.floor(Math.random() * 300) + 80;
+  }
+
+  if (removedCount) {
+    removedCount.textContent = Math.floor(Math.random() * 40) + 5;
+  }
+
+  showToast("임시 데이터로 조회되었습니다.");
+}
+
+function searchAnalysis() {
+  const type = document.getElementById("analysisType").value;
+  const start = document.getElementById("analysisStart").value;
+  const end = document.getElementById("analysisEnd").value;
+
+  if (!validateDateRange(start, end)) return;
+
+  let result = [...analysisData];
+
+  if (type === "에러 데이터") {
+    result = result.filter(item => item.status === "에러");
+  }
+
+  if (type === "성공 데이터") {
+    result = result.filter(item => item.status === "성공");
+  }
+
+  renderAnalysis(result);
+  showToast("분석 정보가 임시 조회되었습니다.");
+}
+
+function runManualCollect() {
+  const ok = confirm("서버 연결 전 임시 기능입니다. 수집 실행 상태만 표시할까요?");
+
+  if (!ok) return;
+
+  showToast("배치 생성 성공 : 수집이 시작되었습니다. 현재는 임시 처리입니다.");
+}
+
+function deleteAnalysis(id) {
+  const ok = confirm("해당 분석 에러 데이터를 삭제하시겠습니까?");
+
+  if (!ok) return;
+
+  analysisData = analysisData.filter(item => item.id !== id);
+  renderAnalysis();
+  showToast("임시 삭제 처리되었습니다.");
+}
+
+function retryAnalysis(id) {
+  const target = analysisData.find(item => item.id === id);
+
+  if (!target) return;
+
+  target.status = "성공";
+  target.code = "-";
+  target.message = "-";
+
+  renderAnalysis();
+  showToast("임시 재실행 완료 처리되었습니다.");
+}
+
+
+// ==============================
+// 배너 모달
+// ==============================
+
+function openModal() {
+  editBannerId = null;
+
+  const modalTitle = document.getElementById("modalTitle");
+  const submitBtn = document.querySelector(".submit-btn");
+  const modal = document.getElementById("bannerModal");
+
+  if (modalTitle) modalTitle.textContent = "새 배너 등록";
+  if (submitBtn) submitBtn.textContent = "등록하기";
+
+  const bannerTitle = document.getElementById("bannerTitle");
+  const bannerUrl = document.getElementById("bannerUrl");
+  const bannerStart = document.getElementById("bannerStart");
+  const bannerEnd = document.getElementById("bannerEnd");
+  const bannerImage = document.getElementById("bannerImage");
+
+  if (bannerTitle) bannerTitle.value = "";
+  if (bannerUrl) bannerUrl.value = "";
+  if (bannerStart) bannerStart.value = "";
+  if (bannerEnd) bannerEnd.value = "";
+  if (bannerImage) bannerImage.value = "";
+
+  if (modal) modal.classList.add("show");
+}
+
+function closeModal() {
+  const modal = document.getElementById("bannerModal");
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
+}
+
+function saveBanner() {
+  const title = document.getElementById("bannerTitle").value.trim();
+  const url = document.getElementById("bannerUrl").value.trim();
+  const start = document.getElementById("bannerStart").value;
+  const end = document.getElementById("bannerEnd").value;
+  const imageInput = document.getElementById("bannerImage");
+
+  if (!title) {
+    showToast("배너 제목을 입력해주세요.");
+    return;
+  }
+
+  if (!url) {
+    showToast("연결 URL을 입력해주세요.");
+    return;
+  }
+
+  if (!validateDateRange(start, end)) return;
+
+  if (!editBannerId && imageInput.files.length === 0) {
+    showToast("배너 이미지를 선택해주세요.");
+    return;
+  }
+
+  const imageName =
+    imageInput.files.length > 0 ? imageInput.files[0].name : "IMG (10:1)";
+
+  if (editBannerId) {
+    const target = bannerData.find(item => item.id === editBannerId);
+
+    if (!target) return;
+
+    target.title = title;
+    target.url = url;
+    target.start = start;
+    target.end = end;
+    target.imageName = imageName;
+
+    showToast("배너가 임시 수정되었습니다.");
+  } else {
+    bannerData.push({
+      id: Date.now(),
+      title,
+      url,
+      start,
+      end,
+      imageName
+    });
+
+    showToast("배너가 임시 등록되었습니다.");
+  }
+
+  renderBanner();
+  closeModal();
+}
+
+function editBanner(id) {
+  const target = bannerData.find(item => item.id === id);
+
+  if (!target) return;
+
+  editBannerId = id;
+
+  const modalTitle = document.getElementById("modalTitle");
+  const submitBtn = document.querySelector(".submit-btn");
+
+  if (modalTitle) modalTitle.textContent = "배너 수정";
+  if (submitBtn) submitBtn.textContent = "수정하기";
+
+  document.getElementById("bannerTitle").value = target.title;
+  document.getElementById("bannerUrl").value = target.url;
+  document.getElementById("bannerStart").value = target.start;
+  document.getElementById("bannerEnd").value = target.end;
+  document.getElementById("bannerImage").value = "";
+
+  document.getElementById("bannerModal").classList.add("show");
+}
+
+function deleteBanner(id) {
+  const ok = confirm("해당 배너를 삭제하시겠습니까?");
+
+  if (!ok) return;
+
+  bannerData = bannerData.filter(item => item.id !== id);
+  renderBanner();
+  showToast("배너가 임시 삭제되었습니다.");
+}
+
+
+// ==============================
+// 로그아웃
+// ==============================
+
+function adminDashboardLogout() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_name");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userName");
+
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("user_name");
+  sessionStorage.removeItem("user_role");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("userName");
+
+  location.href = "/view/index.html";
+}
+
+
+// ==============================
+// 전역 등록
+// ==============================
+
+window.searchSummary = searchSummary;
+window.searchAnalysis = searchAnalysis;
+window.runManualCollect = runManualCollect;
+window.deleteAnalysis = deleteAnalysis;
+window.retryAnalysis = retryAnalysis;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.saveBanner = saveBanner;
+window.editBanner = editBanner;
+window.deleteBanner = deleteBanner;
+window.adminDashboardLogout = adminDashboardLogout;
+
+
+// ==============================
+// 최초 실행
+// ==============================
+
+document.addEventListener("DOMContentLoaded", function () {
+  renderPress();
+  renderScope();
+  renderAnalysis();
+  renderBanner();
+
+  const modal = document.getElementById("bannerModal");
+
+  if (modal) {
+    modal.addEventListener("click", function (e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>

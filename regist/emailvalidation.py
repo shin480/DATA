@@ -1,18 +1,17 @@
 import smtplib
-import uvicorn
 from email.message import EmailMessage
-from fastapi import FastAPI
 import random
 from sqlalchemy import text
 from util.db import get_engine
-from fastapi.responses import HTMLResponse
+import os
+from dotenv import load_dotenv
 
-app = FastAPI()
+# env 파일에 있는 변수들을 파이썬 환경으로 불러옵니다.
+load_dotenv()
 
-# --- [설정] 발신 정보 ---
-SENDER_EMAIL = "data260417@gmail.com"
-SENDER_PASSWORD = "zvalcyxiydtnzewi"
-RECEIVER_EMAIL = ""  # 확인할 계정
+# os 모듈을 사용해 환경변수에서 값을 쏙쏙 뽑아옵니다.
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
 # 1. DB에서 이메일 중복 확인 함수
 def check_email_duplicate(email: str):
@@ -65,7 +64,7 @@ def send_cert_email(email: str):
         print(f"⚠️ 발송 제한 초과: {email}")
         return {"success": False, "message": "오늘 발송 가능 횟수(5회)를 초과했습니다."}
 
-    # 함수 내부에서 6자리 인증번호 직접 생성
+    # 함수 내부에서 4자리 인증번호 직접 생성
     cert_code = str(random.randint(1000, 9999))
 
     conn = get_engine()

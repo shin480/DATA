@@ -18,7 +18,7 @@ def login_user(info: Dict[str, Any], req: Request):
 
         # 1. 이메일로 사용자 정보 추출
         sql = text("""
-                    SELECT name, user_id, password, birth_date, gender
+                    SELECT name, user_id, password, birth_date, gender, role
                     FROM users 
                     WHERE user_id = :email
                 """)
@@ -37,12 +37,18 @@ def login_user(info: Dict[str, Any], req: Request):
                     "name": result.name,
                     "email": result.user_id,
                     # 테이블에 없는 정보는 일단 빈값이나 세션 유지용으로만 둠
-                    "birth": "",
-                    "gender": ""
+                    "role": result.role,  # DB에서 가져온 권한 정보 (예: 'USER', 'ADMIN')
+                    "birth": str(result.birth_date) if result.birth_date else "", # 날짜 객체일 경우 문자열 변환
+                    "gender": result.gender if result.gender else ""
                 }
                 req.session["user"] = user_info
 
-                return {"success": True, "message": f"{result.name}님, 환영합니다!", "user": user_info}
+                return {"success": True, "message": f"{result.name}님, 환영합니다!",
+                        "user": {
+                        "access_token": "session-active",
+                        "user_name": result.name,
+                        "user_role": result.role  # 이 값이 프론트엔드의 sessionStorage('user_role')로 들어갑니다.
+                }}
             else:
                 return {"success": False, "message": "이메일 또는 비밀번호가 일치하지 않습니다."}
 
