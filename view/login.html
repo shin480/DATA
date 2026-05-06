@@ -177,129 +177,11 @@
 </body>
 <script>
 
-// 지금은 밑 코드!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!//
-document.addEventListener("DOMContentLoaded", function () {
-  const loginForm = document.getElementById("loginForm");
-  const signupBtn = document.getElementById("signupBtn");
-  const findPasswordBtn = document.getElementById("findPasswordBtn");
-
-  if (loginForm) {
-    loginForm.addEventListener("submit", handleLogin);
-  }
-
-  if (signupBtn) {
-    signupBtn.addEventListener("click", function () {
-      location.href = "/view/terms.html";
-    });
-  }
-
-  if (findPasswordBtn) {
-    findPasswordBtn.addEventListener("click", function () {
-      alert("비밀번호 찾기 기능은 추후 구현 예정입니다.");
-    });
-  }
-});
-
-
-function showLoginError(message) {
-  const errorBox = document.getElementById("loginError");
-
-  if (!errorBox) {
-    alert(message);
-    return;
-  }
-
-  errorBox.innerText = message;
-}
-
-
-function clearLoginError() {
-  const errorBox = document.getElementById("loginError");
-
-  if (errorBox) {
-    errorBox.innerText = "";
-  }
-}
-
-
-function saveLoginSession(user) {
-  /*
-    서버 연결 전 임시 로그인 저장값.
-    common.js에서 이 값들을 읽어서
-    마이페이지 / 관리자페이지 버튼을 구분함.
-  */
-
-  sessionStorage.setItem("access_token", user.accessToken);
-  sessionStorage.setItem("user_name", user.userName);
-  sessionStorage.setItem("user_role", user.role);
-
-  // 혹시 기존 코드가 localStorage를 읽어도 동작하게 같이 저장
-  localStorage.setItem("access_token", user.accessToken);
-  localStorage.setItem("user_name", user.userName);
-  localStorage.setItem("user_role", user.role);
-}
-
-
-function handleLogin(e) {
-  e.preventDefault();
-
-  clearLoginError();
-
-  const emailInput = document.getElementById("email");
-  const passwordInput = document.getElementById("password");
-
-  const email = emailInput ? emailInput.value.trim() : "";
-  const password = passwordInput ? passwordInput.value.trim() : "";
-
-  if (!email) {
-    showLoginError("이메일을 입력해주세요.");
-    return;
-  }
-
-  if (!password) {
-    showLoginError("비밀번호를 입력해주세요.");
-    return;
-  }
-
-  /*
-    테스트 로그인 계정
-
-    관리자:
-    admin@data.com / 1234
-
-    일반유저:
-    user@data.com / 1234
-  */
-
-  if (email === "admin@data.com" && password === "1234") {
-    saveLoginSession({
-      accessToken: "admin-test-token",
-      userName: "DATAAdmin",
-      role: "ADMIN"
-    });
-
-    location.href = "/view/main.html";
-    return;
-  }
-
-  if (email === "user@data.com" && password === "1234") {
-    saveLoginSession({
-      accessToken: "user-test-token",
-      userName: "DATAUser",
-      role: "GENERAL"
-    });
-
-    location.href = "/view/main.html";
-    return;
-  }
-
-  showLoginError("이메일 또는 비밀번호가 올바르지 않습니다.");
-}
 // 지금은 위 코드!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!//
 
 
 
-/*
+
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -334,12 +216,12 @@ function handleLogin(e) {
         }
     });
     document.getElementById('authForgotPasswordLink').addEventListener('click', function() {
-            console.log("비밀번호 찾기 페이지로 전환합니다."); [확실]
+            console.log("비밀번호 찾기 페이지로 전환합니다.");
         });
 
 
 
-        */
+    
 
 
 
