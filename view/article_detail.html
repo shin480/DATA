@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>뉴스 상세보기 | DATA 다타</title>
+<style>
+/* ===== common.css ===== */
+/* ==============================
+   Common Utility Only
+   메인 디자인 건드리지 않음
+============================== */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ==============================
+   Search Suggest Dropdown
+   헤더 디자인은 main.css 기준
+============================== */
+
+.main-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-suggest-box {
+  position: fixed;
+  width: 260px;
+  max-width: 80vw;
+  padding: 10px 0 12px;
+  border: 1px solid #1e293b;
+  border-top: 0;
+  border-radius: 0 0 18px 18px;
+  background: #050b1c;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  z-index: 20000;
+  overflow: hidden;
+}
+
+.search-suggest-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-suggest-item {
+  width: 100%;
+  height: 38px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  text-align: left;
+}
+
+.search-suggest-item:hover {
+  background: rgba(56, 189, 248, 0.1);
+  color: #ffffff;
+}
+
+.search-suggest-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.search-suggest-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #94a3b8;
+  color: #020817;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.search-suggest-keyword {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggest-arrow {
+  color: #94a3b8;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.search-highlight {
+  color: #00e5ff;
+  font-weight: 900;
+}
+
+
+/* ==============================
+   Footer
+============================== */
+
+.footer {
+  border-top: 1px solid #111827;
+  background: #070b1a;
+  padding: 24px 0;
+}
+
+.footer-inner {
+  width: 1440px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.footer-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #00e5ff, #2563eb);
+  color: #020617;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-link {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.footer-link:hover {
+  color: #00e5ff;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 12px;
+  background: #334155;
+}
+
+.footer-copy {
+  margin: 0;
+  color: #64748b;
+}
+
+
+/* ==============================
+   Footer Modal
+============================== */
+
+.footer-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 23, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30000;
+}
+
+.footer-modal-box {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.footer-modal-content {
+  color: #cbd5e1;
+  line-height: 1.8;
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.footer-modal-content h3 {
+  margin: 0 0 16px;
+  color: #f8fafc;
+}
+
+.footer-modal-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #00e5ff;
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 980px) {
+  .footer-inner {
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-suggest-box {
+    left: 18px !important;
+    right: 18px !important;
+    width: auto !important;
+    max-width: none;
+  }
+
+  .footer-inner {
+    padding: 0 18px;
+  }
+}
+/* ===== main.css ===== */
+/* [확실] 기본 스타일 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sans-serif; }
+.page { width: 1440px; min-height: 100vh; margin: 0 auto; background: #050816; }
+
+/* [확실] 헤더 */
+.header {
+    height: 72px; padding: 0 64px; display: flex; align-items: center; justify-content: space-between;
+    background: #070b1a; border-bottom: 1px solid #111827;
+}
+.logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: #00E5FF; text-decoration: none; }
+.logo-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #00E5FF, #2563eb); display: flex; align-items: center; justify-content: center; color: #020617; font-weight: 900; }
+.nav { display: flex; align-items: center; gap: 30px; color: #94a3b8; font-size: 15px; }
+.nav a { text-decoration: none; color: inherit; transition: color 0.2s; }
+.nav a:hover { color: #00E5FF; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.search-box { width: 260px; height: 38px; border-radius: 999px; background: #0f172a; border: 1px solid #1e293b; padding: 0 16px; color: #94a3b8; }
+.header-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid #334155; background: transparent; color: #cbd5e1; cursor: pointer; }
+
+/* [확실] 히어로 섹션 */
+.main { padding: 40px 64px 80px; }
+.hero {
+    height: 400px; border-radius: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15), transparent 70%), #0f172a;
+    border: 1px solid #1e293b; margin-bottom: 40px; position: relative;
+}
+.hero-badge { display: inline-block; padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 13px; font-weight: 700; margin-bottom: 24px; }
+.hero h1 { font-size: 48px; line-height: 1.3; color: #fff; font-weight: 800; margin-bottom: 20px; }
+.hero h1 span { color: #00E5FF; }
+.hero p { color: #94a3b8; font-size: 16px; margin-bottom: 32px; }
+.hero-tags { display: flex; gap: 12px; }
+.h-tag { padding: 8px 18px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 14px; text-decoration: none; }
+
+/* [확실] 감성 분석 & 지배적 여론 그리드 */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; position: relative; }
+.section-title-wrap span { color: #38bdf8; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.section-title-wrap h2 { margin-top: 10px; font-size: 32px; color: #fff; font-weight: 800; }
+.section-desc { font-size: 14px; color: #64748b; margin-top: 8px; }
+
+.status-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; border-radius: 8px; background: rgba(244, 114, 114, 0.15); color: #f47272; font-size: 12px; font-weight: 700; }
+
+.gauge-container { display: flex; justify-content: space-between; margin: 40px 0; }
+.gauge-item { text-align: center; }
+.gauge-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid #1e293b; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+.gauge-circle.pos { border-top-color: #00E5FF; border-right-color: #00E5FF; }
+.gauge-circle.neg { border-color: #f47272; }
+.gauge-circle.neu { border-top-color: #fbbf24; }
+.gauge-circle .percent { font-size: 26px; font-weight: 800; color: #fff; }
+.gauge-label { font-size: 12px; font-weight: 700; color: #64748b; }
+
+.keyword-box { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 24px; margin-top: 20px; }
+.keyword-box-title { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+.chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 13px; }
+
+.opinion-card { background: rgba(255,255,255,0.03); border-radius: 24px; padding: 32px; margin-top: 25px; position: relative; min-height: 280px; }
+.quote-icon { font-size: 32px; color: #38bdf8; margin-bottom: 20px; opacity: 0.5; }
+.opinion-text { font-size: 20px; line-height: 1.6; color: #e2e8f0; font-weight: 500; }
+.opinion-tags { position: absolute; bottom: 32px; left: 32px; display: flex; gap: 8px; }
+.o-tag { padding: 6px 12px; border-radius: 6px; background: #1e293b; color: #94a3b8; font-size: 11px; }
+.nav-btns { position: absolute; bottom: 32px; right: 32px; display: flex; gap: 12px; }
+.nav-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; }
+
+/* [확실] 감성 비교 섹션 */
+.sentiment-compare { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
+.sentiment-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+.sentiment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.news-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; min-height: 320px; }
+.news-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.media-name { font-size: 15px; font-weight: 700; color: #f8fafc; }
+.s-badge { padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+.s-badge.pos { background: rgba(0, 229, 255, 0.1); color: #00E5FF; }
+.s-badge.neg { background: rgba(244, 114, 114, 0.1); color: #f47272; }
+.s-badge.neu { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
+.news-card h3 { font-size: 22px; line-height: 1.4; color: #fff; font-weight: 700; margin-bottom: 16px; word-break: keep-all; }
+.news-card p { font-size: 14px; line-height: 1.6; color: #94a3b8; flex-grow: 1; margin-bottom: 24px; }
+.action-btn { height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* [확실] 관점 분석 섹션 */
+.viewpoint-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
+.view-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-height: 440px; overflow: hidden; transition: max-height .6s ease; margin-top: 24px; }
+.view-grid.expanded { max-height: 2500px; }
+.view-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
+.view-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.view-icon-box { width: 44px; height: 44px; border-radius: 50%; background: #0f172a; border: 2px solid; display: grid; place-items: center; font-size: 20px; }
+.view-title-group .vt { font-size: 14px; font-weight: 700; }
+.view-title-group .vp { font-size: 24px; font-weight: 900; }
+.view-bar-bg { height: 6px; background: #334155; border-radius: 999px; overflow: hidden; margin-bottom: 15px; }
+.view-bar-fill { height: 100%; border-radius: 999px; transition: width 0.8s ease; }
+.reason-label { font-size: 11px; color: #38bdf8; font-weight: 700; margin-bottom: 8px; }
+.view-reason { color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
+.detail-btn { width: fit-content; padding: 0 12px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; font-size: 12px; cursor: pointer; }
+.toggle-btn { width: 100%; height: 52px; margin-top: 28px; border-radius: 14px; border: 1px solid #1e293b; background: #111827; color: #38bdf8; font-weight: 600; font-size: 15px; cursor: pointer; }
+
+/* 지금 뜨는 뉴스 */
+.news-section { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-top: 40px; }
+.news-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
+.news-header h2 { font-size: 24px; color: #fff; font-weight: 800; }
+.realtime-dot { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #94a3b8; }
+.dot { width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; }
+
+.news-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 24px; }
+.news-item-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+
+.news-badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-bottom: 12px; padding: 4px 10px; border-radius: 6px; }
+.badge-like { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+.badge-dislike { color: #f47272; background: rgba(244, 114, 114, 0.1); }
+
+.news-main-row { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-bottom: 20px; }
+.news-rank-circle { min-width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #00E5FF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #00E5FF; }
+.news-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: left; word-break: keep-all; }
+
+.news-quote { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; text-align: left; }
+
+.reaction-row { display: flex; gap: 16px; margin-bottom: 20px; width: 100%; justify-content: flex-start; }
+.react-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: #94a3b8; }
+.react-item.up { color: #3b82f6; }
+.react-item.down { color: #ef4444; }
+
+.news-footer-btn { width: 100%; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #94a3b8; font-size: 13px; cursor: pointer; text-align: left; padding-left: 16px; }
+
+/* 컬러 유틸리티 */
+.c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
+.c-purple { color: #a855f7; border-color: #a855f7; } .bg-purple { background: #a855f7; }
+.c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
+.c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
+.c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
+</style>
+<style>
+/* ===== article_detail.css ===== */
+/* ==============================
+   Article Detail Page
+============================== */
+
+.article-detail-page {
+  min-height: 100vh;
+  padding: 130px 24px 100px;
+  background: #050916;
+  color: #dce8ff;
+}
+
+.article-detail-wrap {
+  width: 1280px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.back-btn {
+  margin-bottom: 28px;
+  border: 0;
+  background: transparent;
+  color: #7e95ba;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  color: #22d3ee;
+}
+
+.article-category {
+  margin-bottom: 14px;
+  color: #10d9ff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+}
+
+.article-detail-title {
+  margin: 0 0 20px;
+  color: #f8fafc;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.35;
+  letter-spacing: -1.2px;
+}
+
+.article-meta {
+  margin-bottom: 34px;
+  color: #7f8ea9;
+  font-size: 14px;
+}
+
+.article-meta span {
+  margin-right: 18px;
+}
+
+.article-line {
+  height: 1px;
+  margin: 34px 0;
+  background: #16223b;
+}
+
+
+/* ==============================
+   Content
+============================== */
+
+.content-box {
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 18px;
+  padding: 28px 32px;
+  color: #d8e6ff;
+  font-size: 17px;
+  line-height: 2;
+}
+
+.source-wrap {
+  margin: 34px 0;
+  text-align: center;
+}
+
+.source-btn {
+  border: 0;
+  border-radius: 10px;
+  background: #1b2b47;
+  color: #dce8ff;
+  padding: 14px 28px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.source-btn:hover {
+  background: #22385d;
+}
+
+
+/* ==============================
+   Vote
+============================== */
+
+.vote-wrap {
+  padding: 18px 0 24px;
+  text-align: center;
+}
+
+.vote-title {
+  margin-bottom: 28px;
+  color: #f8fafc;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.vote-box {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+.vote-btn {
+  width: 220px;
+  height: 95px;
+  border: 0;
+  border-radius: 50px;
+  background: #111d35;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vote-btn span {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.vote-btn:hover {
+  transform: translateY(-2px);
+}
+
+.vote-btn.active {
+  background: #19d8ff;
+  color: #00131f;
+}
+
+.vote-btn.active span {
+  color: #00131f;
+}
+
+
+/* ==============================
+   Deep Reading
+============================== */
+
+.deep-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 52px 0 22px;
+  color: #f8fafc;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.deep-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.deep-card {
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 18px;
+  padding: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.deep-card:hover {
+  transform: translateY(-3px);
+  border-color: #2f6dff;
+}
+
+.deep-tag {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.deep-tag.positive {
+  background: #0f3341;
+  color: #15d9ff;
+}
+
+.deep-tag.negative {
+  background: #331318;
+  color: #ff6070;
+}
+
+.deep-tag.neutral {
+  background: #2e2f39;
+  color: #c8d0e0;
+}
+
+.deep-text {
+  color: #dce8ff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+
+/* ==============================
+   Light Mode
+============================== */
+
+body.light-mode .article-detail-page {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+body.light-mode .back-btn {
+  color: #64748b !important;
+}
+
+body.light-mode .back-btn:hover,
+body.light-mode .article-category {
+  color: #06b6d4 !important;
+}
+
+body.light-mode .article-detail-title,
+body.light-mode .vote-title,
+body.light-mode .deep-title {
+  color: #0f172a !important;
+}
+
+body.light-mode .article-meta {
+  color: #64748b !important;
+}
+
+body.light-mode .article-line {
+  background: #e2e8f0 !important;
+}
+
+body.light-mode .content-box,
+body.light-mode .deep-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .source-btn {
+  background: #ecfeff !important;
+  color: #0891b2 !important;
+  border: 1px solid #67e8f9;
+}
+
+body.light-mode .vote-btn {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .vote-btn span {
+  color: #64748b !important;
+}
+
+body.light-mode .vote-btn.active {
+  background: #22d3ee !important;
+  color: #020817 !important;
+}
+
+body.light-mode .vote-btn.active span {
+  color: #020817 !important;
+}
+
+body.light-mode .deep-text {
+  color: #0f172a !important;
+}
+
+body.light-mode .deep-tag.positive {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
+}
+
+body.light-mode .deep-tag.negative {
+  background: #ffe4e6 !important;
+  color: #e11d48 !important;
+}
+
+body.light-mode .deep-tag.neutral {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 900px) {
+  .article-detail-page {
+    padding: 150px 18px 80px;
+  }
+
+  .article-detail-title {
+    font-size: 32px;
+  }
+
+  .vote-box {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .vote-btn {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .deep-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div id="header"><header class="header">
+<div class="header-left">
+<a class="logo" href="/view/main.html">
+<div class="logo-mark">D</div>
+<div>DATA 다타</div>
+</a>
+</div>
+<nav class="nav">
+<a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
+<a data-login-page="/view/article_list.html" href="#">뉴스</a>
+<a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
+</nav>
+<div class="header-right">
+<div class="main-search-wrap">
+<input autocomplete="off" class="search-box" id="commonSearchInput" placeholder="예: 금리, 취업, 전세, 반도체"/>
+<div class="search-suggest-box hidden" id="searchSuggestBox">
+<div class="search-suggest-list" id="searchSuggestList"></div>
+</div>
+</div>
+<button class="header-btn" id="loginBtn" type="button">
+      로그인
+    </button>
+<button class="header-btn" id="joinBtn" type="button">
+      회원가입
+    </button>
+<button class="header-btn hidden" id="primaryUserBtn" type="button">
+      마이페이지
+    </button>
+<button class="header-btn hidden" id="logoutBtn" type="button">
+      로그아웃
+    </button>
+</div>
+</header></div>
+<main class="article-detail-page">
+<div class="article-detail-wrap">
+<button class="back-btn" onclick="history.back()" type="button">
+        ← 이전 페이지로
+      </button>
+<div class="article-category">ECONOMIC NEWS</div>
+<h1 class="article-detail-title" id="newsTitle"></h1>
+<div class="article-meta">
+<span id="newsDate"></span>
+<span id="newsPress"></span>
+<span id="newsReporter"></span>
+</div>
+<div class="article-line"></div>
+<article class="content-box" id="newsContent"></article>
+<div class="source-wrap">
+<button class="source-btn" onclick="goSource()" type="button">
+          🔗 원문 보기
+        </button>
+</div>
+<div class="article-line"></div>
+<section class="vote-wrap">
+<div class="vote-title">
+          이 기사의 관점에 대해 어떻게 생각하세요?
+        </div>
+<div class="vote-box">
+<button class="vote-btn" id="likeBtn" onclick="selectVote('like')" type="button">
+            👍 동의해요
+            <span id="likeCount">0</span>
+</button>
+<button class="vote-btn" id="hateBtn" onclick="selectVote('hate')" type="button">
+            👎 반대해요
+            <span id="hateCount">0</span>
+</button>
+</div>
+</section>
+<div class="article-line"></div>
+<section>
+<div class="deep-title">
+          💡 깊이 읽기
+        </div>
+<div class="deep-grid" id="deepGrid"></div>
+</section>
+</div>
+</main>
+<div id="footer"><footer class="footer">
+<div class="footer-inner">
+<div class="footer-mark">D</div>
+<button class="footer-link" onclick="openFooterTermsModal()" type="button">
+      이용약관
+    </button>
+<div class="footer-divider"></div>
+<button class="footer-link" onclick="openFooterPrivacyModal()" type="button">
+      개인정보처리방침
+    </button>
+<p class="footer-copy">
+      © 2026 DATA 다타. All rights reserved.
+    </p>
+</div>
+<div class="footer-modal hidden" id="footerModal">
+<div class="footer-modal-box">
+<div class="footer-modal-content" id="footerModalContent"></div>
+<button class="footer-modal-btn" onclick="closeFooterModal()" type="button">
+        확인
+      </button>
+</div>
+</div>
+</footer></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+/* ===== common.js ===== */
+// ==============================
+// 공통 UI 로드
+// ==============================
+document.addEventListener("DOMContentLoaded", function () {
+  loadHeader();
+  loadFooter();
+  bindGlobalClickEvents();
+});
+
+
+// ==============================
+// 로그인 정보 가져오기
+// ==============================
+function getLoginInfo() {
+  return {
+    token:
+      sessionStorage.getItem("access_token") ||
+      localStorage.getItem("access_token") ||
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token"),
+
+    userName:
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName"),
+
+    role:
+      sessionStorage.getItem("user_role") ||
+      localStorage.getItem("user_role") ||
+      sessionStorage.getItem("role") ||
+      localStorage.getItem("role")
+  };
+}
+
+
+// ==============================
+// Header 불러오기
+// ==============================
+function loadHeader() {
+  const headerArea = document.getElementById("header");
+
+  if (!headerArea) return;
+
+  if (headerArea.innerHTML.trim()) {
+    setHeaderLoginState();
+    bindCommonSearch();
+    return;
+  }
+
+  fetch("/view/header.html?v=999")
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("header.html 경로 오류");
+      }
+
+      return res.text();
+    })
+    .then(function (html) {
+      headerArea.innerHTML = html;
+
+      setHeaderLoginState();
+      bindCommonSearch();
+    })
+    .catch(function (err) {
+      console.error("header 로드 실패:", err);
+    });
+}
+
+
+// ==============================
+// Footer 불러오기
+// ==============================
+function loadFooter() {
+  const footerArea = document.getElementById("footer");
+
+  if (!footerArea) return;
+
+  if (footerArea.innerHTML.trim()) {
+    return;
+  }
+
+  fetch("/view/footer.html?v=999")
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("footer.html 경로 오류");
+      }
+
+      return res.text();
+    })
+    .then(function (html) {
+      footerArea.innerHTML = html;
+    })
+    .catch(function (err) {
+      console.error("footer 로드 실패:", err);
+    });
+}
+
+
+// ==============================
+// Header 로그인 상태 처리
+// ==============================
+function setHeaderLoginState() {
+  const loginBtn = document.getElementById("loginBtn");
+  const joinBtn = document.getElementById("joinBtn");
+  const primaryUserBtn = document.getElementById("primaryUserBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
+
+  const loginInfo = getLoginInfo();
+  const token = loginInfo.token;
+  const role = loginInfo.role;
+
+  if (!token) {
+    loginBtn.classList.remove("hidden");
+    joinBtn.classList.remove("hidden");
+    primaryUserBtn.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+    return;
+  }
+
+  loginBtn.classList.add("hidden");
+  joinBtn.classList.add("hidden");
+  primaryUserBtn.classList.remove("hidden");
+  logoutBtn.classList.remove("hidden");
+
+  const isAdmin =
+    role === "ADMIN" ||
+    role === "SUPERADMIN" ||
+    role === "admin" ||
+    role === "superadmin" ||
+    token === "admin-test-token";
+
+  if (isAdmin) {
+    primaryUserBtn.innerText = "관리자 페이지";
+  } else {
+    primaryUserBtn.innerText = "마이페이지";
+  }
+}
+
+
+// ==============================
+// 로그인 필요 페이지 이동
+// ==============================
+window.goLoginRequiredPage = function (targetUrl) {
+  const loginInfo = getLoginInfo();
+
+  if (!loginInfo.token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.href = "/view/login.html";
+    return;
+  }
+
+  location.href = targetUrl;
+};
+
+
+// ==============================
+// 전역 클릭 이벤트
+// fetch로 늦게 들어온 header도 작동
+// ==============================
+function bindGlobalClickEvents() {
+  document.addEventListener("click", function (e) {
+    const loginBtn = e.target.closest("#loginBtn");
+    const joinBtn = e.target.closest("#joinBtn");
+    const primaryUserBtn = e.target.closest("#primaryUserBtn");
+    const logoutBtn = e.target.closest("#logoutBtn");
+    const loginRequiredLink = e.target.closest("[data-login-page]");
+
+    const heroTag = e.target.closest(".h-tag");
+    const chip = e.target.closest(".chip");
+    const actionBtn = e.target.closest(".action-btn");
+    const newsFooterBtn = e.target.closest(".news-footer-btn");
+    const detailBtn = e.target.closest(".detail-btn");
+
+    if (loginBtn) {
+      e.preventDefault();
+      location.href = "/view/login.html";
+      return;
+    }
+
+    if (joinBtn) {
+      e.preventDefault();
+      location.href = "/view/terms.html";
+      return;
+    }
+
+    if (primaryUserBtn) {
+      e.preventDefault();
+
+      const loginInfo = getLoginInfo();
+      const role = loginInfo.role;
+      const token = loginInfo.token;
+
+      const isAdmin =
+        role === "ADMIN" ||
+        role === "SUPERADMIN" ||
+        role === "admin" ||
+        role === "superadmin" ||
+        token === "admin-test-token";
+
+      if (isAdmin) {
+        location.href = "/view/admin_dashboard.html";
+      } else {
+        location.href = "/view/mypage_home.html";
+      }
+
+      return;
+    }
+
+    if (logoutBtn) {
+      e.preventDefault();
+      logout();
+      return;
+    }
+
+    if (loginRequiredLink) {
+      e.preventDefault();
+
+      const targetUrl = loginRequiredLink.dataset.loginPage;
+      goLoginRequiredPage(targetUrl);
+      return;
+    }
+
+    if (heroTag) {
+      e.preventDefault();
+
+      const keyword = heroTag.innerText.replace("#", "").trim();
+      goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+      return;
+    }
+
+    if (chip) {
+      e.preventDefault();
+
+      const keyword = chip.innerText.trim();
+      goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+      return;
+    }
+
+    if (actionBtn) {
+      e.preventDefault();
+      goLoginRequiredPage("/view/article_detail.html");
+      return;
+    }
+
+    if (newsFooterBtn) {
+      e.preventDefault();
+      goLoginRequiredPage("/view/article_detail.html");
+      return;
+    }
+
+    if (detailBtn) {
+      e.preventDefault();
+
+      const title = detailBtn.dataset.title;
+      const percent = detailBtn.dataset.percent;
+
+      if (title) {
+        localStorage.setItem("viewpoint_title", title);
+      }
+
+      if (percent) {
+        localStorage.setItem("viewpoint_percent", percent);
+      }
+
+      goLoginRequiredPage("/view/viewpoint_detail.html");
+    }
+  });
+}
+
+
+// ==============================
+// 검색어 자동완성
+// ==============================
+const searchKeywordPool = [
+  "금리",
+  "기준금리",
+  "대출",
+  "가계부채",
+  "물가",
+  "환율",
+  "부동산",
+  "부자",
+  "부산 여행",
+  "차량5부제",
+  "부천 날씨",
+  "부산은행",
+  "반도체",
+  "취업",
+  "전세",
+  "주식시장",
+  "소비심리",
+  "금융시장"
+];
+
+function bindCommonSearch() {
+  const input = document.getElementById("commonSearchInput");
+
+  if (!input) return;
+
+  input.addEventListener("input", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("focus", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      moveSearch(input.value);
+    }
+
+    if (e.key === "Escape") {
+      hideSearchSuggestions();
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    const searchWrap = document.querySelector(".main-search-wrap");
+
+    if (!searchWrap) return;
+
+    if (!searchWrap.contains(e.target)) {
+      hideSearchSuggestions();
+    }
+  });
+
+  window.addEventListener("resize", positionSearchSuggestBox);
+  window.addEventListener("scroll", positionSearchSuggestBox);
+}
+
+function highlightKeyword(text, keyword) {
+  if (!keyword) return text;
+
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedKeyword})`, "gi");
+
+  return text.replace(regex, `<span class="search-highlight">$1</span>`);
+}
+
+function renderSearchSuggestions(keyword) {
+  const list = document.getElementById("searchSuggestList");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!list || !suggestBox) return;
+
+  const value = keyword.trim();
+
+  if (!value) {
+    hideSearchSuggestions();
+    return;
+  }
+
+  const results = searchKeywordPool
+    .filter(function (item) {
+      return item.includes(value);
+    })
+    .slice(0, 6);
+
+  if (results.length === 0) {
+    hideSearchSuggestions();
+    return;
+  }
+
+  list.innerHTML = results.map(function (item) {
+    return `
+      <button
+        class="search-suggest-item"
+        type="button"
+        data-suggest-keyword="${item}"
+      >
+        <span class="search-suggest-left">
+          <span class="search-suggest-icon">⌕</span>
+          <span class="search-suggest-keyword">${highlightKeyword(item, value)}</span>
+        </span>
+
+        <span class="search-suggest-arrow">↖</span>
+      </button>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const keyword = btn.dataset.suggestKeyword;
+      selectSearchSuggestion(keyword);
+    });
+  });
+
+  positionSearchSuggestBox();
+  suggestBox.classList.remove("hidden");
+}
+
+function positionSearchSuggestBox() {
+  const input = document.getElementById("commonSearchInput");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!input || !suggestBox) return;
+
+  const rect = input.getBoundingClientRect();
+
+  suggestBox.style.top = `${rect.bottom + 4}px`;
+  suggestBox.style.left = `${rect.left}px`;
+  suggestBox.style.width = `${rect.width}px`;
+}
+
+function hideSearchSuggestions() {
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!suggestBox) return;
+
+  suggestBox.classList.add("hidden");
+}
+
+function selectSearchSuggestion(keyword) {
+  const input = document.getElementById("commonSearchInput");
+
+  if (input) {
+    input.value = keyword;
+  }
+
+  hideSearchSuggestions();
+
+  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+}
+
+function moveSearch(keyword) {
+  const value = keyword.trim();
+
+  if (!value) return;
+
+  hideSearchSuggestions();
+
+  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+}
+
+
+// ==============================
+// 로그아웃
+// ==============================
+window.logout = function () {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_name");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userName");
+
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("user_name");
+  sessionStorage.removeItem("user_role");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("userName");
+
+  location.href = "/view/main.html";
+};
+
+
+// ==============================
+// Footer 모달
+// ==============================
+window.openFooterTermsModal = function () {
+  const modal = document.getElementById("footerModal");
+  const content = document.getElementById("footerModalContent");
+
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <h3>이용약관</h3>
+    <p>DATA 다타는 뉴스 데이터를 기반으로 키워드, 감성, 관점 분석 정보를 제공하는 서비스입니다.</p>
+    <p>이용자는 서비스를 부정한 목적으로 이용할 수 없으며, 제공되는 정보는 참고용으로 활용해야 합니다.</p>
+    <p>서비스에서 제공되는 분석 결과는 참고용 정보이며, 투자·정책·법률 판단의 최종 근거로 사용해서는 안 됩니다.</p>
+  `;
+
+  modal.classList.remove("hidden");
+};
+
+window.openFooterPrivacyModal = function () {
+  const modal = document.getElementById("footerModal");
+  const content = document.getElementById("footerModalContent");
+
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <h3>개인정보처리방침</h3>
+    <p>DATA 다타는 회원가입 및 서비스 제공을 위해 이메일, 비밀번호, 이름, 생년월일, 성별 등의 개인정보를 수집할 수 있습니다.</p>
+    <p>수집된 개인정보는 회원 식별, 서비스 제공, 이용 기록 관리, 사용자 맞춤형 서비스 제공 목적 외에는 사용하지 않습니다.</p>
+    <p>개인정보 관련 문의: data260417@gmail.com</p>
+  `;
+
+  modal.classList.remove("hidden");
+};
+
+window.closeFooterModal = function () {
+  const modal = document.getElementById("footerModal");
+
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+};
+</script>
+<script>
+/* ===== article_detail.js ===== */
+// ==============================
+// 기사 상세 접근 체크
+// ==============================
+(function checkArticleDetailAuth() {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
+
+  if (!token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.href = "/view/login.html";
+  }
+})();
+
+
+// ==============================
+// 임시 데이터
+// ==============================
+const newsDetail = {
+  title: '',
+  date: "",
+  press: "",
+  reporter: "",
+  content:
+    "",
+  sourceUrl: "",
+  likeCount: ,
+  dislikeCount: 
+};
+
+const deepNews = [
+  {
+    type: "positive",
+    tag: "관련 뉴스",
+    title: "",
+    url: ""
+  },
+  {
+    type: "negative",
+    tag: "다른 시각 추천",
+    title: "",
+    url: ""
+  }
+];
+
+let currentVote = "";
+
+
+// ==============================
+// 뉴스 출력
+// ==============================
+function loadNewsDetail() {
+  const title = document.getElementById("newsTitle");
+  const date = document.getElementById("newsDate");
+  const press = document.getElementById("newsPress");
+  const reporter = document.getElementById("newsReporter");
+  const content = document.getElementById("newsContent");
+  const likeCount = document.getElementById("likeCount");
+  const dislikeCount = document.getElementById("hateCount") || document.getElementById("dislikeCount");
+
+  if (title) title.innerText = newsDetail.title;
+  if (date) date.innerText = "발행일 " + newsDetail.date;
+  if (press) press.innerText = "언론사 " + newsDetail.press;
+  if (reporter) reporter.innerText = "기자 " + newsDetail.reporter;
+  if (content) content.innerText = newsDetail.content;
+  if (likeCount) likeCount.innerText = newsDetail.likeCount.toLocaleString();
+  if (dislikeCount) dislikeCount.innerText = newsDetail.dislikeCount.toLocaleString();
+}
+
+
+// ==============================
+// 원문 보기
+// ==============================
+function goSource() {
+  window.open(newsDetail.sourceUrl, "_blank");
+}
+
+
+// ==============================
+// 좋아요 / 싫어요 토글
+// ==============================
+function selectVote(type) {
+  const likeBtn = document.getElementById("likeBtn");
+  const hateBtn = document.getElementById("hateBtn") || document.getElementById("dislikeBtn");
+
+  if (!likeBtn || !hateBtn) return;
+
+  if (currentVote === type) {
+    currentVote = "";
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+    return;
+  }
+
+  likeBtn.classList.remove("active");
+  hateBtn.classList.remove("active");
+
+  currentVote = type;
+
+  if (type === "like") {
+    likeBtn.classList.add("active");
+  }
+
+  if (type === "hate" || type === "dislike") {
+    hateBtn.classList.add("active");
+  }
+}
+
+
+// ==============================
+// 깊이 읽기
+// ==============================
+function loadDeepNews() {
+  const grid = document.getElementById("deepGrid");
+
+  if (!grid) return;
+
+  grid.innerHTML = deepNews.map(item => `
+    <div class="deep-card" onclick="location.href='${item.url}'">
+      <div class="deep-tag ${item.type}">
+        ${item.tag}
+      </div>
+
+      <div class="deep-text">
+        ${item.title}
+      </div>
+    </div>
+  `).join("");
+}
+
+
+// ==============================
+// 전역 함수 등록
+// ==============================
+window.goSource = goSource;
+window.selectVote = selectVote;
+
+
+// ==============================
+// 최초 실행
+// ==============================
+document.addEventListener("DOMContentLoaded", function () {
+  loadNewsDetail();
+  loadDeepNews();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>DATA 다타 - 회원정보 관리</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+
+    body{
+      background:#050916;
+      color:#d9e7ff;
+      font-family:"Pretendard","Noto Sans KR",sans-serif;
+    }
+
+    .hidden {
+  display: none !important;
+}
+
+/* ===== HEADER ===== */
+.page{
+  min-height:100vh;
+  background:#050816;
+}
+
+.header {
+  height: 72px;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #00E5FF;
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00E5FF, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #020617;
+  font-weight: 900;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  color: #94a3b8;
+  font-size: 15px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: #00E5FF;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-box {
+  width: 260px;
+  height: 38px;
+  border-radius: 999px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  padding: 0 16px;
+  color: #94a3b8;
+}
+
+.header-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.header-btn:hover{
+  border-color:#00E5FF;
+  color:#00E5FF;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  border-top: 1px solid #111827;
+  background: #070b1a;
+  padding: 24px 0;
+  margin-top: 60px;
+}
+
+.footer-inner {
+  width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.footer-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#00e5ff,#2563eb);
+  color: #020617;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-link {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.footer-link:hover {
+  color: #00e5ff;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 12px;
+  background: #334155;
+}
+
+.footer-copy {
+  margin-left: auto;
+  color: #64748b;
+}
+
+    .layout{
+      width:1240px;
+      margin:0 auto;
+      display:flex;
+      min-height:calc(100vh - 74px);
+    }
+
+    aside{
+      width:230px;
+      background:#0b1020;
+      padding-top:45px;
+      border-right:1px solid #121a2d;
+    }
+
+    .side-title-wrap{
+      padding:0 24px 14px;
+      margin-bottom:18px;
+      border-bottom:1px solid #2f3748;
+    }
+
+    .side-title{
+      color:#6e7c98;
+      font-size:13px;
+    }
+
+    .side-menu{
+      list-style:none;
+    }
+
+    .side-menu li{
+      height:46px;
+      display:flex;
+      align-items:center;
+      padding-left:28px;
+      color:#6f7d98;
+      font-size:14px;
+      border-left:4px solid transparent;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .side-menu li:hover{
+      background:#10192b;
+    }
+
+    .side-menu li.active{
+      background:#132137;
+      color:#42bfff;
+      border-left-color:#24bfff;
+      font-weight:700;
+    }
+
+    main{
+      flex:1;
+      padding:42px 28px 80px;
+    }
+
+    .account-wrap{
+      width:430px;
+      margin:0 auto;
+      padding-top:15px;
+    }
+
+    .account-title{
+      text-align:center;
+      margin-bottom:26px;
+    }
+
+    .account-title .brand{
+      color:#10d9ff;
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .account-title h2{
+      font-size:20px;
+      color:#f1f6ff;
+      margin-bottom:8px;
+    }
+
+    .account-title p{
+      color:#63728d;
+      font-size:12px;
+    }
+
+    .form-group{
+      border-bottom:1px solid #1a2540;
+      padding:10px 0;
+    }
+
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      border-bottom:1px solid #1a2540;
+    }
+
+    .form-row .form-group{
+      border-bottom:none;
+    }
+
+    label{
+      display:block;
+      color:#5f789e;
+      font-size:11px;
+      font-weight:800;
+      margin-bottom:8px;
+      text-transform:uppercase;
+    }
+
+    .value{
+      color:#dce8ff;
+      font-size:13px;
+      padding-bottom:2px;
+    }
+
+    .input{
+      width:100%;
+      height:42px;
+      border:1px solid #123450;
+      border-radius:10px;
+      background:#071522;
+      color:#dce8ff;
+      padding:0 14px;
+      outline:none;
+    }
+
+    .input::placeholder{
+      color:#52637c;
+    }
+
+    .error{
+      color:#ff4e5f;
+      font-size:11px;
+      margin-top:8px;
+      font-weight:700;
+    }
+
+    .submit-btn{
+      width:100%;
+      height:46px;
+      border:none;
+      border-radius:8px;
+      background:#10c8f5;
+      color:#00131f;
+      font-weight:800;
+      margin-top:18px;
+      cursor:pointer;
+    }
+
+    .delete-box{
+      margin-top:24px;
+      border:1px solid #5a1f22;
+      background:#120b0b;
+      border-radius:12px;
+      padding:18px;
+    }
+
+    .delete-title{
+      color:#ff4e5f;
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+
+    .delete-desc{
+      color:#7f5d5d;
+      font-size:12px;
+      line-height:1.6;
+      margin-bottom:18px;
+    }
+
+    .delete-btn{
+      width:100%;
+      height:38px;
+      background:transparent;
+      border:1px solid #ff4e5f;
+      color:#ff4e5f;
+      border-radius:8px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .delete-btn:hover{
+      background:#251010;
+    }
+    .footer-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 23, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30000;
+}
+
+.footer-modal-box {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.footer-modal-content {
+  color: #cbd5e1;
+  line-height: 1.8;
+  font-size: 14px;
+}
+
+.footer-modal-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #00e5ff;
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+}
+.search-suggest-box {
+  position: fixed;
+  width: 260px;
+  max-width: 80vw;
+  padding: 10px 0 12px;
+  border: 1px solid #1e293b;
+  border-top: 0;
+  border-radius: 0 0 18px 18px;
+  background: #050b1c;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  z-index: 20000;
+  overflow: hidden;
+}
+
+.search-suggest-list {
+  display: flex;
+  flex-direction: column;
+}
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div id="header">
+  <header class="header">
+    <div class="header-left">
+      <a class="logo" href="/view/main.html">
+        <div class="logo-mark">D</div>
+        <div>DATA 다타</div>
+      </a>
+    </div>
+
+    <nav class="nav">
+      <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
+      <a data-login-page="/view/article_list.html" href="#">뉴스</a>
+      <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
+    </nav>
+
+
+      <div class="header-right">
+        <div class="main-search-wrap">
+          <input
+            autocomplete="off"
+            class="search-box"
+            id="commonSearchInput"
+            placeholder="예: 금리, 취업, 전세, 반도체"
+          />
+
+          <div class="search-suggest-box hidden" id="searchSuggestBox">
+            <div class="search-suggest-list" id="searchSuggestList"></div>
+          </div>
+        </div>
+
+        <button class="header-btn" id="primaryUserBtn" type="button">마이페이지</button>
+        <button class="header-btn" id="logoutBtn" type="button">로그아웃</button>
+      </div>
+    </header>
+  </div>
+
+  <div class="layout">
+    <aside>
+      <div class="side-title-wrap">
+        <div class="side-title">마이페이지</div>
+      </div>
+
+    <ul class="side-menu">
+        <li onclick="location.href='mypage_home.html'">마이페이지 홈</li>
+        <li class="active"onclick="location.href='mypage_account.html'">회원정보 관리 & 탈퇴</li>
+    </ul>
+    </aside>
+
+    <main>
+      <div class="account-wrap">
+        <div class="account-title">
+          <div class="brand">DATA</div>
+          <h2>회원정보 관리</h2>
+          <p>정보를 수정하고 계정 비밀번호를 관리하세요</p>
+        </div>
+
+        <div class="form-group">
+          <label>Name</label>
+          <div class="value" id="userName"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Birth Date</label>
+            <div class="value" id="userBirth"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Gender</label>
+            <div class="value" id="userGender"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="value" id="userEmail"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input class="input" type="password" id="password1" placeholder="새 비밀번호 (변경 시에만 입력)" maxlength="20" oninput="validatePasswordInput(this); checkPasswordMatch();"/>
+        </div>
+
+        <div class="form-group">
+          <input class="input" type="password" id="passwordCheck" placeholder="비밀번호 확인" maxlength="20" oninput="validatePasswordInput(this); checkPasswordMatch();"/>
+          <div class="error" id="passwordError">* 비밀번호가 일치하지 않습니다.</div>
+        </div>
+
+        <button class="submit-btn" onclick="updateUserInfo()">회원정보 수정</button>
+
+        <div class="delete-box">
+          <div class="delete-title">회원 탈퇴</div>
+          <div class="delete-desc">
+            탈퇴 시 모든 개인정보 및 활동 데이터가 삭제되며 복구가 불가능합니다.<br>
+            탈퇴 처리는 즉시 반영되며, 동일 이메일로 재가입 시 기존 데이터는 복원되지 않습니다.
+          </div>
+          <button class="delete-btn" onclick="deleteUser()">회원 탈퇴하기</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+const userInfo = {
+  name: "홍길동",
+  birthDate: "19900315",
+  gender: "남성",
+  email: "admin@data.com",
+  passwordChanged: false
+};
+
+function loadUserInfo() {
+  document.getElementById("userName").innerText = userInfo.name;
+  document.getElementById("userBirth").innerText = userInfo.birthDate;
+  document.getElementById("userGender").innerText = userInfo.gender;
+  document.getElementById("userEmail").innerText = userInfo.email;
+}
+
+function validatePasswordInput(input) {
+  input.value = input.value
+    .replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, "")
+    .replace(/\s/g, "");
+
+  if (input.value.length > 20) {
+    input.value = input.value.slice(0, 20);
+  }
+}
+
+function checkPasswordMatch() {
+  const pw1 = document.getElementById("password1").value;
+  const pw2 = document.getElementById("passwordCheck").value;
+  const error = document.getElementById("passwordError");
+
+  if (pw1 === "" && pw2 === "") {
+    error.style.display = "none";
+    return;
+  }
+
+  if (pw2 === "") {
+    error.style.display = "none";
+    return;
+  }
+
+  if (pw1 !== pw2) {
+    error.style.display = "block";
+  } else {
+    error.style.display = "none";
+  }
+}
+
+/* 회원 정보 수정 */
+function updateUserInfo() {
+  const pw1 = document.getElementById("password1").value;
+  const pw2 = document.getElementById("passwordCheck").value;
+
+  /* 수정사항 없음 */
+  if (pw1 === "" && pw2 === "") {
+    alert("변경 사항이 없습니다.");
+    return;
+  }
+
+  /* 비밀번호 8자 미만 */
+  if (pw1 !== "" && pw1.length < 8) {
+    alert("비밀번호는 8자 이상이어야 합니다.");
+    return;
+  }
+
+  /* 확인 비밀번호만 입력한 경우 */
+  if (pw1 === "" && pw2 !== "") {
+    alert("새 비밀번호를 입력해주세요.");
+    return;
+  }
+
+  /* 새 비밀번호만 입력한 경우 */
+  if (pw1 !== "" && pw2 === "") {
+    alert("비밀번호 확인을 입력해주세요.");
+    return;
+  }
+
+  /* 비밀번호 불일치 */
+  if (pw1 !== pw2) {
+    alert("비밀번호가 일치하지 않습니다.");
+    return;
+  }
+
+  /* 임시 API 처리 */
+  console.log("회원정보 수정 API 호출 예정", {
+    password: pw1
+  });
+
+  alert("회원정보 수정이 완료되었습니다.");
+
+  document.getElementById("password1").value = "";
+  document.getElementById("passwordCheck").value = "";
+  document.getElementById("passwordError").style.display = "none";
+}
+
+/* 회원 탈퇴 */
+function deleteUser() {
+  const confirmDelete = confirm(
+    "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 회원 정보와 활동 내역이 삭제됩니다."
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  /* 임시 API 처리 */
+  console.log("회원 탈퇴 API 호출 예정");
+
+  alert("회원 탈퇴가 완료되었습니다. 메인화면으로 이동합니다.");
+
+  /* 자동 로그아웃 후 메인화면 이동 */
+  location.href = "main.html";
+}
+
+window.onload = function () {
+  loadUserInfo();
+  document.getElementById("passwordError").style.display = "none";
+};
+/* =========================
+   Header / Footer 이벤트
+========================= */
+
+document.addEventListener("click", function (e) {
+
+  const primaryUserBtn = e.target.closest("#primaryUserBtn");
+  const logoutBtn = e.target.closest("#logoutBtn");
+
+  const loginRequiredLink = e.target.closest("[data-login-page]");
+
+  const footerTermsBtn = e.target.closest("#footerTermsBtn");
+  const footerPrivacyBtn = e.target.closest("#footerPrivacyBtn");
+  const footerModalCloseBtn = e.target.closest("#footerModalCloseBtn");
+
+  /* 마이페이지 */
+  if (primaryUserBtn) {
+    location.href = "/view/mypage_home.html";
+    return;
+  }
+
+  /* 로그아웃 */
+  if (logoutBtn) {
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    location.href = "/view/main.html";
+    return;
+  }
+
+  /* 헤더 링크 */
+  if (loginRequiredLink) {
+
+    const targetUrl = loginRequiredLink.dataset.loginPage;
+    location.href = targetUrl;
+
+    return;
+  }
+
+  /* 이용약관 */
+  if (footerTermsBtn) {
+
+    const modal = document.getElementById("footerModal");
+    const content = document.getElementById("footerModalContent");
+
+    content.innerHTML = `
+      <h3>이용약관</h3>
+      <p>DATA 다타는 뉴스 데이터를 기반으로 키워드, 감성, 관점 분석 정보를 제공하는 서비스입니다.</p>
+      <p>이용자는 서비스를 부정한 목적으로 이용할 수 없으며, 제공되는 정보는 참고용으로 활용해야 합니다.</p>
+      <p>서비스에서 제공되는 분석 결과는 참고용 정보이며, 투자·정책·법률 판단의 최종 근거로 사용해서는 안 됩니다.</p>
+    `;
+
+    modal.classList.remove("hidden");
+    return;
+  }
+
+  /* 개인정보처리방침 */
+  if (footerPrivacyBtn) {
+
+    const modal = document.getElementById("footerModal");
+    const content = document.getElementById("footerModalContent");
+
+    content.innerHTML = `
+      <h3>개인정보처리방침</h3>
+      <p>DATA 다타는 회원가입 및 서비스 제공을 위해 이메일, 비밀번호, 이름, 생년월일, 성별 등의 개인정보를 수집할 수 있습니다.</p>
+      <p>수집된 개인정보는 회원 식별, 서비스 제공, 이용 기록 관리, 사용자 맞춤형 서비스 제공 목적 외에는 사용하지 않습니다.</p>
+      <p>개인정보 관련 문의: data260417@gmail.com</p>
+    `;
+
+    modal.classList.remove("hidden");
+    return;
+  }
+
+  /* 모달 닫기 */
+  if (footerModalCloseBtn) {
+
+    document
+      .getElementById("footerModal")
+      .classList.add("hidden");
+
+    return;
+  }
+
+});
+</script>
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-mark">D</div>
+
+    <button class="footer-link" id="footerTermsBtn" type="button">이용약관</button>
+
+    <div class="footer-divider"></div>
+
+    <button class="footer-link" id="footerPrivacyBtn" type="button">개인정보처리방침</button>
+
+    <p class="footer-copy">
+      © 2026 DATA 다타. All rights reserved.
+    </p>
+    <div class="footer-modal hidden" id="footerModal">
+  <div class="footer-modal-box">
+
+    <div class="footer-modal-content" id="footerModalContent"></div>
+
+    <button
+      class="footer-modal-btn"
+      id="footerModalCloseBtn"
+      type="button"
+    >
+      확인
+    </button>
+
+  </div>
+</div>
+  </div>
+</footer>
+</div>
+</body>
+</html>

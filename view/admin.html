@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>관리자 콘솔 | DATA 다타</title>
+<style>
+/* ===== admin.css ===== */
+/* ==============================
+   Admin Legacy / Fallback
+   기존 admin.html을 남겨둘 때만 사용하는 보조 CSS
+============================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  background: #020817;
+  color: #f8fafc;
+}
+
+.admin-page {
+  min-height: 100vh;
+  background: #020817;
+  color: #f8fafc;
+}
+
+.admin-wrap {
+  width: 1120px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 120px 24px 80px;
+}
+
+.admin-title {
+  font-size: 34px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.admin-desc {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.admin-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.admin-card {
+  background: linear-gradient(180deg, #111c31, #0d1729);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  padding: 24px;
+  min-height: 160px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-card:hover {
+  transform: translateY(-3px);
+  border-color: #38bdf8;
+}
+
+.admin-card-label {
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.admin-card-title {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.admin-card-desc {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-table-section {
+  margin-top: 28px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.admin-section-title {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 18px;
+}
+
+.admin-table-box {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  color: #dbeafe;
+  font-size: 14px;
+  text-align: left;
+}
+
+.admin-table th {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+.admin-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-btn:hover {
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+
+.admin-btn.primary {
+  border: 0;
+  background: #38bdf8;
+  color: #020817;
+}
+
+.admin-btn.danger {
+  color: #ff6b6b;
+  border-color: #ef4444;
+}
+
+.admin-status {
+  display: inline-block;
+  min-width: 54px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-status.success {
+  color: #38ff93;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.admin-status.error {
+  color: #ff6b6b;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.admin-status.wait {
+  color: #facc15;
+  background: rgba(234, 179, 8, 0.18);
+}
+
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 980px) {
+  .admin-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-wrap {
+    padding: 140px 18px 80px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="admin-page">
+<main class="admin-wrap">
+<h1 class="admin-title">관리자 콘솔</h1>
+<p class="admin-desc">
+      관리자 기능으로 이동하는 임시 콘솔 페이지입니다.
+    </p>
+<section class="admin-card-grid">
+<article class="admin-card" onclick="location.href='/view/admin_dashboard.html'">
+<div class="admin-card-label">DASHBOARD</div>
+<h2 class="admin-card-title">수집 정보 관리</h2>
+<p class="admin-card-desc">
+          기사 수집 현황, 분석 상태, 배너 관리를 확인합니다.
+        </p>
+</article>
+<article class="admin-card" onclick="location.href='/view/admin_users.html'">
+<div class="admin-card-label">USERS</div>
+<h2 class="admin-card-title">회원 정보 관리</h2>
+<p class="admin-card-desc">
+          회원 목록, 권한 변경, 관리자 로그를 확인합니다.
+        </p>
+</article>
+<article class="admin-card" onclick="location.href='/view/index.html'">
+<div class="admin-card-label">MAIN</div>
+<h2 class="admin-card-title">메인으로 이동</h2>
+<p class="admin-card-desc">
+          DATA 다타 메인 페이지로 돌아갑니다.
+        </p>
+</article>
+</section>
+<section class="admin-table-section">
+<h2 class="admin-section-title">최근 관리자 작업</h2>
+<div class="admin-table-box">
+<table class="admin-table">
+<thead>
+<tr>
+<th>일시</th>
+<th>관리자</th>
+<th>작업</th>
+<th>상태</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-04-27 10:20</td>
+<td>admin@data.com</td>
+<td>배너 등록</td>
+<td><span class="admin-status success">성공</span></td>
+</tr>
+<tr>
+<td>2026-04-27 10:40</td>
+<td>admin@data.com</td>
+<td>분석 재실행</td>
+<td><span class="admin-status wait">대기</span></td>
+</tr>
+<tr>
+<td>2026-04-27 11:10</td>
+<td>admin@data.com</td>
+<td>에러 데이터 삭제</td>
+<td><span class="admin-status success">성공</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+<script>
+/* ===== admin.js ===== */
+// ==============================
+// 관리자 공통 접근 체크
+// ==============================
+(function checkAdminAuth() {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
+
+  const role =
+    sessionStorage.getItem("user_role") ||
+    localStorage.getItem("user_role") ||
+    sessionStorage.getItem("role") ||
+    localStorage.getItem("role");
+
+  const isAdmin =
+    role === "ADMIN" ||
+    role === "SUPERADMIN" ||
+    role === "admin" ||
+    role === "superadmin" ||
+    token === "admin-test-token";
+
+  if (!token) {
+    alert("로그인이 필요한 페이지입니다.");
+    location.href = "/view/login.html";
+    return;
+  }
+
+  if (!isAdmin) {
+    alert("관리자만 접근할 수 있습니다.");
+    location.href = "/view/index.html";
+  }
+})();
+
+
+// ==============================
+// 관리자 로그아웃
+// ==============================
+function adminLogout() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_name");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userName");
+
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("user_name");
+  sessionStorage.removeItem("user_role");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("userName");
+
+  location.href = "/view/index.html";
+}
+
+
+// ==============================
+// 관리자 페이지 이동
+// ==============================
+function goAdminDashboard() {
+  location.href = "/view/admin_dashboard.html";
+}
+
+function goAdminUsers() {
+  location.href = "/view/admin_users.html";
+}
+
+function goAdminModel() {
+  location.href = "/view/admin_model.html";
+}
+
+function goMainPage() {
+  location.href = "/view/index.html";
+}
+
+
+// ==============================
+// 전역 등록
+// ==============================
+window.adminLogout = adminLogout;
+window.goAdminDashboard = goAdminDashboard;
+window.goAdminUsers = goAdminUsers;
+window.goAdminModel = goAdminModel;
+window.goMainPage = goMainPage;
+</script>
+</body>
+</html>

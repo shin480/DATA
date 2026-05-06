@@ -1,0 +1,29 @@
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-mark">D</div>
+
+    <button class="footer-link" type="button" onclick="openFooterTermsModal()">
+      이용약관
+    </button>
+
+    <div class="footer-divider"></div>
+
+    <button class="footer-link" type="button" onclick="openFooterPrivacyModal()">
+      개인정보처리방침
+    </button>
+
+    <p class="footer-copy">
+      © 2026 DATA 다타. All rights reserved.
+    </p>
+  </div>
+
+  <div class="footer-modal hidden" id="footerModal">
+    <div class="footer-modal-box">
+      <div class="footer-modal-content" id="footerModalContent"></div>
+
+      <button class="footer-modal-btn" type="button" onclick="closeFooterModal()">
+        확인
+      </button>
+    </div>
+  </div>
+</footer>
