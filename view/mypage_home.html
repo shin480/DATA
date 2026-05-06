@@ -126,9 +126,20 @@
       display: grid;
       grid-template-columns: 38px 1fr auto;
       gap: 12px;
-      padding: 12px 0;
+      padding: 12px 20px;
       border-bottom: 1px solid #101a30;
       align-items: center;
+      cursor: pointer; /* 마우스 커서 손가락 모양 */
+      transition: background 0.2s ease, transform 0.1s ease; /* 부드러운 변화 */
+      border-radius: 8px;
+    }
+
+    .news-item:hover {
+    background: #111a33; /* 살짝 밝아지는 배경 */
+    }
+
+    .news-item:active {
+    transform: scale(0.99); /* 클릭 시 살짝 눌리는 느낌 */
     }
 
     .news-item:last-child {
@@ -226,10 +237,22 @@
     .mini-news {
       display: flex;
       justify-content: space-between;
-      padding: 9px 0;
+      padding: 9px 10px;
       border-bottom: 1px solid #121c31;
       font-size: 13px;
       color: #b8c8e6;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-radius: 6px;
+    }
+
+    .mini-news:hover {
+    background: #131d36;
+    color: #42bfff; /* 글자색 강조 */
+    }
+
+    .mini-news:hover .date {
+    color: #70baff; /* 날짜 색상도 함께 강조 */
     }
 
     .mini-news span:first-child {
@@ -237,6 +260,10 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+
+    .mini-news:last-child {
+    border-bottom: none;
     }
 
     .date {
@@ -546,6 +573,72 @@
   font-weight: 900;
   cursor: pointer;
 }
+.pw-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+}
+
+.pw-modal.hidden{
+  display:none !important;
+}
+
+.pw-modal-box{
+  width:520px;
+  background:#1b2133;
+  border-radius:28px;
+  padding:28px 36px 34px;
+  box-shadow:0 30px 60px rgba(0,0,0,0.45);
+}
+
+.pw-input{
+  width:100%;
+  height:46px;
+  border-radius:10px;
+  border:1px solid #00d2ff;
+  background:#031224;
+  padding:0 18px;
+  color:#fff;
+  font-size:15px;
+  outline:none;
+}
+
+.pw-input::placeholder{
+  color:#5d6b86;
+}
+
+.pw-modal-btns{
+  display:flex;
+  justify-content:center;
+  gap:56px;
+  margin-top:24px;
+}
+
+.pw-confirm-btn,
+.pw-cancel-btn{
+  width:130px;
+  height:42px;
+  border-radius:999px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.pw-confirm-btn{
+  border:1px solid #00d2ff;
+  background:transparent;
+  color:#00d2ff;
+}
+
+.pw-cancel-btn{
+  border:1px solid #44506a;
+  background:transparent;
+  color:#73829d;
+}
 </style>
 </head>
 
@@ -594,7 +687,7 @@
       </div>
       <ul class="side-menu">
         <li class="active"onclick="location.href='mypage_home.html'">마이페이지 홈</li>
-        <li onclick="location.href='mypage_account.html'">회원정보 관리 & 탈퇴</li>
+        <li id="accountPageBtn">회원정보 관리 & 탈퇴</li>
       </ul>
     </aside>
 
@@ -992,6 +1085,45 @@ document.addEventListener("click", function (e) {
   const footerTermsBtn = e.target.closest("#footerTermsBtn");
   const footerPrivacyBtn = e.target.closest("#footerPrivacyBtn");
   const footerModalCloseBtn = e.target.closest("#footerModalCloseBtn");
+  const accountPageBtn = e.target.closest("#accountPageBtn");
+  const pwConfirmBtn = e.target.closest("#pwConfirmBtn");
+  const pwCancelBtn = e.target.closest("#pwCancelBtn");
+
+  if (accountPageBtn) {
+  const modal = document.getElementById("pwModal");
+  const input = document.getElementById("pwInput");
+
+  modal.classList.remove("hidden");
+
+  setTimeout(() => {
+    input.focus();
+  }, 50);
+
+  return;
+}
+
+if (pwCancelBtn) {
+  document.getElementById("pwModal").classList.add("hidden");
+  document.getElementById("pwInput").value = "";
+  return;
+}
+
+if (pwConfirmBtn) {
+  const password = document.getElementById("pwInput").value.trim();
+
+  if (!password) {
+    alert("비밀번호를 입력해주세요.");
+    return;
+  }
+
+  if (password === "1234") {
+    location.href = "/view/mypage_account.html";
+  } else {
+    alert("비밀번호가 일치하지 않습니다.");
+  }
+
+  return;
+}
 
   /* 마이페이지 */
   if (primaryUserBtn) {
@@ -1102,7 +1234,32 @@ document.addEventListener("click", function (e) {
     </div>
   </div>
 </footer>
+<div class="pw-modal hidden" id="pwModal">
 
+  <div class="pw-modal-box">
+
+    <input
+      type="password"
+      class="pw-input"
+      id="pwInput"
+      placeholder="비밀번호를 입력하세요."
+    />
+
+    <div class="pw-modal-btns">
+
+      <button class="pw-confirm-btn" id="pwConfirmBtn">
+        확인
+      </button>
+
+      <button class="pw-cancel-btn" id="pwCancelBtn">
+        취소
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 </div>
 </body>
 </html>

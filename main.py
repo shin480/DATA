@@ -19,6 +19,8 @@ from login.login import login_user
 
 from forgotPassword.temppassword import send_temporary_password
 
+from mypage.updatepassword import update_user_password
+
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
@@ -97,10 +99,7 @@ def find_password(info: Dict[str,Any], req: Request):
     result = send_temporary_password(info["email"])
     return result
 
-@app.get("/check-auth")
-def check_auth(req: Request):
-    user = req.session.get("user")
-    if user:
-        # 세션에 정보가 있으면 로그인 상태
-        return {"is_logged_in": True, "user": user}
-    return {"is_logged_in": False}
+@app.post("/update_password")
+def api_update_password(info: Dict[str, Any], req: Request):
+    # 분리된 파일의 함수 호출
+    return update_user_password(info, req)

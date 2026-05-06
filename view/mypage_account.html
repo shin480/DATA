@@ -409,6 +409,7 @@
   flex-direction: column;
 }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -516,19 +517,21 @@
   </div>
 
 <script>
-const userInfo = {
-  name: "홍길동",
-  birthDate: "19900315",
-  gender: "남성",
-  email: "admin@data.com",
-  passwordChanged: false
-};
 
 function loadUserInfo() {
-  document.getElementById("userName").innerText = userInfo.name;
-  document.getElementById("userBirth").innerText = userInfo.birthDate;
-  document.getElementById("userGender").innerText = userInfo.gender;
-  document.getElementById("userEmail").innerText = userInfo.email;
+  // 1. 세션 저장소에서 로그인 시 저장했던 정보를 가져옵니다.
+  const name = sessionStorage.getItem("user_name");
+  const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email"); // 로그인 시 저장한 키값 확인
+  const role = sessionStorage.getItem("user_role");
+  const birth = sessionStorage.getItem("user_birth") || "정보 없음";
+  const gender = sessionStorage.getItem("user_gender") || "정보 없음";
+
+  // 2. 화면에 데이터 뿌리기
+  // 존재 여부를 체크해서 에러를 방지합니다.
+  if(document.getElementById("userName")) document.getElementById("userName").innerText = name || "미인증 사용자";
+  if(document.getElementById("userBirth")) document.getElementById("userBirth").innerText = birth;
+  if(document.getElementById("userGender")) document.getElementById("userGender").innerText = gender;
+  if(document.getElementById("userEmail")) document.getElementById("userEmail").innerText = email || "이메일 정보 없음";
 }
 
 function validatePasswordInput(input) {
@@ -564,7 +567,7 @@ function checkPasswordMatch() {
 }
 
 /* 회원 정보 수정 */
-function updateUserInfo() {
+async function updateUserInfo() {
   const pw1 = document.getElementById("password1").value;
   const pw2 = document.getElementById("passwordCheck").value;
 
@@ -598,12 +601,32 @@ function updateUserInfo() {
     return;
   }
 
-  /* 임시 API 처리 */
-  console.log("회원정보 수정 API 호출 예정", {
-    password: pw1
-  });
+  /* 비밀번호 변경 */
+  // 세션에서 현재 사용자의 이메일(ID) 가져오기
+  const email = sessionStorage.getItem("user_id");
 
-  alert("회원정보 수정이 완료되었습니다.");
+  try {
+    // 백엔드로 비밀번호 변경 요청 전송
+    const response = await axios.post("/update_password", {
+      email: email,
+      new_pw: pw1
+    });
+
+    if (response.data.success) {
+      // 입력칸 초기화
+      document.getElementById("password1").value = "";
+      document.getElementById("passwordCheck").value = "";
+      document.getElementById("passwordError").style.display = "none";
+      alert("회원정보 수정이 완료되었습니다.");
+    } else {
+      alert("실패: " + response.data.message);
+    }
+  } catch (err) {
+    console.error("비밀번호 변경 중 에러:", err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+
+  
 
   document.getElementById("password1").value = "";
   document.getElementById("passwordCheck").value = "";
