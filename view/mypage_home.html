@@ -210,7 +210,8 @@
       border: 1px solid #1a2540;
       border-radius: 12px;
       padding: 18px 18px 12px;
-      min-height: 350px;
+      min-height: 500px;
+      max-height: 500px;
     }
 
     .card-head {
@@ -281,16 +282,19 @@
     /* 좋아요 / 싫어요 페이지네이션 클릭 영역 */
     .pagination span,
     .pagination b {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 28px;
-        height: 28px;
-        margin: 0 3px;
-        border-radius: 6px;
-        cursor: pointer;          /* 마우스 손가락 모양 */
-        user-select: none;
-        transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      margin: 0;            /* [확실] gap을 사용하므로 margin은 0으로 조절 */
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.2s;
+      font-size: 13px;      /* [추정] 이미지와 비슷한 폰트 크기 */
+      color: #5c6b89;       /* [추정] 기본 비활성 색상 */
+      text-decoration: none;
     }
 
     /* hover */
