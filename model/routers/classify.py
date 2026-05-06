@@ -5,6 +5,7 @@
 import logging
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
+from pydantic import BaseModel
 
 from model.database import get_es
 from model.services.classifier import run_classification_pipeline
@@ -18,6 +19,25 @@ from model.services.scope_sentiment import run_scope_sentiment_batch
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/classify", tags=["classify"])
+
+
+# ── Response Models ────────────────────────────────────
+class SentimentDist(BaseModel):
+    positive: float = 0.0
+    negative: float = 0.0
+    neutral:  float = 0.0
+
+class ScopeOut(BaseModel):
+    scopeID:         str
+    scopeTitle:      str | None = None
+    sentiment:       str | None = None
+    sentiment_score: float | None = None
+    sentiment_dist:  SentimentDist | None = None
+    news_count:      int | None = None
+    scope_keywords:  list[str] | None = None
+    scope_summary:   str | None = None
+    created_at:      str | None = None
+    updated_at:      str | None = None
 
 INDEX_NEWS   = "news_economy"
 INDEX_SCOPES = "news_scopes"
@@ -81,6 +101,47 @@ def trigger_scope_sentiment(background_tasks: BackgroundTasks):
 def trigger_scope_summary(background_tasks: BackgroundTasks):
     background_tasks.add_task(run_scope_summary_batch)
     return {"message": "scope 요약 생성 시작됨 (백그라운드)"}
+
+
+@router.get("/scopes/{scope_id}", response_model=ScopeOut, summary="scope 상세 조회")
+def get_scope(scope_id: str):
+    """
+    scopeID로 단일 scope를 조회합니다.
+
+    - **sentiment_dist**: scope에 속한 전체 뉴스의 감성 비율 (positive/negative/neutral 합산 = 1.0)
+    - **sentiment**: 가장 높은 비율의 감성 레이블
+    - **sentiment_score**: 해당 감성 레이블의 평균 score
+    """
+    try:
+        es  = get_es()
+        res = es.get(index=INDEX_SCOPES, id=scope_id, ignore=[404])
+        es.close()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not res.get("found"):
+        raise HTTPException(status_code=404, detail=f"scopeID '{scope_id}' 를 찾을 수 없습니다.")
+
+    src  = res["_source"]
+    raw  = src.get("sentiment_dist") or {}
+    dist = SentimentDist(
+        positive=raw.get("positive", 0.0),
+        negative=raw.get("negative", 0.0),
+        neutral =raw.get("neutral",  0.0),
+    )
+
+    return ScopeOut(
+        scopeID         = src.get("scopeID", scope_id),
+        scopeTitle      = src.get("scopeTitle"),
+        sentiment       = src.get("sentiment"),
+        sentiment_score = src.get("sentiment_score"),
+        sentiment_dist  = dist,
+        news_count      = src.get("news_count"),
+        scope_keywords  = src.get("scope_keywords"),
+        scope_summary   = src.get("scope_summary"),
+        created_at      = src.get("created_at"),
+        updated_at      = src.get("updated_at"),
+    )
 
 
 @router.get("/status")
