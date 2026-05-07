@@ -211,6 +211,10 @@ async def evaluate_with_labels(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"CSV 파싱 오류: {e}")
 
+    # newsID도 article_id와 동일하게 처리
+    if "newsID" in df.columns and "article_id" not in df.columns:
+        df = df.rename(columns={"newsID": "article_id"})
+
     has_article_id = "article_id" in df.columns
     has_text       = "title" in df.columns and "content" in df.columns
     has_true_label = "true_sentiment" in df.columns
@@ -219,7 +223,7 @@ async def evaluate_with_labels(
         raise HTTPException(status_code=400, detail="'true_sentiment' 컬럼이 필요합니다.")
     if not has_article_id and not has_text:
         raise HTTPException(status_code=400,
-                            detail="'article_id' 또는 'title'+'content' 컬럼이 필요합니다.")
+                            detail="'newsID' 또는 'article_id' 또는 'title'+'content' 컬럼이 필요합니다.")
 
     df["true_sentiment"] = df["true_sentiment"].str.strip().str.lower()
     invalid = df[~df["true_sentiment"].isin(VALID_SENTIMENTS)]
