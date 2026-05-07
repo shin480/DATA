@@ -16,8 +16,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from torch.optim import AdamW
 from transformers import (
-    ElectraForSequenceClassification,
-    ElectraTokenizer,
+    BertForSequenceClassification,
+    BertTokenizer,
     get_linear_schedule_with_warmup,
 )
 
@@ -27,7 +27,7 @@ from model.services.error_logger import log_pipeline_error
 logger = logging.getLogger(__name__)
 
 FINETUNE_THRESHOLD = int(os.getenv("FINETUNE_THRESHOLD", 500))
-BASE_MODEL_NAME    = "monologg/koelectra-base-finetuned-sentiment"
+BASE_MODEL_NAME    = "snunlp/KR-FinBert-SC"
 MODEL_SAVE_DIR     = Path(os.getenv("MODEL_SAVE_DIR", "models"))
 EPOCHS             = 3
 LEARNING_RATE      = 2e-5
@@ -100,7 +100,7 @@ def _fetch_correction_data(conn) -> tuple[list[str], list[int], list[int]]:
 def _get_current_model_path() -> str:
     if not MODEL_SAVE_DIR.exists():
         return BASE_MODEL_NAME
-    subdirs = sorted(MODEL_SAVE_DIR.glob("koelectra-finetuned-*"), reverse=True)
+    subdirs = sorted(MODEL_SAVE_DIR.glob("krfinbert-finetuned-*"), reverse=True)
     return str(subdirs[0]) if subdirs else BASE_MODEL_NAME
 
 
@@ -115,7 +115,7 @@ def run_finetune(trigger_type: str = "manual") -> dict:
             logger.info(f"fine-tuning 시작: {len(texts)}건 (trigger={trigger_type})")
             base_model = _get_current_model_path()
             output_dir = str(MODEL_SAVE_DIR /
-                             f"koelectra-finetuned-{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+                             f"krfinbert-finetuned-{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 
             with conn.cursor() as cur:
                 cur.execute("""
@@ -126,8 +126,8 @@ def run_finetune(trigger_type: str = "manual") -> dict:
                 history_id = cur.lastrowid
 
         device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        tokenizer = ElectraTokenizer.from_pretrained(base_model)
-        model     = ElectraForSequenceClassification.from_pretrained(
+        tokenizer = BertTokenizer.from_pretrained(base_model)
+        model     = BertForSequenceClassification.from_pretrained(
             base_model, num_labels=3).to(device)
 
         dataset    = CorrectionDataset(texts, labels, tokenizer, MAX_LENGTH)
@@ -203,8 +203,8 @@ def run_finetune(trigger_type: str = "manual") -> dict:
 
 def _reload_sentiment_model(model_path: str, device: torch.device):
     import model.services.sentiment as svc
-    svc._tokenizer = ElectraTokenizer.from_pretrained(model_path)
-    svc._model     = ElectraForSequenceClassification.from_pretrained(model_path).to(device)
+    svc._tokenizer = BertTokenizer.from_pretrained(model_path)
+    svc._model     = BertForSequenceClassification.from_pretrained(model_path).to(device)
     svc._model.eval()
     svc._device    = device
     logger.info(f"sentiment 모델 교체 완료: {model_path}")
