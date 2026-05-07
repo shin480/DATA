@@ -23,6 +23,8 @@ from mypage.updatepassword import update_user_password
 from mypage.deleteaccount import delete_user_account
 from mypage.passwordcheck import check_user_password, check_auth_status
 
+from util.es import get_es, NEWS_ECONOMY_INDEX
+
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
@@ -117,3 +119,289 @@ def api_pw_check(info: Dict[str, Any], req: Request):
 @app.post("/pw_check_time")
 def pw_check_time(req: Request):
     return check_auth_status(req)
+
+# =========================================
+# 키워드 상세 조회 API
+# =========================================
+@app.get("/api/keywords/{keyword}")
+def get_keyword_detail(keyword: str):
+
+    es = get_es()
+
+    body = {
+        "size": 50,
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "match_phrase": {
+                            "title": {
+                                "query": keyword,
+                                "boost": 5
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase": {
+                            "summary": {
+                                "query": keyword,
+                                "boost": 3
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase": {
+                            "keywords": {
+                                "query": keyword,
+                                "boost": 4
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase": {
+                            "clean_text": {
+                                "query": keyword,
+                                "boost": 1
+                            }
+                        }
+                    }
+                ],
+                "minimum_should_match": 1
+            }
+        },
+        "sort": [
+            {
+                "_score": {
+                    "order": "desc"
+                }
+            },
+            {
+                "published_at": {
+                    "order": "desc"
+                }
+            }
+        ]
+    }
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body=body
+    )
+
+    hits = result["hits"]["hits"]
+
+    total_count = len(hits)
+
+    # =========================
+    # 검색 결과 없을 때
+    # =========================
+    if total_count == 0:
+
+        return {
+            "category": "ECONOMY",
+            "keyword": keyword,
+
+            "pressCount": 0,
+
+            "summary": f"{keyword} 관련 뉴스 데이터가 없습니다.",
+
+            "aiCount": 0,
+
+            "newsCount": 0,
+
+            "flow": "데이터 없음",
+
+            "sentiment": {
+                "positive": 0,
+                "neutral": 0,
+                "negative": 0
+            },
+
+            "articles": []
+        }
+
+    # =========================
+    # 감성 계산
+    # =========================
+    positive_count = 0
+    neutral_count = 0
+    negative_count = 0
+
+    press_set = set()
+
+    articles = []
+
+    # =========================
+    # 기사 리스트 생성
+    # =========================
+    for hit in hits:
+
+        source = hit["_source"]
+
+        press = source.get("press", "언론사 없음")
+
+        sentiment = source.get("sentiment", "neutral")
+
+        press_set.add(press)
+
+        # 감성 카운트
+        if sentiment == "positive":
+            positive_count += 1
+
+        elif sentiment == "negative":
+            negative_count += 1
+
+        else:
+            neutral_count += 1
+
+        # 기사 리스트
+        articles.append({
+
+            "article_id": source.get("article_id", ""),
+
+            "source": press,
+
+            "title": source.get("title", "제목 없음"),
+
+            "desc":
+                source.get("summary")
+                or source.get("content", "")[:120],
+
+            "link": source.get("url", "#"),
+
+            "published_at":
+                source.get("published_at", ""),
+
+            "sentiment": sentiment,
+
+            "highlight": False
+        })
+
+    # =========================
+    # 감성 퍼센트 계산
+    # =========================
+    positive_percent = round(
+        (positive_count / total_count) * 100
+    )
+
+    neutral_percent = round(
+        (neutral_count / total_count) * 100
+    )
+
+    negative_percent = (
+        100
+        - positive_percent
+        - neutral_percent
+    )
+
+    first_article = hits[0]["_source"]
+
+    # =========================
+    # 최종 반환
+    # =========================
+    return {
+
+        "category": "ECONOMY",
+
+        "keyword": keyword,
+
+        "pressCount": len(press_set),
+
+        "summary":
+            first_article.get("summary")
+            or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
+
+        "aiCount": 1,
+
+        "newsCount": total_count,
+
+        "flow": "감성 분석",
+
+        "sentiment": {
+
+            "positive": positive_percent,
+
+            "neutral": neutral_percent,
+
+            "negative": negative_percent
+        },
+
+        "articles": articles
+    }
+
+@app.get("/api/search/suggest")
+def search_suggest(q: str):
+    es = get_es()
+
+    if not q.strip():
+        return []
+
+    body = {
+        "size": 20,
+
+        "_source": [
+            "keywords",
+            "title"
+        ],
+
+        "query": {
+            "bool": {
+                "should": [
+
+                    {
+                        "wildcard": {
+                            "keywords": {
+                                "value": f"*{q}*",
+                                "boost": 5
+                            }
+                        }
+                    },
+
+                    {
+                        "match_phrase_prefix": {
+                            "title": {
+                                "query": q,
+                                "boost": 3
+                            }
+                        }
+                    }
+
+                ],
+
+                "minimum_should_match": 1
+            }
+        }
+    }
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body=body
+    )
+
+    suggestions = []
+
+    for hit in result["hits"]["hits"]:
+        source = hit["_source"]
+
+        keyword_text = source.get("keywords", "")
+
+        if keyword_text:
+            for item in keyword_text.split(","):
+                word = item.strip()
+
+                if q in word and word not in suggestions:
+                    suggestions.append(word)
+
+        title = source.get("title", "")
+
+        if q in title:
+            for word in title.replace("…", " ").replace("·", " ").split():
+                clean_word = word.strip("[]()\"'‘’“”,.")
+
+                if q in clean_word and clean_word not in suggestions:
+                    suggestions.append(clean_word)
+
+        if len(suggestions) >= 6:
+            break
+
+    return suggestions[:6]
