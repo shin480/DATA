@@ -68,27 +68,22 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        .logo-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
-    gap: 0;
-}
+        /* 로고 */
+        .logo-area {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
 
-.logo-img {
-    width: 72px;
-    height: 72px;
-    object-fit: contain;
-}
-
-.logo-text {
-    color: var(--cyan-point);
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    margin-left: -8px;
-}
+        .main-logo {
+            width: 95px;
+            max-width: 100%;
+            object-fit: contain;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 0px;
+        }
 
         .subtitle {
 
@@ -130,8 +125,6 @@
             text-transform: uppercase;
         }
 
-
-
         /* ===== input wrapper ===== */
 
         .input-wrapper {
@@ -164,8 +157,6 @@
 
             border-color: var(--cyan-point);
         }
-
-
 
         /* ===== 이메일 X 버튼 ===== */
 
@@ -206,8 +197,6 @@
 
             color: #FFFFFF;
         }
-
-
 
         .btn-login {
 
@@ -272,8 +261,6 @@
 
             font-weight: bold;
         }
-
-
 
         /* ===== 커스텀 알림창 ===== */
 
@@ -365,24 +352,20 @@
 
 <body>
 
-
-
     <!-- 로그인 카드 -->
 
     <div class="login-card">
 
-        <div class="logo-wrap">
-    <img src="img/logo.png" alt="DATA Logo" class="logo-img">
-    <div class="logo-text">ATA</div>
-</div>
+        <!-- 로고 -->
+        <a href="./main.html" class="logo-area">
+            <img src="./img/logo.png" alt="DATA 로고" class="main-logo">
+        </a>
 
         <div class="subtitle">반갑습니다!</div>
 
         <p class="desc">
             데이터 분석의 새로운 기준, DATA에 로그인하세요.
         </p>
-
-
 
         <form id="loginForm">
 
@@ -415,8 +398,6 @@
 
             </div>
 
-
-
             <!-- 비밀번호 -->
 
             <div class="form-group">
@@ -438,13 +419,9 @@
 
             </div>
 
-
-
             <button type="submit" class="btn-login">
                 로그인
             </button>
-
-
 
             <button
                 type="button"
@@ -455,8 +432,6 @@
             </button>
 
         </form>
-
-
 
         <div class="footer-links">
 
@@ -469,8 +444,6 @@
         </div>
 
     </div>
-
-
 
     <!-- ===== 커스텀 알림창 ===== -->
 
@@ -494,8 +467,6 @@
 
     </div>
 
-
-
     <script>
 
         // ===== 로그인 실패 횟수 =====
@@ -503,13 +474,10 @@
         let loginFailCount =
             Number(localStorage.getItem("loginFailCount")) || 0;
 
-
         // ===== 로그인 잠금 시간 =====
 
         let loginLockTime =
             Number(localStorage.getItem("loginLockTime")) || 0;
-
-
 
         // ===== 이메일 X 버튼 =====
 
@@ -518,7 +486,6 @@
 
         const clearBtn =
             document.getElementById('clearEmailBtn');
-
 
         // 입력 시 X 버튼 표시
         emailInput.addEventListener('input', function() {
@@ -533,7 +500,6 @@
             }
         });
 
-
         // X 버튼 클릭 시 이메일 삭제
         clearBtn.addEventListener('click', function() {
 
@@ -543,8 +509,6 @@
 
             emailInput.focus();
         });
-
-
 
         // ===== 알림창 열기 =====
 
@@ -562,9 +526,7 @@
             const confirmBtn =
                 document.getElementById('confirmBtn');
 
-
             messageEl.innerText = message;
-
 
             if (subMessage) {
 
@@ -577,7 +539,6 @@
                 subMessageEl.style.display = 'none';
             }
 
-
             if (hideButton) {
 
                 confirmBtn.style.display = 'none';
@@ -587,11 +548,8 @@
                 confirmBtn.style.display = 'block';
             }
 
-
             modal.classList.add('show');
         }
-
-
 
         // ===== 알림창 닫기 =====
 
@@ -604,8 +562,6 @@
                     .classList.remove('show');
             });
 
-
-
         // ===== 로그인 =====
 
         document
@@ -613,7 +569,6 @@
             .addEventListener('submit', async function(e) {
 
             e.preventDefault();
-
 
             // ===== 24시간 잠금 체크 =====
 
@@ -632,7 +587,6 @@
                 return;
             }
 
-
             // 잠금 해제 시 초기화
             if (loginLockTime && loginLockTime <= now) {
 
@@ -645,7 +599,6 @@
                 loginLockTime = 0;
             }
 
-
             // 입력값
             const emailValue =
                 document.getElementById('email').value.trim();
@@ -655,7 +608,6 @@
 
             const passwordValue =
                 passwordInput.value.trim();
-
 
             // 빈값 체크
             if (!emailValue || !passwordValue) {
@@ -667,7 +619,6 @@
                 return;
             }
 
-
             // 요청 데이터
             const params = {
 
@@ -675,7 +626,6 @@
 
                 pw: passwordValue
             };
-
 
             try {
 
@@ -688,7 +638,6 @@
                     }
                 );
 
-
                 // ===== 로그인 성공 =====
 
                 if (data.success) {
@@ -700,7 +649,6 @@
                     loginFailCount = 0;
 
                     loginLockTime = 0;
-
 
                     // 세션 저장
                     sessionStorage.setItem(
@@ -733,14 +681,12 @@
                         data.user?.user_gender || ""
                     );
 
-
                     // 성공 알림
                     showAlert(
                         data.message || "로그인 성공",
                         '',
                         true
                     );
-
 
                     // 1.5초 후 이동
                     setTimeout(() => {
@@ -751,7 +697,6 @@
 
                 }
 
-
                 // ===== 로그인 실패 =====
 
                 else {
@@ -759,14 +704,12 @@
                     // 비밀번호 초기화
                     passwordInput.value = '';
 
-
                     loginFailCount++;
 
                     localStorage.setItem(
                         "loginFailCount",
                         loginFailCount
                     );
-
 
                     // ===== 5회 실패 =====
 
@@ -782,7 +725,6 @@
 
                         loginLockTime = lockUntil;
 
-
                         showAlert(
                             "로그인 실패 5회로 계정이 잠겼습니다.",
                             "24시간 후 다시 시도해주세요."
@@ -790,7 +732,6 @@
 
                         return;
                     }
-
 
                     // ===== 일반 실패 =====
 

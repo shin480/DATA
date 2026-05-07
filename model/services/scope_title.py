@@ -21,6 +21,9 @@ scopeTitle 생성 서비스 (Gemini + 폴백)
 - 배치 무한 반복 방지:
     · retry_count 필드 추가 → MAX_RETRY 초과 시 failed 마킹 후 스킵
     · generate_scope_title 내 예외를 폴백으로 흡수 → 배치에서 예외 미전파
+- _enqueue 중복 방지 강화:
+    · pending만 체크 → failed 제외 전체 상태 체크로 변경
+    · 동일 scope_id 중복 큐 등록 원천 차단
 """
 
 import logging
@@ -153,7 +156,7 @@ def _upsert_scope_title(es, scope_id: str, scope_title: str):
 
 def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> str | None:
     """
-    scopeTitle 생성 메인 함수. 내부 예외는 폴백으로 흡수하여 None을 반환하지 않음.
+    scopeTitle 생성 메인 함수. 내부 예외는 폴백으로 흡수.
 
     news_count < 10  : 최신 제목 그대로 (플랜 A)
     news_count >= 10 : Gemini 시도 → 실패 시 최신 제목 폴백 (플랜 B → 플랜 C)
@@ -187,16 +190,18 @@ def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> st
 
 
 def _enqueue(es, scope_id: str):
-    """scope_refresh_queue에 pending 항목 등록 (중복 방지)"""
+    """scope_refresh_queue에 pending 항목 등록 (중복 방지)
+
+    failed 제외한 모든 상태(pending/processing/done) 체크하여
+    같은 scope_id 중복 등록을 원천 차단.
+    """
     existing = es.search(
         index=INDEX_QUEUE,
         body={
             "query": {
                 "bool": {
-                    "must": [
-                        {"term": {"scopeID": scope_id}},
-                        {"term": {"status":  "pending"}},
-                    ]
+                    "must":     {"term": {"scopeID": scope_id}},
+                    "must_not": {"term": {"status":  "failed"}},
                 }
             },
             "size": 1,
@@ -330,13 +335,11 @@ def run_scope_title_batch():
                 # titles 자체가 없는 경우만 None → retry_count 증가
                 new_retry = retry_count + 1
                 if new_retry >= MAX_RETRY:
-                    logger.error(
-                        f"재시도 한도 도달, failed 처리: scopeID={scope_id}"
-                    )
+                    logger.error(f"재시도 한도 도달, failed 처리: scopeID={scope_id}")
                     es.update(index=INDEX_QUEUE, id=doc_id,
                               body={"doc": {
-                                  "status":      "failed",
-                                  "retry_count": new_retry,
+                                  "status":       "failed",
+                                  "retry_count":  new_retry,
                                   "processed_at": now_utc,
                               }})
                 else:
