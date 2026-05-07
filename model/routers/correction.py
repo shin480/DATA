@@ -353,7 +353,9 @@ def trigger_finetune(background_tasks: BackgroundTasks):
 # ── 8. 감성 정정 CSV 추출 ──────────────────────────────
 @router.get("/export")
 def export_corrections_csv(
-    sentiment: str | None = Query(default=None, description="positive | negative | neutral"),
+    sentiment:  str | None = Query(default=None, description="positive | negative | neutral"),
+    mode:       str        = Query(default="all", description="all | low_confidence"),
+    threshold:  float      = Query(default=0.55, ge=0.0, le=1.0),
 ):
     """
     현재 필터 조건에 해당하는 전체 뉴스를 CSV로 추출합니다.
@@ -371,6 +373,8 @@ def export_corrections_csv(
         must = [{"exists": {"field": "sentiment"}}]
         if sentiment:
             must.append({"term": {"sentiment": sentiment}})
+        if mode == "low_confidence":
+            must.append({"range": {"sentiment_score": {"lt": threshold}}})
 
         es    = get_es()
         total = es.count(index=INDEX_NEWS, body={"query": {"bool": {"must": must}}})["count"]

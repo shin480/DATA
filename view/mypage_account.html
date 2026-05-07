@@ -4,520 +4,729 @@
   <meta charset="UTF-8" />
   <title>DATA 다타 - 회원정보 관리</title>
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
 
-    body{
-      background:#050916;
-      color:#d9e7ff;
-      font-family:"Pretendard","Noto Sans KR",sans-serif;
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     .hidden {
-  display: none !important;
-}
-
-/* ===== HEADER ===== */
-.page{
-  min-height:100vh;
-  background:#050816;
-}
-
-.header {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10000;
-
-  width: 1440px;
-  max-width: 100%;
-  height: 72px;
-  padding: 0 56px;
-
-  display: flex;
-  align-items: center;
-
-  background: #070b1a;
-  border-bottom: 1px solid #111827;
-}
-
-.header-left{
-  display:flex;
-  align-items:center;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #00E5FF;
-  text-decoration: none;
-}
-
-.logo-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00E5FF, #2563eb);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #020617;
-  font-weight: 900;
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  color: #94a3b8;
-  font-size: 15px;
-}
-
-.nav a {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.2s;
-}
-
-.nav a:hover {
-  color: #00E5FF;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.main-search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-box {
-  width: 260px;
-  height: 38px;
-  border-radius: 999px;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  padding: 0 16px;
-  color: #94a3b8;
-}
-
-.header-btn {
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid #334155;
-  background: transparent;
-  color: #cbd5e1;
-  cursor: pointer;
-}
-
-.header-btn:hover{
-  border-color:#00E5FF;
-  color:#00E5FF;
-}
-
-/* ===== FOOTER ===== */
-.footer {
-  border-top: 1px solid #111827;
-  background: #070b1a;
-  padding: 24px 0;
-  margin-top: 60px;
-}
-
-.footer-inner {
-  width: 1240px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.footer-logo-white {
-  width: 34px;
-  height: 34px;
-  background-color: #ffffff;
-
-  -webkit-mask-image: url("/view/img/data_favicon.png");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
-
-  mask-image: url("/view/img/data_favicon.png");
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-
-  flex-shrink: 0;
-}
-
-.footer-link {
-  border: 0;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.footer-link:hover {
-  color: #00e5ff;
-}
-
-.footer-divider {
-  width: 1px;
-  height: 12px;
-  background: #334155;
-}
-
-.footer-copy {
-  color: #64748b;
-}
-
-.layout{
-  width:1240px;
-  margin:0 auto;
-  display:flex;
-  min-height:calc(100vh - 74px);
-}
-
-aside{
-  width:230px;
-  background:#0b1020;
-  padding-top:45px;
-  border-right:1px solid #121a2d;
-}
-
-.side-title-wrap{
-  padding:0 24px 14px;
-  margin-bottom:18px;
-  border-bottom:1px solid #2f3748;
-}
-
-.side-title{
-  color:#6e7c98;
-  font-size:13px;
-}
-
-.side-menu{
-  list-style:none;
-}
-
-.side-menu li{
-  height:46px;
-  display:flex;
-  align-items:center;
-  padding-left:28px;
-  color:#6f7d98;
-  font-size:14px;
-  border-left:4px solid transparent;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.side-menu li:hover{
-  background:#10192b;
-}
-
-.side-menu li.active{
-  background:#132137;
-  color:#42bfff;
-  border-left-color:#24bfff;
-  font-weight:700;
-}
-
-main{
-  flex:1;
-  padding:42px 28px 80px;
-}
-
-.account-wrap{
-  width:430px;
-  margin:0 auto;
-  padding-top:15px;
-}
-
-.account-title{
-  text-align:center;
-  margin-bottom:26px;
-}
-
-.account-title .brand{
-  color:#10d9ff;
-  font-size:24px;
-  font-weight:800;
-  margin-bottom:6px;
-}
-
-.account-title h2{
-  font-size:20px;
-  color:#f1f6ff;
-  margin-bottom:8px;
-}
-
-.account-title p{
-  color:#63728d;
-  font-size:12px;
-}
-
-.form-group{
-  border-bottom:1px solid #1a2540;
-  padding:10px 0;
-}
-
-.form-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  border-bottom:1px solid #1a2540;
-}
-
-.form-row .form-group{
-  border-bottom:none;
-}
-
-label{
-  display:block;
-  color:#5f789e;
-  font-size:11px;
-  font-weight:800;
-  margin-bottom:8px;
-  text-transform:uppercase;
-}
-
-.value{
-  color:#dce8ff;
-  font-size:13px;
-  padding-bottom:2px;
-}
-
-.input{
-  width:100%;
-  height:42px;
-  border:1px solid #123450;
-  border-radius:10px;
-  background:#071522;
-  color:#dce8ff;
-  padding:0 14px;
-  outline:none;
-}
-
-.input::placeholder{
-  color:#52637c;
-}
-
-.error{
-  color:#ff4e5f;
-  font-size:11px;
-  margin-top:8px;
-  font-weight:700;
-}
-
-.submit-btn{
-  width:100%;
-  height:46px;
-  border:none;
-  border-radius:8px;
-  background:#10c8f5;
-  color:#00131f;
-  font-weight:800;
-  margin-top:18px;
-  cursor:pointer;
-}
-
-.delete-box{
-  margin-top:24px;
-  border:1px solid #5a1f22;
-  background:#120b0b;
-  border-radius:12px;
-  padding:18px;
-}
-
-.delete-title{
-  color:#ff4e5f;
-  font-size:14px;
-  font-weight:800;
-  margin-bottom:10px;
-}
-
-.delete-desc{
-  color:#7f5d5d;
-  font-size:12px;
-  line-height:1.6;
-  margin-bottom:18px;
-}
-
-.delete-btn{
-  width:100%;
-  height:38px;
-  background:transparent;
-  border:1px solid #ff4e5f;
-  color:#ff4e5f;
-  border-radius:8px;
-  font-weight:800;
-  cursor:pointer;
-}
-
-.delete-btn:hover{
-  background:#251010;
-}
-
-/* ==============================
-   Footer Modal
-============================== */
-
-.footer-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 8, 23, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 30000;
-}
-
-.footer-modal-box {
-  width: 520px;
-  max-width: calc(100% - 32px);
-  max-height: 70vh;
-  overflow-y: auto;
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 18px;
-  padding: 28px;
-}
-
-.footer-modal-content {
-  color: #cbd5e1;
-  line-height: 1.8;
-  font-size: 14px;
-  white-space: pre-line;
-}
-
-.footer-modal-content h3 {
-  margin: 0 0 16px;
-  color: #f8fafc;
-}
-
-.footer-modal-btn {
-  width: 100%;
-  margin-top: 24px;
-  padding: 13px;
-  border: 0;
-  border-radius: 10px;
-  background: #00e5ff;
-  color: #020617;
-  font-weight: 900;
-  cursor: pointer;
-}
-.search-suggest-box {
-  position: fixed;
-  width: 260px;
-  max-width: 80vw;
-  padding: 10px 0 12px;
-  border: 1px solid #1e293b;
-  border-top: 0;
-  border-radius: 0 0 18px 18px;
-  background: #050b1c;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-  z-index: 20000;
-  overflow: hidden;
-}
-
-.search-suggest-list {
-  display: flex;
-  flex-direction: column;
-}
-.search-suggest-item {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
-  cursor: pointer;
-  color: #dbeafe;
-  transition: 0.2s;
-}
-
-.search-suggest-item:hover {
-  background: #0f172a;
-}
-
-.search-suggest-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.search-suggest-icon {
-  color: #38bdf8;
-  font-size: 13px;
-}
-
-.search-suggest-keyword {
-  font-size: 14px;
-}
-
-.search-suggest-arrow {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.search-highlight {
-  color: #00e5ff;
-  font-weight: 700;
-}
+      display: none !important;
+    }
+
+    body {
+      background: #050916;
+      color: #d9e7ff;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+    }
+
+    .page {
+      width: 1440px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding-top: 72px;
+      background: #050816;
+    }
+
+    .layout {
+      width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      min-height: calc(100vh - 72px);
+    }
+
+    aside {
+      width: 230px;
+      background: #0b1020;
+      padding-top: 45px;
+      border-right: 1px solid #121a2d;
+    }
+
+    .side-title-wrap {
+      padding: 0 24px 14px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #2f3748;
+    }
+
+    .side-title {
+      color: #6e7c98;
+      font-size: 13px;
+    }
+
+    .side-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .side-menu li {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      padding-left: 28px;
+      color: #6f7d98;
+      font-size: 14px;
+      border-left: 4px solid transparent;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .side-menu li:hover {
+      background: #10192b;
+    }
+
+    .side-menu li.active {
+      background: #132137;
+      color: #42bfff;
+      border-left-color: #24bfff;
+      font-weight: 700;
+    }
+
+    main {
+      flex: 1;
+      padding: 42px 28px 80px;
+    }
+
+    .account-wrap {
+      width: 430px;
+      margin: 0 auto;
+      padding-top: 15px;
+    }
+
+    .account-title {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .account-title .brand {
+      color: #10d9ff;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .account-title h2 {
+      font-size: 20px;
+      color: #f1f6ff;
+      margin-bottom: 8px;
+    }
+
+    .account-title p {
+      color: #63728d;
+      font-size: 12px;
+    }
+
+    .form-group {
+      border-bottom: 1px solid #1a2540;
+      padding: 10px 0;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid #1a2540;
+    }
+
+    .form-row .form-group {
+      border-bottom: none;
+    }
+
+    label {
+      display: block;
+      color: #5f789e;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .value {
+      color: #dce8ff;
+      font-size: 13px;
+      padding-bottom: 2px;
+    }
+
+    .input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid #123450;
+      border-radius: 10px;
+      background: #071522;
+      color: #dce8ff;
+      padding: 0 14px;
+      outline: none;
+    }
+
+    .input::placeholder {
+      color: #52637c;
+    }
+
+    .error {
+      color: #ff4e5f;
+      font-size: 11px;
+      margin-top: 8px;
+      font-weight: 700;
+    }
+
+    .submit-btn {
+      width: 100%;
+      height: 46px;
+      border: none;
+      border-radius: 8px;
+      background: #10c8f5;
+      color: #00131f;
+      font-weight: 800;
+      margin-top: 18px;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      filter: brightness(1.08);
+    }
+
+    .delete-box {
+      margin-top: 24px;
+      border: 1px solid #5a1f22;
+      background: #120b0b;
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .delete-title {
+      color: #ff4e5f;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .delete-desc {
+      color: #7f5d5d;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .delete-btn {
+      width: 100%;
+      height: 38px;
+      background: transparent;
+      border: 1px solid #ff4e5f;
+      color: #ff4e5f;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background: #251010;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: none;
+      z-index: 10000;
+
+      width: 100%;
+      height: 72px;
+      padding: 0 56px;
+
+      display: flex;
+      align-items: center;
+
+      background: #070b1a;
+      border-bottom: 1px solid #111827;
+    }
+
+    .logo {
+      width: 155px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .header-logo-full {
+      height: 52px;
+      width: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-left: 22px;
+      color: #6b7280;
+      font-size: 15px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.2s;
+    }
+
+    .nav a:hover {
+      color: #00e5ff;
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .main-search-wrap {
+      position: relative;
+      width: 410px;
+      height: 40px;
+      border-radius: 999px;
+      background: #070b1a;
+      border: 1px solid #1f2937;
+      display: flex;
+      align-items: center;
+      padding: 0 14px 0 20px;
+    }
+
+    .search-box {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 15px;
+      padding: 0;
+    }
+
+    .search-box::placeholder {
+      color: #7c8493;
+    }
+
+    .main-search-wrap:focus-within {
+      border-color: #334155;
+    }
+
+    .search-icon-btn {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      background: transparent;
+      color: #8b95a7;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .search-icon-btn:hover {
+      color: #00e5ff;
+    }
+
+    .theme-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      background: #070b1a;
+      color: #facc15;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-btn:hover {
+      border-color: #334155;
+    }
+
+    .header-btn {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .header-btn.login {
+      border: 1px solid #00cfe8;
+      background: #00cfe8;
+      color: #020617;
+    }
+
+    .header-btn.login:hover {
+      filter: brightness(1.08);
+    }
+
+    .header-btn.join {
+      border: 1px solid #475569;
+      background: transparent;
+      color: #cbd5e1;
+    }
+
+    .header-btn.join:hover {
+      border-color: #00e5ff;
+      color: #00e5ff;
+    }
+
+    .search-suggest-box {
+      position: fixed;
+      width: 410px;
+      max-width: 80vw;
+      padding: 10px 0 12px;
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      background: #050b1c;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      z-index: 20000;
+      overflow: hidden;
+    }
+
+    .search-suggest-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-suggest-item {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      cursor: pointer;
+      color: #dbeafe;
+      transition: 0.2s;
+    }
+
+    .search-suggest-item:hover {
+      background: #0f172a;
+    }
+
+    .search-suggest-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-suggest-icon {
+      color: #38bdf8;
+      font-size: 13px;
+    }
+
+    .search-suggest-keyword {
+      font-size: 14px;
+    }
+
+    .search-suggest-arrow {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .search-highlight {
+      color: #00e5ff;
+      font-weight: 700;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      border-top: 1px solid #111827;
+      background: #070b1a;
+      padding: 24px 0;
+      margin-top: 60px;
+    }
+
+    .footer-inner {
+      width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .footer-logo-white {
+      width: 34px;
+      height: 34px;
+      background-color: #ffffff;
+
+      -webkit-mask-image: url("/view/img/data_favicon.png");
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
+
+      mask-image: url("/view/img/data_favicon.png");
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+
+      flex-shrink: 0;
+    }
+
+    .footer-link {
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .footer-link:hover {
+      color: #00e5ff;
+    }
+
+    .footer-divider {
+      width: 1px;
+      height: 12px;
+      background: #334155;
+    }
+
+    .footer-copy {
+      color: #64748b;
+    }
+
+    /* ==============================
+       Footer Modal
+    ============================== */
+
+    .footer-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 8, 23, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30000;
+    }
+
+    .footer-modal-box {
+      width: 520px;
+      max-width: calc(100% - 32px);
+      max-height: 70vh;
+      overflow-y: auto;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+    }
+
+    .footer-modal-content {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 14px;
+      white-space: pre-line;
+    }
+
+    .footer-modal-content h3 {
+      margin: 0 0 16px;
+      color: #f8fafc;
+    }
+
+    .footer-modal-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #00e5ff;
+      color: #020617;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    /* ==============================
+       Light Mode
+    ============================== */
+
+    body.light-mode {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    body.light-mode .page {
+      background: #f8fafc;
+    }
+
+    body.light-mode .header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .nav {
+      color: #64748b;
+    }
+
+    body.light-mode .nav a:hover {
+      color: #0284c7;
+    }
+
+    body.light-mode .main-search-wrap {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    body.light-mode .search-box {
+      color: #0f172a;
+    }
+
+    body.light-mode .search-box::placeholder {
+      color: #94a3b8;
+    }
+
+    body.light-mode .search-icon-btn {
+      color: #64748b;
+    }
+
+    body.light-mode .theme-btn {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.light-mode .header-btn.join {
+      background: #ffffff;
+      border-color: #94a3b8;
+      color: #334155;
+    }
+
+    body.light-mode .header-btn.login {
+      background: #00cfe8;
+      border-color: #00cfe8;
+      color: #020617;
+    }
+
+    body.light-mode aside {
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .side-title {
+      color: #64748b;
+    }
+
+    body.light-mode .side-title-wrap {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .side-menu li {
+      color: #64748b;
+    }
+
+    body.light-mode .side-menu li:hover {
+      background: #f1f5f9;
+    }
+
+    body.light-mode .side-menu li.active {
+      background: #e0f7ff;
+      color: #0284c7;
+      border-left-color: #00cfe8;
+    }
+
+    body.light-mode .account-title h2,
+    body.light-mode .value {
+      color: #0f172a;
+    }
+
+    body.light-mode .account-title p,
+    body.light-mode label {
+      color: #64748b;
+    }
+
+    body.light-mode .form-group,
+    body.light-mode .form-row {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .input {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    body.light-mode .input::placeholder {
+      color: #94a3b8;
+    }
+
+    body.light-mode .delete-box {
+      background: #fff7f7;
+      border-color: #fecaca;
+    }
+
+    body.light-mode .delete-desc {
+      color: #991b1b;
+    }
+
+    body.light-mode .search-suggest-box {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    body.light-mode .search-suggest-item {
+      color: #334155;
+    }
+
+    body.light-mode .search-suggest-item:hover {
+      background: #e0f7ff;
+      color: #0284c7;
+    }
+
+    body.light-mode .footer {
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .footer-logo-white {
+      background-color: #020617;
+    }
+
+    body.light-mode .footer-link {
+      color: #475569;
+    }
+
+    body.light-mode .footer-copy {
+      color: #64748b;
+    }
+
+    body.light-mode .footer-modal-box {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    body.light-mode .footer-modal-content {
+      color: #334155;
+    }
+
+    body.light-mode .footer-modal-content h3 {
+      color: #0f172a;
+    }
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
-  <div class="page">
-    <div id="header">
-  <header class="header">
-    <div class="header-left">
-      <a class="logo" href="/view/main.html">
-        <div class="logo-mark">D</div>
-        <div>DATA 다타</div>
-      </a>
-    </div>
+<div class="page">
 
-    <nav class="nav">
-      <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
-      <a data-login-page="/view/article_list.html" href="#">뉴스</a>
-      <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
-    </nav>
-
-
-      <div class="header-right">
-        <div class="main-search-wrap">
-          <input
-            autocomplete="off"
-            class="search-box"
-            id="commonSearchInput"
-            placeholder="예: 금리, 취업, 전세, 반도체"
-          />
-
-          <div class="search-suggest-box hidden" id="searchSuggestBox">
-            <div class="search-suggest-list" id="searchSuggestList"></div>
-          </div>
-        </div>
-
-        <button class="header-btn" id="primaryUserBtn" type="button">마이페이지</button>
-        <button class="header-btn" id="logoutBtn" type="button">로그아웃</button>
-      </div>
-    </header>
-  </div>
+  <div id="header"></div>
 
   <div class="layout">
     <aside>
@@ -525,10 +734,10 @@ label{
         <div class="side-title">마이페이지</div>
       </div>
 
-    <ul class="side-menu">
-        <li onclick="location.href='mypage_home.html'">마이페이지 홈</li>
-        <li class="active"onclick="location.href='mypage_account.html'">회원정보 관리 & 탈퇴</li>
-    </ul>
+      <ul class="side-menu">
+        <li onclick="location.href='/view/mypage_home.html'">마이페이지 홈</li>
+        <li class="active" onclick="location.href='/view/mypage_account.html'">회원정보 관리 & 탈퇴</li>
+      </ul>
     </aside>
 
     <main>
@@ -563,11 +772,25 @@ label{
 
         <div class="form-group">
           <label>Password</label>
-          <input class="input" type="password" id="password1" placeholder="새 비밀번호 (변경 시에만 입력)" maxlength="20" oninput="validatePasswordInput(this); checkPasswordMatch();"/>
+          <input
+            class="input"
+            type="password"
+            id="password1"
+            placeholder="새 비밀번호 (변경 시에만 입력)"
+            maxlength="20"
+            oninput="validatePasswordInput(this); checkPasswordMatch();"
+          />
         </div>
 
         <div class="form-group">
-          <input class="input" type="password" id="passwordCheck" placeholder="비밀번호 확인" maxlength="20" oninput="validatePasswordInput(this); checkPasswordMatch();"/>
+          <input
+            class="input"
+            type="password"
+            id="passwordCheck"
+            placeholder="비밀번호 확인"
+            maxlength="20"
+            oninput="validatePasswordInput(this); checkPasswordMatch();"
+          />
           <div class="error" id="passwordError">* 비밀번호가 일치하지 않습니다.</div>
         </div>
 
@@ -585,438 +808,475 @@ label{
     </main>
   </div>
 
-    <div id="footer"></div>
-  </div>
+  <div id="footer"></div>
+
+</div>
 
 <script>
+  /* =========================
+     사용자 정보 표시
+  ========================= */
 
-function loadUserInfo() {
-  // 1. 세션 저장소에서 로그인 시 저장했던 정보를 가져옵니다.
-  const name = sessionStorage.getItem("user_name");
-  const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email"); // 로그인 시 저장한 키값 확인
-  const role = sessionStorage.getItem("user_role");
-  const birth = sessionStorage.getItem("user_birth") || "정보 없음";
-  const gender = sessionStorage.getItem("user_gender") || "정보 없음";
+  function loadUserInfo() {
+    const name = sessionStorage.getItem("user_name");
+    const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email");
+    const birth = sessionStorage.getItem("user_birth") || "정보 없음";
+    const gender = sessionStorage.getItem("user_gender") || "정보 없음";
 
-  // 2. 화면에 데이터 뿌리기
-  // 존재 여부를 체크해서 에러를 방지합니다.
-  if(document.getElementById("userName")) document.getElementById("userName").innerText = name || "미인증 사용자";
-  if(document.getElementById("userBirth")) document.getElementById("userBirth").innerText = birth;
-  if(document.getElementById("userGender")) document.getElementById("userGender").innerText = gender;
-  if(document.getElementById("userEmail")) document.getElementById("userEmail").innerText = email || "이메일 정보 없음";
-}
-
-function validatePasswordInput(input) {
-  input.value = input.value
-    .replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, "")
-    .replace(/\s/g, "");
-
-  if (input.value.length > 20) {
-    input.value = input.value.slice(0, 20);
-  }
-}
-
-function checkPasswordMatch() {
-  const pw1 = document.getElementById("password1").value;
-  const pw2 = document.getElementById("passwordCheck").value;
-  const error = document.getElementById("passwordError");
-
-  if (pw1 === "" && pw2 === "") {
-    error.style.display = "none";
-    return;
-  }
-
-  if (pw2 === "") {
-    error.style.display = "none";
-    return;
-  }
-
-  if (pw1 !== pw2) {
-    error.style.display = "block";
-  } else {
-    error.style.display = "none";
-  }
-}
-
-// ==============================
-// 검색어 자동완성
-// ==============================
-function bindCommonSearch() {
-  const input = document.getElementById("commonSearchInput");
-
-  if (!input) return;
-
-  input.addEventListener("input", function () {
-    renderSearchSuggestions(input.value);
-  });
-
-  input.addEventListener("focus", function () {
-    renderSearchSuggestions(input.value);
-  });
-
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      moveSearch(input.value);
+    if (document.getElementById("userName")) {
+      document.getElementById("userName").innerText = name || "미인증 사용자";
     }
 
-    if (e.key === "Escape") {
-      hideSearchSuggestions();
+    if (document.getElementById("userBirth")) {
+      document.getElementById("userBirth").innerText = birth;
     }
-  });
 
-  document.addEventListener("click", function (e) {
-    const searchWrap = document.querySelector(".main-search-wrap");
-
-    if (!searchWrap) return;
-
-    if (!searchWrap.contains(e.target)) {
-      hideSearchSuggestions();
+    if (document.getElementById("userGender")) {
+      document.getElementById("userGender").innerText = gender;
     }
-  });
 
-  window.addEventListener("resize", positionSearchSuggestBox);
-  window.addEventListener("scroll", positionSearchSuggestBox);
-}
-
-function highlightKeyword(text, keyword) {
-  if (!keyword) return text;
-
-  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escapedKeyword})`, "gi");
-
-  return text.replace(regex, `<span class="search-highlight">$1</span>`);
-}
-
-async function renderSearchSuggestions(keyword) {
-  const list = document.getElementById("searchSuggestList");
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!list || !suggestBox) return;
-
-  const value = keyword.trim();
-
-  if (!value) {
-    hideSearchSuggestions();
-    return;
+    if (document.getElementById("userEmail")) {
+      document.getElementById("userEmail").innerText = email || "이메일 정보 없음";
+    }
   }
 
-  try {
-    const res = await axios.get(
-      `/api/search/suggest?q=${encodeURIComponent(value)}`
-    );
+  /* =========================
+     비밀번호 검증
+  ========================= */
 
-    const results = res.data || [];
+  function validatePasswordInput(input) {
+    input.value = input.value
+      .replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, "")
+      .replace(/\s/g, "");
 
-    if (results.length === 0) {
+    if (input.value.length > 20) {
+      input.value = input.value.slice(0, 20);
+    }
+  }
+
+  function checkPasswordMatch() {
+    const pw1 = document.getElementById("password1").value;
+    const pw2 = document.getElementById("passwordCheck").value;
+    const error = document.getElementById("passwordError");
+
+    if (!error) return;
+
+    if (pw1 === "" && pw2 === "") {
+      error.style.display = "none";
+      return;
+    }
+
+    if (pw2 === "") {
+      error.style.display = "none";
+      return;
+    }
+
+    if (pw1 !== pw2) {
+      error.style.display = "block";
+    } else {
+      error.style.display = "none";
+    }
+  }
+
+  /* =========================
+     검색어 자동완성
+  ========================= */
+
+  function bindCommonSearch() {
+    const input = document.getElementById("commonSearchInput");
+    const searchBtn = document.getElementById("commonSearchBtn");
+
+    if (!input) return;
+
+    if (searchBtn) {
+      searchBtn.addEventListener("click", function () {
+        moveSearch(input.value);
+      });
+    }
+
+    input.addEventListener("input", function () {
+      renderSearchSuggestions(input.value);
+    });
+
+    input.addEventListener("focus", function () {
+      renderSearchSuggestions(input.value);
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        moveSearch(input.value);
+      }
+
+      if (e.key === "Escape") {
+        hideSearchSuggestions();
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      const searchWrap = document.querySelector(".main-search-wrap");
+
+      if (!searchWrap) return;
+
+      if (!searchWrap.contains(e.target)) {
+        hideSearchSuggestions();
+      }
+    });
+
+    window.addEventListener("resize", positionSearchSuggestBox);
+    window.addEventListener("scroll", positionSearchSuggestBox);
+  }
+
+  function highlightKeyword(text, keyword) {
+    if (!keyword) return text;
+
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedKeyword})`, "gi");
+
+    return text.replace(regex, `<span class="search-highlight">$1</span>`);
+  }
+
+  async function renderSearchSuggestions(keyword) {
+    const list = document.getElementById("searchSuggestList");
+    const suggestBox = document.getElementById("searchSuggestBox");
+
+    if (!list || !suggestBox) return;
+
+    const value = keyword.trim();
+
+    if (!value) {
       hideSearchSuggestions();
       return;
     }
 
-    list.innerHTML = results.map(function (item) {
-      return `
-        <button
-          class="search-suggest-item"
-          type="button"
-          data-suggest-keyword="${item}"
-        >
-          <span class="search-suggest-left">
-            <span class="search-suggest-icon">⌕</span>
+    try {
+      const res = await axios.get(
+        `/api/search/suggest?q=${encodeURIComponent(value)}`
+      );
 
-            <span class="search-suggest-keyword">
-              ${highlightKeyword(item, value)}
-            </span>
-          </span>
+      const results = res.data || [];
 
-          <span class="search-suggest-arrow">↖</span>
-        </button>
-      `;
-    }).join("");
-
-    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const keyword = btn.dataset.suggestKeyword;
-
-        selectSearchSuggestion(keyword);
-      });
-    });
-
-    positionSearchSuggestBox();
-
-    suggestBox.classList.remove("hidden");
-
-  } catch (error) {
-    console.error("검색 자동완성 실패:", error);
-
-    hideSearchSuggestions();
-  }
-}
-
-function positionSearchSuggestBox() {
-  const input = document.getElementById("commonSearchInput");
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!input || !suggestBox) return;
-
-  const rect = input.getBoundingClientRect();
-
-  suggestBox.style.top = `${rect.bottom + 4}px`;
-  suggestBox.style.left = `${rect.left}px`;
-  suggestBox.style.width = `${rect.width}px`;
-}
-
-function hideSearchSuggestions() {
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!suggestBox) return;
-
-  suggestBox.classList.add("hidden");
-}
-
-function selectSearchSuggestion(keyword) {
-  const input = document.getElementById("commonSearchInput");
-
-  if (input) {
-    input.value = keyword;
-  }
-
-  hideSearchSuggestions();
-
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
-}
-
-function moveSearch(keyword) {
-  const value = keyword.trim();
-
-  if (!value) return;
-
-  hideSearchSuggestions();
-
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
-}
-
-/* 회원 정보 수정 */
-async function updateUserInfo() {
-  const pw1 = document.getElementById("password1").value;
-  const pw2 = document.getElementById("passwordCheck").value;
-
-  /* 수정사항 없음 */
-  if (pw1 === "" && pw2 === "") {
-    alert("변경 사항이 없습니다.");
-    return;
-  }
-
-  /* 비밀번호 8자 미만 */
-  if (pw1 !== "" && pw1.length < 8) {
-    alert("비밀번호는 8자 이상이어야 합니다.");
-    return;
-  }
-
-  /* 확인 비밀번호만 입력한 경우 */
-  if (pw1 === "" && pw2 !== "") {
-    alert("새 비밀번호를 입력해주세요.");
-    return;
-  }
-
-  /* 새 비밀번호만 입력한 경우 */
-  if (pw1 !== "" && pw2 === "") {
-    alert("비밀번호 확인을 입력해주세요.");
-    return;
-  }
-
-  /* 비밀번호 불일치 */
-  if (pw1 !== pw2) {
-    alert("비밀번호가 일치하지 않습니다.");
-    return;
-  }
-
-  /* 비밀번호 변경 */
-  // 세션에서 현재 사용자의 이메일(ID) 가져오기
-  const email = sessionStorage.getItem("user_id");
-
-  try {
-    // 백엔드로 비밀번호 변경 요청 전송
-    const response = await axios.post("/update_password", {
-      email: email,
-      new_pw: pw1
-    });
-
-    if (response.data.success) {
-      // 입력칸 초기화
-      document.getElementById("password1").value = "";
-      document.getElementById("passwordCheck").value = "";
-      document.getElementById("passwordError").style.display = "none";
-      alert("회원정보 수정이 완료되었습니다.");
-    } else {
-      alert("실패: " + response.data.message);
-    }
-  } catch (err) {
-    console.error("비밀번호 변경 중 에러:", err);
-    alert("서버 통신 중 오류가 발생했습니다.");
-  }
-
-  
-
-  document.getElementById("password1").value = "";
-  document.getElementById("passwordCheck").value = "";
-  document.getElementById("passwordError").style.display = "none";
-}
-
-/* 회원 탈퇴 */
-async function deleteUser() {
-  const confirmDelete = confirm(
-    "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 회원 정보와 활동 내역이 삭제됩니다."
-  );
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  // 1. sessionStorage에 저장된 user_id(이메일)를 가져옴
-  const user_id = sessionStorage.getItem("user_id");
-
-  try {
-    // 2. 백엔드 탈퇴 엔드포인트로 데이터 전송
-    // 백엔드 deleteaccount.py의 info.get("email")과 키값을 맞춥니다.
-    const response = await axios.post("/delete_account", {
-      "user_id": user_id
-    });
-
-    if (response.data.success) {
-      alert(response.data.message);
-      
-      // 3. 로그아웃 처리: 브라우저 저장소 싹 비우기
-      sessionStorage.clear();
-      localStorage.clear();
-
-      // 4. 메인화면으로 이동
-      location.href = "./main.html";
-    } else {
-      alert("탈퇴 실패: " + response.data.message);
-    }
-  } catch (err) {
-    console.error("탈퇴 중 에러 발생:", err);
-    alert("서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
-  }
-  
-}
-
-function loadFooter() {
-  const footerArea = document.getElementById("footer");
-
-  if (!footerArea) return;
-
-  if (footerArea.innerHTML.trim()) {
-    return;
-  }
-
-  fetch("/view/footer.html?v=999")
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error("footer.html 경로 오류");
+      if (results.length === 0) {
+        hideSearchSuggestions();
+        return;
       }
 
-      return res.text();
-    })
-    .then(function (html) {
-      footerArea.innerHTML = html;
-    })
-    .catch(function (err) {
-      console.error("footer 로드 실패:", err);
-    });
-}
+      list.innerHTML = results.map(function (item) {
+        return `
+          <button
+            class="search-suggest-item"
+            type="button"
+            data-suggest-keyword="${item}"
+          >
+            <span class="search-suggest-left">
+              <span class="search-suggest-icon">⌕</span>
 
-window.onload = function () {
-  loadUserInfo();
-  loadFooter();
-  document.getElementById("passwordError").style.display = "none";
-  bindCommonSearch();
-};
+              <span class="search-suggest-keyword">
+                ${highlightKeyword(item, value)}
+              </span>
+            </span>
 
-window.openFooterTermsModal = function () {
-  const modal = document.getElementById("footerModal");
-  const content = document.getElementById("footerModalContent");
+            <span class="search-suggest-arrow">↖</span>
+          </button>
+        `;
+      }).join("");
 
-  if (!modal || !content) return;
+      document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const keyword = btn.dataset.suggestKeyword;
+          selectSearchSuggestion(keyword);
+        });
+      });
 
-  content.innerHTML = `
-    <h3>이용약관</h3>
-    <p>DATA 다타는 뉴스 데이터를 기반으로 키워드, 감성, 관점 분석 정보를 제공하는 서비스입니다.</p>
-    <p>이용자는 서비스를 부정한 목적으로 이용할 수 없으며, 제공되는 정보는 참고용으로 활용해야 합니다.</p>
-    <p>서비스에서 제공되는 분석 결과는 참고용 정보이며, 투자·정책·법률 판단의 최종 근거로 사용해서는 안 됩니다.</p>
-  `;
+      positionSearchSuggestBox();
+      suggestBox.classList.remove("hidden");
 
-  modal.classList.remove("hidden");
-};
-
-window.openFooterPrivacyModal = function () {
-  const modal = document.getElementById("footerModal");
-  const content = document.getElementById("footerModalContent");
-
-  if (!modal || !content) return;
-
-  content.innerHTML = `
-    <h3>개인정보처리방침</h3>
-    <p>DATA 다타는 회원가입 및 서비스 제공을 위해 이메일, 비밀번호, 이름, 생년월일, 성별 등의 개인정보를 수집할 수 있습니다.</p>
-    <p>수집된 개인정보는 회원 식별, 서비스 제공, 이용 기록 관리, 사용자 맞춤형 서비스 제공 목적 외에는 사용하지 않습니다.</p>
-    <p>개인정보 관련 문의: data260417@gmail.com</p>
-  `;
-
-  modal.classList.remove("hidden");
-};
-
-window.closeFooterModal = function () {
-  const modal = document.getElementById("footerModal");
-
-  if (!modal) return;
-
-  modal.classList.add("hidden");
-};
-
-/* =========================
-   Header / Footer 이벤트
-========================= */
-
-document.addEventListener("click", function (e) {
-
-  const primaryUserBtn = e.target.closest("#primaryUserBtn");
-  const logoutBtn = e.target.closest("#logoutBtn");
-
-  const loginRequiredLink = e.target.closest("[data-login-page]");
-
-  const footerTermsBtn = e.target.closest("#footerTermsBtn");
-  const footerPrivacyBtn = e.target.closest("#footerPrivacyBtn");
-  const footerModalCloseBtn = e.target.closest("#footerModalCloseBtn");
-
-  /* 마이페이지 */
-  if (primaryUserBtn) {
-    location.href = "/view/mypage_home.html";
-    return;
+    } catch (error) {
+      console.error("검색 자동완성 실패:", error);
+      hideSearchSuggestions();
+    }
   }
 
-  /* 로그아웃 */
-  if (logoutBtn) {
+  function positionSearchSuggestBox() {
+    const searchWrap = document.querySelector(".main-search-wrap");
+    const suggestBox = document.getElementById("searchSuggestBox");
 
-    localStorage.clear();
-    sessionStorage.clear();
+    if (!searchWrap || !suggestBox) return;
 
-    location.href = "/view/main.html";
-    return;
+    const rect = searchWrap.getBoundingClientRect();
+
+    suggestBox.style.top = `${rect.bottom + 4}px`;
+    suggestBox.style.left = `${rect.left}px`;
+    suggestBox.style.width = `${rect.width}px`;
   }
 
-  /* 헤더 링크 */
-  if (loginRequiredLink) {
+  function hideSearchSuggestions() {
+    const suggestBox = document.getElementById("searchSuggestBox");
 
-    const targetUrl = loginRequiredLink.dataset.loginPage;
+    if (!suggestBox) return;
+
+    suggestBox.classList.add("hidden");
+  }
+
+  function selectSearchSuggestion(keyword) {
+    const input = document.getElementById("commonSearchInput");
+
+    if (input) {
+      input.value = keyword;
+    }
+
+    hideSearchSuggestions();
+
+    goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+  }
+
+  function moveSearch(keyword) {
+    const value = keyword.trim();
+
+    if (!value) return;
+
+    hideSearchSuggestions();
+
+    goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+  }
+
+  function goLoginRequiredPage(targetUrl) {
     location.href = targetUrl;
-
-    return;
   }
 
-  /* 이용약관 */
-  if (footerTermsBtn) {
+  /* =========================
+     회원정보 수정
+  ========================= */
 
+  async function updateUserInfo() {
+    const pw1 = document.getElementById("password1").value;
+    const pw2 = document.getElementById("passwordCheck").value;
+
+    if (pw1 === "" && pw2 === "") {
+      alert("변경 사항이 없습니다.");
+      return;
+    }
+
+    if (pw1 !== "" && pw1.length < 8) {
+      alert("비밀번호는 8자 이상이어야 합니다.");
+      return;
+    }
+
+    if (pw1 === "" && pw2 !== "") {
+      alert("새 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    if (pw1 !== "" && pw2 === "") {
+      alert("비밀번호 확인을 입력해주세요.");
+      return;
+    }
+
+    if (pw1 !== pw2) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    const email = sessionStorage.getItem("user_id");
+
+    if (!email) {
+      alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
+      location.href = "/view/login.html";
+      return;
+    }
+
+    try {
+      const response = await axios.post("/update_password", {
+        email: email,
+        new_pw: pw1
+      });
+
+      if (response.data.success) {
+        document.getElementById("password1").value = "";
+        document.getElementById("passwordCheck").value = "";
+        document.getElementById("passwordError").style.display = "none";
+
+        alert("회원정보 수정이 완료되었습니다.");
+      } else {
+        alert("실패: " + response.data.message);
+      }
+    } catch (err) {
+      console.error("비밀번호 변경 중 에러:", err);
+      alert("서버 통신 중 오류가 발생했습니다.");
+    }
+  }
+
+  /* =========================
+     회원 탈퇴
+  ========================= */
+
+  async function deleteUser() {
+    const confirmDelete = confirm(
+      "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 회원 정보와 활동 내역이 삭제됩니다."
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    const user_id = sessionStorage.getItem("user_id");
+
+    if (!user_id) {
+      alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
+      location.href = "/view/login.html";
+      return;
+    }
+
+    try {
+      const response = await axios.post("/delete_account", {
+        user_id: user_id
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+
+        sessionStorage.clear();
+        localStorage.clear();
+
+        location.href = "/view/main.html";
+      } else {
+        alert("탈퇴 실패: " + response.data.message);
+      }
+    } catch (err) {
+      console.error("탈퇴 중 에러 발생:", err);
+      alert("서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
+  }
+
+  /* =========================
+     Header / Footer
+  ========================= */
+
+  function loadHeader() {
+    const headerArea = document.getElementById("header");
+
+    if (!headerArea) return;
+
+    if (headerArea.innerHTML.trim()) {
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
+      return;
+    }
+
+    fetch("/view/header.html?v=999")
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("header.html 경로 오류");
+        }
+
+        return res.text();
+      })
+      .then(function (html) {
+        headerArea.innerHTML = html;
+
+        setHeaderLoginState();
+        bindCommonSearch();
+        applyThemeMode();
+      })
+      .catch(function (err) {
+        console.error("header 로드 실패:", err);
+      });
+  }
+
+  function setHeaderLoginState() {
+    const loginBtn = document.getElementById("loginBtn");
+    const joinBtn = document.getElementById("joinBtn");
+    const primaryUserBtn = document.getElementById("primaryUserBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (!primaryUserBtn || !logoutBtn) return;
+
+    if (loginBtn) loginBtn.classList.add("hidden");
+    if (joinBtn) joinBtn.classList.add("hidden");
+
+    primaryUserBtn.classList.remove("hidden");
+    logoutBtn.classList.remove("hidden");
+    primaryUserBtn.innerText = "마이페이지";
+  }
+
+  function loadFooter() {
+    const footerArea = document.getElementById("footer");
+
+    if (!footerArea) return;
+
+    if (footerArea.innerHTML.trim()) {
+      return;
+    }
+
+    fetch("/view/footer.html?v=999")
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("footer.html 경로 오류");
+        }
+
+        return res.text();
+      })
+      .then(function (html) {
+        footerArea.innerHTML = html;
+      })
+      .catch(function (err) {
+        console.error("footer 로드 실패:", err);
+      });
+  }
+
+  /* =========================
+     Theme
+  ========================= */
+
+  function applyThemeMode() {
+    const savedTheme = localStorage.getItem("theme_mode");
+    const themeBtn = document.getElementById("themeToggleBtn");
+
+    if (savedTheme === "light") {
+      document.body.classList.add("light-mode");
+
+      if (themeBtn) {
+        themeBtn.innerText = "☀️";
+      }
+    } else {
+      document.body.classList.remove("light-mode");
+
+      if (themeBtn) {
+        themeBtn.innerText = "🌙";
+      }
+    }
+  }
+
+  function toggleThemeMode() {
+    const isLight = document.body.classList.contains("light-mode");
+    const themeBtn = document.getElementById("themeToggleBtn");
+
+    if (isLight) {
+      document.body.classList.remove("light-mode");
+      localStorage.setItem("theme_mode", "dark");
+
+      if (themeBtn) {
+        themeBtn.innerText = "🌙";
+      }
+    } else {
+      document.body.classList.add("light-mode");
+      localStorage.setItem("theme_mode", "light");
+
+      if (themeBtn) {
+        themeBtn.innerText = "☀️";
+      }
+    }
+  }
+
+  /* =========================
+     Footer Modal
+  ========================= */
+
+  window.openFooterTermsModal = function () {
     const modal = document.getElementById("footerModal");
     const content = document.getElementById("footerModalContent");
+
+    if (!modal || !content) return;
 
     content.innerHTML = `
       <h3>이용약관</h3>
@@ -1026,14 +1286,13 @@ document.addEventListener("click", function (e) {
     `;
 
     modal.classList.remove("hidden");
-    return;
-  }
+  };
 
-  /* 개인정보처리방침 */
-  if (footerPrivacyBtn) {
-
+  window.openFooterPrivacyModal = function () {
     const modal = document.getElementById("footerModal");
     const content = document.getElementById("footerModalContent");
+
+    if (!modal || !content) return;
 
     content.innerHTML = `
       <h3>개인정보처리방침</h3>
@@ -1043,20 +1302,87 @@ document.addEventListener("click", function (e) {
     `;
 
     modal.classList.remove("hidden");
-    return;
-  }
+  };
 
-  /* 모달 닫기 */
-  if (footerModalCloseBtn) {
+  window.closeFooterModal = function () {
+    const modal = document.getElementById("footerModal");
 
-    document
-      .getElementById("footerModal")
-      .classList.add("hidden");
+    if (!modal) return;
 
-    return;
-  }
+    modal.classList.add("hidden");
+  };
 
-});
+  /* =========================
+     공통 클릭 이벤트
+  ========================= */
+
+  document.addEventListener("click", function (e) {
+    const primaryUserBtn = e.target.closest("#primaryUserBtn");
+    const logoutBtn = e.target.closest("#logoutBtn");
+    const themeToggleBtn = e.target.closest("#themeToggleBtn");
+    const loginRequiredLink = e.target.closest("[data-login-page]");
+
+    const footerTermsBtn = e.target.closest("#footerTermsBtn");
+    const footerPrivacyBtn = e.target.closest("#footerPrivacyBtn");
+    const footerModalCloseBtn = e.target.closest("#footerModalCloseBtn");
+
+    if (themeToggleBtn) {
+      e.preventDefault();
+      toggleThemeMode();
+      return;
+    }
+
+    if (primaryUserBtn) {
+      location.href = "/view/mypage_home.html";
+      return;
+    }
+
+    if (logoutBtn) {
+      localStorage.clear();
+      sessionStorage.clear();
+
+      location.href = "/view/main.html";
+      return;
+    }
+
+    if (loginRequiredLink) {
+      const targetUrl = loginRequiredLink.dataset.loginPage;
+      location.href = targetUrl;
+      return;
+    }
+
+    if (footerTermsBtn) {
+      openFooterTermsModal();
+      return;
+    }
+
+    if (footerPrivacyBtn) {
+      openFooterPrivacyModal();
+      return;
+    }
+
+    if (footerModalCloseBtn) {
+      closeFooterModal();
+      return;
+    }
+  });
+
+  /* =========================
+     Init
+  ========================= */
+
+  document.addEventListener("DOMContentLoaded", function () {
+    applyThemeMode();
+    loadUserInfo();
+    loadHeader();
+    loadFooter();
+
+    const passwordError = document.getElementById("passwordError");
+
+    if (passwordError) {
+      passwordError.style.display = "none";
+    }
+  });
 </script>
 </body>
 </html>
