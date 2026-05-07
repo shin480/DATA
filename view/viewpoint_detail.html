@@ -1072,27 +1072,6 @@ function bindGlobalClickEvents() {
 // ==============================
 // 검색어 자동완성
 // ==============================
-const searchKeywordPool = [
-  "금리",
-  "기준금리",
-  "대출",
-  "가계부채",
-  "물가",
-  "환율",
-  "부동산",
-  "부자",
-  "부산 여행",
-  "차량5부제",
-  "부천 날씨",
-  "부산은행",
-  "반도체",
-  "취업",
-  "전세",
-  "주식시장",
-  "소비심리",
-  "금융시장"
-];
-
 function bindCommonSearch() {
   const input = document.getElementById("commonSearchInput");
 
@@ -1139,7 +1118,7 @@ function highlightKeyword(text, keyword) {
   return text.replace(regex, `<span class="search-highlight">$1</span>`);
 }
 
-function renderSearchSuggestions(keyword) {
+async function renderSearchSuggestions(keyword) {
   const list = document.getElementById("searchSuggestList");
   const suggestBox = document.getElementById("searchSuggestBox");
 
@@ -1152,43 +1131,55 @@ function renderSearchSuggestions(keyword) {
     return;
   }
 
-  const results = searchKeywordPool
-    .filter(function (item) {
-      return item.includes(value);
-    })
-    .slice(0, 6);
+  try {
+    const res = await axios.get(
+      `/api/search/suggest?q=${encodeURIComponent(value)}`
+    );
 
-  if (results.length === 0) {
-    hideSearchSuggestions();
-    return;
-  }
+    const results = res.data || [];
 
-  list.innerHTML = results.map(function (item) {
-    return `
-      <button
-        class="search-suggest-item"
-        type="button"
-        data-suggest-keyword="${item}"
-      >
-        <span class="search-suggest-left">
-          <span class="search-suggest-icon">⌕</span>
-          <span class="search-suggest-keyword">${highlightKeyword(item, value)}</span>
-        </span>
+    if (results.length === 0) {
+      hideSearchSuggestions();
+      return;
+    }
 
-        <span class="search-suggest-arrow">↖</span>
-      </button>
-    `;
-  }).join("");
+    list.innerHTML = results.map(function (item) {
+      return `
+        <button
+          class="search-suggest-item"
+          type="button"
+          data-suggest-keyword="${item}"
+        >
+          <span class="search-suggest-left">
+            <span class="search-suggest-icon">⌕</span>
 
-  document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const keyword = btn.dataset.suggestKeyword;
-      selectSearchSuggestion(keyword);
+            <span class="search-suggest-keyword">
+              ${highlightKeyword(item, value)}
+            </span>
+          </span>
+
+          <span class="search-suggest-arrow">↖</span>
+        </button>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const keyword = btn.dataset.suggestKeyword;
+
+        selectSearchSuggestion(keyword);
+      });
     });
-  });
 
-  positionSearchSuggestBox();
-  suggestBox.classList.remove("hidden");
+    positionSearchSuggestBox();
+
+    suggestBox.classList.remove("hidden");
+
+  } catch (error) {
+    console.error("검색 자동완성 실패:", error);
+
+    hideSearchSuggestions();
+  }
 }
 
 function positionSearchSuggestBox() {
