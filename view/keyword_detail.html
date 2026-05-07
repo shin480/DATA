@@ -1511,7 +1511,16 @@ function bindGlobalClickEvents() {
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
+    const articleDetailBtn = e.target.closest(".article-detail-btn");
 
+    if (articleDetailBtn) {
+      e.preventDefault();
+
+      const articleId = articleDetailBtn.dataset.articleId;
+      openArticleDetail(articleId);
+
+      return;
+    }
     if (themeToggleBtn) {
       e.preventDefault();
       toggleThemeMode();
@@ -2178,7 +2187,7 @@ function renderArticles() {
         <p class="article-desc">${article.desc || "요약 정보가 없습니다."}</p>
       </div>
 
-      <button class="original-btn" onclick="openOriginal('${article.link || "#"}')">
+      <button class="original-btn article-detail-btn" type="button" data-article-id="${article.article_id || ""}">
         원문 보기
       </button>
     </article>
@@ -2186,13 +2195,14 @@ function renderArticles() {
 }
 
 
-function openOriginal(link) {
-  if (link === "#") {
-    showToast("서버 연결 전 임시 원문 링크입니다.");
+function openArticleDetail(articleId) {
+
+  if (!articleId) {
+    showToast("기사 ID가 없습니다.");
     return;
   }
 
-  location.href = link;
+  location.href =`/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
 }
 
 async function readKeywordFromUrl() {
@@ -2266,7 +2276,7 @@ function startRolling() {
 // ==============================
 // 전역 함수
 // ==============================
-window.openOriginal = openOriginal;
+window.openArticleDetail = openArticleDetail;
 window.movePressList = movePressList;
 window.selectPerspectiveArticle = selectPerspectiveArticle;
 
