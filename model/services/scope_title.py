@@ -18,6 +18,9 @@ scopeTitle 생성 서비스 (Gemini + 폴백)
     · news_count < 10  → 최신 제목 그대로 (Gemini 호출 없음)
     · news_count >= 10 → Gemini 시도 → 실패 시 최신 제목 폴백
     · 고유명사 절단 문제로 키워드 조합 방식 미사용
+- 배치 무한 반복 방지:
+    · retry_count 필드 추가 → MAX_RETRY 초과 시 failed 마킹 후 스킵
+    · generate_scope_title 내 예외를 폴백으로 흡수 → 배치에서 예외 미전파
 """
 
 import logging
@@ -35,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE        = 50
 NEWS_COUNT_GEMINI = 10      # 이 이상일 때만 Gemini 호출
+MAX_RETRY         = 3       # 큐 재시도 최대 횟수 초과 시 failed 처리
 INDEX_NEWS        = "news_economy"
 INDEX_SCOPES      = "news_scopes"
 INDEX_QUEUE       = "scope_refresh_queue"
@@ -147,31 +151,39 @@ def _upsert_scope_title(es, scope_id: str, scope_title: str):
     logger.info(f"scopeTitle 저장: {scope_id} → {scope_title}")
 
 
-def generate_scope_title(es, scope_id: str, news_count: int | None = None):
+def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> str | None:
     """
-    scopeTitle 생성 메인 함수.
+    scopeTitle 생성 메인 함수. 내부 예외는 폴백으로 흡수하여 None을 반환하지 않음.
 
     news_count < 10  : 최신 제목 그대로 (플랜 A)
     news_count >= 10 : Gemini 시도 → 실패 시 최신 제목 폴백 (플랜 B → 플랜 C)
     news_count=None  : titles 길이로 판단 (배치 처리 경로)
     """
-    titles = _fetch_titles(es, scope_id)
-    if not titles:
-        return None
+    try:
+        titles = _fetch_titles(es, scope_id)
+        if not titles:
+            logger.warning(f"기사 제목 없음 (scope_id={scope_id})")
+            return None
 
-    count = news_count if news_count is not None else len(titles)
+        count = news_count if news_count is not None else len(titles)
 
-    if count >= NEWS_COUNT_GEMINI:
-        scope_title = _gemini_generate(scope_id, titles)
-        if scope_title is None:
+        if count >= NEWS_COUNT_GEMINI:
+            scope_title = _gemini_generate(scope_id, titles)
+            if scope_title is None:
+                # 플랜 C: 최신 제목 폴백
+                scope_title = titles[0]
+                logger.warning(f"Gemini 실패, 최신 제목 폴백: {scope_id} → {scope_title}")
+        else:
+            # 플랜 A: 최신 제목 그대로
             scope_title = titles[0]
-            logger.warning(f"Gemini 실패, 최신 제목 폴백: {scope_id} → {scope_title}")
-    else:
-        scope_title = titles[0]
-        logger.info(f"최신 제목 사용 (news_count={count}): {scope_id} → {scope_title}")
+            logger.info(f"최신 제목 사용 (news_count={count}): {scope_id} → {scope_title}")
 
-    _upsert_scope_title(es, scope_id, scope_title)
-    return scope_title
+        _upsert_scope_title(es, scope_id, scope_title)
+        return scope_title
+
+    except Exception as e:
+        logger.error(f"generate_scope_title 예외 (scope_id={scope_id}): {e}")
+        return None
 
 
 def _enqueue(es, scope_id: str):
@@ -195,9 +207,10 @@ def _enqueue(es, scope_id: str):
         es.index(
             index=INDEX_QUEUE,
             body={
-                "scopeID":   scope_id,
-                "queued_at": now_utc,
-                "status":    "pending",
+                "scopeID":     scope_id,
+                "queued_at":   now_utc,
+                "status":      "pending",
+                "retry_count": 0,
             },
         )
         logger.info(f"scope_refresh_queue 등록: {scope_id}")
@@ -261,7 +274,14 @@ def enqueue_missing_scope_titles():
 
 
 def run_scope_title_batch():
-    """scope_refresh_queue의 pending 항목 배치 처리 (30분 주기) — news_count >= 10 전용"""
+    """
+    scope_refresh_queue의 pending 항목 배치 처리 (30분 주기) — news_count >= 10 전용.
+
+    - generate_scope_title 성공(str 반환) → done
+    - generate_scope_title 실패(None 반환) → retry_count 증가
+      · retry_count < MAX_RETRY : pending 유지 (다음 배치에서 재시도)
+      · retry_count >= MAX_RETRY: failed 마킹 후 스킵 (무한 반복 방지)
+    """
     try:
         es = get_es()
 
@@ -283,20 +303,52 @@ def run_scope_title_batch():
         logger.info(f"scopeTitle 배치 처리 시작: {len(hits)}건")
 
         for hit in hits:
-            doc_id   = hit["_id"]
-            scope_id = hit["_source"]["scopeID"]
-            now_utc  = datetime.now(timezone.utc).isoformat()
+            doc_id      = hit["_id"]
+            scope_id    = hit["_source"]["scopeID"]
+            retry_count = hit["_source"].get("retry_count", 0)
+            now_utc     = datetime.now(timezone.utc).isoformat()
+
+            # MAX_RETRY 초과 시 failed 처리 후 스킵
+            if retry_count >= MAX_RETRY:
+                logger.error(
+                    f"최대 재시도 초과, failed 처리: scopeID={scope_id} "
+                    f"(retry_count={retry_count})"
+                )
+                es.update(index=INDEX_QUEUE, id=doc_id,
+                          body={"doc": {"status": "failed", "processed_at": now_utc}})
+                continue
 
             es.update(index=INDEX_QUEUE, id=doc_id,
                       body={"doc": {"status": "processing"}})
-            try:
-                generate_scope_title(es, scope_id, news_count=None)
+
+            result = generate_scope_title(es, scope_id, news_count=None)
+
+            if result is not None:
                 es.update(index=INDEX_QUEUE, id=doc_id,
                           body={"doc": {"status": "done", "processed_at": now_utc}})
-            except Exception as e:
-                logger.error(f"scopeTitle 생성 실패 scopeID={scope_id}: {e}")
-                es.update(index=INDEX_QUEUE, id=doc_id,
-                          body={"doc": {"status": "pending"}})
+            else:
+                # titles 자체가 없는 경우만 None → retry_count 증가
+                new_retry = retry_count + 1
+                if new_retry >= MAX_RETRY:
+                    logger.error(
+                        f"재시도 한도 도달, failed 처리: scopeID={scope_id}"
+                    )
+                    es.update(index=INDEX_QUEUE, id=doc_id,
+                              body={"doc": {
+                                  "status":      "failed",
+                                  "retry_count": new_retry,
+                                  "processed_at": now_utc,
+                              }})
+                else:
+                    logger.warning(
+                        f"scopeTitle 생성 실패, 재시도 예정: scopeID={scope_id} "
+                        f"(retry_count={new_retry}/{MAX_RETRY})"
+                    )
+                    es.update(index=INDEX_QUEUE, id=doc_id,
+                              body={"doc": {
+                                  "status":      "pending",
+                                  "retry_count": new_retry,
+                              }})
 
             time.sleep(10)  # gemini-2.5-flash-lite RPM 대응
 
