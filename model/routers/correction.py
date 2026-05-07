@@ -9,7 +9,7 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from model.database import get_db, get_es
@@ -417,3 +417,99 @@ def export_corrections_csv(
     except Exception as e:
         logger.error(f"CSV 추출 오류: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── 9. CSV 일괄 정정 업로드 → correction_log INSERT ───
+@router.post("/upload")
+async def upload_corrections_csv(
+    file: UploadFile = File(...),
+    corrected_by: str = Query(default="gemini", description="정정자 (기본: gemini)"),
+    update_es:    bool = Query(default=True,  description="ES sentiment 즉시 업데이트 여부"),
+):
+    """
+    Gemini 재분류 CSV를 업로드하여 correction_log에 일괄 INSERT합니다.
+    CSV 형식: newsID, true_sentiment (필수) / title, content 등은 무시
+    update_es=True이면 ES news_economy.sentiment도 즉시 업데이트합니다.
+    """
+    import io
+    import pandas as pd
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="CSV 파일만 업로드 가능합니다.")
+
+    content_bytes = await file.read()
+    try:
+        df = pd.read_csv(io.BytesIO(content_bytes), encoding="utf-8-sig")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"CSV 파싱 오류: {e}")
+
+    # newsID 컬럼 정규화
+    if "newsID" not in df.columns and "article_id" in df.columns:
+        df = df.rename(columns={"article_id": "newsID"})
+
+    if "newsID" not in df.columns or "true_sentiment" not in df.columns:
+        raise HTTPException(status_code=400, detail="newsID, true_sentiment 컬럼이 필요합니다.")
+
+    df["newsID"]         = df["newsID"].astype(str).str.strip()
+    df["true_sentiment"] = df["true_sentiment"].astype(str).str.strip().str.lower()
+
+    invalid = df[~df["true_sentiment"].isin(VALID_SENTIMENTS)]
+    if not invalid.empty:
+        raise HTTPException(status_code=400,
+                            detail=f"유효하지 않은 true_sentiment: {invalid['true_sentiment'].unique().tolist()}")
+
+    # ES에서 현재 sentiment 일괄 조회
+    es       = get_es()
+    news_ids = df["newsID"].tolist()
+    mget     = es.mget(index=INDEX_NEWS, body={"ids": news_ids},
+                       _source=["sentiment"])
+    es_map   = {d["_id"]: d["_source"].get("sentiment") for d in mget["docs"] if d.get("found")}
+
+    inserted = 0
+    skipped  = 0
+    es_updated = 0
+
+    with get_db() as conn:
+        with conn.cursor() as cur:
+            for _, row in df.iterrows():
+                news_id           = row["newsID"]
+                corrected_sentiment = row["true_sentiment"]
+                original_sentiment  = es_map.get(news_id)
+
+                if original_sentiment is None:
+                    skipped += 1
+                    continue
+
+                # 동일한 값이면 스킵
+                if original_sentiment == corrected_sentiment:
+                    skipped += 1
+                    continue
+
+                cur.execute("""
+                    INSERT INTO correction_log
+                        (newsID, original_sentiment, original_score,
+                         corrected_sentiment, corrected_by, memo)
+                    VALUES (%s, %s, NULL, %s, %s, 'CSV 일괄 업로드')
+                """, (news_id, original_sentiment, corrected_sentiment, corrected_by))
+                inserted += 1
+
+    # ES 즉시 업데이트
+    if update_es and inserted > 0:
+        es = get_es()
+        for _, row in df.iterrows():
+            news_id = row["newsID"]
+            if es_map.get(news_id) and es_map[news_id] != row["true_sentiment"]:
+                try:
+                    es.update(index=INDEX_NEWS, id=news_id,
+                              body={"doc": {"sentiment": row["true_sentiment"]}})
+                    es_updated += 1
+                except Exception as e:
+                    logger.warning(f"ES 업데이트 실패 {news_id}: {e}")
+        es.close()
+
+    logger.info(f"CSV 일괄 업로드 완료: inserted={inserted}, skipped={skipped}, es_updated={es_updated}")
+    return {
+        "inserted":   inserted,
+        "skipped":    skipped,
+        "es_updated": es_updated,
+        "total":      len(df),
+    }

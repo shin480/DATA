@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>감성 분류 어드민</title>
-  <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,7 +38,7 @@
     font-size: 14px; line-height: 1.6;
   }
 
-  .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .page { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
 
   /* 헤더 */
   .header {
@@ -253,124 +252,10 @@
     resize: vertical; min-height: 60px;
   }
   textarea:focus { outline: none; border-color: var(--accent); }
-
-  /* 디자인 추가 아자잣!!*/
-  .admin-model-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg2);
-}
-
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 270px;
-  background: #0b1020;
-  border-right: 1px solid #121a2d;
-  padding-top: 20px;
-  z-index: 100;
-}
-
-.logo-wrap {
-  padding: 0 24px 28px;
-  cursor: pointer;
-}
-
-.logo-small {
-  color: #6ddcff;
-  font-size: 12px;
-  margin-bottom: 6px;
-}
-
-.logo-main {
-  color: #14d9ff;
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.side-title-wrap {
-  padding: 0 24px 14px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid #2f3748;
-}
-
-.side-title {
-  color: #6e7c98;
-  font-size: 13px;
-}
-
-.side-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.side-menu li {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding-left: 28px;
-  color: #6f7d98;
-  font-size: 15px;
-  border-left: 4px solid transparent;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.side-menu li:hover {
-  background: #10192b;
-}
-
-.side-menu li.active {
-  background: #132137;
-  color: #42bfff;
-  border-left-color: #24bfff;
-  font-weight: 700;
-}
-
-.model-main {
-  width: calc(100% - 270px);
-  margin-left: 270px;
-  min-height: 100vh;
-}
-
-
 </style>
 </head>
 <body>
-
-  <!-- gpd씨 -->
-  <div class="admin-model-layout">
-
-  <aside class="sidebar">
-    <div class="logo-wrap" onclick="location.href='/view/admin_dashboard.html'">
-      <div class="logo-small">뉴스를 이해하는 방식</div>
-      <div class="logo-main">DATA 다타</div>
-    </div>
-
-    <div class="side-title-wrap">
-      <div class="side-title">관리자 페이지</div>
-    </div>
-
-    <ul class="side-menu">
-      <li onclick="location.href='/view/admin_dashboard.html'">
-        수집 정보
-      </li>
-      <li onclick="location.href='/view/admin_users.html'">
-        회원 정보
-      </li>
-      <li class="active" onclick="location.href='/view/sentiment_dashboard_dark.html'">
-        모델 보정
-      </li>
-    </ul>
-  </aside>
-
-  <main class="model-main">
-    <div class="page">
-  <!-- gpd씨 -->
+<div class="page">
 
   <!-- 헤더 -->
   <div class="header">
@@ -480,10 +365,15 @@
   <!-- 패널 3: 정답 레이블 평가                        -->
   <!-- ══════════════════════════════════════════════ -->
   <div id="panel-evaluate" class="panel">
-    <div style="margin-bottom:1rem;display:flex;align-items:center;gap:1rem;">
+    <div style="margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
       <span style="font-size:13px;color:var(--text3)">샘플 CSV 형식:</span>
       <code style="font-size:12px;color:var(--text2);background:var(--bg3);padding:2px 8px;border-radius:4px;">newsID,true_sentiment</code>
       <button class="btn btn-sm" id="download-sample-csv" style="color:var(--blue)">📥 샘플 CSV 다운로드</button>
+      <span style="color:var(--text3);font-size:12px;">|</span>
+      <span style="font-size:13px;color:var(--text3)">Gemini 재분류 CSV 일괄 반영:</span>
+      <input type="file" id="bulk-upload-input" accept=".csv" style="display:none">
+      <button class="btn btn-sm" id="bulk-upload-btn" style="color:var(--green)">📤 일괄 업로드</button>
+      <span id="bulk-upload-result" style="font-size:12px;color:var(--text3)"></span>
     </div>
     <div class="upload-zone" id="upload-zone">
       <input type="file" id="csv-input" accept=".csv" style="display:none">
@@ -606,8 +496,6 @@
   </div>
 
 </div><!-- /page -->
-  </main>
-</div>
 
 <!-- 정정 모달 -->
 <div class="modal-overlay" id="corr-modal">
@@ -803,6 +691,48 @@ document.addEventListener('click', function(e) {
     const url = apiBase() + '/admin/corrections/export?' + params.toString();
     window.location.href = url;
   }
+});
+
+// ── Gemini CSV 일괄 업로드 ──────────────────────────
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'bulk-upload-btn') {
+    document.getElementById('bulk-upload-input').click();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const bulkInput = document.getElementById('bulk-upload-input');
+  if (!bulkInput) return;
+  bulkInput.onchange = function() {
+    const file = this.files[0];
+    if (!file) return;
+    const resultEl = document.getElementById('bulk-upload-result');
+    resultEl.textContent = '업로드 중...';
+    resultEl.style.color = 'var(--text3)';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch(apiBase() + '/admin/corrections/upload?corrected_by=gemini&update_es=true', {
+      method: 'POST',
+      body: formData,
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.detail) {
+        resultEl.textContent = '오류: ' + d.detail;
+        resultEl.style.color = 'var(--red)';
+      } else {
+        resultEl.textContent = `완료: ${d.inserted}건 반영 / ${d.skipped}건 스킵`;
+        resultEl.style.color = 'var(--green)';
+      }
+      this.value = '';
+    })
+    .catch(err => {
+      resultEl.textContent = '오류: ' + err.message;
+      resultEl.style.color = 'var(--red)';
+    });
+  };
 });
 
 // ── 샘플 CSV 다운로드 버튼 ──────────────────────────
@@ -1332,13 +1262,6 @@ async function triggerFinetune() {
     btn.disabled = false;
     text('ft-run-msg', '');
   }
-}
-
-function logout() {
-  if (!confirm("로그아웃 하시겠습니까?")) return;
-  sessionStorage.clear();
-  localStorage.clear();
-  location.href = "/view/login.html";
 }
 
 // ── 초기 로드 ─────────────────────────────────────────

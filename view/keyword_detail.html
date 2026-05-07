@@ -247,14 +247,29 @@
 /* [확실] 기본 스타일 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sans-serif; }
-.page { width: 1440px; min-height: 100vh; margin: 0 auto; background: #050816; }
+.page {
+  width: 1440px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-top: 72px;
+  background: #050816;
+}
 
 /* [확실] 헤더 */
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: none;
+  z-index: 10000;
+
+  width: 100%;
   height: 72px;
   padding: 0 56px;
+
   display: flex;
   align-items: center;
+
   background: #070b1a;
   border-bottom: 1px solid #111827;
 }
@@ -1496,7 +1511,16 @@ function bindGlobalClickEvents() {
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
+    const articleDetailBtn = e.target.closest(".article-detail-btn");
 
+    if (articleDetailBtn) {
+      e.preventDefault();
+
+      const articleId = articleDetailBtn.dataset.articleId;
+      openArticleDetail(articleId);
+
+      return;
+    }
     if (themeToggleBtn) {
       e.preventDefault();
       toggleThemeMode();
@@ -2163,7 +2187,7 @@ function renderArticles() {
         <p class="article-desc">${article.desc || "요약 정보가 없습니다."}</p>
       </div>
 
-      <button class="original-btn" onclick="openOriginal('${article.link || "#"}')">
+      <button class="original-btn article-detail-btn" type="button" data-article-id="${article.article_id || ""}">
         원문 보기
       </button>
     </article>
@@ -2171,13 +2195,14 @@ function renderArticles() {
 }
 
 
-function openOriginal(link) {
-  if (link === "#") {
-    showToast("서버 연결 전 임시 원문 링크입니다.");
+function openArticleDetail(articleId) {
+
+  if (!articleId) {
+    showToast("기사 ID가 없습니다.");
     return;
   }
 
-  location.href = link;
+  location.href =`/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
 }
 
 async function readKeywordFromUrl() {
@@ -2251,7 +2276,7 @@ function startRolling() {
 // ==============================
 // 전역 함수
 // ==============================
-window.openOriginal = openOriginal;
+window.openArticleDetail = openArticleDetail;
 window.movePressList = movePressList;
 window.selectPerspectiveArticle = selectPerspectiveArticle;
 
