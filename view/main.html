@@ -253,14 +253,23 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 
 /* [확실] 헤더 */
 .header {
-    height: 72px; padding: 0 64px; display: flex; align-items: center; justify-content: space-between;
-    background: #070b1a; border-bottom: 1px solid #111827;
+  height: 72px;
+  padding: 0 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
 }
+
 .logo {
+  width: 155px;
+  height: 52px;
   display: flex;
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .header-logo-full {
@@ -269,13 +278,68 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
   display: block;
   object-fit: contain;
 }
-.logo-mark {width: 34px;height: 34px;object-fit: contain;display: block;flex-shrink: 0;}
-.nav { display: flex; align-items: center; gap: 30px; color: #94a3b8; font-size: 15px; }
-.nav a { text-decoration: none; color: inherit; transition: color 0.2s; }
-.nav a:hover { color: #00E5FF; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.search-box { width: 260px; height: 38px; border-radius: 999px; background: #0f172a; border: 1px solid #1e293b; padding: 0 16px; color: #94a3b8; }
-.header-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid #334155; background: transparent; color: #cbd5e1; cursor: pointer; }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-left: -350px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.nav a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: #00e5ff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-box {
+  width: 360px;
+  height: 38px;
+  border-radius: 999px;
+  background: #070b1a;
+  border: 1px solid #1f2937;
+  padding: 0 16px;
+  color: #cbd5e1;
+  outline: none;
+}
+
+.search-box::placeholder {
+  color: #6b7280;
+}
+
+.search-box:focus {
+  border-color: #00e5ff;
+}
+
+.header-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.header-btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
 
 /* [확실] 히어로 섹션 */
 .main { padding: 40px 64px 80px; }
