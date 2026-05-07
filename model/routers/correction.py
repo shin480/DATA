@@ -9,7 +9,7 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from model.database import get_db, get_es
@@ -433,8 +433,6 @@ async def upload_corrections_csv(
     """
     import io
     import pandas as pd
-    from fastapi import UploadFile
-
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="CSV 파일만 업로드 가능합니다.")
 
