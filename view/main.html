@@ -128,16 +128,29 @@
   font-size: 12px;
 }
 
-.footer-mark {
+.footer-logo-white {
+  width: 34px;
+  height: 34px;
+  background-color: #ffffff;
+
+  -webkit-mask-image: url("/view/img/data_favicon.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/view/img/data_favicon.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  flex-shrink: 0;
+}
+
+.footer-logo-img {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #00e5ff, #2563eb);
-  color: #020617;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  object-fit: contain;
+  display: block;
 }
 
 .footer-link {
@@ -368,41 +381,12 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
 .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
 .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
+
 </style>
 </head>
 <body>
 <div class="page">
-    <div id="header">
-  <header class="header">
-    <div class="header-left">
-      <a class="logo" href="/view/main.html">
-        <div class="logo-mark">D</div>
-        <div>DATA 다타</div>
-      </a>
-    </div>
-
-    <nav class="nav">
-      <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
-      <a data-login-page="/view/article_list.html" href="#">뉴스</a>
-      <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
-    </nav>
-
-    <div class="header-right">
-      <div class="main-search-wrap">
-        <input autocomplete="off" class="search-box" id="commonSearchInput" placeholder="예: 금리, 취업, 전세, 반도체"/>
-        <div class="search-suggest-box hidden" id="searchSuggestBox">
-          <div class="search-suggest-list" id="searchSuggestList"></div>
-      </div>
-    </div>
-
-    <button class="header-btn" id="loginBtn" type="button">로그인</button>
-    <button class="header-btn" id="joinBtn" type="button">회원가입</button>
-    <button class="header-btn hidden" id="primaryUserBtn" type="button">마이페이지</button>
-    <button class="header-btn hidden" id="logoutBtn" type="button">로그아웃</button>
-  </div>
-</header>
-</div>
-
+<div id="header"></div>
 <main class="main">
 <!-- 히어로 섹션 -->
 <section class="hero">
@@ -612,7 +596,7 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 </main>
 <div id="footer"><footer class="footer">
 <div class="footer-inner">
-<div class="footer-mark">D</div>
+<div class="footer-logo-white" aria-label="DATA 로고"></div>
 <button class="footer-link" onclick="openFooterTermsModal()" type="button">
       이용약관
     </button>
@@ -620,8 +604,9 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 <button class="footer-link" onclick="openFooterPrivacyModal()" type="button">
       개인정보처리방침
     </button>
+    <div class="footer-divider"></div>
 <p class="footer-copy">
-      © 2026 DATA 다타. All rights reserved.
+      Copyright © 2026 DATA 다타. All Rights Reserved.
     </p>
 </div>
 <div class="footer-modal hidden" id="footerModal">
