@@ -417,6 +417,50 @@ def search_suggest(q: str):
 
     return suggestions[:6]
 
+# 기사 목록
+@app.get("/api/articles")
+def get_article_list(size: int = 50):
+    es = get_es()
+
+    body = {
+        "size": size,
+        "query": {
+            "match_all": {}
+        },
+        "sort": [
+            {
+                "published_at": {
+                    "order": "desc"
+                }
+            }
+        ]
+    }
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body=body
+    )
+
+    articles = []
+
+    for hit in result["hits"]["hits"]:
+        source = hit["_source"]
+
+        articles.append({
+            "article_id": source.get("article_id", ""),
+            "source": source.get("press", "언론사 없음"),
+            "title": source.get("title", "제목 없음"),
+            "summary": source.get("summary") or source.get("content", "")[:120],
+            "published_at": source.get("published_at", ""),
+            "url": source.get("url", "#")
+        })
+
+    return {
+        "count": len(articles),
+        "articles": articles
+    }
+
+# 기사 상세페이지
 @app.get("/api/articles/{article_id}")
 def get_article_detail(article_id: str):
     es = get_es()

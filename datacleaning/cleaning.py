@@ -25,6 +25,45 @@ def advanced_clean_text(text: str) -> str:
     words = text.split()
     return " ".join([w for w in words if w not in STOPWORDS])
 
+# news_economy에 저장된 데이터 중복 검사
+def exists_in_news_economy(article_id, url, title, press):
+    should = []
+
+    if article_id:
+        should.append({"term": {"article_id": article_id}})
+
+    if url:
+        should.append({"term": {"url": url}})
+
+    # 제목 + 언론사
+    if title and press:
+        should.append({
+            "bool": {
+                "must": [
+                    {"match_phrase": {"title": title}},
+                    {"term": {"press": press}}
+                ]
+            }
+        })
+
+    if not should:
+        return False
+
+    res = es.search(
+        index=target_index,
+        body={
+            "query": {
+                "bool": {
+                    "should": should,
+                    "minimum_should_match": 1
+                }
+            },
+            "size": 1
+        }
+    )
+
+    return res["hits"]["total"]["value"] > 0
+
 def get_preprocessed_data():
     # 1. 전처리 안 된 데이터만 가져오기
     query = {
@@ -33,7 +72,7 @@ def get_preprocessed_data():
                 "must_not": [{"term": {"status": "preprocessed"}}]
             }
         },
-        "size": 1000
+        "size": 3000
     }
     res = es.search(index="article_raw", body=query)
     hits = res["hits"]["hits"]
@@ -48,7 +87,7 @@ def get_preprocessed_data():
     ])
 
     logs = {"missing_fields": [], "url_duplicate": [], "meta_duplicate": [],
-            "content_duplicate": [], "high_similarity": []}
+            "content_duplicate": [], "high_similarity": [], "es_duplicate": []}
 
     required_fields = ['collected_at', 'title', 'raw_text', 'url', 'press', 'published_at']
 
@@ -79,6 +118,13 @@ def get_preprocessed_data():
         # 메타데이터 중복 체크
         if any(p['title'] == title and p['press'] == row['press'] for p in final_data):
             logs["meta_duplicate"].append(title);
+            continue
+
+        article_id = row.get("article_id", "")
+
+        # 과거 es 중복 체크
+        if exists_in_news_economy(article_id, url, title, row["press"]):
+            logs["es_duplicate"].append(title)
             continue
 
         if passed_texts:
@@ -112,6 +158,7 @@ def get_preprocessed_data():
                 "content": row['raw_text'],
                 "clean_text": row['clean_text'],  # 정제된 필드
                 "press": row['press'],
+                "author": row.get('author', ''),
                 "url": row['url'],
                 "published_at": row['published_at'],
                 "collected_at": row['collected_at']
@@ -192,4 +239,3 @@ def get_preprocessed_data():
         "count": len(token_model_inputs),
         "data": token_model_inputs  # [id, token] 리스트 반환
     }
-
