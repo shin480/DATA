@@ -146,13 +146,6 @@
   flex-shrink: 0;
 }
 
-.footer-logo-img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  display: block;
-}
-
 .footer-link {
   border: 0;
   background: transparent;
@@ -594,30 +587,7 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 </div>
 </section>
 </main>
-<div id="footer"><footer class="footer">
-<div class="footer-inner">
-<div class="footer-logo-white" aria-label="DATA 로고"></div>
-<button class="footer-link" onclick="openFooterTermsModal()" type="button">
-      이용약관
-    </button>
-<div class="footer-divider"></div>
-<button class="footer-link" onclick="openFooterPrivacyModal()" type="button">
-      개인정보처리방침
-    </button>
-    <div class="footer-divider"></div>
-<p class="footer-copy">
-      Copyright © 2026 DATA 다타. All Rights Reserved.
-    </p>
-</div>
-<div class="footer-modal hidden" id="footerModal">
-<div class="footer-modal-box">
-<div class="footer-modal-content" id="footerModalContent"></div>
-<button class="footer-modal-btn" onclick="closeFooterModal()" type="button">
-        확인
-      </button>
-</div>
-</div>
-</footer></div>
+<div id="footer"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 

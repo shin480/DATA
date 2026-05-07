@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>DATA 다타 - 마이페이지</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -20,6 +21,11 @@
       font-family: "Pretendard", "Noto Sans KR", sans-serif;
     }
 
+    .page {
+      min-height: 100vh;
+      background: #050816;
+    }
+
     .layout {
       width: 1240px;
       margin: 0 auto;
@@ -34,51 +40,44 @@
       border-right: 1px solid #121a2d;
     }
 
+    .side-title-wrap {
+      padding: 0 24px 14px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #2f3748;
+    }
+
     .side-title {
       color: #6e7c98;
       font-size: 13px;
-      margin: 0 5px 0;
-    }
-
-    .side-title-wrap{
-        padding: 0 24px 14px;
-        margin-bottom: 18px;
-        border-bottom: 1px solid #2f3748; /* 회색 선 */
-    }
-
-    .side-title{
-        color: #6e7c98;
-        font-size: 13px;
     }
 
     .side-menu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+      list-style: none;
+      padding: 0;
+      margin: 0;
     }
 
     .side-menu li {
-        height: 46px;
-        display: flex;
-        align-items: center;
-        padding-left: 28px;
-        color: #6f7d98;
-        font-size: 14px;
-        border-left: 4px solid transparent;
-        cursor: pointer;
-        transition: 0.2s;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      padding-left: 28px;
+      color: #6f7d98;
+      font-size: 14px;
+      border-left: 4px solid transparent;
+      cursor: pointer;
+      transition: 0.2s;
     }
 
     .side-menu li:hover {
-       background: #10192b; 
+      background: #10192b;
     }
 
-    /* 선택된 메뉴 */
     .side-menu li.active {
-        background: #132137;
-        color: #42bfff;
-        border-left-color: #24bfff;
-        font-weight: 700;
+      background: #132137;
+      color: #42bfff;
+      border-left-color: #24bfff;
+      font-weight: 700;
     }
 
     main {
@@ -129,17 +128,17 @@
       padding: 12px 20px;
       border-bottom: 1px solid #101a30;
       align-items: center;
-      cursor: pointer; /* 마우스 커서 손가락 모양 */
-      transition: background 0.2s ease, transform 0.1s ease; /* 부드러운 변화 */
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
       border-radius: 8px;
     }
 
     .news-item:hover {
-    background: #111a33; /* 살짝 밝아지는 배경 */
+      background: #111a33;
     }
 
     .news-item:active {
-    transform: scale(0.99); /* 클릭 시 살짝 눌리는 느낌 */
+      transform: scale(0.99);
     }
 
     .news-item:last-child {
@@ -175,28 +174,28 @@
     }
 
     .dots {
-        text-align: center;
-        margin-top: 16px;
+      text-align: center;
+      margin-top: 16px;
     }
 
     .dots span {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #1e2a43;
-        margin: 0 4px;
-        cursor: pointer;          /* 손가락 모양 */
-        transition: 0.2s;
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1e2a43;
+      margin: 0 4px;
+      cursor: pointer;
+      transition: 0.2s;
     }
 
     .dots span:hover {
-        background: #42bfff;
-        transform: scale(1.15);
+      background: #42bfff;
+      transform: scale(1.15);
     }
 
     .dots span.active {
-        background: #4aaeff;
+      background: #4aaeff;
     }
 
     .cards {
@@ -248,12 +247,12 @@
     }
 
     .mini-news:hover {
-    background: #131d36;
-    color: #42bfff; /* 글자색 강조 */
+      background: #131d36;
+      color: #42bfff;
     }
 
     .mini-news:hover .date {
-    color: #70baff; /* 날짜 색상도 함께 강조 */
+      color: #70baff;
     }
 
     .mini-news span:first-child {
@@ -264,7 +263,7 @@
     }
 
     .mini-news:last-child {
-    border-bottom: none;
+      border-bottom: none;
     }
 
     .date {
@@ -279,7 +278,6 @@
       font-size: 12px;
     }
 
-    /* 좋아요 / 싫어요 페이지네이션 클릭 영역 */
     .pagination span,
     .pagination b {
       display: inline-flex;
@@ -287,27 +285,24 @@
       justify-content: center;
       min-width: 28px;
       height: 28px;
-      margin: 0;            /* [확실] gap을 사용하므로 margin은 0으로 조절 */
       border-radius: 6px;
       cursor: pointer;
       user-select: none;
       transition: 0.2s;
-      font-size: 13px;      /* [추정] 이미지와 비슷한 폰트 크기 */
-      color: #5c6b89;       /* [추정] 기본 비활성 색상 */
+      font-size: 13px;
+      color: #5c6b89;
       text-decoration: none;
     }
 
-    /* hover */
     .pagination span:hover {
-        background: #10192b;
-        color: #42bfff;
+      background: #10192b;
+      color: #42bfff;
     }
 
-    /* 현재 페이지 */
     .pagination b {
-        background: #132a4b;
-        color: #5fb7ff;
-        font-weight: 700;
+      background: #132a4b;
+      color: #5fb7ff;
+      font-weight: 700;
     }
 
     .ad-box {
@@ -326,343 +321,342 @@
       overflow: hidden;
     }
 
-    /* 관리자 공지 등록 시 */
-    .ad-box.active{
-        border: none;
-        background: linear-gradient(90deg,#0ea5ff,#2563ff);
-        color: #ffffff;
-        justify-content: space-between;
-        padding: 18px 24px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .notice-left{
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .notice-badge{
-        background: rgba(255,255,255,0.18);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-    }
-
-    .notice-title{
-        font-size: 15px;
-    }
-
-    .notice-arrow{
-        font-size: 20px;
-    }
-
-    .bottom-btn {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .bottom-btn button {
-      background: #052838;
-      color: #12d9ff;
-      border: 1px solid #064f67;
-      padding: 10px 18px;
-      border-radius: 20px;
+    .ad-box.active {
+      border: none;
+      background: linear-gradient(90deg, #0ea5ff, #2563ff);
+      color: #ffffff;
+      justify-content: space-between;
+      padding: 18px 24px;
       font-weight: 700;
+      cursor: pointer;
     }
+
+    .notice-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .notice-badge {
+      background: rgba(255, 255, 255, 0.18);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .notice-title {
+      font-size: 15px;
+    }
+
+    .notice-arrow {
+      font-size: 20px;
+    }
+
     /* ===== HEADER ===== */
 
-.page{
-  min-height:100vh;
-  background:#050816;
-}
+    .header {
+      height: 72px;
+      padding: 0 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #070b1a;
+      border-bottom: 1px solid #111827;
+    }
 
-.header {
-  height: 72px;
-  padding: 0 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #070b1a;
-  border-bottom: 1px solid #111827;
-}
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
 
-.header-left{
-  display:flex;
-  align-items:center;
-}
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #00E5FF;
+      text-decoration: none;
+    }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #00E5FF;
-  text-decoration: none;
-}
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00E5FF, #2563eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #020617;
+      font-weight: 900;
+    }
 
-.logo-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00E5FF, #2563eb);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #020617;
-  font-weight: 900;
-}
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      color: #94a3b8;
+      font-size: 15px;
+    }
 
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  color: #94a3b8;
-  font-size: 15px;
-}
+    .nav a {
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.2s;
+    }
 
-.nav a {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.2s;
-}
+    .nav a:hover {
+      color: #00E5FF;
+    }
 
-.nav a:hover {
-  color: #00E5FF;
-}
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+    .main-search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
 
-.main-search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
+    .search-box {
+      width: 260px;
+      height: 38px;
+      border-radius: 999px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      padding: 0 16px;
+      color: #94a3b8;
+    }
 
-.search-box {
-  width: 260px;
-  height: 38px;
-  border-radius: 999px;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  padding: 0 16px;
-  color: #94a3b8;
-}
+    .header-btn {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
 
-.header-btn {
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid #334155;
-  background: transparent;
-  color: #cbd5e1;
-  cursor: pointer;
-}
+    .header-btn:hover {
+      border-color: #00E5FF;
+      color: #00E5FF;
+    }
 
-.header-btn:hover{
-  border-color:#00E5FF;
-  color:#00E5FF;
-}
-.search-suggest-box {
-  position: fixed;
-  width: 260px;
-  max-width: 80vw;
-  padding: 10px 0 12px;
-  border: 1px solid #1e293b;
-  border-top: 0;
-  border-radius: 0 0 18px 18px;
-  background: #050b1c;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-  z-index: 20000;
-  overflow: hidden;
-}
+    .search-suggest-box {
+      position: fixed;
+      width: 260px;
+      max-width: 80vw;
+      padding: 10px 0 12px;
+      border: 1px solid #1e293b;
+      border-top: 0;
+      border-radius: 0 0 18px 18px;
+      background: #050b1c;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      z-index: 20000;
+      overflow: hidden;
+    }
 
-.search-suggest-list {
-  display: flex;
-  flex-direction: column;
-}
-/* ===== FOOTER ===== */
+    .search-suggest-list {
+      display: flex;
+      flex-direction: column;
+    }
 
-.footer {
-  border-top: 1px solid #111827;
-  background: #070b1a;
-  padding: 24px 0;
-  margin-top: 60px;
-}
+    /* ===== FOOTER ===== */
 
-.footer-inner {
-  width: 1240px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #64748b;
-  font-size: 12px;
-}
+    .footer {
+      border-top: 1px solid #111827;
+      background: #070b1a;
+      padding: 24px 0;
+      margin-top: 60px;
+    }
 
-.footer-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg,#00e5ff,#2563eb);
-  color: #020617;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    .footer-inner {
+      width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #64748b;
+      font-size: 12px;
+    }
 
-.footer-link {
-  border: 0;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 12px;
-}
+    .footer-logo-white {
+      width: 34px;
+      height: 34px;
+      background-color: #ffffff;
 
-.footer-link:hover {
-  color: #00e5ff;
-}
+      -webkit-mask-image: url("/view/img/data_favicon.png");
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
 
-.footer-divider {
-  width: 1px;
-  height: 12px;
-  background: #334155;
-}
+      mask-image: url("/view/img/data_favicon.png");
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
 
-.footer-copy {
-  margin-left: auto;
-  color: #64748b;
-}
-.footer-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 8, 23, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 30000;
-}
+      flex-shrink: 0;
+    }
 
-.footer-modal-box {
-  width: 520px;
-  max-width: calc(100% - 32px);
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 18px;
-  padding: 28px;
-}
+    .footer-link {
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 12px;
+    }
 
-.footer-modal-content {
-  color: #cbd5e1;
-  line-height: 1.8;
-  font-size: 14px;
-}
+    .footer-link:hover {
+      color: #00e5ff;
+    }
 
-.footer-modal-btn {
-  width: 100%;
-  margin-top: 24px;
-  padding: 13px;
-  border: 0;
-  border-radius: 10px;
-  background: #00e5ff;
-  color: #020617;
-  font-weight: 900;
-  cursor: pointer;
-}
-.pw-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.55);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:99999;
-}
+    .footer-divider {
+      width: 1px;
+      height: 12px;
+      background: #334155;
+    }
 
-.pw-modal.hidden{
-  display:none !important;
-}
+    .footer-copy {
+      color: #64748b;
+    }
 
-.pw-modal-box{
-  width:520px;
-  background:#1b2133;
-  border-radius:28px;
-  padding:28px 36px 34px;
-  box-shadow:0 30px 60px rgba(0,0,0,0.45);
-}
+    .footer-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 8, 23, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30000;
+    }
 
-.pw-input{
-  width:100%;
-  height:46px;
-  border-radius:10px;
-  border:1px solid #00d2ff;
-  background:#031224;
-  padding:0 18px;
-  color:#fff;
-  font-size:15px;
-  outline:none;
-}
+    .footer-modal-box {
+      width: 520px;
+      max-width: calc(100% - 32px);
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+    }
 
-.pw-input::placeholder{
-  color:#5d6b86;
-}
+    .footer-modal-content {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 14px;
+    }
 
-.pw-modal-btns{
-  display:flex;
-  justify-content:center;
-  gap:56px;
-  margin-top:24px;
-}
+    .footer-modal-content h3 {
+      margin-bottom: 16px;
+      color: #f8fafc;
+    }
 
-.pw-confirm-btn,
-.pw-cancel-btn{
-  width:130px;
-  height:42px;
-  border-radius:999px;
-  font-size:16px;
-  font-weight:700;
-  cursor:pointer;
-}
+    .footer-modal-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #00e5ff;
+      color: #020617;
+      font-weight: 900;
+      cursor: pointer;
+    }
 
-.pw-confirm-btn{
-  border:1px solid #00d2ff;
-  background:transparent;
-  color:#00d2ff;
-}
+    /* ===== PW MODAL ===== */
 
-.pw-cancel-btn{
-  border:1px solid #44506a;
-  background:transparent;
-  color:#73829d;
-}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    .pw-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+
+    .pw-modal.hidden {
+      display: none !important;
+    }
+
+    .pw-modal-box {
+      width: 520px;
+      background: #1b2133;
+      border-radius: 28px;
+      padding: 28px 36px 34px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .pw-input {
+      width: 100%;
+      height: 46px;
+      border-radius: 10px;
+      border: 1px solid #00d2ff;
+      background: #031224;
+      padding: 0 18px;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .pw-input::placeholder {
+      color: #5d6b86;
+    }
+
+    .pw-modal-btns {
+      display: flex;
+      justify-content: center;
+      gap: 56px;
+      margin-top: 24px;
+    }
+
+    .pw-confirm-btn,
+    .pw-cancel-btn {
+      width: 130px;
+      height: 42px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pw-confirm-btn {
+      border: 1px solid #00d2ff;
+      background: transparent;
+      color: #00d2ff;
+    }
+
+    .pw-cancel-btn {
+      border: 1px solid #44506a;
+      background: transparent;
+      color: #73829d;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
 <div class="page">
-    <div id="header">
-  <header class="header">
-    <div class="header-left">
-      <a class="logo" href="/view/main.html">
-        <div class="logo-mark">D</div>
-        <div>DATA 다타</div>
-      </a>
-    </div>
 
-    <nav class="nav">
-      <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
-      <a data-login-page="/view/article_list.html" href="#">뉴스</a>
-      <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
-    </nav>
+  <div id="header">
+    <header class="header">
+      <div class="header-left">
+        <a class="logo" href="/view/main.html">
+          <div class="logo-mark">D</div>
+          <div>DATA 다타</div>
+        </a>
+      </div>
+
+      <nav class="nav">
+        <a data-login-page="/view/keyword_detail.html" href="#">키워드</a>
+        <a data-login-page="/view/article_list.html" href="#">뉴스</a>
+        <a data-login-page="/view/keyword_detail.html" href="#">AI분석</a>
+      </nav>
 
       <div class="header-right">
         <div class="main-search-wrap">
@@ -685,13 +679,13 @@
   </div>
 
   <div class="layout">
-
     <aside>
       <div class="side-title-wrap">
         <div class="side-title">마이페이지</div>
       </div>
+
       <ul class="side-menu">
-        <li class="active"onclick="location.href='mypage_home.html'">마이페이지 홈</li>
+        <li class="active" onclick="location.href='mypage_home.html'">마이페이지 홈</li>
         <li id="accountPageBtn">회원정보 관리 & 탈퇴</li>
       </ul>
     </aside>
@@ -704,99 +698,97 @@
           <span class="hint">최근 본 뉴스 30개까지 조회됩니다 · 페이지당 10건</span>
         </div>
 
-<div class="news-list">
+        <div class="news-list">
+          <div class="news-item">
+            <div class="num">01</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">01</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">02</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">02</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">03</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">03</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">04</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">04</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">05</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">05</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">06</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">06</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">07</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">07</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">08</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">08</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
+          <div class="news-item">
+            <div class="num">09</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
 
-  <div class="news-item">
-    <div class="num">09</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
-
-  <div class="news-item">
-    <div class="num">10</div>
-    <div>
-      <div class="title"></div>
-      <div class="desc"></div>
-    </div>
-    <span class="category"></span>
-  </div>
-
-</div>
+          <div class="news-item">
+            <div class="num">10</div>
+            <div>
+              <div class="title"></div>
+              <div class="desc"></div>
+            </div>
+            <span class="category"></span>
+          </div>
+        </div>
 
         <div class="dots">
           <span class="dot active" onclick="showPage(1)"></span>
@@ -858,336 +850,274 @@
       </div>
     </main>
   </div>
-<script>
-/* =========================
-   사이드 메뉴 이동
-========================= */
-function selectMenu(element, pageType) {
-  document.querySelectorAll('.side-menu li').forEach(li => {
-    li.classList.remove('active');
-  });
 
-  element.classList.add('active');
+  <div id="footer"></div>
 
-  if (pageType === "home") {
-    window.location.href = "mypage_home.html";
-  }
+  <div class="pw-modal hidden" id="pwModal">
+    <div class="pw-modal-box">
+      <input
+        type="password"
+        class="pw-input"
+        id="pwInput"
+        placeholder="비밀번호를 입력하세요."
+      />
 
-  if (pageType === "account") {
-    window.location.href = "mypage_account.html";
-  }
-}
+      <div class="pw-modal-btns">
+        <button class="pw-confirm-btn" id="pwConfirmBtn" onclick="pwconfirm()">
+          확인
+        </button>
 
-/* =========================
-   내가 본 뉴스 예시
-========================= */
-const newsPages = [
-  [
-    { num:"01", title:"한국은행 기준금리 동결", desc:"통화정책 방향 분석 기사입니다.", category:"기준 금리"},
-    { num:"02", title:"코스피 2860선 회복", desc:"외국인 반도체주 집중 매수.", category:"증시"},
-    { num:"03", title:"정부 추경예산 12조 편성", desc:"민생·수출 지원 집중.", category:"정책"},
-    { num:"04", title:"환율 1370원대 진입", desc:"달러 강세 영향.", category:"환율"},
-    { num:"05", title:"현대차 북미 생산 확대", desc:"관세 대응 가속.", category:"자동차"},
-    { num:"06", title:"삼성전자 실적 개선", desc:"반도체 회복세.", category:"반도체"},
-    { num:"07", title:"물가 2.3% 상승", desc:"식료품 가격 상승.", category:"물가"},
-    { num:"08", title:"부동산 PF 우려", desc:"금융당국 점검 강화.", category:"부동산"},
-    { num:"09", title:"청년 고용률 상승", desc:"서비스업 채용 회복.", category:"취업"},
-    { num:"10", title:"국제 유가 하락", desc:"물류비 부담 완화 기대.", category:"유가"}
-  ],
-    [
-    { num:"11", title:"한국은행 기준금리 동결", desc:"통화정책 방향 분석 기사입니다.", category:"기준 금리"},
-    { num:"12", title:"코스피 2860선 회복", desc:"외국인 반도체주 집중 매수.", category:"증시"},
-    { num:"13", title:"정부 추경예산 12조 편성", desc:"민생·수출 지원 집중.", category:"정책"},
-    { num:"14", title:"환율 1370원대 진입", desc:"달러 강세 영향.", category:"환율"},
-    { num:"15", title:"현대차 북미 생산 확대", desc:"관세 대응 가속.", category:"자동차"},
-    { num:"16", title:"삼성전자 실적 개선", desc:"반도체 회복세.", category:"반도체"},
-    { num:"17", title:"물가 2.3% 상승", desc:"식료품 가격 상승.", category:"물가"},
-    { num:"18", title:"부동산 PF 우려", desc:"금융당국 점검 강화.", category:"부동산"},
-    { num:"19", title:"청년 고용률 상승", desc:"서비스업 채용 회복.", category:"취업"},
-    { num:"20", title:"국제 유가 하락", desc:"물류비 부담 완화 기대.", category:"유가"}
-  ],
-    [
-    { num:"21", title:"한국은행 기준금리 동결", desc:"통화정책 방향 분석 기사입니다.", category:"기준 금리"},
-    { num:"22", title:"코스피 2860선 회복", desc:"외국인 반도체주 집중 매수.", category:"증시"},
-    { num:"23", title:"정부 추경예산 12조 편성", desc:"민생·수출 지원 집중.", category:"정책"},
-    { num:"24", title:"환율 1370원대 진입", desc:"달러 강세 영향.", category:"환율"},
-    { num:"25", title:"현대차 북미 생산 확대", desc:"관세 대응 가속.", category:"자동차"},
-    { num:"26", title:"삼성전자 실적 개선", desc:"반도체 회복세.", category:"반도체"},
-    { num:"27", title:"물가 2.3% 상승", desc:"식료품 가격 상승.", category:"물가"},
-    { num:"28", title:"부동산 PF 우려", desc:"금융당국 점검 강화.", category:"부동산"},
-    { num:"29", title:"청년 고용률 상승", desc:"서비스업 채용 회복.", category:"취업"},
-    { num:"30", title:"국제 유가 하락", desc:"물류비 부담 완화 기대.", category:"유가"}
-  ]
-];
-
-/* =========================
-   내가 본 뉴스 페이지 이동
-========================= */
-function showPage(page) {
-  const newsList = document.querySelector(".news-list");
-  const dots = document.querySelectorAll(".dot");
-
-  newsList.innerHTML = "";
-
-  newsPages[page - 1].forEach(item => {
-    newsList.innerHTML += `
-      <div class="news-item">
-        <div class="num">${item.num}</div>
-        <div>
-          <div class="title">${item.title}</div>
-          <div class="desc">${item.desc}</div>
-        </div>
-        <span class="category">${item.category}</span>
+        <button class="pw-cancel-btn" id="pwCancelBtn">
+          취소
+        </button>
       </div>
-    `;
-  });
-
-  dots.forEach(dot => dot.classList.remove("active"));
-  if (dots[page - 1]) dots[page - 1].classList.add("active");
-}
-
-/* =========================
-   좋아요 / 싫어요 예시 데이터
-========================= */
-const likeNews = [
-  "한국은행 기준금리 동결",
-  "코스피 2860선 회복",
-  "현대차 북미 생산 확대",
-  "삼성전자 실적 개선",
-  "물가 상승률 둔화",
-  "반도체 수출 증가",
-  "네이버 AI 사업 확대",
-  "청년 고용률 상승",
-  "국제 유가 하락",
-  "서울 아파트 거래 증가",
-  "카카오 실적 반등",
-  "엔비디아 신고가"
-];
-
-const dislikeNews = [
-  "환율 1370원 돌파",
-  "부동산 PF 우려 확대",
-  "중국 경기 둔화 우려",
-  "전세사기 피해 증가",
-  "가계부채 상승세",
-  "대출금리 부담 확대"
-];
-
-/* =========================
-   좋아요 / 싫어요 카드 내용 출력
-========================= */
-function renderMiniNews(selector, list, page = 1) {
-  const pageSize = 10;
-  const start = (page - 1) * pageSize;
-  const rows = document.querySelectorAll(selector + " .mini-news");
-
-  rows.forEach((row, index) => {
-    const item = list[start + index];
-
-    if (item) {
-      row.children[0].innerText = item;
-      row.children[1].innerText = "04." + String(index + 1).padStart(2, '0');
-    } else {
-      row.children[0].innerText = "";
-      row.children[1].innerText = "";
-    }
-  });
-}
-
-/* =========================
-   페이지네이션 생성
-========================= */
-function renderPagination(targetId, totalCount, currentPage, callbackName) {
-  const pageSize = 10;
-  const totalPage = Math.ceil(totalCount / pageSize);
-  const el = document.getElementById(targetId);
-
-  let html = "";
-
-  html += `<span onclick="${callbackName}(1)"><<</span> `;
-  html += `<span onclick="${callbackName}(${Math.max(1,currentPage-1)})"><</span> `;
-
-  for (let i = 1; i <= totalPage; i++) {
-    if (i === currentPage) {
-      html += `<b>${i}</b> `;
-    } else {
-      html += `<span onclick="${callbackName}(${i})">${i}</span> `;
-    }
-  }
-
-  html += `<span onclick="${callbackName}(${Math.min(totalPage,currentPage+1)})">></span> `;
-  html += `<span onclick="${callbackName}(${totalPage})">>></span>`;
-
-  el.innerHTML = html;
-}
-
-/* =========================
-   좋아요 페이지 이동
-========================= */
-function loadLikePage(page = 1) {
-  document.querySelector(".like").nextElementSibling.innerText =
-    `총 ${likeNews.length}건`;
-
-  renderMiniNews(".cards .card:first-child", likeNews, page);
-  renderPagination("likePagination", likeNews.length, page, "loadLikePage");
-}
-
-/* =========================
-   싫어요 페이지 이동
-========================= */
-function loadDislikePage(page = 1) {
-  document.querySelector(".dislike").nextElementSibling.innerText =
-    `총 ${dislikeNews.length}건`;
-
-  renderMiniNews(".cards .card:last-child", dislikeNews, page);
-  renderPagination("dislikePagination", dislikeNews.length, page, "loadDislikePage");
-}
-
-/* =========================
-   공지사항 배너
-========================= */
-function loadNotice() {
-  const box = document.getElementById("noticeBox");
-
-  const notice = {
-    title: "신규 기능 업데이트 및 서버 점검 안내",
-    link: "#"
-  };
-
-  box.classList.add("active");
-
-  box.innerHTML = `
-    <div class="notice-left">
-      <span class="notice-badge">공지사항</span>
-      <span class="notice-title">${notice.title}</span>
     </div>
-    <span class="notice-arrow">→</span>
-  `;
+  </div>
 
-  box.onclick = () => {
-    window.location.href = notice.link;
-  };
-}
+</div>
 
-/* =========================
-   최초 실행
-========================= */
-showPage(1);
-loadLikePage(1);
-loadDislikePage(1);
-loadNotice();
-/* =========================
-   Header / Footer 이벤트
-========================= */
-
-async function pwconfirm(){
-  const password = document.getElementById("pwInput").value.trim();
-  // 1. 세션에서 로그인된 사용자 ID 가져오기 (누구인지 알아야 하니까요!)
-  const user_id = sessionStorage.getItem("user_id");
-
-  try {
-    // 백엔드로 비밀번호 확인 요청
-    const {data} = await axios.post("/pw_check", {
-      user_id: user_id,
-      password: password
+<script>
+  /* =========================
+     사이드 메뉴 이동
+  ========================= */
+  function selectMenu(element, pageType) {
+    document.querySelectorAll(".side-menu li").forEach(li => {
+      li.classList.remove("active");
     });
 
-    if (data.success) {
-      alert("본인 인증에 성공하였습니다.");
-      location.href = "/view/mypage_account.html";
-    } else {
-      alert("실패: " + data.message);
+    element.classList.add("active");
+
+    if (pageType === "home") {
+      window.location.href = "mypage_home.html";
     }
-  } catch (err) {
-    console.error("비밀번호 확인 중 에러:", err);
-    alert("서버 통신 중 오류가 발생했습니다.");
+
+    if (pageType === "account") {
+      window.location.href = "mypage_account.html";
+    }
   }
-  return;
-}
 
+  /* =========================
+     내가 본 뉴스 예시
+  ========================= */
+  const newsPages = [
+    [
+      { num: "01", title: "한국은행 기준금리 동결", desc: "통화정책 방향 분석 기사입니다.", category: "기준 금리" },
+      { num: "02", title: "코스피 2860선 회복", desc: "외국인 반도체주 집중 매수.", category: "증시" },
+      { num: "03", title: "정부 추경예산 12조 편성", desc: "민생·수출 지원 집중.", category: "정책" },
+      { num: "04", title: "환율 1370원대 진입", desc: "달러 강세 영향.", category: "환율" },
+      { num: "05", title: "현대차 북미 생산 확대", desc: "관세 대응 가속.", category: "자동차" },
+      { num: "06", title: "삼성전자 실적 개선", desc: "반도체 회복세.", category: "반도체" },
+      { num: "07", title: "물가 2.3% 상승", desc: "식료품 가격 상승.", category: "물가" },
+      { num: "08", title: "부동산 PF 우려", desc: "금융당국 점검 강화.", category: "부동산" },
+      { num: "09", title: "청년 고용률 상승", desc: "서비스업 채용 회복.", category: "취업" },
+      { num: "10", title: "국제 유가 하락", desc: "물류비 부담 완화 기대.", category: "유가" }
+    ],
+    [
+      { num: "11", title: "한국은행 기준금리 동결", desc: "통화정책 방향 분석 기사입니다.", category: "기준 금리" },
+      { num: "12", title: "코스피 2860선 회복", desc: "외국인 반도체주 집중 매수.", category: "증시" },
+      { num: "13", title: "정부 추경예산 12조 편성", desc: "민생·수출 지원 집중.", category: "정책" },
+      { num: "14", title: "환율 1370원대 진입", desc: "달러 강세 영향.", category: "환율" },
+      { num: "15", title: "현대차 북미 생산 확대", desc: "관세 대응 가속.", category: "자동차" },
+      { num: "16", title: "삼성전자 실적 개선", desc: "반도체 회복세.", category: "반도체" },
+      { num: "17", title: "물가 2.3% 상승", desc: "식료품 가격 상승.", category: "물가" },
+      { num: "18", title: "부동산 PF 우려", desc: "금융당국 점검 강화.", category: "부동산" },
+      { num: "19", title: "청년 고용률 상승", desc: "서비스업 채용 회복.", category: "취업" },
+      { num: "20", title: "국제 유가 하락", desc: "물류비 부담 완화 기대.", category: "유가" }
+    ],
+    [
+      { num: "21", title: "한국은행 기준금리 동결", desc: "통화정책 방향 분석 기사입니다.", category: "기준 금리" },
+      { num: "22", title: "코스피 2860선 회복", desc: "외국인 반도체주 집중 매수.", category: "증시" },
+      { num: "23", title: "정부 추경예산 12조 편성", desc: "민생·수출 지원 집중.", category: "정책" },
+      { num: "24", title: "환율 1370원대 진입", desc: "달러 강세 영향.", category: "환율" },
+      { num: "25", title: "현대차 북미 생산 확대", desc: "관세 대응 가속.", category: "자동차" },
+      { num: "26", title: "삼성전자 실적 개선", desc: "반도체 회복세.", category: "반도체" },
+      { num: "27", title: "물가 2.3% 상승", desc: "식료품 가격 상승.", category: "물가" },
+      { num: "28", title: "부동산 PF 우려", desc: "금융당국 점검 강화.", category: "부동산" },
+      { num: "29", title: "청년 고용률 상승", desc: "서비스업 채용 회복.", category: "취업" },
+      { num: "30", title: "국제 유가 하락", desc: "물류비 부담 완화 기대.", category: "유가" }
+    ]
+  ];
 
-document.addEventListener("click", function (e) {
+  function showPage(page) {
+    const newsList = document.querySelector(".news-list");
+    const dots = document.querySelectorAll(".dot");
 
-  const primaryUserBtn = e.target.closest("#primaryUserBtn");
-  const logoutBtn = e.target.closest("#logoutBtn");
+    newsList.innerHTML = "";
 
-  const loginRequiredLink = e.target.closest("[data-login-page]");
+    newsPages[page - 1].forEach(item => {
+      newsList.innerHTML += `
+        <div class="news-item">
+          <div class="num">${item.num}</div>
+          <div>
+            <div class="title">${item.title}</div>
+            <div class="desc">${item.desc}</div>
+          </div>
+          <span class="category">${item.category}</span>
+        </div>
+      `;
+    });
 
-  const footerTermsBtn = e.target.closest("#footerTermsBtn");
-  const footerPrivacyBtn = e.target.closest("#footerPrivacyBtn");
-  const footerModalCloseBtn = e.target.closest("#footerModalCloseBtn");
-  const accountPageBtn = e.target.closest("#accountPageBtn");
-  const pwConfirmBtn = e.target.closest("#pwConfirmBtn");
-  const pwCancelBtn = e.target.closest("#pwCancelBtn");
+    dots.forEach(dot => dot.classList.remove("active"));
+    if (dots[page - 1]) dots[page - 1].classList.add("active");
+  }
 
-  if (accountPageBtn) {
-    // async 함수로 감싸서 서버 응답을 기다립니다.
-    (async () => {
-        try {
-            // 1. 서버에 10분 내 인증 기록이 있는지 확인 (GET 요청)
-            const { data } = await axios.post("/pw_check_time");
+  const likeNews = [
+    "한국은행 기준금리 동결",
+    "코스피 2860선 회복",
+    "현대차 북미 생산 확대",
+    "삼성전자 실적 개선",
+    "물가 상승률 둔화",
+    "반도체 수출 증가",
+    "네이버 AI 사업 확대",
+    "청년 고용률 상승",
+    "국제 유가 하락",
+    "서울 아파트 거래 증가",
+    "카카오 실적 반등",
+    "엔비디아 신고가"
+  ];
 
-            if (data.is_authenticated) {
-                // 2. 인증이 유효하면 바로 마이페이지로 이동
-                location.href = "/view/mypage_account.html";
-            } else {
-                // 3. 인증이 없거나 만료되었으면 비밀번호 입력 모달 표시
-                const modal = document.getElementById("pwModal");
-                const input = document.getElementById("pwInput");
+  const dislikeNews = [
+    "환율 1370원 돌파",
+    "부동산 PF 우려 확대",
+    "중국 경기 둔화 우려",
+    "전세사기 피해 증가",
+    "가계부채 상승세",
+    "대출금리 부담 확대"
+  ];
 
-                modal.classList.remove("hidden");
+  function renderMiniNews(selector, list, page = 1) {
+    const pageSize = 10;
+    const start = (page - 1) * pageSize;
+    const rows = document.querySelectorAll(selector + " .mini-news");
 
-                setTimeout(() => {
-                    input.focus();
-                }, 50);
-            }
-        } catch (err) {
-            console.error("인증 상태 확인 에러:", err);
-            alert("서버 통신 중 오류가 발생했습니다.");
+    rows.forEach((row, index) => {
+      const item = list[start + index];
+
+      if (item) {
+        row.children[0].innerText = item;
+        row.children[1].innerText = "04." + String(index + 1).padStart(2, "0");
+      } else {
+        row.children[0].innerText = "";
+        row.children[1].innerText = "";
+      }
+    });
+  }
+
+  function renderPagination(targetId, totalCount, currentPage, callbackName) {
+    const pageSize = 10;
+    const totalPage = Math.ceil(totalCount / pageSize);
+    const el = document.getElementById(targetId);
+
+    let html = "";
+
+    html += `<span onclick="${callbackName}(1)"><<</span> `;
+    html += `<span onclick="${callbackName}(${Math.max(1, currentPage - 1)})"><</span> `;
+
+    for (let i = 1; i <= totalPage; i++) {
+      if (i === currentPage) {
+        html += `<b>${i}</b> `;
+      } else {
+        html += `<span onclick="${callbackName}(${i})">${i}</span> `;
+      }
+    }
+
+    html += `<span onclick="${callbackName}(${Math.min(totalPage, currentPage + 1)})">></span> `;
+    html += `<span onclick="${callbackName}(${totalPage})">>></span>`;
+
+    el.innerHTML = html;
+  }
+
+  function loadLikePage(page = 1) {
+    document.querySelector(".like").nextElementSibling.innerText =
+      `총 ${likeNews.length}건`;
+
+    renderMiniNews(".cards .card:first-child", likeNews, page);
+    renderPagination("likePagination", likeNews.length, page, "loadLikePage");
+  }
+
+  function loadDislikePage(page = 1) {
+    document.querySelector(".dislike").nextElementSibling.innerText =
+      `총 ${dislikeNews.length}건`;
+
+    renderMiniNews(".cards .card:last-child", dislikeNews, page);
+    renderPagination("dislikePagination", dislikeNews.length, page, "loadDislikePage");
+  }
+
+  function loadNotice() {
+    const box = document.getElementById("noticeBox");
+
+    const notice = {
+      title: "신규 기능 업데이트 및 서버 점검 안내",
+      link: "#"
+    };
+
+    box.classList.add("active");
+
+    box.innerHTML = `
+      <div class="notice-left">
+        <span class="notice-badge">공지사항</span>
+        <span class="notice-title">${notice.title}</span>
+      </div>
+      <span class="notice-arrow">→</span>
+    `;
+
+    box.onclick = () => {
+      window.location.href = notice.link;
+    };
+  }
+
+  async function pwconfirm() {
+    const password = document.getElementById("pwInput").value.trim();
+    const user_id = sessionStorage.getItem("user_id");
+
+    try {
+      const { data } = await axios.post("/pw_check", {
+        user_id: user_id,
+        password: password
+      });
+
+      if (data.success) {
+        alert("본인 인증에 성공하였습니다.");
+        location.href = "/view/mypage_account.html";
+      } else {
+        alert("실패: " + data.message);
+      }
+    } catch (err) {
+      console.error("비밀번호 확인 중 에러:", err);
+      alert("서버 통신 중 오류가 발생했습니다.");
+    }
+  }
+
+  function loadFooter() {
+    const footerArea = document.getElementById("footer");
+
+    if (!footerArea) return;
+
+    if (footerArea.innerHTML.trim()) {
+      return;
+    }
+
+    fetch("/view/footer.html?v=999")
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("footer.html 경로 오류");
         }
-    })();
 
-    return;
+        return res.text();
+      })
+      .then(function (html) {
+        footerArea.innerHTML = html;
+      })
+      .catch(function (err) {
+        console.error("footer 로드 실패:", err);
+      });
   }
 
-if (pwCancelBtn) {
-  document.getElementById("pwModal").classList.add("hidden");
-  document.getElementById("pwInput").value = "";
-  return;
-}
-
-
-
-  /* 마이페이지 */
-  if (primaryUserBtn) {
-    location.href = "/view/mypage_home.html";
-    return;
-  }
-
-  /* 로그아웃 */
-  if (logoutBtn) {
-
-    localStorage.clear();
-    sessionStorage.clear();
-
-    location.href = "/view/main.html";
-    return;
-  }
-
-  /* 헤더 링크 */
-  if (loginRequiredLink) {
-
-    const targetUrl = loginRequiredLink.dataset.loginPage;
-    location.href = targetUrl;
-
-    return;
-  }
-
-  /* 이용약관 */
-  if (footerTermsBtn) {
-
+  window.openFooterTermsModal = function () {
     const modal = document.getElementById("footerModal");
     const content = document.getElementById("footerModalContent");
+
+    if (!modal || !content) return;
 
     content.innerHTML = `
       <h3>이용약관</h3>
@@ -1197,14 +1127,13 @@ if (pwCancelBtn) {
     `;
 
     modal.classList.remove("hidden");
-    return;
-  }
+  };
 
-  /* 개인정보처리방침 */
-  if (footerPrivacyBtn) {
-
+  window.openFooterPrivacyModal = function () {
     const modal = document.getElementById("footerModal");
     const content = document.getElementById("footerModalContent");
+
+    if (!modal || !content) return;
 
     content.innerHTML = `
       <h3>개인정보처리방침</h3>
@@ -1214,85 +1143,80 @@ if (pwCancelBtn) {
     `;
 
     modal.classList.remove("hidden");
-    return;
-  }
+  };
 
-  /* 모달 닫기 */
-  if (footerModalCloseBtn) {
+  window.closeFooterModal = function () {
+    const modal = document.getElementById("footerModal");
 
-    document
-      .getElementById("footerModal")
-      .classList.add("hidden");
+    if (!modal) return;
 
-    return;
-  }
+    modal.classList.add("hidden");
+  };
 
-});
+  document.addEventListener("click", function (e) {
+    const primaryUserBtn = e.target.closest("#primaryUserBtn");
+    const logoutBtn = e.target.closest("#logoutBtn");
+    const loginRequiredLink = e.target.closest("[data-login-page]");
+    const accountPageBtn = e.target.closest("#accountPageBtn");
+    const pwCancelBtn = e.target.closest("#pwCancelBtn");
+
+    if (accountPageBtn) {
+      (async () => {
+        try {
+          const { data } = await axios.post("/pw_check_time");
+
+          if (data.is_authenticated) {
+            location.href = "/view/mypage_account.html";
+          } else {
+            const modal = document.getElementById("pwModal");
+            const input = document.getElementById("pwInput");
+
+            modal.classList.remove("hidden");
+
+            setTimeout(() => {
+              input.focus();
+            }, 50);
+          }
+        } catch (err) {
+          console.error("인증 상태 확인 에러:", err);
+          alert("서버 통신 중 오류가 발생했습니다.");
+        }
+      })();
+
+      return;
+    }
+
+    if (pwCancelBtn) {
+      document.getElementById("pwModal").classList.add("hidden");
+      document.getElementById("pwInput").value = "";
+      return;
+    }
+
+    if (primaryUserBtn) {
+      location.href = "/view/mypage_home.html";
+      return;
+    }
+
+    if (logoutBtn) {
+      localStorage.clear();
+      sessionStorage.clear();
+      location.href = "/view/main.html";
+      return;
+    }
+
+    if (loginRequiredLink) {
+      const targetUrl = loginRequiredLink.dataset.loginPage;
+      location.href = targetUrl;
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    showPage(1);
+    loadLikePage(1);
+    loadDislikePage(1);
+    loadNotice();
+    loadFooter();
+  });
 </script>
-
-<footer class="footer">
-  <div class="footer-inner">
-
-    <div class="footer-mark">D</div>
-
-    <button class="footer-link" id="footerTermsBtn" type="button">
-      이용약관
-    </button>
-
-    <div class="footer-divider"></div>
-
-    <button class="footer-link" id="footerPrivacyBtn" type="button">
-      개인정보처리방침
-    </button>
-
-    <p class="footer-copy">
-      © 2026 DATA 다타. All rights reserved.
-    </p>
-
-  </div>
-
-  <div class="footer-modal hidden" id="footerModal">
-    <div class="footer-modal-box">
-
-      <div class="footer-modal-content" id="footerModalContent"></div>
-
-      <button
-        class="footer-modal-btn"
-        id="footerModalCloseBtn"
-        type="button"
-      >
-        확인
-      </button>
-
-    </div>
-  </div>
-</footer>
-<div class="pw-modal hidden" id="pwModal">
-
-  <div class="pw-modal-box">
-
-    <input
-      type="password"
-      class="pw-input"
-      id="pwInput"
-      placeholder="비밀번호를 입력하세요."
-    />
-
-    <div class="pw-modal-btns">
-
-      <button class="pw-confirm-btn" id="pwConfirmBtn" onclick="pwconfirm()">
-        확인
-      </button>
-
-      <button class="pw-cancel-btn" id="pwCancelBtn">
-        취소
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-</div>
 </body>
 </html>
