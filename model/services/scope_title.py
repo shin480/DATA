@@ -33,7 +33,7 @@ NEWS_COUNT_DIRECT = 3
 INDEX_NEWS        = "news_economy"
 INDEX_SCOPES      = "news_scopes"
 INDEX_QUEUE       = "scope_refresh_queue"
-MODEL_NAME        = "gemini-2.5-flash-lite-preview-06-17"
+MODEL_NAME        = "gemini-2.5-flash-lite"
 
 # API 키 로테이션 (7개)
 _API_KEYS = [

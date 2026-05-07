@@ -427,6 +427,47 @@ label{
   display: flex;
   flex-direction: column;
 }
+.search-suggest-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  cursor: pointer;
+  color: #dbeafe;
+  transition: 0.2s;
+}
+
+.search-suggest-item:hover {
+  background: #0f172a;
+}
+
+.search-suggest-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-suggest-icon {
+  color: #38bdf8;
+  font-size: 13px;
+}
+
+.search-suggest-keyword {
+  font-size: 14px;
+}
+
+.search-suggest-arrow {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.search-highlight {
+  color: #00e5ff;
+  font-weight: 700;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
@@ -588,6 +629,162 @@ function checkPasswordMatch() {
   }
 }
 
+// ==============================
+// 검색어 자동완성
+// ==============================
+function bindCommonSearch() {
+  const input = document.getElementById("commonSearchInput");
+
+  if (!input) return;
+
+  input.addEventListener("input", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("focus", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      moveSearch(input.value);
+    }
+
+    if (e.key === "Escape") {
+      hideSearchSuggestions();
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    const searchWrap = document.querySelector(".main-search-wrap");
+
+    if (!searchWrap) return;
+
+    if (!searchWrap.contains(e.target)) {
+      hideSearchSuggestions();
+    }
+  });
+
+  window.addEventListener("resize", positionSearchSuggestBox);
+  window.addEventListener("scroll", positionSearchSuggestBox);
+}
+
+function highlightKeyword(text, keyword) {
+  if (!keyword) return text;
+
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedKeyword})`, "gi");
+
+  return text.replace(regex, `<span class="search-highlight">$1</span>`);
+}
+
+async function renderSearchSuggestions(keyword) {
+  const list = document.getElementById("searchSuggestList");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!list || !suggestBox) return;
+
+  const value = keyword.trim();
+
+  if (!value) {
+    hideSearchSuggestions();
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `/api/search/suggest?q=${encodeURIComponent(value)}`
+    );
+
+    const results = res.data || [];
+
+    if (results.length === 0) {
+      hideSearchSuggestions();
+      return;
+    }
+
+    list.innerHTML = results.map(function (item) {
+      return `
+        <button
+          class="search-suggest-item"
+          type="button"
+          data-suggest-keyword="${item}"
+        >
+          <span class="search-suggest-left">
+            <span class="search-suggest-icon">⌕</span>
+
+            <span class="search-suggest-keyword">
+              ${highlightKeyword(item, value)}
+            </span>
+          </span>
+
+          <span class="search-suggest-arrow">↖</span>
+        </button>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const keyword = btn.dataset.suggestKeyword;
+
+        selectSearchSuggestion(keyword);
+      });
+    });
+
+    positionSearchSuggestBox();
+
+    suggestBox.classList.remove("hidden");
+
+  } catch (error) {
+    console.error("검색 자동완성 실패:", error);
+
+    hideSearchSuggestions();
+  }
+}
+
+function positionSearchSuggestBox() {
+  const input = document.getElementById("commonSearchInput");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!input || !suggestBox) return;
+
+  const rect = input.getBoundingClientRect();
+
+  suggestBox.style.top = `${rect.bottom + 4}px`;
+  suggestBox.style.left = `${rect.left}px`;
+  suggestBox.style.width = `${rect.width}px`;
+}
+
+function hideSearchSuggestions() {
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!suggestBox) return;
+
+  suggestBox.classList.add("hidden");
+}
+
+function selectSearchSuggestion(keyword) {
+  const input = document.getElementById("commonSearchInput");
+
+  if (input) {
+    input.value = keyword;
+  }
+
+  hideSearchSuggestions();
+
+  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+}
+
+function moveSearch(keyword) {
+  const value = keyword.trim();
+
+  if (!value) return;
+
+  hideSearchSuggestions();
+
+  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+}
+
 /* 회원 정보 수정 */
 async function updateUserInfo() {
   const pw1 = document.getElementById("password1").value;
@@ -723,6 +920,7 @@ window.onload = function () {
   loadUserInfo();
   loadFooter();
   document.getElementById("passwordError").style.display = "none";
+  bindCommonSearch();
 };
 
 window.openFooterTermsModal = function () {

@@ -375,7 +375,7 @@ async def crawl_hankyung(job_id):
 
 async def crawl_naver(job_id, pages=50):
     if DEBUG_MODE:
-        pages = 50
+        pages = 100
 
     results = []
     empty_page_count = 0
