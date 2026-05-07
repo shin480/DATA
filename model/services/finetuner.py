@@ -57,10 +57,56 @@ class CorrectionDataset(Dataset):
         }
 
 
+# 균형 보완용 고확신 샘플 수 (sentiment별 최대 건수)
+BALANCE_SAMPLE_SIZE      = 100
+BALANCE_SCORE_THRESHOLD  = 0.8  # sentiment_score >= 이 값인 것만 사용
+
+
+def _fetch_balance_samples(sentiment: str, size: int) -> tuple[list[str], list[int]]:
+    """
+    ES에서 고확신도 긍정/부정 기사를 샘플링하여 균형 데이터로 활용.
+    사람 검토 없이 모델 확신도가 높은 것만 레이블로 신뢰.
+    """
+    es = get_es()
+    try:
+        res = es.search(
+            index="news_economy",
+            body={
+                "query": {
+                    "bool": {
+                        "must": [
+                            {"term":  {"sentiment": sentiment}},
+                            {"range": {"sentiment_score": {"gte": BALANCE_SCORE_THRESHOLD}}},
+                            {"exists": {"field": "content"}},
+                        ]
+                    }
+                },
+                "_source": ["title", "content"],
+                "sort":    [{"sentiment_score": "desc"}],
+                "size":    size,
+            },
+        )
+    finally:
+        es.close()
+
+    texts, labels = [], []
+    for h in res["hits"]["hits"]:
+        src  = h["_source"]
+        text = f"{src.get('title', '')} {src.get('content', '')[:200]}"
+        texts.append(text)
+        labels.append(LABEL_TO_IDX[sentiment])
+
+    logger.info(f"균형 샘플 추가: {sentiment} {len(texts)}건 (score >= {BALANCE_SCORE_THRESHOLD})")
+    return texts, labels
+
+
 def _fetch_correction_data(conn) -> tuple[list[str], list[int], list[int]]:
     """
-    correction_log(MySQL)에서 미사용 정정 데이터 조회 후
-    ES news_economy에서 원문(title, content) 보완
+    1. correction_log(MySQL)에서 미사용 정정 데이터 조회
+    2. ES에서 고확신도 긍정/부정 샘플 추가 (균형 보완)
+    3. 전체를 합쳐서 반환
+
+    log_ids는 correction_log 항목만 추적 (균형 샘플은 used_in_finetune 업데이트 불필요)
     """
     with conn.cursor() as cur:
         cur.execute("""
@@ -74,7 +120,7 @@ def _fetch_correction_data(conn) -> tuple[list[str], list[int], list[int]]:
     if not rows:
         return [], [], []
 
-    # ES에서 원문 일괄 조회
+    # ES에서 정정 원문 일괄 조회
     es = get_es()
     article_ids = [r["newsID"] for r in rows]
     mget_res    = es.mget(index="news_economy",
@@ -94,6 +140,13 @@ def _fetch_correction_data(conn) -> tuple[list[str], list[int], list[int]]:
         labels.append(LABEL_TO_IDX[r["corrected_sentiment"]])
         log_ids.append(r["id"])
 
+    # 균형 보완: ES 고확신도 긍정/부정 샘플 추가
+    for sentiment in ("positive", "negative"):
+        b_texts, b_labels = _fetch_balance_samples(sentiment, BALANCE_SAMPLE_SIZE)
+        texts  += b_texts
+        labels += b_labels
+
+    logger.info(f"파인튜닝 데이터: 정정 {len(log_ids)}건 + 균형 보완 {len(texts) - len(log_ids)}건 = 총 {len(texts)}건")
     return texts, labels, log_ids
 
 
