@@ -128,16 +128,22 @@
   font-size: 12px;
 }
 
-.footer-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #00e5ff, #2563eb);
-  color: #020617;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.footer-logo-white {
+  width: 34px;
+  height: 34px;
+  background-color: #ffffff;
+
+  -webkit-mask-image: url("/view/img/data_favicon.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/view/img/data_favicon.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  flex-shrink: 0;
 }
 
 .footer-link {
@@ -1034,29 +1040,7 @@ body.light-mode .article-category {
 <div class="article-list" id="articleList"></div>
 </section>
 </main>
-<div id="footer"><footer class="footer">
-<div class="footer-inner">
-<div class="footer-mark">D</div>
-<button class="footer-link" onclick="openFooterTermsModal()" type="button">
-      이용약관
-    </button>
-<div class="footer-divider"></div>
-<button class="footer-link" onclick="openFooterPrivacyModal()" type="button">
-      개인정보처리방침
-    </button>
-<p class="footer-copy">
-      © 2026 DATA 다타. All rights reserved.
-    </p>
-</div>
-<div class="footer-modal hidden" id="footerModal">
-<div class="footer-modal-box">
-<div class="footer-modal-content" id="footerModalContent"></div>
-<button class="footer-modal-btn" onclick="closeFooterModal()" type="button">
-        확인
-      </button>
-</div>
-</div>
-</footer></div>
+    <div id="footer"></div>
 </div>
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
