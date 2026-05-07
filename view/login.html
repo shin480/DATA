@@ -1,229 +1,808 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>DATA Login</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <style>
-        /* [확실] 다른 페이지와 변수명 및 컬러 팔레트 통일 */
+
         :root {
-            --bg-color: #020617;       /* 전체 배경 */
-            --card-color: #0F172A;     /* 로그인 박스 배경 */
-            --input-bg: #020617;       /* 입력창 배경 (다른 페이지와 동일하게 변경) */
-            --cyan-point: #00E5FF;     /* 메인 포인트 컬러 */
+            --bg-color: #020617;
+            --card-color: #0F172A;
+            --input-bg: #020617;
+            --cyan-point: #00E5FF;
             --text-main: #FFFFFF;
             --text-sub: #8B949E;
             --border: 1px solid #30363D;
             --border-radius: 12px;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+
             background-color: var(--bg-color);
+
             color: var(--text-main);
+
             font-family: 'Pretendard', sans-serif;
+
             display: flex;
+
             justify-content: center;
+
             align-items: center;
+
             min-height: 100vh;
+
             margin: 0;
+
             padding: 20px 40px;
         }
 
-        /* [확실] 전체 박스 크기 및 여백을 이용약관/회원가입 페이지와 동일하게 설정 */
         .login-card {
+
             background-color: var(--card-color);
+
             width: 100%;
-            max-width: 400px;         /* 규격 통일 */
-            padding: 20px 40px;      /* 여백 통일 */
+
+            max-width: 400px;
+
+            padding: 50px 40px 30px;
+
             border-radius: 24px;
+
             border: var(--border);
+
             text-align: center;
+
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            padding-top: 50px;
         }
 
         .logo {
+
             color: var(--cyan-point);
+
             font-size: 24px;
+
             font-weight: 800;
+
             letter-spacing: 1px;
+
             margin-bottom: 5px;
         }
 
         .subtitle {
+
             font-size: 16px;
+
             font-weight: bold;
+
             margin-bottom: 5px;
         }
 
         .desc {
+
             font-size: 12px;
+
             color: var(--text-sub);
+
             margin-bottom: 25px;
         }
 
-        /* [확실] 입력 폼 스타일 */
         .form-group {
+
             text-align: left;
+
             margin-bottom: 20px;
-            position: relative;
         }
 
         .label {
+
             display: block;
+
             font-size: 11px;
+
             color: var(--cyan-point);
+
             margin-bottom: 6px;
+
             font-weight: bold;
+
             text-transform: uppercase;
         }
 
+
+
+        /* ===== input wrapper ===== */
+
+        .input-wrapper {
+
+            position: relative;
+        }
+
         input {
+
             width: 100%;
+
             height: 48px;
-            padding: 14px 16px;
+
+            padding: 14px 46px 14px 16px;
+
             background-color: var(--input-bg);
+
             border: var(--border);
+
             border-radius: var(--border-radius);
+
             color: var(--text-main);
+
             font-size: 14px;
+
             outline: none;
-            box-sizing: border-box;
         }
 
         input:focus {
+
             border-color: var(--cyan-point);
         }
 
-        /* [확실] 버튼 스타일 */
-        .btn-login {
-            width: 100%;
-            height: 52px;
-            background-color: var(--cyan-point);
+
+
+        /* ===== 이메일 X 버튼 ===== */
+
+        .clear-btn {
+
+            position: absolute;
+
+            right: 14px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            background: transparent;
+
             border: none;
-            border-radius: var(--border-radius);
-            font-size: 15px;
-            font-weight: bold;
-            color: #000;
+
+            color: #8B949E;
+
+            font-size: 24px;
+
+            font-weight: 300;
+
             cursor: pointer;
-            margin-top: 10px;
-            transition: 0.2s;
+
+            display: none;
+
+            width: 28px;
+
+            height: 28px;
+
+            padding: 0;
+
+            line-height: 1;
         }
 
-        .btn-login:hover {
-            opacity: 0.9;
+        .clear-btn:hover {
+
+            color: #FFFFFF;
+        }
+
+
+
+        .btn-login {
+
+            width: 100%;
+
+            height: 52px;
+
+            background-color: var(--cyan-point);
+
+            border: none;
+
+            border-radius: var(--border-radius);
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            color: #000;
+
+            cursor: pointer;
+
+            margin-top: 10px;
         }
 
         .btn-signup {
+
             width: 100%;
+
             height: 48px;
+
             background-color: transparent;
+
             border: var(--border);
+
             border-radius: var(--border-radius);
+
             font-size: 14px;
+
             color: var(--text-sub);
+
             cursor: pointer;
+
             margin-top: 12px;
-            transition: 0.2s;
         }
 
-        /* [확실] 하단 링크 */
         .footer-links {
+
             margin-top: 25px;
+
             font-size: 12px;
+
             color: var(--text-sub);
+
             line-height: 1.6;
         }
 
         .footer-links a {
+
             color: var(--cyan-point);
+
             text-decoration: none;
+
             font-weight: bold;
-            display: inline-block;
-            margin-top: 5px;
         }
+
+
+
+        /* ===== 커스텀 알림창 ===== */
+
+        .custom-modal {
+
+            position: fixed;
+
+            top: 50%;
+            left: 50%;
+
+            transform: translate(-50%, -50%);
+
+            width: 90%;
+            max-width: 520px;
+
+            background: #111827;
+
+            border-radius: 28px;
+
+            padding: 30px;
+
+            z-index: 99999;
+
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+
+            display: none;
+        }
+
+        .custom-modal.show {
+
+            display: block;
+        }
+
+        .modal-content {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 18px;
+        }
+
+        .message {
+
+            color: #F3F4F6;
+
+            font-size: 17px;
+
+            font-weight: 600;
+
+            line-height: 1.6;
+        }
+
+        .sub-message {
+
+            color: #FF4D4F;
+
+            font-size: 14px;
+
+            font-weight: 700;
+        }
+
+        .btn-confirm {
+
+            width: 160px;
+
+            height: 48px;
+
+            margin: 0 auto;
+
+            background: #00E5FF;
+
+            color: #000;
+
+            border: none;
+
+            border-radius: 999px;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 </head>
+
 <body>
+
+
+
+    <!-- 로그인 카드 -->
+
     <div class="login-card">
+
         <div class="logo">DATA</div>
+
         <div class="subtitle">반갑습니다!</div>
-        <p class="desc">데이터 분석의 새로운 기준, DATA에 로그인하세요.</p>
+
+        <p class="desc">
+            데이터 분석의 새로운 기준, DATA에 로그인하세요.
+        </p>
+
+
 
         <form id="loginForm">
-            <div class="form-group">
-                <label class="label">Email Address</label>
-                <input type="email" id="email" placeholder="admin@data.com" required>
-            </div>
+
+            <!-- 이메일 -->
 
             <div class="form-group">
-                <label class="label">Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
+
+                <label class="label">
+                    Email Address
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="admin@data.com"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="clear-btn"
+                        id="clearEmailBtn"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
             </div>
 
-            <button type="submit" class="btn-login">로그인</button>
-            <button type="button" class="btn-signup" onclick="location.href='terms.html'">회원가입</button>
+
+
+            <!-- 비밀번호 -->
+
+            <div class="form-group">
+
+                <label class="label">
+                    Password
+                </label>
+
+                <div class="input-wrapper">
+
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="••••••••"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <button type="submit" class="btn-login">
+                로그인
+            </button>
+
+
+
+            <button
+                type="button"
+                class="btn-signup"
+                onclick="location.href='terms.html'"
+            >
+                회원가입
+            </button>
+
         </form>
 
+
+
         <div class="footer-links">
+
             비밀번호를 잊으셨나요?<br>
-            <a href="forgotPassword.html" id="authForgotPasswordLink">비밀번호 찾기</a>
+
+            <a href="forgotPassword.html">
+                비밀번호 찾기
+            </a>
+
         </div>
+
     </div>
 
-    
 
-</body>
-<script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
 
-        // HTML input 요소에서 값 추출
-        const emailValue = document.getElementById('email').value;
-        const passwordValue = document.getElementById('password').value;
+    <!-- ===== 커스텀 알림창 ===== -->
 
-        // 1. 요청 파라미터 구성 
-        // 백엔드(login.py)에서 info.get("pw")로 받기로 했으므로 키값을 "pw"로 맞춥니다.
-        const params = {
-            "email": emailValue,
-            "pw": passwordValue
-        };
+    <div id="customAlertModal" class="custom-modal">
 
-        try {
-            // 2. 백엔드 login 엔드포인트로 데이터 전송
-            const { data } = await axios.post("/login", params);
+        <div class="modal-content">
 
-            if (data.success) {
-                // 로그인 성공 시 메시지 출력 후 페이지 이동
-                alert(data.message); 
-                // common.js의 getLoginInfo()가 찾을 수 있도록 서버가 준 정보를 저장합니다.
-                sessionStorage.setItem("access_token", data.user.access_token); // "session-active"
-                sessionStorage.setItem("user_name", data.user.user_name);
-                sessionStorage.setItem("user_role", data.user.user_role);
-                sessionStorage.setItem("user_id", data.user.user_id);
-                sessionStorage.setItem("user_birth", data.user.user_birth);
-                sessionStorage.setItem("user_gender", data.user.user_gender);
-                // 메인 페이지 또는 분석 리포트 페이지로 이동
-                location.href = './main.html'; 
+            <div class="message" id="alertMessage">
+                메시지
+            </div>
+
+            <div class="sub-message" id="alertSubMessage">
+                서브메시지
+            </div>
+
+            <button class="btn-confirm" id="confirmBtn">
+                확인
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        // ===== 로그인 실패 횟수 =====
+
+        let loginFailCount =
+            Number(localStorage.getItem("loginFailCount")) || 0;
+
+
+        // ===== 로그인 잠금 시간 =====
+
+        let loginLockTime =
+            Number(localStorage.getItem("loginLockTime")) || 0;
+
+
+
+        // ===== 이메일 X 버튼 =====
+
+        const emailInput =
+            document.getElementById('email');
+
+        const clearBtn =
+            document.getElementById('clearEmailBtn');
+
+
+        // 입력 시 X 버튼 표시
+        emailInput.addEventListener('input', function() {
+
+            if (emailInput.value.length > 0) {
+
+                clearBtn.style.display = 'block';
+
             } else {
-                // 로그인 실패 시 (비밀번호 불일치, 계정 없음 등)
-                alert(data.message);
+
+                clearBtn.style.display = 'none';
             }
-        } catch (err) {
-            console.error("로그인 에러 상세:", err);
-            alert('서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        }
-    });
-    document.getElementById('authForgotPasswordLink').addEventListener('click', function() {
-            console.log("비밀번호 찾기 페이지로 전환합니다.");
+        });
+
+
+        // X 버튼 클릭 시 이메일 삭제
+        clearBtn.addEventListener('click', function() {
+
+            emailInput.value = '';
+
+            clearBtn.style.display = 'none';
+
+            emailInput.focus();
         });
 
 
 
-    
+        // ===== 알림창 열기 =====
+
+        function showAlert(message, subMessage = '', hideButton = false) {
+
+            const modal =
+                document.getElementById('customAlertModal');
+
+            const messageEl =
+                document.getElementById('alertMessage');
+
+            const subMessageEl =
+                document.getElementById('alertSubMessage');
+
+            const confirmBtn =
+                document.getElementById('confirmBtn');
+
+
+            messageEl.innerText = message;
+
+
+            if (subMessage) {
+
+                subMessageEl.innerText = subMessage;
+
+                subMessageEl.style.display = 'block';
+
+            } else {
+
+                subMessageEl.style.display = 'none';
+            }
+
+
+            if (hideButton) {
+
+                confirmBtn.style.display = 'none';
+
+            } else {
+
+                confirmBtn.style.display = 'block';
+            }
+
+
+            modal.classList.add('show');
+        }
 
 
 
-</script>
+        // ===== 알림창 닫기 =====
+
+        document
+            .getElementById('confirmBtn')
+            .addEventListener('click', function() {
+
+                document
+                    .getElementById('customAlertModal')
+                    .classList.remove('show');
+            });
+
+
+
+        // ===== 로그인 =====
+
+        document
+            .getElementById('loginForm')
+            .addEventListener('submit', async function(e) {
+
+            e.preventDefault();
+
+
+            // ===== 24시간 잠금 체크 =====
+
+            const now = Date.now();
+
+            if (loginLockTime > now) {
+
+                const remainHour =
+                    Math.ceil((loginLockTime - now) / (1000 * 60 * 60));
+
+                showAlert(
+                    "로그인 실패 5회로 계정이 잠겼습니다.",
+                    `${remainHour}시간 후 다시 시도해주세요.`
+                );
+
+                return;
+            }
+
+
+            // 잠금 해제 시 초기화
+            if (loginLockTime && loginLockTime <= now) {
+
+                localStorage.removeItem("loginFailCount");
+
+                localStorage.removeItem("loginLockTime");
+
+                loginFailCount = 0;
+
+                loginLockTime = 0;
+            }
+
+
+            // 입력값
+            const emailValue =
+                document.getElementById('email').value.trim();
+
+            const passwordInput =
+                document.getElementById('password');
+
+            const passwordValue =
+                passwordInput.value.trim();
+
+
+            // 빈값 체크
+            if (!emailValue || !passwordValue) {
+
+                showAlert(
+                    "이메일과 비밀번호를 입력해주세요."
+                );
+
+                return;
+            }
+
+
+            // 요청 데이터
+            const params = {
+
+                email: emailValue,
+
+                pw: passwordValue
+            };
+
+
+            try {
+
+                // 로그인 요청
+                const { data } = await axios.post(
+                    "/login",
+                    params,
+                    {
+                        withCredentials: true
+                    }
+                );
+
+
+                // ===== 로그인 성공 =====
+
+                if (data.success) {
+
+                    localStorage.removeItem("loginFailCount");
+
+                    localStorage.removeItem("loginLockTime");
+
+                    loginFailCount = 0;
+
+                    loginLockTime = 0;
+
+
+                    // 세션 저장
+                    sessionStorage.setItem(
+                        "access_token",
+                        data.user?.access_token || ""
+                    );
+
+                    sessionStorage.setItem(
+                        "user_name",
+                        data.user?.user_name || ""
+                    );
+
+                    sessionStorage.setItem(
+                        "user_role",
+                        data.user?.user_role || ""
+                    );
+
+                    sessionStorage.setItem(
+                        "user_id",
+                        data.user?.user_id || ""
+                    );
+
+                    sessionStorage.setItem(
+                        "user_birth",
+                        data.user?.user_birth || ""
+                    );
+
+                    sessionStorage.setItem(
+                        "user_gender",
+                        data.user?.user_gender || ""
+                    );
+
+
+                    // 성공 알림
+                    showAlert(
+                        data.message || "로그인 성공",
+                        '',
+                        true
+                    );
+
+
+                    // 1.5초 후 이동
+                    setTimeout(() => {
+
+                        location.href = './main.html';
+
+                    }, 1500);
+
+                }
+
+
+                // ===== 로그인 실패 =====
+
+                else {
+
+                    // 비밀번호 초기화
+                    passwordInput.value = '';
+
+
+                    loginFailCount++;
+
+                    localStorage.setItem(
+                        "loginFailCount",
+                        loginFailCount
+                    );
+
+
+                    // ===== 5회 실패 =====
+
+                    if (loginFailCount >= 5) {
+
+                        const lockUntil =
+                            Date.now() + (24 * 60 * 60 * 1000);
+
+                        localStorage.setItem(
+                            "loginLockTime",
+                            lockUntil
+                        );
+
+                        loginLockTime = lockUntil;
+
+
+                        showAlert(
+                            "로그인 실패 5회로 계정이 잠겼습니다.",
+                            "24시간 후 다시 시도해주세요."
+                        );
+
+                        return;
+                    }
+
+
+                    // ===== 일반 실패 =====
+
+                    showAlert(
+                        data.message || "로그인 정보가 일치하지 않습니다.",
+                        `${loginFailCount}회 오류`
+                    );
+                }
+
+            }
+
+            catch (err) {
+
+                console.error(err);
+
+                showAlert(
+                    "서버와 통신 중 오류가 발생했습니다."
+                );
+            }
+
+        });
+
+    </script>
+
+</body>
+
 </html>
