@@ -373,7 +373,7 @@
     <div class="upload-zone" id="upload-zone">
       <input type="file" id="csv-input" accept=".csv" style="display:none">
       <div class="upload-main">CSV 파일을 클릭하거나 드래그해서 업로드</div>
-      <div class="upload-sub">newsID,true_sentiment &nbsp;(필수 컬럼)</div>
+      <div class="upload-sub">필수 컬럼: newsID, true_sentiment &nbsp;|&nbsp; title 등 추가 컬럼은 무시됩니다</div>
     </div>
     <div id="eval-options" style="display:none">
       <div class="option-row">
@@ -434,6 +434,7 @@
         <option value="50">50건</option>
       </select>
       <button class="btn" onclick="loadCorrection(1)">조회</button>
+      <button class="btn btn-sm" id="corr-export" style="margin-left:auto;color:var(--blue)">📥 CSV 추출</button>
     </div>
 
     <div id="corr-loading" class="state-msg" style="display:none">불러오는 중...</div>
@@ -676,6 +677,17 @@ function devFetch(path, opts={}) {
 
 function apiBase() { return API_BASE_URL; }
 
+// ── 감성 정정 CSV 추출 ──────────────────────────────
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'corr-export') {
+    const sentiment = document.getElementById('corr-sentiment')?.value || '';
+    const params = new URLSearchParams();
+    if (sentiment) params.set('sentiment', sentiment);
+    const url = apiBase() + '/admin/corrections/export?' + params.toString();
+    window.location.href = url;
+  }
+});
+
 // ── 샘플 CSV 다운로드 버튼 ──────────────────────────
 document.addEventListener('click', function(e) {
   if (e.target && e.target.id === 'download-sample-csv') {
@@ -699,13 +711,14 @@ document.addEventListener('click', function(e) {
 // ── 샘플 CSV 다운로드 ────────────────────────────────
 function downloadSampleCsv() {
   const rows = [
-    'newsID,true_sentiment',
-    'NAVER_119_0003086619,positive',
-    'NAVER_082_0001378751,negative',
-    'NAVER_437_0000489712,negative',
-    'NAVER_138_0002226647,positive',
+    'newsID,title,true_sentiment',
+    'NAVER_119_0003086619,무뎌진 중동전쟁 우려…4월 개미·외국인 투자법 어떻게 갈렸나,positive',
+    'NAVER_082_0001378751,[단독]삼성바이오 계약직 10만원짜리 명절 선물 차별에 울었다…영업이익 2조 기업의 민낯,negative',
+    'NAVER_437_0000489712,여전히 로비에만 혈안?…쿠팡 금감원 전관 영입하려다 제동,negative',
+    'NAVER_138_0002226647,재활 넘어 꿈 키운 10년…넥슨 어린이 의료 인프라에 656억원 후원,positive',
+    'NAVER_421_0008922971,공무원·교원도 쉰다…63년 만에 돌아온 노동절 첫 공휴일,neutral',
   ];
-  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;

@@ -349,3 +349,71 @@ def trigger_finetune(background_tasks: BackgroundTasks):
     from model.services.finetuner import run_finetune
     background_tasks.add_task(run_finetune, trigger_type="manual")
     return {"message": f"fine-tuning 시작됨 (백그라운드) — 정정 데이터 {pending}건", "pending": pending}
+
+
+# ── 8. 감성 정정 CSV 추출 ──────────────────────────────
+@router.get("/export")
+def export_corrections_csv(
+    sentiment: str | None = Query(default=None, description="positive | negative | neutral"),
+):
+    """
+    현재 필터 조건에 해당하는 전체 뉴스를 CSV로 추출합니다.
+    형식: newsID,title,content,true_sentiment
+    content는 앞 300자만 포함합니다.
+    """
+    import io
+    import csv
+    from fastapi.responses import StreamingResponse
+
+    if sentiment and sentiment not in VALID_SENTIMENTS:
+        raise HTTPException(status_code=400, detail="유효하지 않은 sentiment 값")
+
+    try:
+        must = [{"exists": {"field": "sentiment"}}]
+        if sentiment:
+            must.append({"term": {"sentiment": sentiment}})
+
+        es    = get_es()
+        total = es.count(index=INDEX_NEWS, body={"query": {"bool": {"must": must}}})["count"]
+
+        if total == 0:
+            raise HTTPException(status_code=404, detail="추출할 데이터가 없습니다.")
+
+        res = es.search(
+            index=INDEX_NEWS,
+            body={
+                "query":   {"bool": {"must": must}},
+                "_source": ["article_id", "title", "content", "sentiment"],
+                "sort":    [{"published_at": "desc"}],
+                "size":    min(total, 10000),
+            },
+        )
+        es.close()
+
+        output = io.StringIO()
+        output.write("\ufeff")  # UTF-8 BOM
+        writer = csv.writer(output)
+        writer.writerow(["newsID", "title", "content", "true_sentiment"])
+
+        for hit in res["hits"]["hits"]:
+            src = hit["_source"]
+            writer.writerow([
+                src.get("article_id", hit["_id"]),
+                src.get("title", ""),
+                src.get("content", "")[:300],
+                src.get("sentiment", ""),
+            ])
+
+        output.seek(0)
+        filename = f"sentiment_export_{sentiment or 'all'}.csv"
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"CSV 추출 오류: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
