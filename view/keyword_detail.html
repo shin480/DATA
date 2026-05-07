@@ -566,17 +566,16 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 }
 
 .back-btn {
-  margin-bottom: 28px;
-  border: 0;
-  background: transparent;
-  color: #7e95ba;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
+      display: inline-block;
+      margin-bottom: 26px;
+      color: #3b82a0;
+      font-size: 11px;
+      font-weight: 800;
+      text-decoration: none;
+    }
 
 .back-btn:hover {
-  color: #22d3ee;
+  color: #00e5ff;
 }
 
 
@@ -1222,10 +1221,9 @@ body.light-mode .footer-modal-content h3 {
 
 <div id="header"></div>
 
-<main class="keyword-detail-page">
-<button class="back-btn" onclick="history.back()" type="button">
-        ← 이전 페이지로
-      </button>
+  <main class="article-page">
+    <div class="article-wrap">
+      <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 <section>
 <span class="keyword-badge">ECONOMY</span>
 <h1 class="keyword-title" id="keywordTitle">금리</h1>
