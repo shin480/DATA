@@ -365,10 +365,15 @@
   <!-- 패널 3: 정답 레이블 평가                        -->
   <!-- ══════════════════════════════════════════════ -->
   <div id="panel-evaluate" class="panel">
+    <div style="margin-bottom:1rem;display:flex;align-items:center;gap:1rem;">
+      <span style="font-size:13px;color:var(--text3)">샘플 CSV 형식:</span>
+      <code style="font-size:12px;color:var(--text2);background:var(--bg3);padding:2px 8px;border-radius:4px;">newsID,true_sentiment</code>
+      <button class="btn btn-sm" id="download-sample-csv" style="color:var(--blue)">📥 샘플 CSV 다운로드</button>
+    </div>
     <div class="upload-zone" id="upload-zone">
       <input type="file" id="csv-input" accept=".csv" style="display:none">
       <div class="upload-main">CSV 파일을 클릭하거나 드래그해서 업로드</div>
-      <div class="upload-sub">newsID,true_sentiment &nbsp;또는&nbsp; title,content,true_sentiment</div>
+      <div class="upload-sub">newsID,true_sentiment &nbsp;(필수 컬럼)</div>
     </div>
     <div id="eval-options" style="display:none">
       <div class="option-row">
@@ -564,7 +569,7 @@ const DEV_MODE = false;
 // ── API BASE URL ───────────────────────────────────────
 // 실서버 주소를 여기에 입력하세요. 빈 문자열이면 현재 도메인 기준 상대경로로 요청합니다.
 // 예) 'http://localhost:8000' 또는 'https://api.your-domain.com'
-const API_BASE_URL = 'http://100.99.254.68:8000/pipeline';
+const API_BASE_URL = 'http://127.0.0.1:8000/pipeline';
 
 const DUMMY = {
   confidence: {
@@ -671,6 +676,13 @@ function devFetch(path, opts={}) {
 
 function apiBase() { return API_BASE_URL; }
 
+// ── 샘플 CSV 다운로드 버튼 ──────────────────────────
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'download-sample-csv') {
+    downloadSampleCsv();
+  }
+});
+
 // ── 감성 정정 이벤트 위임 (DOM 상시 존재 요소에 부착) ──
 document.addEventListener('click', function(e) {
   const corrBtn   = e.target.closest('.corr-btn');
@@ -683,6 +695,24 @@ document.addEventListener('click', function(e) {
     if (n) openDetailModal(n.newsID);
   }
 });
+
+// ── 샘플 CSV 다운로드 ────────────────────────────────
+function downloadSampleCsv() {
+  const rows = [
+    'newsID,true_sentiment',
+    'NAVER_119_0003086619,positive',
+    'NAVER_082_0001378751,negative',
+    'NAVER_437_0000489712,negative',
+    'NAVER_138_0002226647,positive',
+  ];
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'sentiment_eval_sample.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ── 탭 전환 ──────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(btn => {
