@@ -112,6 +112,7 @@ def get_preprocessed_data():
                 "content": row['raw_text'],
                 "clean_text": row['clean_text'],  # 정제된 필드
                 "press": row['press'],
+                "author": row.get('author', ''),
                 "url": row['url'],
                 "published_at": row['published_at'],
                 "collected_at": row['collected_at']
@@ -192,4 +193,3 @@ def get_preprocessed_data():
         "count": len(token_model_inputs),
         "data": token_model_inputs  # [id, token] 리스트 반환
     }
-
