@@ -42,7 +42,27 @@
             padding-top: 50px;
         }
 
-        .logo { color: var(--cyan-point); font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+        .logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    gap: 0;
+}
+
+.logo-img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-right: -8px;
+}
+
+.logo-text {
+    color: var(--cyan-point);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
         .subtitle { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
         .desc { color: var(--text-sub); font-size: 12px; margin-bottom: 20px; }
 
@@ -110,7 +130,10 @@
 <body>
 
     <div class="join-card">
-        <div class="logo">DATA</div>
+        <div class="logo-wrap">
+            <img src="./logo.png" alt="DATA Logo" class="logo-img">
+            <div class="logo-text">ATA</div>
+        </div>
         <div class="subtitle">새로운 계정 만들기</div>
         <p class="desc">당신의 데이터를 가치 있게 만드는 첫 걸음</p>
 

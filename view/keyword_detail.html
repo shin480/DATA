@@ -128,16 +128,22 @@
   font-size: 12px;
 }
 
-.footer-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #00e5ff, #2563eb);
-  color: #020617;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.footer-logo-white {
+  width: 34px;
+  height: 34px;
+  background-color: #ffffff;
+
+  -webkit-mask-image: url("/view/img/data_favicon.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/view/img/data_favicon.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  flex-shrink: 0;
 }
 
 .footer-link {
@@ -237,8 +243,6 @@
     padding: 0 18px;
   }
 }
-</style>
-<style>
 /* ===== main.css ===== */
 /* [확실] 기본 스타일 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -379,7 +383,7 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .keyword-detail-page {
   max-width: 1060px;
   margin: 0 auto;
-  padding: 130px 24px 120px;
+  padding: 40px 24px 120px;
   background: #020817;
   color: #f8fafc;
 }
@@ -406,6 +410,20 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
   color: #7891b5;
   font-size: 14px;
   margin-bottom: 36px;
+}
+
+.back-btn {
+  margin-bottom: 28px;
+  border: 0;
+  background: transparent;
+  color: #7e95ba;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  color: #22d3ee;
 }
 
 
@@ -881,6 +899,15 @@ body.light-mode .original-btn {
   border: 1px solid #67e8f9;
 }
 
+body.light-mode .back-btn {
+  color: #64748b !important;
+}
+
+body.light-mode .back-btn:hover,
+body.light-mode .article-category {
+  color: #06b6d4 !important;
+}
+
 
 /* ==============================
    Responsive
@@ -951,6 +978,9 @@ body.light-mode .original-btn {
 </div>
 </header></div>
 <main class="keyword-detail-page">
+<button class="back-btn" onclick="history.back()" type="button">
+        ← 이전 페이지로
+      </button>
 <section>
 <span class="keyword-badge">ECONOMY</span>
 <h1 class="keyword-title" id="keywordTitle">금리</h1>
@@ -1010,29 +1040,7 @@ body.light-mode .original-btn {
 <div class="article-list" id="articleList"></div>
 </section>
 </main>
-<div id="footer"><footer class="footer">
-<div class="footer-inner">
-<div class="footer-mark">D</div>
-<button class="footer-link" onclick="openFooterTermsModal()" type="button">
-      이용약관
-    </button>
-<div class="footer-divider"></div>
-<button class="footer-link" onclick="openFooterPrivacyModal()" type="button">
-      개인정보처리방침
-    </button>
-<p class="footer-copy">
-      © 2026 DATA 다타. All rights reserved.
-    </p>
-</div>
-<div class="footer-modal hidden" id="footerModal">
-<div class="footer-modal-box">
-<div class="footer-modal-content" id="footerModalContent"></div>
-<button class="footer-modal-btn" onclick="closeFooterModal()" type="button">
-        확인
-      </button>
-</div>
-</div>
-</footer></div>
+    <div id="footer"></div>
 </div>
 <div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -1314,27 +1322,6 @@ function bindGlobalClickEvents() {
 // ==============================
 // 검색어 자동완성
 // ==============================
-const searchKeywordPool = [
-  "금리",
-  "기준금리",
-  "대출",
-  "가계부채",
-  "물가",
-  "환율",
-  "부동산",
-  "부자",
-  "부산 여행",
-  "차량5부제",
-  "부천 날씨",
-  "부산은행",
-  "반도체",
-  "취업",
-  "전세",
-  "주식시장",
-  "소비심리",
-  "금융시장"
-];
-
 function bindCommonSearch() {
   const input = document.getElementById("commonSearchInput");
 
@@ -1381,7 +1368,7 @@ function highlightKeyword(text, keyword) {
   return text.replace(regex, `<span class="search-highlight">$1</span>`);
 }
 
-function renderSearchSuggestions(keyword) {
+async function renderSearchSuggestions(keyword) {
   const list = document.getElementById("searchSuggestList");
   const suggestBox = document.getElementById("searchSuggestBox");
 
@@ -1394,43 +1381,55 @@ function renderSearchSuggestions(keyword) {
     return;
   }
 
-  const results = searchKeywordPool
-    .filter(function (item) {
-      return item.includes(value);
-    })
-    .slice(0, 6);
+  try {
+    const res = await axios.get(
+      `/api/search/suggest?q=${encodeURIComponent(value)}`
+    );
 
-  if (results.length === 0) {
-    hideSearchSuggestions();
-    return;
-  }
+    const results = res.data || [];
 
-  list.innerHTML = results.map(function (item) {
-    return `
-      <button
-        class="search-suggest-item"
-        type="button"
-        data-suggest-keyword="${item}"
-      >
-        <span class="search-suggest-left">
-          <span class="search-suggest-icon">⌕</span>
-          <span class="search-suggest-keyword">${highlightKeyword(item, value)}</span>
-        </span>
+    if (results.length === 0) {
+      hideSearchSuggestions();
+      return;
+    }
 
-        <span class="search-suggest-arrow">↖</span>
-      </button>
-    `;
-  }).join("");
+    list.innerHTML = results.map(function (item) {
+      return `
+        <button
+          class="search-suggest-item"
+          type="button"
+          data-suggest-keyword="${item}"
+        >
+          <span class="search-suggest-left">
+            <span class="search-suggest-icon">⌕</span>
 
-  document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const keyword = btn.dataset.suggestKeyword;
-      selectSearchSuggestion(keyword);
+            <span class="search-suggest-keyword">
+              ${highlightKeyword(item, value)}
+            </span>
+          </span>
+
+          <span class="search-suggest-arrow">↖</span>
+        </button>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const keyword = btn.dataset.suggestKeyword;
+
+        selectSearchSuggestion(keyword);
+      });
     });
-  });
 
-  positionSearchSuggestBox();
-  suggestBox.classList.remove("hidden");
+    positionSearchSuggestBox();
+
+    suggestBox.classList.remove("hidden");
+
+  } catch (error) {
+    console.error("검색 자동완성 실패:", error);
+
+    hideSearchSuggestions();
+  }
 }
 
 function positionSearchSuggestBox() {
@@ -1562,23 +1561,26 @@ window.closeFooterModal = function () {
 
 
 // ==============================
-// 임시 데이터
+// es 불러옴
 // ==============================
-const keywordData = {
+let keywordData = {
   category: "ECONOMY",
-  keyword: "금리",
-  pressCount: 28,
-  summary: "금리 인하로 인한 경기 회복 기대감과 시장 불확실성 우려가 공존합니다.",
-  aiCount: 3,
-  newsCount: 28,
-  flow: "정부 책임",
+  keyword: "",
+  pressCount: 0,
+  summary: "",
+  aiCount: 0,
+  newsCount: 0,
+  flow: "",
   sentiment: {
-    positive: 50,
-    neutral: 10,
-    negative: 40
+    positive: 0,
+    neutral: 0,
+    negative: 0
   }
 };
 
+// ==============================
+// 임시 데이터
+// ==============================
 const perspectives = [
   {
     type: "긍정 관점",
@@ -1621,29 +1623,7 @@ const perspectives = [
   }
 ];
 
-let articles = [
-  {
-    source: "AI 분석",
-    title: "한은, 금리 전격 인하… '내수 회복에 총력'",
-    desc: "한국은행이 기준금리를 인하하며 경기 부양 의지를 드러냈습니다. 시장은 즉각 환영하는 분위기며...",
-    link: "#",
-    highlight: true
-  },
-  {
-    source: "시사저널 B",
-    title: "금리 내렸지만 대출 규제는 강화… 실효성 논란",
-    desc: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들에게 제공하는 효과는 미미할 것이라는 분석입니다.",
-    link: "#",
-    highlight: false
-  },
-  {
-    source: "경제신문 C",
-    title: "금리 동결 가능성도 여전… 향후 물가가 변수",
-    desc: "향후 물가 흐름에 따라 금리 정책의 방향이 다시 달라질 수 있다는 전망이 나옵니다.",
-    link: "#",
-    highlight: false
-  }
-];
+let articles = [];
 
 let rollingTimers = [];
 
@@ -1822,11 +1802,15 @@ function updateActivePress(cardIndex, articleIndex) {
     if (index === articleIndex) {
       pill.classList.add("active", `${cardType}-active`);
 
+      // 세로 화면 튐 방지: scrollIntoView 사용 금지
       if (list) {
-        pill.scrollIntoView({
-          behavior: "smooth",
-          inline: "center",
-          block: "nearest"
+        const pillLeft = pill.offsetLeft;
+        const pillWidth = pill.offsetWidth;
+        const listWidth = list.clientWidth;
+
+        list.scrollTo({
+          left: pillLeft - listWidth / 2 + pillWidth / 2,
+          behavior: "smooth"
         });
       }
     }
@@ -1870,15 +1854,28 @@ function renderArticles() {
 
   if (!list) return;
 
+  if (!articles || articles.length === 0) {
+    list.innerHTML = `
+      <article class="article-card">
+        <div>
+          <div class="article-source">검색 결과 없음</div>
+          <h3 class="article-title">관련 기사가 없습니다.</h3>
+          <p class="article-desc">다른 키워드로 다시 검색해 주세요.</p>
+        </div>
+      </article>
+    `;
+    return;
+  }
+
   list.innerHTML = articles.map(article => `
     <article class="article-card ${article.highlight ? "highlight" : ""}">
       <div>
-        <div class="article-source">${article.source}</div>
-        <h3 class="article-title">${article.title}</h3>
-        <p class="article-desc">${article.desc}</p>
+        <div class="article-source">${article.source || "언론사 없음"}</div>
+        <h3 class="article-title">${article.title || "제목 없음"}</h3>
+        <p class="article-desc">${article.desc || "요약 정보가 없습니다."}</p>
       </div>
 
-      <button class="original-btn" onclick="openOriginal('${article.link}')">
+      <button class="original-btn" onclick="openOriginal('${article.link || "#"}')">
         원문 보기
       </button>
     </article>
@@ -1895,56 +1892,26 @@ function openOriginal(link) {
   location.href = link;
 }
 
+async function readKeywordFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const keyword = params.get("keyword") || "금리";
 
-// ==============================
-// 검색 처리
-// ==============================
-function applyKeywordSearch(value) {
-  keywordData.keyword = value;
-  keywordData.summary = `${value} 관련 뉴스의 긍정·부정·중립 흐름을 AI가 임시 분석했습니다.`;
-  keywordData.pressCount = Math.floor(Math.random() * 30) + 10;
-  keywordData.newsCount = Math.floor(Math.random() * 50) + 10;
-  keywordData.aiCount = Math.floor(Math.random() * 5) + 1;
-
-  keywordData.flow =
-    ["정부 책임", "기업 책임", "시장 자율", "원인 분석", "전망 분석"]
-    [Math.floor(Math.random() * 5)];
-
-  const positive = Math.floor(Math.random() * 60) + 20;
-  const neutral = Math.floor(Math.random() * 20) + 5;
-  let negative = 100 - positive - neutral;
-
-  if (negative < 0) negative = 0;
-
-  keywordData.sentiment = {
-    positive,
-    neutral,
-    negative
-  };
-
-  articles.unshift({
-    source: "AI 분석",
-    title: `${value} 관련 주요 이슈 분석 결과`,
-    desc: `${value} 키워드를 포함한 뉴스 데이터가 임시로 분석되었습니다. 실제 서버 연결 시 검색 결과 기반으로 교체됩니다.`,
-    link: "#",
-    highlight: true
-  });
-
-  articles = articles.slice(0, 10);
-
-  renderKeyword();
-  renderArticles();
-
-  showToast("임시 검색 결과가 생성되었습니다.");
+  await fetchKeywordDetail(keyword);
 }
 
+async function fetchKeywordDetail(keyword) {
+  try {
+    const res = await axios.get(`/api/keywords/${encodeURIComponent(keyword)}`);
 
-function readKeywordFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const keyword = params.get("keyword");
+    keywordData = res.data;
+    articles = res.data.articles || [];
 
-  if (keyword) {
-    applyKeywordSearch(keyword);
+    renderKeyword();
+    renderArticles();
+
+  } catch (error) {
+    console.error("키워드 상세 데이터 불러오기 실패:", error);
+    showToast("키워드 데이터를 불러오지 못했습니다.");
   }
 }
 
@@ -2005,9 +1972,7 @@ window.selectPerspectiveArticle = selectPerspectiveArticle;
 // 최초 실행
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
-  renderKeyword();
   renderPerspectives();
-  renderArticles();
   readKeywordFromUrl();
 
   window.addEventListener("resize", checkPressArrow);
