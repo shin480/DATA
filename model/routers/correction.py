@@ -85,7 +85,7 @@ def list_news_for_correction(
                     placeholders = ",".join(["%s"] * len(article_ids))
                     cur.execute(f"""
                         SELECT c1.newsID, c1.corrected_sentiment, c1.corrected_by,
-                               DATE_FORMAT(c1.created_at, '%%Y-%%m-%%d %%H:%%i') AS corrected_at
+                               c1.created_at AS corrected_at
                         FROM correction_log c1
                         WHERE c1.id = (
                             SELECT MAX(id) FROM correction_log c2 WHERE c2.newsID = c1.newsID
@@ -150,7 +150,7 @@ def get_news_detail(newsID: str):
                 cur.execute("""
                     SELECT id, original_sentiment, original_score,
                            corrected_sentiment, corrected_by, memo, used_in_finetune,
-                           DATE_FORMAT(created_at, '%%Y-%%m-%%d %%H:%%i') AS created_at
+                           created_at
                     FROM correction_log
                     WHERE newsID = %s ORDER BY created_at DESC
                 """, (newsID,))
@@ -242,7 +242,7 @@ def list_corrections(
                            c.original_sentiment, c.original_score,
                            c.corrected_sentiment, c.corrected_by, c.memo,
                            c.used_in_finetune,
-                           DATE_FORMAT(c.created_at, '%%Y-%%m-%%d %%H:%%i') AS created_at
+                           c.created_at
                     FROM correction_log c
                     {where_sql}
                     ORDER BY c.created_at DESC
@@ -311,8 +311,7 @@ def get_finetune_status():
                 cur.execute("""
                     SELECT id, trigger_type, status, correction_count,
                            base_model, output_model, train_accuracy, error_message,
-                           DATE_FORMAT(started_at,  '%%Y-%%m-%%d %%H:%%i') AS started_at,
-                           DATE_FORMAT(finished_at, '%%Y-%%m-%%d %%H:%%i') AS finished_at
+                           started_at, finished_at
                     FROM finetune_history ORDER BY created_at DESC LIMIT 5
                 """)
                 history = cur.fetchall()
