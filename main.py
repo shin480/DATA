@@ -8,9 +8,12 @@ from starlette.middleware.sessions import SessionMiddleware
 
 import pandas as pd
 from util.db import get_engine
+from util.es import get_es, NEWS_ECONOMY_INDEX
+
 from model.model_main import app as pipeline_app
 from datacleaning.cleaning import get_preprocessed_data
 from pydantic import BaseModel
+from viewpoint_classify.viewpoint_classify import update_perspective_to_es
 
 from regist.emailvalidation import check_email_duplicate, send_cert_email, verify_certification_number
 from regist.regist import regist_user
@@ -23,7 +26,7 @@ from mypage.updatepassword import update_user_password
 from mypage.deleteaccount import delete_user_account
 from mypage.passwordcheck import check_user_password, check_auth_status
 
-from util.es import get_es, NEWS_ECONOMY_INDEX
+
 
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
@@ -119,6 +122,14 @@ def api_pw_check(info: Dict[str, Any], req: Request):
 @app.post("/pw_check_time")
 def pw_check_time(req: Request):
     return check_auth_status(req)
+
+@app.get("/viewpoint_classify")
+def viewpoint_classify():
+    update_perspective_to_es()
+    return {
+        "success": True,
+        "message": "관점 분류 Top-3 저장 완료"
+    }
 
 # =========================================
 # 키워드 상세 조회 API
