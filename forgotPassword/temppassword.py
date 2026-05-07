@@ -2,6 +2,7 @@ import string
 import secrets  # 보안에 더 적합한 랜덤 모듈
 from regist.emailvalidation import check_email_duplicate
 from util.db import get_engine
+from util.logger import log_user_activity
 from sqlalchemy import text
 from regist.hashing import hash_password
 from email.message import EmailMessage
@@ -46,6 +47,7 @@ def send_temporary_password(email: str):
         sql = text("UPDATE users SET password = :pw WHERE user_id = :email")
         conn.execute(sql, {"pw": hashed_temp_pw, "email": email})
         conn.commit()
+        log_user_activity(email, "reg110")
     except Exception as e:
         print(f"❌ 비밀번호 업데이트 실패: {e}")
         return {"success": False, "message": "비밀번호 갱신 중 서버 오류가 발생했습니다."}

@@ -2,6 +2,8 @@ from fastapi import APIRouter, Request
 from typing import Any, Dict
 from sqlalchemy import text
 from util.db import get_engine
+from util.logger import log_user_activity
+
 from regist.hashing import hash_password
 
 
@@ -44,6 +46,8 @@ def regist_user(info: Dict[str, Any], req: Request):
 
         user_id = email  # user_id가 이메일인 경우
 
+
+
         # 4. user_terms_agreements 테이블 저장
         terms_sql = text("""
             INSERT INTO user_terms_agreements (user_id, term_id, is_agreed, agreed_at)
@@ -61,6 +65,8 @@ def regist_user(info: Dict[str, Any], req: Request):
             conn.execute(terms_sql, {"user_id": user_id, "term_id": 5})
 
         conn.commit()
+
+        log_user_activity(user_id, "reg110", req)
 
         # 5. 세션 정리
         for key in ["requiredChecks", "optionalChecksList", "cert_code"]:

@@ -255,8 +255,20 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
     height: 72px; padding: 0 64px; display: flex; align-items: center; justify-content: space-between;
     background: #070b1a; border-bottom: 1px solid #111827;
 }
-.logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: #00E5FF; text-decoration: none; }
-.logo-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #00E5FF, #2563eb); display: flex; align-items: center; justify-content: center; color: #020617; font-weight: 900; }
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header-logo-full {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+.logo-mark {width: 34px;height: 34px;object-fit: contain;display: block;flex-shrink: 0;}
 .nav { display: flex; align-items: center; gap: 30px; color: #94a3b8; font-size: 15px; }
 .nav a { text-decoration: none; color: inherit; transition: color 0.2s; }
 .nav a:hover { color: #00E5FF; }
