@@ -20,6 +20,8 @@ from login.login import login_user
 from forgotPassword.temppassword import send_temporary_password
 
 from mypage.updatepassword import update_user_password
+from mypage.deleteaccount import delete_user_account
+from mypage.passwordcheck import check_user_password, check_auth_status
 
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
@@ -103,3 +105,15 @@ def find_password(info: Dict[str,Any], req: Request):
 def api_update_password(info: Dict[str, Any], req: Request):
     # 분리된 파일의 함수 호출
     return update_user_password(info, req)
+
+@app.post("/delete_account")
+def api_delete_account(info: Dict[str, Any], req: Request):
+    return delete_user_account(info, req)
+
+@app.post("/pw_check")
+def api_pw_check(info: Dict[str, Any], req: Request):
+    return check_user_password(info, req)
+
+@app.post("/pw_check_time")
+def pw_check_time(req: Request):
+    return check_auth_status(req)
