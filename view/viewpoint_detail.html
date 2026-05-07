@@ -247,14 +247,30 @@
 /* [확실] 기본 스타일 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sans-serif; }
-.page { width: 1440px; min-height: 100vh; margin: 0 auto; background: #050816; }
+.page {
+  width: 1440px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-top: 72px;
+  background: #050816;
+}
 
 /* [확실] 헤더 */
 .header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+
+  width: 1440px;
+  max-width: 100%;
   height: 72px;
   padding: 0 56px;
+
   display: flex;
   align-items: center;
+
   background: #070b1a;
   border-bottom: 1px solid #111827;
 }
@@ -518,7 +534,7 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 
 .viewpoint-detail-page {
   min-height: 100vh;
-  padding: 130px 24px 110px;
+  padding: 40px 24px 110px;
   background: #050816;
   color: #e5e7eb;
 }
