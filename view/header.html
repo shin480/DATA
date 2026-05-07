@@ -1,10 +1,7 @@
 <header class="header">
-  <div class="header-left">
-    <a href="/view/main.html" class="logo">
-      <div class="logo-mark">D</div>
-      <div>DATA 다타</div>
-    </a>
-  </div>
+  <a href="/view/main.html" class="logo">
+    <img class="header-logo-full" src="/view/img/header_logo.png" alt="DATA 다타 로고">
+  </a>
 
   <nav class="nav">
     <a href="#" data-login-page="/view/keyword_detail.html">키워드</a>
@@ -21,24 +18,33 @@
         placeholder="예: 금리, 취업, 전세, 반도체"
       >
 
+      <button class="search-icon-btn" id="commonSearchBtn" type="button" aria-label="검색">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>
+      </button>
+
       <div id="searchSuggestBox" class="search-suggest-box hidden">
         <div class="search-suggest-list" id="searchSuggestList"></div>
       </div>
     </div>
 
-    <button id="loginBtn" class="header-btn" type="button">
+    <button id="themeToggleBtn" class="theme-btn" type="button">🌙</button>
+
+    <button id="loginBtn" class="header-btn login" type="button">
       로그인
     </button>
 
-    <button id="joinBtn" class="header-btn" type="button">
+    <button id="joinBtn" class="header-btn join" type="button">
       회원가입
     </button>
 
-    <button id="primaryUserBtn" class="header-btn hidden" type="button">
+    <button id="primaryUserBtn" class="header-btn login hidden" type="button">
       마이페이지
     </button>
 
-    <button id="logoutBtn" class="header-btn hidden" type="button">
+    <button id="logoutBtn" class="header-btn join hidden" type="button">
       로그아웃
     </button>
   </div>

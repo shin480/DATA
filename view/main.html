@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>DATA 다타 - AI 뉴스 인사이트</title>
+    <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 <style>
 /* ===== common.css ===== */
 /* ==============================
@@ -30,12 +31,11 @@
 
 .search-suggest-box {
   position: fixed;
-  width: 260px;
+  width: 410px;
   max-width: 80vw;
   padding: 10px 0 12px;
   border: 1px solid #1e293b;
-  border-top: 0;
-  border-radius: 0 0 18px 18px;
+  border-radius: 18px;
   background: #050b1c;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   z-index: 20000;
@@ -252,17 +252,155 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 
 /* [확실] 헤더 */
 .header {
-    height: 72px; padding: 0 64px; display: flex; align-items: center; justify-content: space-between;
-    background: #070b1a; border-bottom: 1px solid #111827;
+  height: 72px;
+  padding: 0 56px;
+  display: flex;
+  align-items: center;
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
 }
-.logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; color: #00E5FF; text-decoration: none; }
-.logo-mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #00E5FF, #2563eb); display: flex; align-items: center; justify-content: center; color: #020617; font-weight: 900; }
-.nav { display: flex; align-items: center; gap: 30px; color: #94a3b8; font-size: 15px; }
-.nav a { text-decoration: none; color: inherit; transition: color 0.2s; }
-.nav a:hover { color: #00E5FF; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.search-box { width: 260px; height: 38px; border-radius: 999px; background: #0f172a; border: 1px solid #1e293b; padding: 0 16px; color: #94a3b8; }
-.header-btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid #334155; background: transparent; color: #cbd5e1; cursor: pointer; }
+
+.logo {
+  width: 155px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.header-logo-full {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-left: 22px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nav a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: #00e5ff;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-search-wrap {
+  position: relative;
+  width: 410px;
+  height: 40px;
+  border-radius: 999px;
+  background: #070b1a;
+  border: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 20px;
+}
+
+.search-box {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 15px;
+  padding: 0;
+}
+
+.search-box::placeholder {
+  color: #7c8493;
+}
+
+.main-search-wrap:focus-within {
+  border-color: #334155;
+}
+
+.search-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #8b95a7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.search-icon-btn:hover {
+  color: #00e5ff;
+}
+
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #070b1a;
+  color: #facc15;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-btn:hover {
+  border-color: #334155;
+}
+
+.header-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.header-btn.login {
+  border: 1px solid #00cfe8;
+  background: #00cfe8;
+  color: #020617;
+}
+
+.header-btn.login:hover {
+  filter: brightness(1.08);
+}
+
+.header-btn.join {
+  border: 1px solid #475569;
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.header-btn.join:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
 
 /* [확실] 히어로 섹션 */
 .main { padding: 40px 64px 80px; }
@@ -374,6 +512,190 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
 .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
 .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
+
+/* ==============================
+   Light Mode
+============================== */
+
+body.light-mode {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+body.light-mode .page {
+  background: #f8fafc;
+}
+
+/* Header */
+body.light-mode .header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.light-mode .nav {
+  color: #64748b;
+}
+
+body.light-mode .nav a:hover {
+  color: #0284c7;
+}
+
+body.light-mode .main-search-wrap {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .search-box {
+  color: #0f172a;
+}
+
+body.light-mode .search-box::placeholder {
+  color: #94a3b8;
+}
+
+body.light-mode .search-icon-btn {
+  color: #64748b;
+}
+
+body.light-mode .theme-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+body.light-mode .header-btn.join {
+  background: #ffffff;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+body.light-mode .header-btn.login {
+  background: #00cfe8;
+  border-color: #00cfe8;
+  color: #020617;
+}
+
+/* 자동완성 */
+body.light-mode .search-suggest-box {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+}
+
+body.light-mode .search-suggest-item {
+  color: #334155;
+}
+
+body.light-mode .search-suggest-item:hover {
+  background: #e0f7ff;
+  color: #0284c7;
+}
+
+body.light-mode .search-suggest-icon {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+body.light-mode .search-suggest-arrow {
+  color: #64748b;
+}
+
+/* Main */
+body.light-mode .hero,
+body.light-mode .card,
+body.light-mode .sentiment-compare,
+body.light-mode .viewpoint-box,
+body.light-mode .news-section {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+body.light-mode .hero h1,
+body.light-mode .section-title-wrap h2,
+body.light-mode .news-header h2,
+body.light-mode .news-card h3,
+body.light-mode .news-title,
+body.light-mode .opinion-text {
+  color: #0f172a;
+}
+
+body.light-mode .hero p,
+body.light-mode .section-desc,
+body.light-mode .news-card p,
+body.light-mode .news-quote,
+body.light-mode .gauge-label,
+body.light-mode .keyword-box-title,
+body.light-mode .view-reason {
+  color: #64748b;
+}
+
+body.light-mode .keyword-box,
+body.light-mode .opinion-card {
+  background: #f1f5f9;
+}
+
+body.light-mode .news-card,
+body.light-mode .view-card,
+body.light-mode .news-item-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+body.light-mode .view-bar-bg {
+  background: #e2e8f0;
+}
+
+body.light-mode .detail-btn,
+body.light-mode .action-btn,
+body.light-mode .news-footer-btn,
+body.light-mode .toggle-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+body.light-mode .detail-btn:hover,
+body.light-mode .action-btn:hover,
+body.light-mode .news-footer-btn:hover,
+body.light-mode .toggle-btn:hover {
+  border-color: #00cfe8;
+  color: #0284c7;
+}
+
+/* Footer */
+body.light-mode .footer {
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+
+body.light-mode .footer-link {
+  color: #475569;
+}
+
+body.light-mode .footer-link:hover {
+  color: #0284c7;
+}
+
+body.light-mode .footer-copy {
+  color: #64748b;
+}
+
+body.light-mode .footer-modal-box {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .footer-modal-content {
+  color: #334155;
+}
+
+body.light-mode .footer-modal-content h3 {
+  color: #0f172a;
+}
+
+body.light-mode .footer-logo-white {
+  background-color: #020617;
+}
 
 </style>
 </head>
@@ -597,10 +919,55 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 // 공통 UI 로드
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
+  applyThemeMode();
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
 });
+
+
+// ==============================
+// 다크모드 / 화이트모드
+// ==============================
+function applyThemeMode() {
+  const savedTheme = localStorage.getItem("theme_mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
+
+    if (themeBtn) {
+      themeBtn.innerText = "☀️";
+    }
+  } else {
+    document.body.classList.remove("light-mode");
+
+    if (themeBtn) {
+      themeBtn.innerText = "🌙";
+    }
+  }
+}
+
+function toggleThemeMode() {
+  const isLight = document.body.classList.contains("light-mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+
+  if (isLight) {
+    document.body.classList.remove("light-mode");
+    localStorage.setItem("theme_mode", "dark");
+
+    if (themeBtn) {
+      themeBtn.innerText = "🌙";
+    }
+  } else {
+    document.body.classList.add("light-mode");
+    localStorage.setItem("theme_mode", "light");
+
+    if (themeBtn) {
+      themeBtn.innerText = "☀️";
+    }
+  }
+}
 
 
 // ==============================
@@ -638,8 +1005,9 @@ function loadHeader() {
   if (!headerArea) return;
 
   if (headerArea.innerHTML.trim()) {
-    setHeaderLoginState();
-    bindCommonSearch();
+        setHeaderLoginState();
+        bindCommonSearch();
+        applyThemeMode();
     return;
   }
 
@@ -654,8 +1022,9 @@ function loadHeader() {
     .then(function (html) {
       headerArea.innerHTML = html;
 
-      setHeaderLoginState();
-      bindCommonSearch();
+        setHeaderLoginState();
+        bindCommonSearch();
+        applyThemeMode();
     })
     .catch(function (err) {
       console.error("header 로드 실패:", err);
@@ -761,6 +1130,7 @@ function bindGlobalClickEvents() {
     const joinBtn = e.target.closest("#joinBtn");
     const primaryUserBtn = e.target.closest("#primaryUserBtn");
     const logoutBtn = e.target.closest("#logoutBtn");
+    const themeToggleBtn = e.target.closest("#themeToggleBtn");
     const loginRequiredLink = e.target.closest("[data-login-page]");
 
     const heroTag = e.target.closest(".h-tag");
@@ -768,6 +1138,12 @@ function bindGlobalClickEvents() {
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
+
+    if (themeToggleBtn) {
+      e.preventDefault();
+      toggleThemeMode();
+      return;
+    }
 
     if (loginBtn) {
       e.preventDefault();
@@ -892,8 +1268,15 @@ const searchKeywordPool = [
 
 function bindCommonSearch() {
   const input = document.getElementById("commonSearchInput");
+  const searchBtn = document.getElementById("commonSearchBtn");
 
   if (!input) return;
+
+  if (searchBtn) {
+    searchBtn.addEventListener("click", function () {
+      moveSearch(input.value);
+    });
+  }
 
   input.addEventListener("input", function () {
     renderSearchSuggestions(input.value);
@@ -989,12 +1372,12 @@ function renderSearchSuggestions(keyword) {
 }
 
 function positionSearchSuggestBox() {
-  const input = document.getElementById("commonSearchInput");
+  const searchWrap = document.querySelector(".main-search-wrap");
   const suggestBox = document.getElementById("searchSuggestBox");
 
-  if (!input || !suggestBox) return;
+  if (!searchWrap || !suggestBox) return;
 
-  const rect = input.getBoundingClientRect();
+  const rect = searchWrap.getBoundingClientRect();
 
   suggestBox.style.top = `${rect.bottom + 4}px`;
   suggestBox.style.left = `${rect.left}px`;

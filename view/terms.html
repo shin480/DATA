@@ -40,7 +40,27 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
-        h1 { text-align: center; color: var(--cyan-point); font-size: 28px; font-weight: 800; margin-bottom: 0px; }
+        .logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    gap: 0;
+}
+
+.logo-img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-right: -2px;
+}
+
+.logo-text {
+    color: var(--cyan-point);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
         h2 { text-align: center; color: var(--text-sub); font-weight: bold; font-size: 16px; margin-bottom: 5px; }
 
         .terms-list { display: flex; flex-direction: column; gap: 12px; } /* 아이템 간격 축소 */
@@ -146,7 +166,7 @@
 
     <div class="container">
         <div class="logo-wrap">
-    <img src="./logo.png" alt="DATA Logo" class="logo-img">
+    <img src="img/logo.png" alt="DATA Logo" class="logo-img">
     <div class="logo-text">ATA</div>
 </div>
 

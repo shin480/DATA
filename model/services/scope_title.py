@@ -11,6 +11,8 @@ scopeTitle 생성 서비스 (Gemini)
 - _enqueue: 중복 방지 queue 등록 함수 분리
 - enqueue_missing_scope_titles: scopeTitle 없는 scope 일괄 queue 등록 복구 함수 추가
 - API 키 로테이션: 7개 키 순환 사용 (429/일일 한도 초과 시 자동 교체)
+- SDK 교체: google.generativeai(deprecated) → google.genai
+- 예외 처리 보강: 403 포함 모든 API 오류 시 키 교체 후 재시도
 """
 
 import logging
@@ -18,7 +20,8 @@ import os
 import time
 from datetime import datetime, timezone
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
@@ -30,6 +33,7 @@ NEWS_COUNT_DIRECT = 3
 INDEX_NEWS        = "news_economy"
 INDEX_SCOPES      = "news_scopes"
 INDEX_QUEUE       = "scope_refresh_queue"
+MODEL_NAME        = "gemini-2.5-flash-lite-preview-06-17"
 
 # API 키 로테이션 (7개)
 _API_KEYS = [
@@ -42,27 +46,36 @@ _API_KEYS = [
     os.getenv("GOOGLE_API_KEY_7"),
 ]
 _key_index = 0
-_model     = None
+_client    = None
 
 
-def _get_model():
-    global _model, _key_index
-    if _model is None:
+def _get_client():
+    """현재 키 인덱스로 google.genai 클라이언트 반환 (캐시)"""
+    global _client, _key_index
+    if _client is None:
         key = _API_KEYS[_key_index]
         if not key:
             raise RuntimeError(f"GOOGLE_API_KEY_{_key_index + 1} 환경변수 없음")
-        genai.configure(api_key=key)
-        _model = genai.GenerativeModel("gemini-2.5-flash-lite")
-        logger.info(f"Gemini 모델 초기화 (key index: {_key_index})")
-    return _model
+        _client = genai.Client(api_key=key)
+        logger.info(f"Gemini 클라이언트 초기화 (key index: {_key_index})")
+    return _client
 
 
 def _rotate_key():
-    """429 / 일일 한도 초과 시 다음 키로 교체"""
-    global _key_index, _model
+    """API 오류(429/403 등) 시 다음 키로 교체"""
+    global _key_index, _client
     _key_index = (_key_index + 1) % len(_API_KEYS)
-    _model     = None
+    _client    = None
     logger.warning(f"API 키 교체 → index {_key_index}")
+
+
+def _is_retryable(err_str: str) -> bool:
+    """키 교체 후 재시도할 오류인지 판단"""
+    err_lower = err_str.lower()
+    return any(code in err_str for code in ("429", "403", "500", "503")) \
+        or "quota" in err_lower \
+        or "rate" in err_lower \
+        or "limit" in err_lower
 
 
 def generate_scope_title(es, scope_id: str):
@@ -91,16 +104,27 @@ def generate_scope_title(es, scope_id: str):
         # 키 로테이션 포함 재시도 (최대 7회)
         for attempt in range(len(_API_KEYS)):
             try:
-                scope_title = _get_model().generate_content(prompt).text.strip()
+                response = _get_client().models.generate_content(
+                    model=MODEL_NAME,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        max_output_tokens=60,
+                        temperature=0.3,
+                    ),
+                )
+                scope_title = response.text.strip()
                 break
             except Exception as e:
                 err_str = str(e)
-                if "429" in err_str or "quota" in err_str.lower():
-                    logger.warning(f"Gemini 할당량 초과 (scope_id={scope_id}, attempt={attempt + 1}): 키 교체")
+                if _is_retryable(err_str):
+                    logger.warning(
+                        f"Gemini API 오류 (scope_id={scope_id}, attempt={attempt + 1}, "
+                        f"key_index={_key_index}): {err_str[:80]} → 키 교체"
+                    )
                     _rotate_key()
                     time.sleep(2)
                 else:
-                    logger.error(f"Gemini API 오류 (scope_id={scope_id}): {e}")
+                    logger.error(f"Gemini 재시도 불가 오류 (scope_id={scope_id}): {e}")
                     return None
         else:
             logger.error(f"모든 API 키 소진 (scope_id={scope_id})")
