@@ -410,34 +410,6 @@
       font-weight: 900;
       cursor: pointer;
     }
-.more-wrap {
-  display: flex;
-  justify-content: center;
-  margin-top: 28px;
-}
-
-.more-btn {
-  min-width: 120px;
-  height: 42px;
-  border: 1px solid #334155;
-  border-radius: 999px;
-  background: #0f172a;
-  color: #cbd5e1;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.more-btn:hover {
-  border-color: #00e5ff;
-  color: #00e5ff;
-  background: #111827;
-}
-
-.more-btn.hidden {
-  display: none;
-}
 .search-suggest-item {
   width: 100%;
   border: 0;
@@ -572,12 +544,6 @@
       <div class="article-count" id="articleCount">(0건)</div>
 
       <section class="article-list" id="articleList"></section>
-
-        <div class="more-wrap">
-        <button class="more-btn" id="moreBtn" type="button" onclick="loadMoreArticles()">
-    더보기
-  </button>
-</div>
     </div>
   </main>
 
@@ -616,6 +582,22 @@
 </div>
 
 <script>
+  function goLoginRequiredPage(targetUrl) {
+  const token =
+    sessionStorage.getItem("access_token") ||
+    localStorage.getItem("access_token") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("token");
+
+  if (!token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.href = "/view/login.html";
+    return;
+  }
+
+  location.href = targetUrl;
+}
+  
   // ==============================
 // 검색어 자동완성
 // ==============================
@@ -772,68 +754,22 @@ function moveSearch(keyword) {
   goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
 }
 
-  const articles = [
-    {
-      source: "경제신문 A",
-      title: "한은, 금리 전격 인하... “내수 회복에 총력”",
-      summary: "한국은행이 기준금리를 인하하며 경기 부양 의지를 드러냈습니다. 시장은 즉각 반응하는 분위기며...",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
-    },
-    {
-      source: "시사저널 B",
-      title: "금리 내렸지만 대출 규제는 강화... 실효성 논란",
-      summary: "금리 인하의 효과가 가계대출 억제책과 충돌하며 서민들이 체감하는 효과는 미비할 것이라는 분석입니다.",
-      url: "#"
+  let articles = [];
+
+  async function fetchArticles() {
+    try {
+      const res = await axios.get("/api/articles");
+
+      articles = res.data.articles || [];
+      visibleArticleCount = 5;
+
+      renderArticles();
+
+    } catch (error) {
+      console.error("기사 목록 불러오기 실패:", error);
+      alert("기사 목록을 불러오지 못했습니다.");
     }
-  ];
+  }
 
 let visibleArticleCount = 5;
 const articleStep = 5;
@@ -841,7 +777,6 @@ const articleStep = 5;
 function renderArticles() {
   const articleList = document.getElementById("articleList");
   const articleCount = document.getElementById("articleCount");
-  const moreBtn = document.getElementById("moreBtn");
 
   articleCount.innerText = `(${articles.length}건)`;
 
@@ -856,18 +791,16 @@ function renderArticles() {
           <p class="article-summary">${item.summary}</p>
         </div>
 
-        <button class="origin-btn" type="button" onclick="openOriginal('${item.url}')">
+        <button
+          class="origin-btn"
+          type="button"
+          onclick="openArticleDetail('${item.article_id}')"
+        >
           원문 보기
         </button>
       </article>
     `;
   }).join("");
-
-  if (visibleArticleCount >= articles.length) {
-    moreBtn.classList.add("hidden");
-  } else {
-    moreBtn.classList.remove("hidden");
-  }
 }
 
 function loadMoreArticles() {
@@ -875,13 +808,13 @@ function loadMoreArticles() {
   renderArticles();
 }
 
-  function openOriginal(url) {
-    if (!url || url === "#") {
-      alert("원문 링크는 서버 연결 후 적용됩니다.");
+  function openArticleDetail(articleId) {
+    if (!articleId) {
+      alert("기사 ID가 없습니다.");
       return;
     }
 
-    window.open(url, "_blank");
+    location.href = `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
   }
 
   function logout() {
@@ -930,8 +863,44 @@ function loadMoreArticles() {
     modal.classList.add("hidden");
   };
 
-  renderArticles();
+  fetchArticles();
   bindCommonSearch();
+
+  let isAutoLoading = false;
+
+window.addEventListener("scroll", function () {
+
+  if (isAutoLoading) return;
+
+  const scrollTop =
+    window.scrollY;
+
+  const windowHeight =
+    window.innerHeight;
+
+  const documentHeight =
+    document.documentElement.scrollHeight;
+
+  const scrollPercent =
+    (scrollTop + windowHeight) / documentHeight;
+
+  // 90% 내려오면 실행
+  if (scrollPercent >= 0.9) {
+
+    // 이미 다 불러왔으면 종료
+    if (visibleArticleCount >= articles.length) {
+      return;
+    }
+
+    isAutoLoading = true;
+
+    loadMoreArticles();
+
+    setTimeout(function () {
+      isAutoLoading = false;
+    }, 200);
+  }
+});
 </script>
 </body>
 </html>
