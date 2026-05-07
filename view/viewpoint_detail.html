@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>관점 상세 | DATA 다타</title>
+<link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
 <style>
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
@@ -14,103 +15,274 @@
   box-sizing: border-box;
 }
 
+.hidden {
+  display: none !important;
+}
+
 body {
   background: #030817;
   color: #f8fafc;
   font-family: "Pretendard", sans-serif;
 }
 
-/* HEADER */
-
-.header {
-  height: 76px;
-  padding: 0 40px;
-  background: #060b1a;
-  border-bottom: 1px solid #111827;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.app {
+  min-height: 100vh;
+  background: #030817;
 }
 
-.header-left {
+/* ==============================
+   HEADER
+============================== */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: none;
+  z-index: 10000;
+
+  width: 100%;
+  height: 72px;
+  padding: 0 56px;
+
   display: flex;
   align-items: center;
-  gap: 48px;
+
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
 }
 
 .logo {
+  width: 155px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  overflow: hidden;
   cursor: pointer;
 }
 
-.logo-small {
-  font-size: 10px;
-  color: #64748b;
-}
-
-.logo-main {
-  color: #15d4ff;
-  font-size: 26px;
-  font-weight: 900;
+.header-logo-full {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .nav {
   display: flex;
-  gap: 34px;
+  align-items: center;
+  gap: 30px;
+  margin-left: 22px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .nav a {
-  color: #818ca3;
   text-decoration: none;
-  font-weight: 700;
+  color: inherit;
+  transition: color 0.2s;
 }
 
 .nav a:hover {
-  color: #15d4ff;
+  color: #00e5ff;
 }
 
 .header-right {
+  margin-left: auto;
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 12px;
 }
 
-.search {
-  width: 260px;
-  height: 30px;
-  padding: 0 14px;
+.main-search-wrap {
+  position: relative;
+  width: 410px;
+  height: 40px;
   border-radius: 999px;
-  border: 1px solid #1f2a3d;
-  background: #070d1e;
-  color: #94a3b8;
+  background: #070b1a;
+  border: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 20px;
 }
 
-.mypage-btn {
-  height: 30px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 6px;
-  background: #13c8e8;
-  color: #03111d;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.logout-btn {
-  height: 30px;
-  padding: 0 14px;
-  border-radius: 6px;
-  border: 1px solid #334155;
+.search-box {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
   background: transparent;
   color: #cbd5e1;
+  font-size: 15px;
+  padding: 0;
+}
+
+.search-box::placeholder {
+  color: #7c8493;
+}
+
+.main-search-wrap:focus-within {
+  border-color: #334155;
+}
+
+.search-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #8b95a7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.search-icon-btn:hover {
+  color: #00e5ff;
+}
+
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #070b1a;
+  color: #facc15;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-btn:hover {
+  border-color: #334155;
+}
+
+.header-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
   cursor: pointer;
 }
 
-/* PAGE */
+.header-btn.login {
+  border: 1px solid #00cfe8;
+  background: #00cfe8;
+  color: #020617;
+}
+
+.header-btn.login:hover {
+  filter: brightness(1.08);
+}
+
+.header-btn.join {
+  border: 1px solid #475569;
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.header-btn.join:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+/* ==============================
+   Search Suggest
+============================== */
+
+.search-suggest-box {
+  position: fixed;
+  width: 410px;
+  max-width: 80vw;
+  padding: 10px 0 12px;
+  border: 1px solid #1e293b;
+  border-radius: 18px;
+  background: #050b1c;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  z-index: 20000;
+  overflow: hidden;
+}
+
+.search-suggest-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-suggest-item {
+  width: 100%;
+  height: 38px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  text-align: left;
+}
+
+.search-suggest-item:hover {
+  background: rgba(56, 189, 248, 0.1);
+  color: #ffffff;
+}
+
+.search-suggest-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.search-suggest-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #94a3b8;
+  color: #020817;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.search-suggest-keyword {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggest-arrow {
+  color: #94a3b8;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.search-highlight {
+  color: #00e5ff;
+  font-weight: 900;
+}
+
+/* ==============================
+   PAGE
+============================== */
 
 .detail-page {
   width: 800px;
-  margin: 48px auto 120px;
-  padding-top: 130px !important;
+  margin: 0 auto 120px;
+  padding-top: 120px;
 }
 
 .back-btn {
@@ -119,6 +291,10 @@ body {
   color: #38bdf8;
   font-size: 12px;
   cursor: pointer;
+}
+
+.back-btn:hover {
+  color: #00e5ff;
 }
 
 .title-section {
@@ -161,7 +337,9 @@ body {
   font-size: 12px;
 }
 
-/* COMMON PANEL */
+/* ==============================
+   COMMON PANEL
+============================== */
 
 .panel {
   background: #111a2d;
@@ -183,7 +361,9 @@ body {
   margin-top: 36px;
 }
 
-/* ANALYSIS */
+/* ==============================
+   ANALYSIS
+============================== */
 
 .analysis-box {
   height: 142px;
@@ -219,7 +399,9 @@ body {
   line-height: 1.5;
 }
 
-/* SENTIMENT */
+/* ==============================
+   SENTIMENT
+============================== */
 
 .sentiment-bar {
   height: 11px;
@@ -282,14 +464,6 @@ body {
   font-weight: 500;
 }
 
-.sentiment-labels p {
-  margin-top: 8px;
-  color: #94a3b8;
-  text-decoration: underline;
-}
-
-/* count button */
-
 .count-link {
   margin-top: 8px;
   border: none;
@@ -304,7 +478,9 @@ body {
   color: #38bdf8;
 }
 
-/* KEYWORDS */
+/* ==============================
+   KEYWORDS
+============================== */
 
 .keyword-panel {
   margin-top: 20px;
@@ -324,7 +500,9 @@ body {
   font-weight: 800;
 }
 
-/* ARTICLES */
+/* ==============================
+   ARTICLES
+============================== */
 
 .article-panel {
   margin-top: 22px;
@@ -391,7 +569,9 @@ body {
   color: #94a3b8;
 }
 
-/* COMPARE */
+/* ==============================
+   COMPARE
+============================== */
 
 .compare-panel {
   margin-top: 24px;
@@ -444,9 +624,283 @@ body {
   background: #2dd4bf;
 }
 
-/* RESPONSIVE */
+/* ==============================
+   FOOTER
+============================== */
+
+.footer {
+  border-top: 1px solid #111827;
+  background: #070b1a;
+  padding: 24px 0;
+  margin-top: 60px;
+}
+
+.footer-inner {
+  width: 1440px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.footer-logo-white {
+  width: 34px;
+  height: 34px;
+  background-color: #ffffff;
+
+  -webkit-mask-image: url("/view/img/data_favicon.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/view/img/data_favicon.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  flex-shrink: 0;
+}
+
+.footer-link {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.footer-link:hover {
+  color: #00e5ff;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 12px;
+  background: #334155;
+}
+
+.footer-copy {
+  margin: 0;
+  color: #64748b;
+}
+
+.footer-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 23, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30000;
+}
+
+.footer-modal-box {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.footer-modal-content {
+  color: #cbd5e1;
+  line-height: 1.8;
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.footer-modal-content h3 {
+  margin: 0 0 16px;
+  color: #f8fafc;
+}
+
+.footer-modal-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #00e5ff;
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ==============================
+   LIGHT MODE
+============================== */
+
+body.light-mode {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+body.light-mode .app {
+  background: #f8fafc;
+}
+
+body.light-mode .header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.light-mode .nav {
+  color: #64748b;
+}
+
+body.light-mode .nav a:hover {
+  color: #0284c7;
+}
+
+body.light-mode .main-search-wrap {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .search-box {
+  color: #0f172a;
+}
+
+body.light-mode .search-box::placeholder {
+  color: #94a3b8;
+}
+
+body.light-mode .search-icon-btn {
+  color: #64748b;
+}
+
+body.light-mode .theme-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+body.light-mode .header-btn.join {
+  background: #ffffff;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+body.light-mode .header-btn.login {
+  background: #00cfe8;
+  border-color: #00cfe8;
+  color: #020617;
+}
+
+body.light-mode .detail-page {
+  color: #0f172a;
+}
+
+body.light-mode .panel,
+body.light-mode .compare-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .compare-card.active,
+body.light-mode .analysis-box {
+  background: #ecfeff;
+  border-color: #5eead4;
+}
+
+body.light-mode .title-section h1,
+body.light-mode .article-title,
+body.light-mode .compare-title,
+body.light-mode .press {
+  color: #0f172a;
+}
+
+body.light-mode .analysis-box p,
+body.light-mode .title-section p,
+body.light-mode .date,
+body.light-mode .article-date,
+body.light-mode .count-link {
+  color: #64748b;
+}
+
+body.light-mode .article-row {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.light-mode .search-suggest-box {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+}
+
+body.light-mode .search-suggest-item {
+  color: #334155;
+}
+
+body.light-mode .search-suggest-item:hover {
+  background: #e0f7ff;
+  color: #0284c7;
+}
+
+body.light-mode .search-suggest-icon {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+body.light-mode .search-suggest-arrow {
+  color: #64748b;
+}
+
+body.light-mode .footer {
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+
+body.light-mode .footer-logo-white {
+  background-color: #020617;
+}
+
+body.light-mode .footer-link {
+  color: #475569;
+}
+
+body.light-mode .footer-link:hover {
+  color: #0284c7;
+}
+
+body.light-mode .footer-copy {
+  color: #64748b;
+}
+
+body.light-mode .footer-modal-box {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .footer-modal-content {
+  color: #334155;
+}
+
+body.light-mode .footer-modal-content h3 {
+  color: #0f172a;
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
 
 @media (max-width: 900px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .main-search-wrap {
+    width: 260px;
+  }
+
   .detail-page {
     width: calc(100% - 32px);
   }
@@ -461,29 +915,23 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .header {
-    height: auto;
-    padding: 18px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .header-left,
-  .header-right {
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .nav {
-    gap: 18px;
+  .footer-inner {
+    padding: 0 24px;
     flex-wrap: wrap;
   }
+}
 
-  .search {
-    width: 100%;
+@media (max-width: 640px) {
+  .search-suggest-box {
+    left: 18px !important;
+    right: 18px !important;
+    width: auto !important;
+    max-width: none;
+  }
+
+  .sentiment-labels {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 }
 </style>
@@ -492,30 +940,11 @@ body {
 <body>
 <div class="app">
 
-  <header class="header">
-    <div class="header-left">
-      <div class="logo" onclick="location.href='/view/index.html'">
-        <div class="logo-small">뉴스를 이해하는 방식</div>
-        <div class="logo-main">DATA 다타</div>
-      </div>
-
-      <nav class="nav">
-        <a href="/view/index.html">뉴스흐름</a>
-        <a href="#">키워드</a>
-        <a href="/view/article_list.html">뉴스</a>
-      </nav>
-    </div>
-
-    <div class="header-right">
-      <input class="search" placeholder="예: 금리, 취업, 전세, 반도체">
-      <button class="mypage-btn">마이페이지</button>
-      <button class="logout-btn">로그아웃</button>
-    </div>
-  </header>
+  <div id="header"></div>
 
   <main class="detail-page">
 
-    <button class="back-btn" onclick="location.href='/view/index.html'">
+    <button class="back-btn" onclick="location.href='/view/main.html'">
       ← 메인으로 돌아가기
     </button>
 
@@ -525,12 +954,12 @@ body {
       <div>
         <h1>
           <span id="viewTitle">정부 관점</span>
-          <strong id="viewPercent">24%</strong>
+          <strong id="viewPercent">%</strong>
         </h1>
         <p>전체 기사 중 비율</p>
       </div>
 
-      <div class="date">기준일 2026.04.27</div>
+      <div class="date">기준일 </div>
     </section>
 
     <section class="top-grid">
@@ -540,8 +969,8 @@ body {
         <div class="analysis-box">
           <div class="check-icon">✓</div>
           <div>
-            <h3>정책 안정 중심 해석</h3>
-            <p>금리 정책을 통한 물가 안정과<br>금융시장 안정에 초점</p>
+            <h3></h3>
+            <p><br></p>
           </div>
         </div>
       </div>
@@ -558,20 +987,20 @@ body {
         <div class="sentiment-labels">
           <div>
             <span class="tag positive-tag">긍정</span>
-            <strong>40%</strong>
-            <button class="count-link" onclick="goArticleList('positive')">(24건)</button>
+            <strong>%</strong>
+            <button class="count-link" onclick="goArticleList('positive')">(건)</button>
           </div>
 
           <div>
             <span class="tag neutral-tag">중립</span>
-            <strong>40%</strong>
-            <button class="count-link" onclick="goArticleList('neutral')">(24건)</button>
+            <strong>%</strong>
+            <button class="count-link" onclick="goArticleList('neutral')">(건)</button>
           </div>
 
           <div>
             <span class="tag negative-tag">부정</span>
-            <strong>20%</strong>
-            <button class="count-link" onclick="goArticleList('negative')">(12건)</button>
+            <strong>%</strong>
+            <button class="count-link" onclick="goArticleList('negative')">(건)</button>
           </div>
         </div>
       </div>
@@ -581,14 +1010,14 @@ body {
       <h2>주요 키워드</h2>
 
       <div class="keywords">
-        <span>기준금리</span>
-        <span>대출</span>
-        <span>물가</span>
-        <span>환율</span>
-        <span>소비</span>
-        <span>주식시장</span>
-        <span>금융시장</span>
-        <span>경기</span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
     </section>
 
@@ -597,43 +1026,43 @@ body {
 
       <div class="article_list">
         <div class="article-row">
-          <div class="press-logo blue">한국<br>경제</div>
-          <div class="press">한국경제</div>
-          <div class="article-title">금리 인상, 물가 안정 효과 기대</div>
-          <span class="article-tag positive-tag">긍정</span>
-          <div class="article-date">2026.04.27</div>
+          <div class="press-logo blue"></div>
+          <div class="press"></div>
+          <div class="article-title"></div>
+          <span class="article-tag positive-tag"></span>
+          <div class="article-date"></div>
         </div>
 
         <div class="article-row">
-          <div class="press-logo sky">연합<br>뉴스</div>
-          <div class="press">연합뉴스</div>
-          <div class="article-title">한은 총재 “금리 인상 불가피... 중장기적 안정이 우선”</div>
-          <span class="article-tag neutral-tag">중립</span>
-          <div class="article-date">2026.04.27</div>
+          <div class="press-logo sky"></div>
+          <div class="press"></div>
+          <div class="article-title"></div>
+          <span class="article-tag neutral-tag"></span>
+          <div class="article-date"></div>
         </div>
 
         <div class="article-row">
-          <div class="press-logo white">매일<br>경제</div>
-          <div class="press">매일경제</div>
-          <div class="article-title">정부 “물가 안정 없이는 민생 회복 어렵다... 통화정책 공조”</div>
-          <span class="article-tag positive-tag">긍정</span>
-          <div class="article-date">2026.04.26</div>
+          <div class="press-logo white"></div>
+          <div class="press"></div>
+          <div class="article-title"></div>
+          <span class="article-tag positive-tag"></span>
+          <div class="article-date"></div>
         </div>
 
         <div class="article-row">
-          <div class="press-logo red">C</div>
-          <div class="press">조선일보</div>
-          <div class="article-title">경기 둔화 우려도... “금리 인상 장기화 땐 성장 제약”</div>
-          <span class="article-tag negative-tag">부정</span>
-          <div class="article-date">2026.04.25</div>
+          <div class="press-logo red"></div>
+          <div class="press"></div>
+          <div class="article-title"></div>
+          <span class="article-tag negative-tag"></span>
+          <div class="article-date"></div>
         </div>
 
         <div class="article-row">
-          <div class="press-logo green">◎</div>
-          <div class="press">동아일보</div>
-          <div class="article-title">금융당국 “가계부채 관리 여전히 중요... 금리 정책 지지”</div>
-          <span class="article-tag neutral-tag">중립</span>
-          <div class="article-date">2026.04.21</div>
+          <div class="press-logo green"></div>
+          <div class="press"></div>
+          <div class="article-title"></div>
+          <span class="article-tag neutral-tag"></span>
+          <div class="article-date"></div>
         </div>
       </div>
     </section>
@@ -650,7 +1079,408 @@ body {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="/js/common.js?v=3"></script>
+
+<script>
+function getLoginInfo() {
+  return {
+    token:
+      sessionStorage.getItem("access_token") ||
+      localStorage.getItem("access_token") ||
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token"),
+
+    role:
+      sessionStorage.getItem("user_role") ||
+      localStorage.getItem("user_role") ||
+      sessionStorage.getItem("role") ||
+      localStorage.getItem("role")
+  };
+}
+
+function loadHeader() {
+  const headerArea = document.getElementById("header");
+
+  if (!headerArea) return;
+
+  fetch("/view/header.html?v=999")
+    .then(function (res) {
+      if (!res.ok) throw new Error("header.html 경로 오류");
+      return res.text();
+    })
+    .then(function (html) {
+      headerArea.innerHTML = html;
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
+    })
+    .catch(function (err) {
+      console.error("header 로드 실패:", err);
+    });
+}
+
+function loadFooter() {
+  const footerArea = document.getElementById("footer");
+
+  if (!footerArea) return;
+
+  fetch("/view/footer.html?v=999")
+    .then(function (res) {
+      if (!res.ok) throw new Error("footer.html 경로 오류");
+      return res.text();
+    })
+    .then(function (html) {
+      footerArea.innerHTML = html;
+    })
+    .catch(function (err) {
+      console.error("footer 로드 실패:", err);
+    });
+}
+
+window.openFooterTermsModal = function () {
+  const modal = document.getElementById("footerModal");
+  const content = document.getElementById("footerModalContent");
+
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <h3>이용약관</h3>
+    <p>DATA 다타는 뉴스 데이터를 기반으로 키워드, 감성, 관점 분석 정보를 제공하는 서비스입니다.</p>
+    <p>이용자는 서비스를 부정한 목적으로 이용할 수 없으며, 제공되는 정보는 참고용으로 활용해야 합니다.</p>
+    <p>서비스에서 제공되는 분석 결과는 참고용 정보이며, 투자·정책·법률 판단의 최종 근거로 사용해서는 안 됩니다.</p>
+  `;
+
+  modal.classList.remove("hidden");
+};
+
+window.openFooterPrivacyModal = function () {
+  const modal = document.getElementById("footerModal");
+  const content = document.getElementById("footerModalContent");
+
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <h3>개인정보처리방침</h3>
+    <p>DATA 다타는 회원가입 및 서비스 제공을 위해 이메일, 비밀번호, 이름, 생년월일, 성별 등의 개인정보를 수집할 수 있습니다.</p>
+    <p>수집된 개인정보는 회원 식별, 서비스 제공, 이용 기록 관리, 사용자 맞춤형 서비스 제공 목적 외에는 사용하지 않습니다.</p>
+    <p>개인정보 관련 문의: data260417@gmail.com</p>
+  `;
+
+  modal.classList.remove("hidden");
+};
+
+window.closeFooterModal = function () {
+  const modal = document.getElementById("footerModal");
+
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+};
+
+function setHeaderLoginState() {
+  const loginBtn = document.getElementById("loginBtn");
+  const joinBtn = document.getElementById("joinBtn");
+  const primaryUserBtn = document.getElementById("primaryUserBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  const loginInfo = getLoginInfo();
+
+  if (!loginInfo.token) {
+    if (loginBtn) loginBtn.classList.remove("hidden");
+    if (joinBtn) joinBtn.classList.remove("hidden");
+    if (primaryUserBtn) primaryUserBtn.classList.add("hidden");
+    if (logoutBtn) logoutBtn.classList.add("hidden");
+    return;
+  }
+
+  if (loginBtn) loginBtn.classList.add("hidden");
+  if (joinBtn) joinBtn.classList.add("hidden");
+  if (primaryUserBtn) primaryUserBtn.classList.remove("hidden");
+  if (logoutBtn) logoutBtn.classList.remove("hidden");
+
+  const isAdmin =
+    loginInfo.role === "ADMIN" ||
+    loginInfo.role === "SUPERADMIN" ||
+    loginInfo.role === "admin" ||
+    loginInfo.role === "superadmin" ||
+    loginInfo.token === "admin-test-token";
+
+  if (primaryUserBtn) {
+    primaryUserBtn.innerText = isAdmin ? "관리자 페이지" : "마이페이지";
+  }
+}
+
+function applyThemeMode() {
+  const savedTheme = localStorage.getItem("theme_mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
+    if (themeBtn) themeBtn.innerText = "☀️";
+  } else {
+    document.body.classList.remove("light-mode");
+    if (themeBtn) themeBtn.innerText = "🌙";
+  }
+}
+
+function toggleThemeMode() {
+  const isLight = document.body.classList.contains("light-mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+
+  if (isLight) {
+    document.body.classList.remove("light-mode");
+    localStorage.setItem("theme_mode", "dark");
+    if (themeBtn) themeBtn.innerText = "🌙";
+  } else {
+    document.body.classList.add("light-mode");
+    localStorage.setItem("theme_mode", "light");
+    if (themeBtn) themeBtn.innerText = "☀️";
+  }
+}
+
+function bindCommonSearch() {
+  const input = document.getElementById("commonSearchInput");
+  const searchBtn = document.getElementById("commonSearchBtn");
+
+  if (!input) return;
+
+  if (searchBtn) {
+    searchBtn.addEventListener("click", function () {
+      moveSearch(input.value);
+    });
+  }
+
+  input.addEventListener("input", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("focus", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      moveSearch(input.value);
+    }
+
+    if (e.key === "Escape") {
+      hideSearchSuggestions();
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    const searchWrap = document.querySelector(".main-search-wrap");
+
+    if (!searchWrap) return;
+
+    if (!searchWrap.contains(e.target)) {
+      hideSearchSuggestions();
+    }
+  });
+
+  window.addEventListener("resize", positionSearchSuggestBox);
+  window.addEventListener("scroll", positionSearchSuggestBox);
+}
+
+function highlightKeyword(text, keyword) {
+  if (!keyword) return text;
+
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedKeyword})`, "gi");
+
+  return text.replace(regex, `<span class="search-highlight">$1</span>`);
+}
+
+async function renderSearchSuggestions(keyword) {
+  const list = document.getElementById("searchSuggestList");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!list || !suggestBox) return;
+
+  const value = keyword.trim();
+
+  if (!value) {
+    hideSearchSuggestions();
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `/api/search/suggest?q=${encodeURIComponent(value)}`
+    );
+
+    const results = res.data || [];
+
+    if (results.length === 0) {
+      hideSearchSuggestions();
+      return;
+    }
+
+    list.innerHTML = results.map(function (item) {
+      return `
+        <button
+          class="search-suggest-item"
+          type="button"
+          data-suggest-keyword="${item}"
+        >
+          <span class="search-suggest-left">
+            <span class="search-suggest-icon">⌕</span>
+            <span class="search-suggest-keyword">${highlightKeyword(item, value)}</span>
+          </span>
+
+          <span class="search-suggest-arrow">↖</span>
+        </button>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        selectSearchSuggestion(btn.dataset.suggestKeyword);
+      });
+    });
+
+    positionSearchSuggestBox();
+    suggestBox.classList.remove("hidden");
+
+  } catch (error) {
+    console.error("검색 자동완성 실패:", error);
+    hideSearchSuggestions();
+  }
+}
+
+function positionSearchSuggestBox() {
+  const searchWrap = document.querySelector(".main-search-wrap");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!searchWrap || !suggestBox) return;
+
+  const rect = searchWrap.getBoundingClientRect();
+
+  suggestBox.style.top = `${rect.bottom + 4}px`;
+  suggestBox.style.left = `${rect.left}px`;
+  suggestBox.style.width = `${rect.width}px`;
+}
+
+function hideSearchSuggestions() {
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!suggestBox) return;
+
+  suggestBox.classList.add("hidden");
+}
+
+function selectSearchSuggestion(keyword) {
+  const input = document.getElementById("commonSearchInput");
+
+  if (input) {
+    input.value = keyword;
+  }
+
+  hideSearchSuggestions();
+
+  location.href = `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`;
+}
+
+function moveSearch(keyword) {
+  const value = keyword.trim();
+
+  if (!value) return;
+
+  hideSearchSuggestions();
+
+  location.href = `/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`;
+}
+
+function goArticleList(sentiment) {
+  localStorage.setItem("article_list_sentiment", sentiment);
+  localStorage.setItem("article_list_viewpoint", viewTitle);
+
+  location.href = "/view/article_list.html";
+}
+
+document.addEventListener("click", function (e) {
+  const loginBtn = e.target.closest("#loginBtn");
+  const joinBtn = e.target.closest("#joinBtn");
+  const loginRequiredLink = e.target.closest("[data-login-page]");
+  const primaryUserBtn = e.target.closest("#primaryUserBtn");
+  const logoutBtn = e.target.closest("#logoutBtn");
+  const themeToggleBtn = e.target.closest("#themeToggleBtn");
+
+  if (themeToggleBtn) {
+    e.preventDefault();
+    toggleThemeMode();
+    return;
+  }
+
+  if (loginBtn) {
+    e.preventDefault();
+    location.href = "/view/login.html";
+    return;
+  }
+
+  if (joinBtn) {
+    e.preventDefault();
+    location.href = "/view/terms.html";
+    return;
+  }
+
+  if (primaryUserBtn) {
+    e.preventDefault();
+
+    const loginInfo = getLoginInfo();
+    const isAdmin =
+      loginInfo.role === "ADMIN" ||
+      loginInfo.role === "SUPERADMIN" ||
+      loginInfo.role === "admin" ||
+      loginInfo.role === "superadmin" ||
+      loginInfo.token === "admin-test-token";
+
+    location.href = isAdmin ? "/view/admin_dashboard.html" : "/view/mypage_home.html";
+    return;
+  }
+
+  if (logoutBtn) {
+    e.preventDefault();
+
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user_name");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
+
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("user_name");
+    sessionStorage.removeItem("user_role");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("userName");
+
+    location.href = "/view/main.html";
+    return;
+  }
+
+  if (loginRequiredLink) {
+    e.preventDefault();
+
+    const targetUrl = loginRequiredLink.dataset.loginPage;
+    const loginInfo = getLoginInfo();
+
+    if (!loginInfo.token) {
+      alert("로그인이 필요한 서비스입니다.");
+      location.href = "/view/login.html";
+      return;
+    }
+
+    location.href = targetUrl;
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  applyThemeMode();
+  loadHeader();
+  loadFooter();
+});
+</script>
 
 <script>
 const viewTitle = localStorage.getItem("viewpoint_title") || "정부 관점";
@@ -679,7 +1509,7 @@ const compareGrid = document.getElementById("compareGrid");
 
 if (compareGrid) {
   compareGrid.innerHTML = compareData.map(item => `
-    <div class="compare-card">
+    <div class="compare-card ${item.title === viewTitle ? "active" : ""}">
       <div class="compare-title">${item.title}</div>
       <div class="compare-percent">${item.percent}%</div>
       <div class="compare-bar">
@@ -687,13 +1517,6 @@ if (compareGrid) {
       </div>
     </div>
   `).join("");
-}
-
-function goArticleList(sentiment) {
-  localStorage.setItem("article_list_sentiment", sentiment);
-  localStorage.setItem("article_list_viewpoint", viewTitle);
-
-  location.href = "/view/article_list.html";
 }
 </script>
 </body>
