@@ -18,7 +18,7 @@ from viewpoint_classify.viewpoint_classify import update_perspective_to_es
 from regist.emailvalidation import check_email_duplicate, send_cert_email, verify_certification_number
 from regist.regist import regist_user
 
-from login.login import login_user
+from login.login import login_user,logout_user
 
 from forgotPassword.temppassword import send_temporary_password
 
@@ -101,9 +101,15 @@ def login(info: Dict[str,Any], req: Request):
     result = login_user(info, req)
     return result
 
+@app.post("/logout")
+def logout(req: Request):
+    print(f"로그아웃: {req.get('user_id')}")
+    result = logout_user(req)
+    return result
+
 @app.post("/find_password")
 def find_password(info: Dict[str,Any], req: Request):
-    result = send_temporary_password(info["email"])
+    result = send_temporary_password(info["email"], req)
     return result
 
 @app.post("/update_password")
