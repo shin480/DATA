@@ -1325,17 +1325,43 @@ window.closeFooterModal = function () {
 // ==============================
 // 임시 데이터
 // ==============================
-const newsDetail = {
-  title: '',
+let newsDetail = {
+  title: "",
   date: "",
   press: "",
   reporter: "",
-  content:
-    "",
+  content: "",
   sourceUrl: "",
-  likeCount: "",
-  dislikeCount: ""
+  likeCount: 0,
+  dislikeCount: 0
 };
+
+function getArticleIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("article_id");
+}
+
+async function fetchArticleDetail() {
+  const articleId = getArticleIdFromUrl();
+
+  if (!articleId) {
+    alert("기사 ID가 없습니다.");
+    history.back();
+    return;
+  }
+
+  try {
+    const res = await axios.get(`/api/articles/${encodeURIComponent(articleId)}`);
+
+    newsDetail = res.data;
+
+    loadNewsDetail();
+
+  } catch (error) {
+    console.error("기사 상세 불러오기 실패:", error);
+    alert("기사 상세 정보를 불러오지 못했습니다.");
+  }
+}
 
 const deepNews = [
   {
@@ -1449,7 +1475,7 @@ window.selectVote = selectVote;
 // 최초 실행
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
-  loadNewsDetail();
+  fetchArticleDetail();
   loadDeepNews();
 });
 </script>

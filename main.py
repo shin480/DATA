@@ -416,3 +416,28 @@ def search_suggest(q: str):
             break
 
     return suggestions[:6]
+
+@app.get("/api/articles/{article_id}")
+def get_article_detail(article_id: str):
+    es = get_es()
+
+    result = es.get(
+        index=NEWS_ECONOMY_INDEX,
+        id=article_id
+    )
+
+    source = result["_source"]
+
+    return {
+        "article_id": source.get("article_id", ""),
+        "title": source.get("title", ""),
+        "date": source.get("published_at", ""),
+        "press": source.get("press", ""),
+        "reporter": source.get("author", "기자 정보 없음"),
+        "content": source.get("content") or source.get("clean_text", ""),
+        "summary": source.get("summary", ""),
+        "sourceUrl": source.get("url", ""),
+        "sentiment": source.get("sentiment", ""),
+        "likeCount": 0,
+        "dislikeCount": 0
+    }
