@@ -395,17 +395,16 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 }
 
 .back-btn {
-  margin-bottom: 28px;
-  border: 0;
-  background: transparent;
-  color: #7e95ba;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
+      display: inline-block;
+      margin-bottom: 26px;
+      color: #3b82a0;
+      font-size: 11px;
+      font-weight: 800;
+      text-decoration: none;
 }
 
 .back-btn:hover {
-  color: #22d3ee;
+      color: #00e5ff;
 }
 
 .article-category {
@@ -752,9 +751,9 @@ body.light-mode .deep-tag.neutral {
 </header></div>
 <main class="article-detail-page">
 <div class="article-detail-wrap">
-<button class="back-btn" onclick="history.back()" type="button">
-        ← 이전 페이지로
-      </button>
+  <main class="article-page">
+    <div class="article-wrap">
+      <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 <div class="article-category">ECONOMIC NEWS</div>
 <h1 class="article-detail-title" id="newsTitle"></h1>
 <div class="article-meta">

@@ -286,15 +286,16 @@ body {
 }
 
 .back-btn {
-  border: none;
-  background: transparent;
-  color: #38bdf8;
-  font-size: 12px;
-  cursor: pointer;
+      display: inline-block;
+      margin-bottom: 26px;
+      color: #3b82a0;
+      font-size: 11px;
+      font-weight: 800;
+      text-decoration: none;
 }
 
 .back-btn:hover {
-  color: #00e5ff;
+      color: #00e5ff;
 }
 
 .title-section {
@@ -944,9 +945,9 @@ body.light-mode .footer-modal-content h3 {
 
   <main class="detail-page">
 
-    <button class="back-btn" onclick="location.href='/view/main.html'">
-      ← 메인으로 돌아가기
-    </button>
+  <main class="article-page">
+    <div class="article-wrap">
+      <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
     <section class="title-section">
       <div class="main-icon">🏛</div>
