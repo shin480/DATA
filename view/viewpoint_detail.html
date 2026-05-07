@@ -1,1772 +1,700 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>관점 상세보기 | DATA 다타</title>
-    <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관점 상세 | DATA 다타</title>
+
 <style>
-/* ===== common.css ===== */
-/* ==============================
-   Common Utility Only
-   메인 디자인 건드리지 않음
-============================== */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 
-.hidden {
-  display: none !important;
-}
-
-
-/* ==============================
-   Search Suggest Dropdown
-   헤더 디자인은 main.css 기준
-============================== */
-
-.main-search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-suggest-box {
-  position: fixed;
-  width: 410px;
-  max-width: 80vw;
-  padding: 10px 0 12px;
-  border: 1px solid #1e293b;
-  border-radius: 18px;
-  background: #050b1c;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-  z-index: 20000;
-  overflow: hidden;
-}
-
-.search-suggest-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.search-suggest-item {
-  width: 100%;
-  height: 38px;
-  padding: 0 16px;
-  border: 0;
-  background: transparent;
-  color: #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-  font-size: 15px;
-  text-align: left;
-}
-
-.search-suggest-item:hover {
-  background: rgba(56, 189, 248, 0.1);
-  color: #ffffff;
-}
-
-.search-suggest-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.search-suggest-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #94a3b8;
-  color: #020817;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-
-.search-suggest-keyword {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.search-suggest-arrow {
-  color: #94a3b8;
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.search-highlight {
-  color: #00e5ff;
-  font-weight: 900;
-}
-
-
-/* ==============================
-   Footer
-============================== */
-
-.footer {
-  border-top: 1px solid #111827;
-  background: #070b1a;
-  padding: 24px 0;
-}
-
-.footer-inner {
-  width: 1440px;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 64px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.footer-logo-white {
-  width: 34px;
-  height: 34px;
-  background-color: #ffffff;
-
-  -webkit-mask-image: url("/view/img/data_favicon.png");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
-
-  mask-image: url("/view/img/data_favicon.png");
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-
-  flex-shrink: 0;
-}
-
-.footer-link {
-  border: 0;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.footer-link:hover {
-  color: #00e5ff;
-}
-
-.footer-divider {
-  width: 1px;
-  height: 12px;
-  background: #334155;
-}
-
-.footer-copy {
+* {
   margin: 0;
-  color: #64748b;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-
-/* ==============================
-   Footer Modal
-============================== */
-
-.footer-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 8, 23, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 30000;
-}
-
-.footer-modal-box {
-  width: 520px;
-  max-width: calc(100% - 32px);
-  max-height: 70vh;
-  overflow-y: auto;
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 18px;
-  padding: 28px;
-}
-
-.footer-modal-content {
-  color: #cbd5e1;
-  line-height: 1.8;
-  font-size: 14px;
-  white-space: pre-line;
-}
-
-.footer-modal-content h3 {
-  margin: 0 0 16px;
+body {
+  background: #030817;
   color: #f8fafc;
+  font-family: "Pretendard", sans-serif;
 }
 
-.footer-modal-btn {
-  width: 100%;
-  margin-top: 24px;
-  padding: 13px;
-  border: 0;
-  border-radius: 10px;
-  background: #00e5ff;
-  color: #020617;
-  font-weight: 900;
-  cursor: pointer;
-}
+/* HEADER */
 
-
-/* ==============================
-   Responsive
-============================== */
-
-@media (max-width: 980px) {
-  .footer-inner {
-    padding: 0 24px;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 640px) {
-  .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
-  }
-
-  .footer-inner {
-    padding: 0 18px;
-  }
-}
-/* ===== main.css ===== */
-/* [확실] 기본 스타일 */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sans-serif; }
-.page {
-  width: 1440px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding-top: 72px;
-  background: #050816;
-}
-
-/* [확실] 헤더 */
 .header {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10000;
+  height: 76px;
+  padding: 0 40px;
+  background: #060b1a;
+  border-bottom: 1px solid #111827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  width: 1440px;
-  max-width: 100%;
-  height: 72px;
-  padding: 0 56px;
-
+.header-left {
   display: flex;
   align-items: center;
-
-  background: #070b1a;
-  border-bottom: 1px solid #111827;
+  gap: 48px;
 }
 
 .logo {
-  width: 155px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  flex-shrink: 0;
-  overflow: hidden;
+  cursor: pointer;
 }
 
-.header-logo-full {
-  height: 52px;
-  width: auto;
-  display: block;
-  object-fit: contain;
+.logo-small {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.logo-main {
+  color: #15d4ff;
+  font-size: 26px;
+  font-weight: 900;
 }
 
 .nav {
   display: flex;
-  align-items: center;
-  gap: 30px;
-  margin-left: 22px;
-  color: #6b7280;
-  font-size: 15px;
-  font-weight: 700;
-  flex-shrink: 0;
+  gap: 34px;
 }
 
 .nav a {
+  color: #818ca3;
   text-decoration: none;
-  color: inherit;
-  transition: color 0.2s;
+  font-weight: 700;
 }
 
 .nav a:hover {
-  color: #00e5ff;
+  color: #15d4ff;
 }
 
 .header-right {
-  margin-left: auto;
   display: flex;
+  gap: 10px;
   align-items: center;
-  gap: 12px;
 }
 
-.main-search-wrap {
-  position: relative;
-  width: 410px;
-  height: 40px;
+.search {
+  width: 260px;
+  height: 30px;
+  padding: 0 14px;
   border-radius: 999px;
-  background: #070b1a;
-  border: 1px solid #1f2937;
-  display: flex;
-  align-items: center;
-  padding: 0 14px 0 20px;
+  border: 1px solid #1f2a3d;
+  background: #070d1e;
+  color: #94a3b8;
 }
 
-.search-box {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  outline: none;
+.mypage-btn {
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 6px;
+  background: #13c8e8;
+  color: #03111d;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.logout-btn {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid #334155;
   background: transparent;
   color: #cbd5e1;
-  font-size: 15px;
-  padding: 0;
-}
-
-.search-box::placeholder {
-  color: #7c8493;
-}
-
-.main-search-wrap:focus-within {
-  border-color: #334155;
-}
-
-.search-icon-btn {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: transparent;
-  color: #8b95a7;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.search-icon-btn:hover {
-  color: #00e5ff;
-}
-
-.theme-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid #1f2937;
-  background: #070b1a;
-  color: #facc15;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-btn:hover {
-  border-color: #334155;
-}
-
-.header-btn {
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 800;
   cursor: pointer;
 }
 
-.header-btn.login {
-  border: 1px solid #00cfe8;
-  background: #00cfe8;
-  color: #020617;
-}
+/* PAGE */
 
-.header-btn.login:hover {
-  filter: brightness(1.08);
-}
-
-.header-btn.join {
-  border: 1px solid #475569;
-  background: transparent;
-  color: #cbd5e1;
-}
-
-.header-btn.join:hover {
-  border-color: #00e5ff;
-  color: #00e5ff;
-}
-
-/* [확실] 히어로 섹션 */
-.main { padding: 40px 64px 80px; }
-.hero {
-    height: 400px; border-radius: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-    background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15), transparent 70%), #0f172a;
-    border: 1px solid #1e293b; margin-bottom: 40px; position: relative;
-}
-.hero-badge { display: inline-block; padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 13px; font-weight: 700; margin-bottom: 24px; }
-.hero h1 { font-size: 48px; line-height: 1.3; color: #fff; font-weight: 800; margin-bottom: 20px; }
-.hero h1 span { color: #00E5FF; }
-.hero p { color: #94a3b8; font-size: 16px; margin-bottom: 32px; }
-.hero-tags { display: flex; gap: 12px; }
-.h-tag { padding: 8px 18px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 14px; text-decoration: none; }
-
-/* [확실] 감성 분석 & 지배적 여론 그리드 */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
-.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; position: relative; }
-.section-title-wrap span { color: #38bdf8; font-size: 13px; font-weight: 700; text-transform: uppercase; }
-.section-title-wrap h2 { margin-top: 10px; font-size: 32px; color: #fff; font-weight: 800; }
-.section-desc { font-size: 14px; color: #64748b; margin-top: 8px; }
-
-.status-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; border-radius: 8px; background: rgba(244, 114, 114, 0.15); color: #f47272; font-size: 12px; font-weight: 700; }
-
-.gauge-container { display: flex; justify-content: space-between; margin: 40px 0; }
-.gauge-item { text-align: center; }
-.gauge-circle { width: 140px; height: 140px; border-radius: 50%; border: 8px solid #1e293b; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-.gauge-circle.pos { border-top-color: #00E5FF; border-right-color: #00E5FF; }
-.gauge-circle.neg { border-color: #f47272; }
-.gauge-circle.neu { border-top-color: #fbbf24; }
-.gauge-circle .percent { font-size: 26px; font-weight: 800; color: #fff; }
-.gauge-label { font-size: 12px; font-weight: 700; color: #64748b; }
-
-.keyword-box { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 24px; margin-top: 20px; }
-.keyword-box-title { font-size: 13px; color: #64748b; margin-bottom: 16px; }
-.chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
-.chip { padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 13px; }
-
-.opinion-card { background: rgba(255,255,255,0.03); border-radius: 24px; padding: 32px; margin-top: 25px; position: relative; min-height: 280px; }
-.quote-icon { font-size: 32px; color: #38bdf8; margin-bottom: 20px; opacity: 0.5; }
-.opinion-text { font-size: 20px; line-height: 1.6; color: #e2e8f0; font-weight: 500; }
-.opinion-tags { position: absolute; bottom: 32px; left: 32px; display: flex; gap: 8px; }
-.o-tag { padding: 6px 12px; border-radius: 6px; background: #1e293b; color: #94a3b8; font-size: 11px; }
-.nav-btns { position: absolute; bottom: 32px; right: 32px; display: flex; gap: 12px; }
-.nav-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; }
-
-/* [확실] 감성 비교 섹션 */
-.sentiment-compare { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
-.sentiment-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
-.sentiment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.news-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; min-height: 320px; }
-.news-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.media-name { font-size: 15px; font-weight: 700; color: #f8fafc; }
-.s-badge { padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; }
-.s-badge.pos { background: rgba(0, 229, 255, 0.1); color: #00E5FF; }
-.s-badge.neg { background: rgba(244, 114, 114, 0.1); color: #f47272; }
-.s-badge.neu { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
-.news-card h3 { font-size: 22px; line-height: 1.4; color: #fff; font-weight: 700; margin-bottom: 16px; word-break: keep-all; }
-.news-card p { font-size: 14px; line-height: 1.6; color: #94a3b8; flex-grow: 1; margin-bottom: 24px; }
-.action-btn { height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-/* [확실] 관점 분석 섹션 */
-.viewpoint-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
-.view-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-height: 440px; overflow: hidden; transition: max-height .6s ease; margin-top: 24px; }
-.view-grid.expanded { max-height: 2500px; }
-.view-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
-.view-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.view-icon-box { width: 44px; height: 44px; border-radius: 50%; background: #0f172a; border: 2px solid; display: grid; place-items: center; font-size: 20px; }
-.view-title-group .vt { font-size: 14px; font-weight: 700; }
-.view-title-group .vp { font-size: 24px; font-weight: 900; }
-.view-bar-bg { height: 6px; background: #334155; border-radius: 999px; overflow: hidden; margin-bottom: 15px; }
-.view-bar-fill { height: 100%; border-radius: 999px; transition: width 0.8s ease; }
-.reason-label { font-size: 11px; color: #38bdf8; font-weight: 700; margin-bottom: 8px; }
-.view-reason { color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
-.detail-btn { width: fit-content; padding: 0 12px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; font-size: 12px; cursor: pointer; }
-.toggle-btn { width: 100%; height: 52px; margin-top: 28px; border-radius: 14px; border: 1px solid #1e293b; background: #111827; color: #38bdf8; font-weight: 600; font-size: 15px; cursor: pointer; }
-
-/* 지금 뜨는 뉴스 */
-.news-section { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-top: 40px; }
-.news-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
-.news-header h2 { font-size: 24px; color: #fff; font-weight: 800; }
-.realtime-dot { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #94a3b8; }
-.dot { width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; }
-
-.news-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 24px; }
-.news-item-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
-
-.news-badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-bottom: 12px; padding: 4px 10px; border-radius: 6px; }
-.badge-like { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
-.badge-dislike { color: #f47272; background: rgba(244, 114, 114, 0.1); }
-
-.news-main-row { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-bottom: 20px; }
-.news-rank-circle { min-width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #00E5FF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #00E5FF; }
-.news-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: left; word-break: keep-all; }
-
-.news-quote { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; text-align: left; }
-
-.reaction-row { display: flex; gap: 16px; margin-bottom: 20px; width: 100%; justify-content: flex-start; }
-.react-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: #94a3b8; }
-.react-item.up { color: #3b82f6; }
-.react-item.down { color: #ef4444; }
-
-.news-footer-btn { width: 100%; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #94a3b8; font-size: 13px; cursor: pointer; text-align: left; padding-left: 16px; }
-
-/* 컬러 유틸리티 */
-.c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
-.c-purple { color: #a855f7; border-color: #a855f7; } .bg-purple { background: #a855f7; }
-.c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
-.c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
-.c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
-/* ===== viewpoint_detail.css ===== */
-/* ==============================
-   Viewpoint Detail Page
-============================== */
-
-.viewpoint-detail-page {
-  min-height: 100vh;
-  padding: 40px 24px 110px;
-  background: #050816;
-  color: #e5e7eb;
-}
-
-.viewpoint-detail-wrap {
-  width: 1120px;
-  max-width: 100%;
-  margin: 0 auto;
+.detail-page {
+  width: 800px;
+  margin: 48px auto 120px;
+  padding-top: 130px !important;
 }
 
 .back-btn {
-  border: 0;
+  border: none;
   background: transparent;
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 800;
-  margin-bottom: 26px;
+  color: #38bdf8;
+  font-size: 12px;
   cursor: pointer;
 }
 
-.back-btn:hover {
-  color: #00e5ff;
+.title-section {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 120px 1fr 170px;
+  align-items: center;
 }
 
-.viewpoint-label {
-  display: inline-block;
-  color: #00e5ff;
-  font-size: 12px;
+.main-icon {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 1px solid #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+  color: #2dd4bf;
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+}
+
+.title-section h1 {
+  font-size: 34px;
   font-weight: 900;
-  letter-spacing: 1px;
-  margin-bottom: 14px;
 }
 
-.viewpoint-title {
-  font-size: 42px;
-  font-weight: 900;
-  color: #ffffff;
-  margin-bottom: 14px;
+.title-section h1 strong {
+  color: #2dd4bf;
+  margin-left: 20px;
 }
 
-.viewpoint-desc {
+.title-section p {
+  margin-top: 14px;
   color: #94a3b8;
   font-size: 15px;
-  line-height: 1.7;
-  margin-bottom: 36px;
 }
 
-
-/* ==============================
-   Summary Cards
-============================== */
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 22px;
-  margin-bottom: 28px;
-}
-
-.summary-card {
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 26px;
-  padding: 30px;
-}
-
-.card-label {
-  color: #38bdf8;
+.date {
+  color: #94a3b8;
   font-size: 12px;
-  font-weight: 900;
-  margin-bottom: 16px;
 }
 
-.main-summary {
-  color: #f8fafc;
-  font-size: 22px;
-  font-weight: 900;
-  line-height: 1.5;
+/* COMMON PANEL */
+
+.panel {
+  background: #111a2d;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 17px;
+  padding: 24px;
 }
 
-.percent-box {
+.panel h2 {
+  color: #7dd3fc;
+  font-size: 16px;
+  margin-bottom: 22px;
+}
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 14px;
+  margin-top: 36px;
+}
+
+/* ANALYSIS */
+
+.analysis-box {
+  height: 142px;
+  border-radius: 12px;
+  border: 1px solid #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 150px;
+  gap: 22px;
+  padding: 24px;
 }
 
-.percent-circle {
-  width: 150px;
-  height: 150px;
+.check-icon {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 12px solid #00e5ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #00e5ff;
-  font-size: 32px;
+  display: grid;
+  place-items: center;
+  background: #2dd4bf;
+  color: #0f172a;
+  font-size: 30px;
   font-weight: 900;
 }
 
-
-/* ==============================
-   Detail Section
-============================== */
-
-.detail-section {
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 26px;
-  padding: 34px;
-  margin-bottom: 28px;
-}
-
-.section-title {
-  color: #ffffff;
-  font-size: 25px;
-  font-weight: 900;
+.analysis-box h3 {
+  color: #2dd4bf;
+  font-size: 23px;
   margin-bottom: 20px;
 }
 
-.reason-list {
+.analysis-box p {
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* SENTIMENT */
+
+.sentiment-bar {
+  height: 11px;
+  display: flex;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.positive {
+  width: 40%;
+  background: #2dd4bf;
+}
+
+.neutral {
+  width: 40%;
+  background: #64748b;
+}
+
+.negative {
+  width: 20%;
+  background: #fb7185;
+}
+
+.sentiment-labels {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  text-align: center;
+  margin-top: 22px;
 }
 
-.reason-card {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 18px;
-  padding: 22px;
-}
-
-.reason-num {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #00e5ff;
-  color: #020617;
+.tag,
+.article-tag {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 10px;
   font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 14px;
 }
 
-.reason-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 900;
-  margin-bottom: 10px;
+.positive-tag {
+  background: rgba(45, 212, 191, 0.16);
+  color: #2dd4bf;
 }
 
-.reason-text {
+.neutral-tag {
+  background: rgba(100, 116, 139, 0.25);
   color: #94a3b8;
-  font-size: 13px;
-  line-height: 1.6;
 }
 
-
-/* ==============================
-   Article Section
-============================== */
-
-.reference-label {
-  color: #38bdf8;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  margin: 28px 0 14px;
+.negative-tag {
+  background: rgba(251, 113, 133, 0.16);
+  color: #fb7185;
 }
 
-.reference-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.sentiment-labels strong {
+  display: block;
+  margin-top: 20px;
+  font-size: 34px;
+  font-weight: 500;
 }
 
-.reference-card {
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 18px;
-  padding: 22px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 18px;
-}
-
-.reference-source {
-  color: #00e5ff;
-  font-size: 12px;
-  font-weight: 900;
-  margin-bottom: 10px;
-}
-
-.reference-title {
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 900;
-  line-height: 1.4;
-  margin-bottom: 8px;
-}
-
-.reference-summary {
+.sentiment-labels p {
+  margin-top: 8px;
   color: #94a3b8;
-  font-size: 13px;
-  line-height: 1.6;
+  text-decoration: underline;
 }
 
-.reference-btn {
-  align-self: center;
-  min-width: 86px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid #334155;
+/* count button */
+
+.count-link {
+  margin-top: 8px;
+  border: none;
   background: transparent;
-  color: #cbd5e1;
+  color: #94a3b8;
+  font-size: 15px;
+  text-decoration: underline;
   cursor: pointer;
+}
+
+.count-link:hover {
+  color: #38bdf8;
+}
+
+/* KEYWORDS */
+
+.keyword-panel {
+  margin-top: 20px;
+}
+
+.keywords {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.keywords span {
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: rgba(20, 184, 220, 0.18);
+  color: #58e5f5;
   font-weight: 800;
 }
 
-.reference-btn:hover {
-  color: #00e5ff;
-  border-color: #00e5ff;
+/* ARTICLES */
+
+.article-panel {
+  margin-top: 22px;
 }
 
+.article_list {
+  margin-top: 16px;
+}
 
-/* ==============================
-   Compare Section
-============================== */
+.article-row {
+  display: grid;
+  grid-template-columns: 52px 100px 1fr 60px 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 17px 0;
+  border-bottom: 1px solid #24314a;
+  font-size: 13px;
+}
+
+.press-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.press-logo.blue {
+  background: #1e3a8a;
+}
+
+.press-logo.sky {
+  background: #0284c7;
+}
+
+.press-logo.white {
+  background: #ffffff;
+  color: #111827;
+}
+
+.press-logo.red {
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 18px;
+}
+
+.press-logo.green {
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 18px;
+}
+
+.press {
+  color: #e2e8f0;
+}
+
+.article-title {
+  color: #f8fafc;
+}
+
+.article-date {
+  color: #94a3b8;
+}
+
+/* COMPARE */
+
+.compare-panel {
+  margin-top: 24px;
+}
 
 .compare-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
 }
 
 .compare-card {
-  background: #1e293b;
-  border-radius: 18px;
-  padding: 22px;
-  border-left: 6px solid #00e5ff;
+  height: 180px;
+  border-radius: 12px;
+  background: #202d42;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 14px;
 }
 
-.compare-card.negative {
-  border-left-color: #f47272;
+.compare-card.active {
+  border-color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
 }
 
-.compare-card.neutral {
-  border-left-color: #fbbf24;
-}
-
-.compare-type {
-  font-size: 13px;
+.compare-title {
+  font-size: 12px;
   font-weight: 900;
-  color: #00e5ff;
-  margin-bottom: 12px;
+  color: #e2e8f0;
 }
 
-.compare-card.negative .compare-type {
-  color: #f47272;
+.compare-percent {
+  margin-top: 20px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #2dd4bf;
 }
 
-.compare-card.neutral .compare-type {
-  color: #fbbf24;
+.compare-bar {
+  height: 7px;
+  margin-top: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  background: #334155;
 }
 
-.compare-text {
-  color: #e5e7eb;
-  font-size: 14px;
-  line-height: 1.6;
+.compare-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #2dd4bf;
 }
 
+/* RESPONSIVE */
 
-/* ==============================
-   Light Mode
-============================== */
+@media (max-width: 900px) {
+  .detail-page {
+    width: calc(100% - 32px);
+  }
 
-body.light-mode .viewpoint-detail-page {
-  background: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-body.light-mode .viewpoint-title,
-body.light-mode .section-title,
-body.light-mode .main-summary,
-body.light-mode .reason-title,
-body.light-mode .reference-title {
-  color: #0f172a !important;
-}
-
-body.light-mode .viewpoint-desc,
-body.light-mode .reason-text,
-body.light-mode .reference-summary {
-  color: #64748b !important;
-}
-
-body.light-mode .summary-card,
-body.light-mode .detail-section,
-body.light-mode .reference-card {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-}
-
-body.light-mode .reason-card,
-body.light-mode .compare-card {
-  background: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-}
-
-body.light-mode .compare-text {
-  color: #334155 !important;
-}
-
-
-/* ==============================
-   Responsive
-============================== */
-
-@media (max-width: 980px) {
-  .summary-grid,
-  .reason-list,
+  .title-section,
+  .top-grid,
   .compare-grid {
     grid-template-columns: 1fr;
   }
 
-  .reference-card {
+  .article-row {
     grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 640px) {
-  .viewpoint-detail-page {
-    padding: 150px 18px 80px;
+  .header {
+    height: auto;
+    padding: 18px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 
-  .viewpoint-title {
-    font-size: 32px;
+  .header-left,
+  .header-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
   }
 
-  .detail-section,
-  .summary-card {
-    padding: 24px;
+  .nav {
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .search {
+    width: 100%;
   }
 }
-
-/* ==============================
-         Light Mode
-============================== */
-
-body.light-mode {
-  background: #f8fafc;
-  color: #0f172a;
-}
-
-body.light-mode .page {
-  background: #f8fafc;
-}
-
-/* Header */
-body.light-mode .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-body.light-mode .nav {
-  color: #64748b;
-}
-
-body.light-mode .nav a:hover {
-  color: #0284c7;
-}
-
-body.light-mode .main-search-wrap {
-  background: #ffffff;
-  border-color: #cbd5e1;
-}
-
-body.light-mode .search-box {
-  color: #0f172a;
-}
-
-body.light-mode .search-box::placeholder {
-  color: #94a3b8;
-}
-
-body.light-mode .search-icon-btn {
-  color: #64748b;
-}
-
-body.light-mode .theme-btn {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-body.light-mode .header-btn.join {
-  background: #ffffff;
-  border-color: #94a3b8;
-  color: #334155;
-}
-
-body.light-mode .header-btn.login {
-  background: #00cfe8;
-  border-color: #00cfe8;
-  color: #020617;
-}
-
-/* 자동완성 */
-body.light-mode .search-suggest-box {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
-}
-
-body.light-mode .search-suggest-item {
-  color: #334155;
-}
-
-body.light-mode .search-suggest-item:hover {
-  background: #e0f7ff;
-  color: #0284c7;
-}
-
-body.light-mode .search-suggest-icon {
-  background: #e2e8f0;
-  color: #475569;
-}
-
-body.light-mode .search-suggest-arrow {
-  color: #64748b;
-}
-
-/* Footer */
-body.light-mode .footer {
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
-}
-
-body.light-mode .footer-logo-white {
-  background-color: #020617;
-}
-
-body.light-mode .footer-link {
-  color: #475569;
-}
-
-body.light-mode .footer-link:hover {
-  color: #0284c7;
-}
-
-body.light-mode .footer-copy {
-  color: #64748b;
-}
-
-body.light-mode .footer-modal-box {
-  background: #ffffff;
-  border-color: #cbd5e1;
-}
-
-body.light-mode .footer-modal-content {
-  color: #334155;
-}
-
-body.light-mode .footer-modal-content h3 {
-  color: #0f172a;
-}
-
 </style>
 </head>
+
 <body>
-<div class="page">
-<div id="header"></div>
-<main class="viewpoint-detail-page">
-<div class="viewpoint-detail-wrap">
-<button class="back-btn" onclick="history.back()" type="button">← 이전 페이지로</button>
-<section>
-<span class="viewpoint-label">VIEWPOINT DETAIL</span>
-<h1 class="viewpoint-title" id="viewpointTitle"></h1>
-<p class="viewpoint-desc" id="viewpointDesc"></p>
-</section>
-<section class="summary-grid">
-<article class="summary-card">
-<div class="card-label">VIEWPOINT SUMMARY</div>
-<div class="main-summary" id="viewpointSummary"></div>
-</article>
-<article class="summary-card">
-<div class="card-label">ARTICLE RATIO</div>
-<div class="percent-box">
-<div class="percent-circle" id="viewpointPercent"></div>
-</div>
-</article>
-</section>
-<section class="detail-section">
-<h2 class="section-title">주요 근거</h2>
-<div class="reason-list" id="reasonList"></div>
-</section>
-<section class="detail-section">
-<h2 class="section-title">관점별 해석 비교</h2>
-<div class="compare-grid" id="compareGrid"></div>
-</section>
-<section>
-<div class="reference-label">REFERENCE ARTICLES</div>
-<div class="reference-list" id="referenceList"></div>
-</section>
-</div>
-</main>
-<div id="footer"></div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script>
-/* ===== common.js ===== */
-// ==============================
-// 공통 UI 로드
-// ==============================
-document.addEventListener("DOMContentLoaded", function () {
-  applyThemeMode();
-  loadHeader();
-  loadFooter();
-  bindGlobalClickEvents();
-});
-
-// ==============================
-// 다크모드 / 화이트모드
-// ==============================
-function applyThemeMode() {
-  const savedTheme = localStorage.getItem("theme_mode");
-  const themeBtn = document.getElementById("themeToggleBtn");
-
-  if (savedTheme === "light") {
-    document.body.classList.add("light-mode");
-
-    if (themeBtn) {
-      themeBtn.innerText = "☀️";
-    }
-  } else {
-    document.body.classList.remove("light-mode");
-
-    if (themeBtn) {
-      themeBtn.innerText = "🌙";
-    }
-  }
-}
-
-function toggleThemeMode() {
-  const isLight = document.body.classList.contains("light-mode");
-  const themeBtn = document.getElementById("themeToggleBtn");
-
-  if (isLight) {
-    document.body.classList.remove("light-mode");
-    localStorage.setItem("theme_mode", "dark");
-
-    if (themeBtn) {
-      themeBtn.innerText = "🌙";
-    }
-  } else {
-    document.body.classList.add("light-mode");
-    localStorage.setItem("theme_mode", "light");
-
-    if (themeBtn) {
-      themeBtn.innerText = "☀️";
-    }
-  }
-}
-
-// ==============================
-// 로그인 정보 가져오기
-// ==============================
-function getLoginInfo() {
-  return {
-    token:
-      sessionStorage.getItem("access_token") ||
-      localStorage.getItem("access_token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("token"),
-
-    userName:
-      sessionStorage.getItem("user_name") ||
-      localStorage.getItem("user_name") ||
-      sessionStorage.getItem("userName") ||
-      localStorage.getItem("userName"),
-
-    role:
-      sessionStorage.getItem("user_role") ||
-      localStorage.getItem("user_role") ||
-      sessionStorage.getItem("role") ||
-      localStorage.getItem("role")
-  };
-}
-
-
-// ==============================
-// Header 불러오기
-// ==============================
-function loadHeader() {
-  const headerArea = document.getElementById("header");
-
-  if (!headerArea) return;
-
-  if (headerArea.innerHTML.trim()) {
-    setHeaderLoginState();
-    bindCommonSearch();
-    applyThemeMode();
-    return;
-  }
-
-  fetch("/view/header.html?v=999")
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error("header.html 경로 오류");
-      }
-
-      return res.text();
-    })
-    .then(function (html) {
-      headerArea.innerHTML = html;
-      setHeaderLoginState();
-      bindCommonSearch();
-      applyThemeMode();
-    })
-    .catch(function (err) {
-      console.error("header 로드 실패:", err);
-    });
-}
-
-
-// ==============================
-// Footer 불러오기
-// ==============================
-function loadFooter() {
-  const footerArea = document.getElementById("footer");
-
-  if (!footerArea) return;
-
-  if (footerArea.innerHTML.trim()) {
-    return;
-  }
-
-  fetch("/view/footer.html?v=999")
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error("footer.html 경로 오류");
-      }
-
-      return res.text();
-    })
-    .then(function (html) {
-      footerArea.innerHTML = html;
-    })
-    .catch(function (err) {
-      console.error("footer 로드 실패:", err);
-    });
-}
-
-
-// ==============================
-// Header 로그인 상태 처리
-// ==============================
-function setHeaderLoginState() {
-  const loginBtn = document.getElementById("loginBtn");
-  const joinBtn = document.getElementById("joinBtn");
-  const primaryUserBtn = document.getElementById("primaryUserBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-
-  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
-
-  const loginInfo = getLoginInfo();
-  const token = loginInfo.token;
-  const role = loginInfo.role;
-
-  if (!token) {
-    loginBtn.classList.remove("hidden");
-    joinBtn.classList.remove("hidden");
-    primaryUserBtn.classList.add("hidden");
-    logoutBtn.classList.add("hidden");
-    return;
-  }
-
-  loginBtn.classList.add("hidden");
-  joinBtn.classList.add("hidden");
-  primaryUserBtn.classList.remove("hidden");
-  logoutBtn.classList.remove("hidden");
-
-  const isAdmin =
-    role === "ADMIN" ||
-    role === "SUPERADMIN" ||
-    role === "admin" ||
-    role === "superadmin" ||
-    token === "admin-test-token";
-
-  if (isAdmin) {
-    primaryUserBtn.innerText = "관리자 페이지";
-  } else {
-    primaryUserBtn.innerText = "마이페이지";
-  }
-}
-
-
-// ==============================
-// 로그인 필요 페이지 이동
-// ==============================
-window.goLoginRequiredPage = function (targetUrl) {
-  const loginInfo = getLoginInfo();
-
-  if (!loginInfo.token) {
-    alert("로그인이 필요한 서비스입니다.");
-    location.href = "/view/login.html";
-    return;
-  }
-
-  location.href = targetUrl;
-};
-
-
-// ==============================
-// 전역 클릭 이벤트
-// fetch로 늦게 들어온 header도 작동
-// ==============================
-function bindGlobalClickEvents() {
-  document.addEventListener("click", function (e) {
-    const loginBtn = e.target.closest("#loginBtn");
-    const joinBtn = e.target.closest("#joinBtn");
-    const primaryUserBtn = e.target.closest("#primaryUserBtn");
-    const logoutBtn = e.target.closest("#logoutBtn");
-    const themeToggleBtn = e.target.closest("#themeToggleBtn");
-    const loginRequiredLink = e.target.closest("[data-login-page]");
-
-    const heroTag = e.target.closest(".h-tag");
-    const chip = e.target.closest(".chip");
-    const actionBtn = e.target.closest(".action-btn");
-    const newsFooterBtn = e.target.closest(".news-footer-btn");
-    const detailBtn = e.target.closest(".detail-btn");
-
-    if (themeToggleBtn) {
-      e.preventDefault();
-      toggleThemeMode();
-      return;
-    }
-
-    if (loginBtn) {
-      e.preventDefault();
-      location.href = "/view/login.html";
-      return;
-    }
-
-    if (joinBtn) {
-      e.preventDefault();
-      location.href = "/view/terms.html";
-      return;
-    }
-
-    if (primaryUserBtn) {
-      e.preventDefault();
-
-      const loginInfo = getLoginInfo();
-      const role = loginInfo.role;
-      const token = loginInfo.token;
-
-      const isAdmin =
-        role === "ADMIN" ||
-        role === "SUPERADMIN" ||
-        role === "admin" ||
-        role === "superadmin" ||
-        token === "admin-test-token";
-
-      if (isAdmin) {
-        location.href = "/view/admin_dashboard.html";
-      } else {
-        location.href = "/view/mypage_home.html";
-      }
-
-      return;
-    }
-
-    if (logoutBtn) {
-      e.preventDefault();
-      logout();
-      return;
-    }
-
-    if (loginRequiredLink) {
-      e.preventDefault();
-
-      const targetUrl = loginRequiredLink.dataset.loginPage;
-      goLoginRequiredPage(targetUrl);
-      return;
-    }
-
-    if (heroTag) {
-      e.preventDefault();
-
-      const keyword = heroTag.innerText.replace("#", "").trim();
-      goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
-      return;
-    }
-
-    if (chip) {
-      e.preventDefault();
-
-      const keyword = chip.innerText.trim();
-      goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
-      return;
-    }
-
-    if (actionBtn) {
-      e.preventDefault();
-      goLoginRequiredPage("/view/article_detail.html");
-      return;
-    }
-
-    if (newsFooterBtn) {
-      e.preventDefault();
-      goLoginRequiredPage("/view/article_detail.html");
-      return;
-    }
-
-    if (detailBtn) {
-      e.preventDefault();
-
-      const title = detailBtn.dataset.title;
-      const percent = detailBtn.dataset.percent;
-
-      if (title) {
-        localStorage.setItem("viewpoint_title", title);
-      }
-
-      if (percent) {
-        localStorage.setItem("viewpoint_percent", percent);
-      }
-
-      goLoginRequiredPage("/view/viewpoint_detail.html");
-    }
-  });
-}
-
-
-// ==============================
-// 검색어 자동완성
-// ==============================
-function bindCommonSearch() {
-  const input = document.getElementById("commonSearchInput");
-  const searchBtn = document.getElementById("commonSearchBtn");
-
-    if (!input) return;
-
-    if (searchBtn) {
-    searchBtn.addEventListener("click", function () {
-      moveSearch(input.value);
-    });
-  }
-
-  input.addEventListener("input", function () {
-    renderSearchSuggestions(input.value);
-  });
-
-  input.addEventListener("focus", function () {
-    renderSearchSuggestions(input.value);
-  });
-
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      moveSearch(input.value);
-    }
-
-    if (e.key === "Escape") {
-      hideSearchSuggestions();
-    }
-  });
-
-  document.addEventListener("click", function (e) {
-    const searchWrap = document.querySelector(".main-search-wrap");
-
-    if (!searchWrap) return;
-
-    if (!searchWrap.contains(e.target)) {
-      hideSearchSuggestions();
-    }
-  });
-
-  window.addEventListener("resize", positionSearchSuggestBox);
-  window.addEventListener("scroll", positionSearchSuggestBox);
-}
-
-function highlightKeyword(text, keyword) {
-  if (!keyword) return text;
-
-  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escapedKeyword})`, "gi");
-
-  return text.replace(regex, `<span class="search-highlight">$1</span>`);
-}
-
-async function renderSearchSuggestions(keyword) {
-  const list = document.getElementById("searchSuggestList");
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!list || !suggestBox) return;
-
-  const value = keyword.trim();
-
-  if (!value) {
-    hideSearchSuggestions();
-    return;
-  }
-
-  try {
-    const res = await axios.get(
-      `/api/search/suggest?q=${encodeURIComponent(value)}`
-    );
-
-    const results = res.data || [];
-
-    if (results.length === 0) {
-      hideSearchSuggestions();
-      return;
-    }
-
-    list.innerHTML = results.map(function (item) {
-      return `
-        <button
-          class="search-suggest-item"
-          type="button"
-          data-suggest-keyword="${item}"
-        >
-          <span class="search-suggest-left">
-            <span class="search-suggest-icon">⌕</span>
-
-            <span class="search-suggest-keyword">
-              ${highlightKeyword(item, value)}
-            </span>
-          </span>
-
-          <span class="search-suggest-arrow">↖</span>
-        </button>
-      `;
-    }).join("");
-
-    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const keyword = btn.dataset.suggestKeyword;
-
-        selectSearchSuggestion(keyword);
-      });
-    });
-
-    positionSearchSuggestBox();
-
-    suggestBox.classList.remove("hidden");
-
-  } catch (error) {
-    console.error("검색 자동완성 실패:", error);
-
-    hideSearchSuggestions();
-  }
-}
-
-function positionSearchSuggestBox() {
-  const searchWrap = document.querySelector(".main-search-wrap");
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!searchWrap || !suggestBox) return;
-
-  const rect = searchWrap.getBoundingClientRect();
-
-  suggestBox.style.top = `${rect.bottom + 4}px`;
-  suggestBox.style.left = `${rect.left}px`;
-  suggestBox.style.width = `${rect.width}px`;
-}
-
-function hideSearchSuggestions() {
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!suggestBox) return;
-
-  suggestBox.classList.add("hidden");
-}
-
-function selectSearchSuggestion(keyword) {
-  const input = document.getElementById("commonSearchInput");
-
-  if (input) {
-    input.value = keyword;
-  }
-
-  hideSearchSuggestions();
-
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
-}
-
-function moveSearch(keyword) {
-  const value = keyword.trim();
-
-  if (!value) return;
-
-  hideSearchSuggestions();
-
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
-}
-
-
-// ==============================
-// 로그아웃
-// ==============================
-window.logout = function () {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("user_name");
-  localStorage.removeItem("user_role");
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("userName");
-
-  sessionStorage.removeItem("access_token");
-  sessionStorage.removeItem("user_name");
-  sessionStorage.removeItem("user_role");
-  sessionStorage.removeItem("token");
-  sessionStorage.removeItem("role");
-  sessionStorage.removeItem("userName");
-
-  location.href = "/view/main.html";
-};
-
-
-// ==============================
-// Footer 모달
-// ==============================
-window.openFooterTermsModal = function () {
-  const modal = document.getElementById("footerModal");
-  const content = document.getElementById("footerModalContent");
-
-  if (!modal || !content) return;
-
-  content.innerHTML = `
-    <h3>이용약관</h3>
-    <p>DATA 다타는 뉴스 데이터를 기반으로 키워드, 감성, 관점 분석 정보를 제공하는 서비스입니다.</p>
-    <p>이용자는 서비스를 부정한 목적으로 이용할 수 없으며, 제공되는 정보는 참고용으로 활용해야 합니다.</p>
-    <p>서비스에서 제공되는 분석 결과는 참고용 정보이며, 투자·정책·법률 판단의 최종 근거로 사용해서는 안 됩니다.</p>
-  `;
-
-  modal.classList.remove("hidden");
-};
-
-window.openFooterPrivacyModal = function () {
-  const modal = document.getElementById("footerModal");
-  const content = document.getElementById("footerModalContent");
-
-  if (!modal || !content) return;
-
-  content.innerHTML = `
-    <h3>개인정보처리방침</h3>
-    <p>DATA 다타는 회원가입 및 서비스 제공을 위해 이메일, 비밀번호, 이름, 생년월일, 성별 등의 개인정보를 수집할 수 있습니다.</p>
-    <p>수집된 개인정보는 회원 식별, 서비스 제공, 이용 기록 관리, 사용자 맞춤형 서비스 제공 목적 외에는 사용하지 않습니다.</p>
-    <p>개인정보 관련 문의: data260417@gmail.com</p>
-  `;
-
-  modal.classList.remove("hidden");
-};
-
-window.closeFooterModal = function () {
-  const modal = document.getElementById("footerModal");
-
-  if (!modal) return;
-
-  modal.classList.add("hidden");
-};
-</script>
-<script>
-/* ===== viewpoint_detail.js ===== */
-// ==============================
-// 관점 상세 접근 체크
-// ==============================
-(function checkViewpointAuth() {
-  const token =
-    sessionStorage.getItem("access_token") ||
-    localStorage.getItem("access_token") ||
-    sessionStorage.getItem("token") ||
-    localStorage.getItem("token");
-
-  if (!token) {
-    alert("로그인이 필요한 서비스입니다.");
-    location.href = "/view/login.html";
-  }
-})();
-
-
-// ==============================
-// 임시 데이터
-// ==============================
-const viewpointTitle =
-  localStorage.getItem("viewpoint_title") ||
-  "정부 관점";
-
-const viewpointPercent =
-  localStorage.getItem("viewpoint_percent") ||
-  "24";
-
-const reasons = [
-  {
-    title: "정책 대응 시점",
-    text: "금리 정책 대응이 늦고 규제 완화 시점이 부적절했다는 해석이 많이 나타났습니다."
-  },
-  {
-    title: "시장 안정 책임",
-    text: "경제 불확실성이 커지는 상황에서 정부의 시장 안정 역할을 강조하는 기사들이 많았습니다."
-  },
-  {
-    title: "제도 개선 요구",
-    text: "대출, 부동산, 소비 정책 등 제도적 보완이 필요하다는 분석이 포함되었습니다."
-  }
-];
-
-const referenceArticles = [
-  {
-    source: "경제신문 A",
-    title: "한은 금리 전격 인하... 정부 경기 대응 본격화",
-    summary: "금리 인하 결정 이후 정부의 경기 대응 방향과 시장 안정 조치에 관심이 쏠리고 있습니다."
-  },
-  {
-    source: "시사저널 B",
-    title: "정책 타이밍 놓쳤나... 가계부채 우려 확대",
-    summary: "금리 정책과 대출 규제가 엇박자를 내면서 가계부채 부담이 커질 수 있다는 지적이 나옵니다."
-  },
-  {
-    source: "경제신문 C",
-    title: "금융시장 안정 위해 정부 역할 커진다",
-    summary: "시장 불확실성이 높아지면서 정부의 정책 조정 능력이 중요한 변수로 부각되고 있습니다."
-  }
-];
-
-const compareData = [
-  {
-    type: "긍정 관점",
-    className: "positive",
-    text: "정부의 선제적 대응이 경기 회복에 도움을 줄 수 있다는 해석입니다."
-  },
-  {
-    type: "중립 관점",
-    className: "neutral",
-    text: "정책 효과는 향후 물가와 소비 흐름에 따라 달라질 수 있다는 신중한 시각입니다."
-  },
-  {
-    type: "부정 관점",
-    className: "negative",
-    text: "대출 부담과 가계부채 리스크를 충분히 고려하지 못했다는 비판적 시각입니다."
-  }
-];
-
-
-// ==============================
-// 렌더링
-// ==============================
-function renderViewpointHeader() {
-  const title = document.getElementById("viewpointTitle");
-  const desc = document.getElementById("viewpointDesc");
-  const percent = document.getElementById("viewpointPercent");
-  const summary = document.getElementById("viewpointSummary");
-
-  if (title) title.textContent = viewpointTitle;
-
-  if (desc) {
-    desc.textContent =
-      `전체 기사 중 ${viewpointPercent}%가 ${viewpointTitle}으로 분류되었습니다.`;
-  }
-
-  if (percent) percent.textContent = `${viewpointPercent}%`;
-
-  if (summary) {
-    summary.textContent =
-      `${viewpointTitle}은 이번 이슈를 특정 주체의 책임이나 정책 대응 관점에서 해석하는 흐름입니다.`;
-  }
-}
-
-
-function renderReasons() {
-  const list = document.getElementById("reasonList");
-
-  if (!list) return;
-
-  list.innerHTML = reasons.map((item, index) => `
-    <div class="reason-card">
-      <div class="reason-num">${index + 1}</div>
-      <div class="reason-title">${item.title}</div>
-      <div class="reason-text">${item.text}</div>
-    </div>
-  `).join("");
-}
-
-
-function renderReferenceArticles() {
-  const list = document.getElementById("referenceList");
-
-  if (!list) return;
-
-  list.innerHTML = referenceArticles.map(item => `
-    <article class="reference-card">
-      <div>
-        <div class="reference-source">${item.source}</div>
-        <h3 class="reference-title">${item.title}</h3>
-        <p class="reference-summary">${item.summary}</p>
+<div class="app">
+
+  <header class="header">
+    <div class="header-left">
+      <div class="logo" onclick="location.href='/view/index.html'">
+        <div class="logo-small">뉴스를 이해하는 방식</div>
+        <div class="logo-main">DATA 다타</div>
       </div>
 
-      <button class="reference-btn" onclick="location.href='/view/article_detail.html'">
-        상세 보기
-      </button>
-    </article>
-  `).join("");
+      <nav class="nav">
+        <a href="/view/index.html">뉴스흐름</a>
+        <a href="#">키워드</a>
+        <a href="/view/article_list.html">뉴스</a>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <input class="search" placeholder="예: 금리, 취업, 전세, 반도체">
+      <button class="mypage-btn">마이페이지</button>
+      <button class="logout-btn">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="detail-page">
+
+    <button class="back-btn" onclick="location.href='/view/index.html'">
+      ← 메인으로 돌아가기
+    </button>
+
+    <section class="title-section">
+      <div class="main-icon">🏛</div>
+
+      <div>
+        <h1>
+          <span id="viewTitle">정부 관점</span>
+          <strong id="viewPercent">24%</strong>
+        </h1>
+        <p>전체 기사 중 비율</p>
+      </div>
+
+      <div class="date">기준일 2026.04.27</div>
+    </section>
+
+    <section class="top-grid">
+      <div class="panel">
+        <h2>관점 해석</h2>
+
+        <div class="analysis-box">
+          <div class="check-icon">✓</div>
+          <div>
+            <h3>정책 안정 중심 해석</h3>
+            <p>금리 정책을 통한 물가 안정과<br>금융시장 안정에 초점</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>감성 분포</h2>
+
+        <div class="sentiment-bar">
+          <div class="positive"></div>
+          <div class="neutral"></div>
+          <div class="negative"></div>
+        </div>
+
+        <div class="sentiment-labels">
+          <div>
+            <span class="tag positive-tag">긍정</span>
+            <strong>40%</strong>
+            <button class="count-link" onclick="goArticleList('positive')">(24건)</button>
+          </div>
+
+          <div>
+            <span class="tag neutral-tag">중립</span>
+            <strong>40%</strong>
+            <button class="count-link" onclick="goArticleList('neutral')">(24건)</button>
+          </div>
+
+          <div>
+            <span class="tag negative-tag">부정</span>
+            <strong>20%</strong>
+            <button class="count-link" onclick="goArticleList('negative')">(12건)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel keyword-panel">
+      <h2>주요 키워드</h2>
+
+      <div class="keywords">
+        <span>기준금리</span>
+        <span>대출</span>
+        <span>물가</span>
+        <span>환율</span>
+        <span>소비</span>
+        <span>주식시장</span>
+        <span>금융시장</span>
+        <span>경기</span>
+      </div>
+    </section>
+
+    <section class="panel article-panel">
+      <h2>관련 기사 TOP 5</h2>
+
+      <div class="article_list">
+        <div class="article-row">
+          <div class="press-logo blue">한국<br>경제</div>
+          <div class="press">한국경제</div>
+          <div class="article-title">금리 인상, 물가 안정 효과 기대</div>
+          <span class="article-tag positive-tag">긍정</span>
+          <div class="article-date">2026.04.27</div>
+        </div>
+
+        <div class="article-row">
+          <div class="press-logo sky">연합<br>뉴스</div>
+          <div class="press">연합뉴스</div>
+          <div class="article-title">한은 총재 “금리 인상 불가피... 중장기적 안정이 우선”</div>
+          <span class="article-tag neutral-tag">중립</span>
+          <div class="article-date">2026.04.27</div>
+        </div>
+
+        <div class="article-row">
+          <div class="press-logo white">매일<br>경제</div>
+          <div class="press">매일경제</div>
+          <div class="article-title">정부 “물가 안정 없이는 민생 회복 어렵다... 통화정책 공조”</div>
+          <span class="article-tag positive-tag">긍정</span>
+          <div class="article-date">2026.04.26</div>
+        </div>
+
+        <div class="article-row">
+          <div class="press-logo red">C</div>
+          <div class="press">조선일보</div>
+          <div class="article-title">경기 둔화 우려도... “금리 인상 장기화 땐 성장 제약”</div>
+          <span class="article-tag negative-tag">부정</span>
+          <div class="article-date">2026.04.25</div>
+        </div>
+
+        <div class="article-row">
+          <div class="press-logo green">◎</div>
+          <div class="press">동아일보</div>
+          <div class="article-title">금융당국 “가계부채 관리 여전히 중요... 금리 정책 지지”</div>
+          <span class="article-tag neutral-tag">중립</span>
+          <div class="article-date">2026.04.21</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel compare-panel">
+      <h2>관점 비교</h2>
+      <div class="compare-grid" id="compareGrid"></div>
+    </section>
+
+  </main>
+
+  <div id="footer"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/common.js?v=3"></script>
+
+<script>
+const viewTitle = localStorage.getItem("viewpoint_title") || "정부 관점";
+const viewPercent = localStorage.getItem("viewpoint_percent") || "24";
+
+const viewTitleEl = document.getElementById("viewTitle");
+const viewPercentEl = document.getElementById("viewPercent");
+
+if (viewTitleEl) {
+  viewTitleEl.innerText = viewTitle;
 }
 
+if (viewPercentEl) {
+  viewPercentEl.innerText = `${viewPercent}%`;
+}
 
-function renderCompare() {
-  const grid = document.getElementById("compareGrid");
+const compareData = [
+  { title: "정부 관점", percent: 24 },
+  { title: "개인 관점", percent: 18 },
+  { title: "복합 관점", percent: 14 },
+  { title: "기업 관점", percent: 11 },
+  { title: "외부 관점", percent: 9 }
+];
 
-  if (!grid) return;
+const compareGrid = document.getElementById("compareGrid");
 
-  grid.innerHTML = compareData.map(item => `
-    <div class="compare-card ${item.className}">
-      <div class="compare-type">${item.type}</div>
-      <div class="compare-text">${item.text}</div>
+if (compareGrid) {
+  compareGrid.innerHTML = compareData.map(item => `
+    <div class="compare-card">
+      <div class="compare-title">${item.title}</div>
+      <div class="compare-percent">${item.percent}%</div>
+      <div class="compare-bar">
+        <div class="compare-fill" style="width:${item.percent * 3}%"></div>
+      </div>
     </div>
   `).join("");
 }
 
+function goArticleList(sentiment) {
+  localStorage.setItem("article_list_sentiment", sentiment);
+  localStorage.setItem("article_list_viewpoint", viewTitle);
 
-// ==============================
-// 최초 실행
-// ==============================
-document.addEventListener("DOMContentLoaded", function () {
-  renderViewpointHeader();
-  renderReasons();
-  renderReferenceArticles();
-  renderCompare();
-});
+  location.href = "/view/article_list.html";
+}
 </script>
 </body>
 </html>
