@@ -10,10 +10,11 @@ import pandas as pd
 from util.db import get_engine
 from util.es import get_es, NEWS_ECONOMY_INDEX
 from crawling.crawler import run_crawling_job
+from sqlalchemy import text
 
 from model.model_main import app as pipeline_app
 from datacleaning.cleaning import get_preprocessed_data
-from pydantic import BaseModel
+from schemas import TermsRequest, VoteRequest
 from viewpoint_classify.viewpoint_classify import update_perspective_to_es
 
 from regist.emailvalidation import check_email_duplicate, send_cert_email, verify_certification_number
@@ -52,11 +53,6 @@ def read_table():
 def data_cleaning():
     result = get_preprocessed_data()  # 아까 만든 전처리 함수 호출
     return result  # 처리 건수나 성공 메시지를 화면에 출력
-
-# 이용약관 구조 정의
-class TermsRequest(BaseModel):
-    requiredChecks: bool  # 또는 str, 실제 데이터에 맞게 설정
-    optionalChecksList: List[str] # 리스트 형태임을 명시
 
 @app.post('/terms')
 def terms(info: TermsRequest, req: Request):
@@ -467,9 +463,186 @@ def get_article_list(size: int = 50):
         "articles": articles
     }
 
+# 좋아요/싫어요
+@app.post("/api/articles/vote")
+def vote_article(info: VoteRequest, req: Request):
+    es = get_es()
+    db = get_engine()
+
+    login_user = req.session.get("user")
+    user_id = login_user.get("user_id") if login_user else None
+
+    print("투표 세션:", req.session)
+    print("투표 user_id:", user_id)
+    print("투표 요청:", info)
+
+    if not user_id:
+        db.close()
+        return {
+            "success": False,
+            "message": "로그인이 필요합니다."
+        }
+
+    article_id = info.article_id
+    vote_type = info.vote_type
+
+    if vote_type not in ["like", "hate"]:
+        db.close()
+        return {
+            "success": False,
+            "message": "잘못된 투표 타입입니다."
+        }
+
+    db.execute(
+        text("""
+            INSERT IGNORE INTO article_meta (article_id)
+            VALUES(:article_id)
+        """),
+        {
+            "article_id": article_id,
+        }
+    )
+
+    # 프론트는 hate, DB는 dislike로 저장
+    db_vote_type = "dislike" if vote_type == "hate" else "like"
+
+    row = db.execute(
+        text("""
+            SELECT reaction_type
+            FROM article_reactions
+            WHERE user_id = :user_id
+              AND article_id = :article_id
+        """),
+        {
+            "user_id": user_id,
+            "article_id": article_id
+        }
+    ).fetchone()
+
+    old_vote = row[0] if row else None
+
+    # DB에 저장된 dislike를 프론트 기준 hate로 변환
+    old_vote_front = "hate" if old_vote == "dislike" else old_vote
+
+    # 1. 처음 누름
+    if old_vote is None:
+        db.execute(
+            text("""
+                INSERT INTO article_reactions
+                    (user_id, article_id, reaction_type)
+                VALUES
+                    (:user_id, :article_id, :reaction_type)
+            """),
+            {
+                "user_id": user_id,
+                "article_id": article_id,
+                "reaction_type": db_vote_type
+            }
+        )
+
+        if vote_type == "like":
+            script = """
+                if (ctx._source.like_count == null) ctx._source.like_count = 0;
+                ctx._source.like_count += 1;
+            """
+        else:
+            script = """
+                if (ctx._source.hate_count == null) ctx._source.hate_count = 0;
+                ctx._source.hate_count += 1;
+            """
+
+        current_vote = vote_type
+
+    # 2. 같은 버튼 다시 누름 → 취소
+    elif old_vote_front == vote_type:
+        db.execute(
+            text("""
+                DELETE FROM article_reactions
+                WHERE user_id = :user_id
+                  AND article_id = :article_id
+            """),
+            {
+                "user_id": user_id,
+                "article_id": article_id
+            }
+        )
+
+        if vote_type == "like":
+            script = """
+                if (ctx._source.like_count == null) ctx._source.like_count = 0;
+                if (ctx._source.like_count > 0) ctx._source.like_count -= 1;
+            """
+        else:
+            script = """
+                if (ctx._source.hate_count == null) ctx._source.hate_count = 0;
+                if (ctx._source.hate_count > 0) ctx._source.hate_count -= 1;
+            """
+
+        current_vote = ""
+
+    # 3. 다른 버튼 누름 → 변경
+    else:
+        db.execute(
+            text("""
+                UPDATE article_reactions
+                SET reaction_type = :reaction_type
+                WHERE user_id = :user_id
+                  AND article_id = :article_id
+            """),
+            {
+                "reaction_type": db_vote_type,
+                "user_id": user_id,
+                "article_id": article_id
+            }
+        )
+
+        if vote_type == "like":
+            script = """
+                if (ctx._source.like_count == null) ctx._source.like_count = 0;
+                if (ctx._source.hate_count == null) ctx._source.hate_count = 0;
+
+                ctx._source.like_count += 1;
+                if (ctx._source.hate_count > 0) ctx._source.hate_count -= 1;
+            """
+        else:
+            script = """
+                if (ctx._source.like_count == null) ctx._source.like_count = 0;
+                if (ctx._source.hate_count == null) ctx._source.hate_count = 0;
+
+                ctx._source.hate_count += 1;
+                if (ctx._source.like_count > 0) ctx._source.like_count -= 1;
+            """
+
+        current_vote = vote_type
+
+    db.commit()
+    db.close()
+
+    es.update(
+        index=NEWS_ECONOMY_INDEX,
+        id=article_id,
+        body={
+            "script": {
+                "source": script,
+                "lang": "painless"
+            }
+        },
+        refresh=True
+    )
+
+    result = es.get(index=NEWS_ECONOMY_INDEX, id=article_id)
+    source = result["_source"]
+
+    return {
+        "success": True,
+        "like_count": source.get("like_count", 0),
+        "hate_count": source.get("hate_count", 0),
+        "current_vote": current_vote
+    }
+
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
-def get_article_detail(article_id: str):
+def get_article_detail(article_id: str, req: Request):
     es = get_es()
 
     result = es.get(
@@ -478,6 +651,32 @@ def get_article_detail(article_id: str):
     )
 
     source = result["_source"]
+
+    login_user = req.session.get("user")
+    user_id = login_user.get("user_id") if login_user else None
+
+    current_vote = ""
+
+    if user_id:
+        db = get_engine()
+
+        row = db.execute(
+            text("""
+                SELECT reaction_type
+                FROM article_reactions
+                WHERE user_id = :user_id
+                  AND article_id = :article_id
+            """),
+            {
+                "user_id": user_id,
+                "article_id": article_id
+            }
+        ).fetchone()
+
+        db.close()
+
+        if row:
+            current_vote = "hate" if row[0] == "dislike" else row[0]
 
     return {
         "article_id": source.get("article_id", ""),
@@ -489,8 +688,9 @@ def get_article_detail(article_id: str):
         "summary": source.get("summary", ""),
         "sourceUrl": source.get("url", ""),
         "sentiment": source.get("sentiment", ""),
-        "likeCount": 0,
-        "dislikeCount": 0
+        "likeCount": source.get("like_count", 0),
+        "dislikeCount": source.get("hate_count", 0),
+        "currentVote": current_vote
     }
 
 @app.get("/crawl")

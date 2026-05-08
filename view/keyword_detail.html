@@ -1302,6 +1302,8 @@ document.addEventListener("DOMContentLoaded", function () {
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
+
+  // keyword_detail 기존 실행 코드 그대로 유지
 });
 
 // ==============================
@@ -1398,9 +1400,10 @@ function loadHeader() {
     })
     .then(function (html) {
       headerArea.innerHTML = html;
-        setHeaderLoginState();
-        bindCommonSearch();
-        applyThemeMode();
+
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
     })
     .catch(function (err) {
       console.error("header 로드 실패:", err);
@@ -1524,6 +1527,7 @@ function bindGlobalClickEvents() {
 
       return;
     }
+
     if (themeToggleBtn) {
       e.preventDefault();
       toggleThemeMode();

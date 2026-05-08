@@ -938,10 +938,12 @@ body.light-mode .footer-modal-content h3 {
 // 공통 UI 로드
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
+  applyThemeMode();
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
-  applyThemeMode();
+
+  // article_detail 기존 실행 코드 그대로 유지
 });
 
 
@@ -982,6 +984,7 @@ function loadHeader() {
   if (headerArea.innerHTML.trim()) {
     setHeaderLoginState();
     bindCommonSearch();
+    applyThemeMode();
     return;
   }
 
@@ -998,6 +1001,7 @@ function loadHeader() {
 
       setHeaderLoginState();
       bindCommonSearch();
+      applyThemeMode();
     })
     .catch(function (err) {
       console.error("header 로드 실패:", err);
@@ -1142,7 +1146,7 @@ function bindGlobalClickEvents() {
     const joinBtn = e.target.closest("#joinBtn");
     const primaryUserBtn = e.target.closest("#primaryUserBtn");
     const logoutBtn = e.target.closest("#logoutBtn");
-    const themeBtn = e.target.closest("#themeToggleBtn");
+    const themeToggleBtn = e.target.closest("#themeToggleBtn");
     const loginRequiredLink = e.target.closest("[data-login-page]");
 
     const heroTag = e.target.closest(".h-tag");
@@ -1151,7 +1155,7 @@ function bindGlobalClickEvents() {
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
 
-    if (themeBtn) {
+    if (themeToggleBtn) {
       e.preventDefault();
       toggleThemeMode();
       return;
@@ -1523,7 +1527,12 @@ async function fetchArticleDetail() {
   }
 
   try {
-    const res = await axios.get(`/api/articles/${encodeURIComponent(articleId)}`);
+    const res = await axios.get(
+      `/api/articles/${encodeURIComponent(articleId)}`,
+      {
+        withCredentials: true
+      }
+    );
 
     newsDetail = res.data;
 
@@ -1569,9 +1578,27 @@ function loadNewsDetail() {
   if (date) date.innerText = "발행일 " + newsDetail.date;
   if (press) press.innerText = "언론사 " + newsDetail.press;
   if (reporter) reporter.innerText = "기자 " + newsDetail.reporter;
-  if (content) content.innerText = newsDetail.content;
+    if (content) content.innerText = newsDetail.content;
   if (likeCount) likeCount.innerText = newsDetail.likeCount.toLocaleString();
   if (dislikeCount) dislikeCount.innerText = newsDetail.dislikeCount.toLocaleString();
+
+  currentVote = newsDetail.currentVote || "";
+
+  const likeBtn = document.getElementById("likeBtn");
+  const hateBtn = document.getElementById("hateBtn");
+
+  if (likeBtn && hateBtn) {
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+
+    if (currentVote === "like") {
+      likeBtn.classList.add("active");
+    }
+
+    if (currentVote === "hate") {
+      hateBtn.classList.add("active");
+    }
+  }
 }
 
 
@@ -1586,30 +1613,55 @@ function goSource() {
 // ==============================
 // 좋아요 / 싫어요 토글
 // ==============================
-function selectVote(type) {
+async function selectVote(type) {
+  const articleId = getArticleIdFromUrl();
+
   const likeBtn = document.getElementById("likeBtn");
-  const hateBtn = document.getElementById("hateBtn") || document.getElementById("dislikeBtn");
+  const hateBtn = document.getElementById("hateBtn");
 
-  if (!likeBtn || !hateBtn) return;
+  const likeCountEl = document.getElementById("likeCount");
+  const hateCountEl = document.getElementById("hateCount");
 
-  if (currentVote === type) {
-    currentVote = "";
-    likeBtn.classList.remove("active");
-    hateBtn.classList.remove("active");
+  if (!articleId) {
+    alert("기사 ID가 없습니다.");
     return;
   }
 
-  likeBtn.classList.remove("active");
-  hateBtn.classList.remove("active");
+  if (!likeBtn || !hateBtn || !likeCountEl || !hateCountEl) return;
 
-  currentVote = type;
+  try {
+    const res = await axios.post("/api/articles/vote", {
+      article_id: articleId,
+      vote_type: type
+    }, {
+      withCredentials: true
+    });
 
-  if (type === "like") {
-    likeBtn.classList.add("active");
-  }
+    if (!res.data.success) {
+      alert(res.data.message || "투표 처리에 실패했습니다.");
+      return;
+    }
 
-  if (type === "hate" || type === "dislike") {
-    hateBtn.classList.add("active");
+    likeCountEl.innerText = Number(res.data.like_count).toLocaleString();
+    hateCountEl.innerText = Number(res.data.hate_count).toLocaleString();
+
+    currentVote = res.data.current_vote || "";
+
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+
+    if (currentVote === "like") {
+      likeBtn.classList.add("active");
+    }
+
+    if (currentVote === "hate") {
+      hateBtn.classList.add("active");
+    }
+
+  } catch (error) {
+    console.error("투표 처리 실패:", error);
+    alert("투표 처리 중 오류가 발생했습니다.");
+    fetchArticleDetail();
   }
 }
 
