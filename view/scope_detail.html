@@ -26,6 +26,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   background: #050816;
   color: #e5e7eb;
@@ -38,6 +43,9 @@ body {
   margin: 0 auto;
   padding-top: 72px;
   background: #050816;
+
+  display: flex;
+  flex-direction: column;
 }
 
 /* ==============================
@@ -287,23 +295,35 @@ body {
 
 /* ==============================
    Footer
-   main.html 기준 그대로
 ============================== */
 
+#footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: visible;
+
+  flex-shrink: 0;
+}
+
 .footer {
-  border-top: 1px solid #111827;
-  background: #070b1a;
-  padding: 24px 0;
+  width: 100%;
+  min-height: 88px;
+  background: #020617;
+  color: #fff;
+  box-sizing: border-box;
 }
 
 .footer-inner {
-  width: 1440px;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 64px;
+  width: 100%;
+  min-height: 88px;
+  padding: 0 70px;
+  box-sizing: border-box;
+
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 22px;
+
   color: #64748b;
   font-size: 12px;
 }
@@ -363,6 +383,10 @@ body {
   z-index: 30000;
 }
 
+.footer-modal.hidden {
+  display: none !important;
+}
+
 .footer-modal-box {
   width: 520px;
   max-width: calc(100% - 32px);
@@ -406,6 +430,8 @@ body {
   width: 1040px;
   margin: 0 auto;
   padding: 34px 0 100px;
+
+  flex: 1;
 }
 
 .breadcrumb {
@@ -1412,7 +1438,9 @@ window.logout = function () {
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("userName");
+
   axios.post("/logout");
+
   location.href = "/view/main.html";
 };
 

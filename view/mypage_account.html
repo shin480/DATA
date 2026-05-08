@@ -12,6 +12,11 @@
       padding: 0;
     }
 
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -28,13 +33,17 @@
       margin: 0 auto;
       padding-top: 72px;
       background: #050816;
+
+      display: flex;
+      flex-direction: column;
     }
 
     .layout {
       width: 1240px;
       margin: 0 auto;
       display: flex;
-      min-height: calc(100vh - 72px);
+
+      flex: 1;
     }
 
     aside {
@@ -224,6 +233,7 @@
     }
 
     /* ===== HEADER ===== */
+
     .header {
       position: fixed;
       top: 0;
@@ -445,20 +455,34 @@
     }
 
     /* ===== FOOTER ===== */
+
+    #footer {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      overflow: visible;
+
+      flex-shrink: 0;
+    }
+
     .footer {
-      border-top: 1px solid #111827;
-      background: #070b1a;
-      padding: 24px 0;
-      margin-top: 60px;
+      width: 100%;
+      min-height: 88px;
+      background: #020617;
+      color: #fff;
+      box-sizing: border-box;
     }
 
     .footer-inner {
-      width: 1240px;
-      margin: 0 auto;
-      padding: 0 24px;
+      width: 100%;
+      min-height: 88px;
+      padding: 0 70px;
+      box-sizing: border-box;
+
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 22px;
+
       color: #64748b;
       font-size: 12px;
     }
@@ -500,6 +524,7 @@
     }
 
     .footer-copy {
+      margin: 0;
       color: #64748b;
     }
 
@@ -515,6 +540,10 @@
       align-items: center;
       justify-content: center;
       z-index: 30000;
+    }
+
+    .footer-modal.hidden {
+      display: none !important;
     }
 
     .footer-modal-box {
@@ -702,6 +731,10 @@
       color: #475569;
     }
 
+    body.light-mode .footer-link:hover {
+      color: #0284c7;
+    }
+
     body.light-mode .footer-copy {
       color: #64748b;
     }
@@ -813,10 +846,6 @@
 </div>
 
 <script>
-  /* =========================
-     사용자 정보 표시
-  ========================= */
-
   function loadUserInfo() {
     const name = sessionStorage.getItem("user_name");
     const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email");
@@ -839,10 +868,6 @@
       document.getElementById("userEmail").innerText = email || "이메일 정보 없음";
     }
   }
-
-  /* =========================
-     비밀번호 검증
-  ========================= */
 
   function validatePasswordInput(input) {
     input.value = input.value
@@ -871,16 +896,8 @@
       return;
     }
 
-    if (pw1 !== pw2) {
-      error.style.display = "block";
-    } else {
-      error.style.display = "none";
-    }
+    error.style.display = pw1 !== pw2 ? "block" : "none";
   }
-
-  /* =========================
-     검색어 자동완성
-  ========================= */
 
   function bindCommonSearch() {
     const input = document.getElementById("commonSearchInput");
@@ -1043,10 +1060,6 @@
     location.href = targetUrl;
   }
 
-  /* =========================
-     회원정보 수정
-  ========================= */
-
   async function updateUserInfo() {
     const pw1 = document.getElementById("password1").value;
     const pw2 = document.getElementById("passwordCheck").value;
@@ -1105,10 +1118,6 @@
     }
   }
 
-  /* =========================
-     회원 탈퇴
-  ========================= */
-
   async function deleteUser() {
     const confirmDelete = confirm(
       "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 회원 정보와 활동 내역이 삭제됩니다."
@@ -1146,10 +1155,6 @@
       alert("서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   }
-
-  /* =========================
-     Header / Footer
-  ========================= */
 
   function loadHeader() {
     const headerArea = document.getElementById("header");
@@ -1224,53 +1229,45 @@
       });
   }
 
-  /* =========================
-     Theme
-  ========================= */
+  function applyThemeMode() {
+    const savedTheme = localStorage.getItem("theme_mode");
+    const themeBtn = document.getElementById("themeToggleBtn");
 
-function applyThemeMode() {
-  const savedTheme = localStorage.getItem("theme_mode");
-  const themeBtn = document.getElementById("themeToggleBtn");
+    if (savedTheme === "light") {
+      document.body.classList.add("light-mode");
 
-  if (savedTheme === "light") {
-    document.body.classList.add("light-mode");
+      if (themeBtn) {
+        themeBtn.innerText = "☀️";
+      }
+    } else {
+      document.body.classList.remove("light-mode");
 
-    if (themeBtn) {
-      themeBtn.innerText = "☀️";
-    }
-  } else {
-    document.body.classList.remove("light-mode");
-
-    if (themeBtn) {
-      themeBtn.innerText = "🌙";
+      if (themeBtn) {
+        themeBtn.innerText = "🌙";
+      }
     }
   }
-}
 
-function toggleThemeMode() {
-  const isLight = document.body.classList.contains("light-mode");
-  const themeBtn = document.getElementById("themeToggleBtn");
+  function toggleThemeMode() {
+    const isLight = document.body.classList.contains("light-mode");
+    const themeBtn = document.getElementById("themeToggleBtn");
 
-  if (isLight) {
-    document.body.classList.remove("light-mode");
-    localStorage.setItem("theme_mode", "dark");
+    if (isLight) {
+      document.body.classList.remove("light-mode");
+      localStorage.setItem("theme_mode", "dark");
 
-    if (themeBtn) {
-      themeBtn.innerText = "🌙";
-    }
-  } else {
-    document.body.classList.add("light-mode");
-    localStorage.setItem("theme_mode", "light");
+      if (themeBtn) {
+        themeBtn.innerText = "🌙";
+      }
+    } else {
+      document.body.classList.add("light-mode");
+      localStorage.setItem("theme_mode", "light");
 
-    if (themeBtn) {
-      themeBtn.innerText = "☀️";
+      if (themeBtn) {
+        themeBtn.innerText = "☀️";
+      }
     }
   }
-}
-
-  /* =========================
-     Footer Modal
-  ========================= */
 
   window.openFooterTermsModal = function () {
     const modal = document.getElementById("footerModal");
@@ -1311,10 +1308,6 @@ function toggleThemeMode() {
 
     modal.classList.add("hidden");
   };
-
-  /* =========================
-     공통 클릭 이벤트
-  ========================= */
 
   document.addEventListener("click", function (e) {
     const primaryUserBtn = e.target.closest("#primaryUserBtn");
@@ -1379,10 +1372,6 @@ function toggleThemeMode() {
       return;
     }
   });
-
-  /* =========================
-     Init
-  ========================= */
 
   document.addEventListener("DOMContentLoaded", function () {
     applyThemeMode();
