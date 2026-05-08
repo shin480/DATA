@@ -1,6 +1,6 @@
 from typing import Dict, List, Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -732,6 +732,179 @@ def get_article_detail(article_id: str, req: Request):
         "dislikeCount": source.get("hate_count", 0),
         "currentVote": current_vote
     }
+
+@app.get("/api/mypage/viewed-news")
+def get_viewed_news(
+    req: Request,
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=30)
+):
+    login_user = req.session.get("user")
+    user_id = login_user.get("user_id") if login_user else None
+
+    if not user_id:
+        return {
+            "total_count": 0,
+            "articles": []
+        }
+
+    db = get_engine()
+
+    try:
+        offset = (page - 1) * size
+
+        rows = db.execute(
+            text("""
+                SELECT article_id, created_at
+                FROM article_views
+                WHERE is_valid_view = true
+                  AND user_id = :user_id
+                ORDER BY created_at DESC
+                LIMIT :size OFFSET :offset
+            """),
+            {
+                "user_id": user_id,
+                "size": size,
+                "offset": offset
+            }
+        ).fetchall()
+
+        total = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM article_views
+                WHERE is_valid_view = true
+                  AND user_id = :user_id
+            """),
+            {
+                "user_id": user_id
+            }
+        ).scalar()
+
+        articles = []
+
+        for row in rows:
+            row = dict(row._mapping)
+            article_id = row["article_id"]
+
+            try:
+                es_doc = get_es().get(
+                    index=NEWS_ECONOMY_INDEX,
+                    id=str(article_id).strip()
+                )
+
+                source = es_doc["_source"]
+
+                articles.append({
+                    "article_id": article_id,
+                    "title": source.get("title") or "제목 없음",
+                    "description": (
+                        source.get("content")
+                        or source.get("summary")
+                        or ""
+                    )[:120],
+                    "category": "경제",
+                    "created_at": row["created_at"]
+                })
+
+            except Exception as e:
+                print("ES 기사 조회 실패:", article_id, e)
+
+        return {
+            "total_count": total,
+            "articles": articles
+        }
+
+    finally:
+        db.close()
+
+@app.get("/api/mypage/reactions")
+def get_my_reactions(
+    req: Request,
+    type: str = Query(...),
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=30)
+):
+    login_user = req.session.get("user")
+    user_id = login_user.get("user_id") if login_user else None
+
+    if not user_id:
+        return {
+            "total_count": 0,
+            "articles": []
+        }
+
+    db = get_engine()
+
+    try:
+        offset = (page - 1) * size
+
+        rows = db.execute(
+            text("""
+                SELECT article_id, created_at
+                FROM article_reactions
+                WHERE reaction_type = :reaction_type
+                  AND user_id = :user_id
+                ORDER BY created_at DESC
+                LIMIT :size OFFSET :offset
+            """),
+            {
+                "reaction_type": type,
+                "user_id": user_id,
+                "size": size,
+                "offset": offset
+            }
+        ).fetchall()
+
+        total = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM article_reactions
+                WHERE reaction_type = :reaction_type
+                  AND user_id = :user_id
+            """),
+            {
+                "reaction_type": type,
+                "user_id": user_id
+            }
+        ).scalar()
+
+        articles = []
+
+        for row in rows:
+            row = dict(row._mapping)
+            article_id = row["article_id"]
+
+            try:
+                es_doc = get_es().get(
+                    index=NEWS_ECONOMY_INDEX,
+                    id=str(article_id).strip()
+                )
+
+                source = es_doc["_source"]
+
+                articles.append({
+                    "article_id": article_id,
+                    "title": source.get("title") or "제목 없음",
+                    "description": (
+                        source.get("content")
+                        or source.get("summary")
+                        or ""
+                    )[:120],
+                    "category": "경제",
+                    "created_at": row["created_at"]
+                })
+
+            except Exception as e:
+                print("ES 기사 조회 실패:", article_id, e)
+
+        return {
+            "total_count": total,
+            "articles": articles
+        }
+
+    finally:
+        db.close()
 
 # =========================
 # 메인 1위 키워드
