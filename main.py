@@ -678,7 +678,7 @@ def vote_article(info: VoteRequest, req: Request):
     }
 
 @app.post("/view")
-def view(info:Dict[str,str], req: Request):
+def view(info:Dict[str,Any], req: Request):
     view_log(info, req)
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
@@ -871,68 +871,8 @@ async def crawl():
 
 # =========================================
 # 관점 상세 조회 API
+# viewpoint_master 기반
 # =========================================
-
-VIEWPOINT_GROUPS = {
-    "정부 관점": {
-        "icon": "🏛",
-        "categories": [
-            "정부 책임",
-            "정부 개입 강조",
-            "정책 요인(국내)"
-        ],
-        "analysis_title": "정부 정책과 제도 변화에 초점을 둔 관점",
-        "analysis_desc": "해당 관점은 정부의 정책 발표, 제도 개편, 규제 방향, 공공 대응을 중심으로 기사를 해석합니다."
-    },
-
-    "개인 관점": {
-        "icon": "👤",
-        "categories": [
-            "개인 책임"
-        ],
-        "analysis_title": "개인 생활과 체감 변화에 초점을 둔 관점",
-        "analysis_desc": "해당 관점은 소비자 부담, 가계, 고용, 생활비처럼 개인이 직접 체감하는 변화를 중심으로 기사를 해석합니다."
-    },
-
-    "복합 관점": {
-        "icon": "🔀",
-        "categories": [
-            "복합 책임",
-            "원인 분석",
-            "결과 분석",
-            "대응 분석",
-            "전망 분석",
-            "단순 전달",
-            "비판적 태도",
-            "우려",
-            "기대",
-            "성과 예찬"
-        ],
-        "analysis_title": "여러 이해관계가 함께 얽힌 관점",
-        "analysis_desc": "해당 관점은 정부, 기업, 개인, 외부 환경이 동시에 영향을 주고받는 구조를 중심으로 기사를 해석합니다."
-    },
-
-    "기업 관점": {
-        "icon": "🏢",
-        "categories": [
-            "기업 책임",
-            "시장 자율 강조"
-        ],
-        "analysis_title": "기업 활동과 산업 흐름에 초점을 둔 관점",
-        "analysis_desc": "해당 관점은 기업의 책임, 투자, 실적, 비용 부담, 산업 경쟁력 등 기업 활동을 중심으로 기사를 해석합니다."
-    },
-
-    "외부 관점": {
-        "icon": "🌐",
-        "categories": [
-            "외부 책임",
-            "외부 요인(글로벌)"
-        ],
-        "analysis_title": "해외 변수와 외부 환경에 초점을 둔 관점",
-        "analysis_desc": "해당 관점은 글로벌 경기, 환율, 국제 정세, 공급망, 원자재 가격 등 외부 요인이 국내 경제에 미치는 영향을 중심으로 기사를 해석합니다."
-    }
-}
-
 
 def normalize_sentiment(sentiment):
     if sentiment in ["positive", "긍정"]:
@@ -944,67 +884,7 @@ def normalize_sentiment(sentiment):
     return "neutral"
 
 
-def get_top_perspective_category(source):
-    """
-    ES의 perspective 필드에서 1순위 category를 뽑는다.
-    perspective가 list[dict] 형태든, 문자열 형태든 최대한 방어적으로 처리.
-    """
-    perspective = source.get("perspective")
-
-    if not perspective:
-        return None
-
-    # viewpoint_classify.py 기준: [{"rank": 1, "category": "...", "score": ...}]
-    if isinstance(perspective, list):
-        valid_items = []
-
-        for item in perspective:
-            if isinstance(item, dict):
-                category = item.get("category")
-                rank = item.get("rank", 999)
-
-                if category:
-                    valid_items.append({
-                        "category": category,
-                        "rank": rank
-                    })
-
-            elif isinstance(item, str):
-                return item
-
-        if not valid_items:
-            return None
-
-        valid_items.sort(key=lambda x: x["rank"])
-        return valid_items[0]["category"]
-
-    if isinstance(perspective, dict):
-        return perspective.get("category")
-
-    if isinstance(perspective, str):
-        return perspective
-
-    return None
-
-
-def get_viewpoint_group(category):
-    """
-    세부 관점 category를 화면용 5개 관점 그룹으로 변환.
-    """
-    if not category:
-        return "복합 관점"
-
-    for group_name, group_info in VIEWPOINT_GROUPS.items():
-        if category in group_info["categories"]:
-            return group_name
-
-    return "복합 관점"
-
-
 def parse_keywords(raw_keywords):
-    """
-    keywords가 list든 comma string이든 화면용 리스트로 변환.
-    """
     if not raw_keywords:
         return []
 
@@ -1037,100 +917,55 @@ def format_base_date(date_text):
     return "기준일 " + date_text
 
 
-@app.get("/api/viewpoints/detail")
-def get_viewpoint_detail(viewpoint: str = "정부 관점"):
-    es = get_es()
-
-    # 화면에서 넘어온 값이 이상하면 기본값 처리
-    if viewpoint not in VIEWPOINT_GROUPS:
-        viewpoint = "정부 관점"
-
-    body = {
-        "size": 500,
-        "_source": [
-            "article_id",
-            "title",
-            "content",
-            "summary",
-            "press",
-            "url",
-            "published_at",
-            "sentiment",
-            "keywords",
-            "perspective",
-            "like_count",
-            "hate_count"
-        ],
-        "query": {
-            "bool": {
-                "must": [
-                    {
-                        "exists": {
-                            "field": "perspective"
-                        }
-                    }
-                ]
-            }
-        },
-        "sort": [
-            {
-                "published_at": {
-                    "order": "desc"
-                }
-            }
-        ]
-    }
-
+def get_viewpoint_master(es):
     result = es.search(
-        index=NEWS_ECONOMY_INDEX,
-        body=body
+        index="viewpoint_master",
+        body={
+            "size": 100,
+            "query": {
+                "match_all": {}
+            },
+            "sort": [
+                {
+                    "sort_order": {
+                        "order": "asc"
+                    }
+                }
+            ]
+        }
     )
 
-    hits = result["hits"]["hits"]
+    items = []
 
-    all_articles = []
-    latest_date = ""
-
-    # 전체 기사 기준 관점 그룹 계산
-    for hit in hits:
+    for hit in result["hits"]["hits"]:
         source = hit["_source"]
 
-        top_category = get_top_perspective_category(source)
-        group_name = get_viewpoint_group(top_category)
-
-        published_at = source.get("published_at", "")
-
-        if published_at and not latest_date:
-            latest_date = published_at
-
-        all_articles.append({
-            "article_id": source.get("article_id", hit.get("_id", "")),
-            "title": source.get("title", "제목 없음"),
-            "press": source.get("press", "언론사 없음"),
-            "summary": source.get("summary") or source.get("content", "")[:120],
-            "url": source.get("url", "#"),
-            "published_at": published_at,
-            "sentiment": normalize_sentiment(source.get("sentiment", "neutral")),
-            "keywords": parse_keywords(source.get("keywords")),
-            "viewpoint_group": group_name,
-            "perspective_category": top_category,
-            "like_count": source.get("like_count", 0) or 0,
-            "hate_count": source.get("hate_count", 0) or 0
+        items.append({
+            "group_name": source.get("group_name", ""),
+            "display_title": source.get("display_title", ""),
+            "es_category": source.get("es_category", ""),
+            "sort_order": source.get("sort_order", 999)
         })
 
-    total_count = len(all_articles)
+    return items
 
-    # 데이터 없을 때 기본 응답
-    if total_count == 0:
-        group_info = VIEWPOINT_GROUPS[viewpoint]
 
+@app.get("/api/viewpoints/detail")
+def get_viewpoint_detail(viewpoint: str = ""):
+    es = get_es()
+
+    master_items = get_viewpoint_master(es)
+
+    if not master_items:
         return {
-            "title": viewpoint,
-            "icon": group_info["icon"],
+            "title": "관점 데이터 없음",
+            "es_category": "",
             "percent": 0,
+            "count": 0,
+            "total_count": 0,
             "date": "기준일",
-            "analysis_title": group_info["analysis_title"],
-            "analysis_desc": "아직 관점 분석 데이터가 없습니다.",
+            "analysis_title": "관점 기준 데이터가 없습니다.",
+            "analysis_desc": "viewpoint_master 인덱스에 관점 기준 데이터를 먼저 등록해야 합니다.",
             "sentiment": {
                 "positive": {"percent": 0, "count": 0},
                 "neutral": {"percent": 0, "count": 0},
@@ -1138,48 +973,207 @@ def get_viewpoint_detail(viewpoint: str = "정부 관점"):
             },
             "keywords": [],
             "articles": [],
-            "compare": [
-                {
-                    "title": group_name,
-                    "percent": 0
-                }
-                for group_name in VIEWPOINT_GROUPS.keys()
-            ]
+            "compare_groups": []
         }
 
-    # 관점별 개수 계산
-    group_counter = Counter(
-        article["viewpoint_group"]
-        for article in all_articles
+    title_to_master = {
+        item["display_title"]: item
+        for item in master_items
+    }
+
+    es_to_master = {
+        item["es_category"]: item
+        for item in master_items
+    }
+
+    # =========================
+    # rank 1 대표 관점 집계
+    # =========================
+    agg_result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 0,
+            "aggs": {
+                "perspective_nested": {
+                    "nested": {
+                        "path": "perspective"
+                    },
+                    "aggs": {
+                        "rank_1_only": {
+                            "filter": {
+                                "term": {
+                                    "perspective.rank": 1
+                                }
+                            },
+                            "aggs": {
+                                "categories": {
+                                    "terms": {
+                                        "field": "perspective.category",
+                                        "size": 100
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     )
 
-    compare = []
+    buckets = (
+        agg_result
+        .get("aggregations", {})
+        .get("perspective_nested", {})
+        .get("rank_1_only", {})
+        .get("categories", {})
+        .get("buckets", [])
+    )
 
-    for group_name in VIEWPOINT_GROUPS.keys():
-        count = group_counter.get(group_name, 0)
-        percent = round((count / total_count) * 100)
+    es_count_map = {
+        bucket["key"]: bucket["doc_count"]
+        for bucket in buckets
+    }
 
-        compare.append({
-            "title": group_name,
-            "percent": percent
+    total_count = sum(es_count_map.values())
+
+    # =========================
+    # 선택 관점 결정
+    # =========================
+    selected_master = None
+
+    if viewpoint:
+        selected_master = title_to_master.get(viewpoint)
+
+    if selected_master is None and buckets:
+        top_es_category = buckets[0]["key"]
+        selected_master = es_to_master.get(top_es_category)
+
+    if selected_master is None:
+        selected_master = master_items[0]
+
+    selected_title = selected_master["display_title"]
+    selected_es_category = selected_master["es_category"]
+    selected_group_name = selected_master["group_name"]
+
+    # =========================
+    # 같은 그룹 관점만 비교 데이터 생성
+    # =========================
+    same_group_items = []
+
+    for item in master_items:
+        if item["group_name"] != selected_group_name:
+            continue
+
+        count = es_count_map.get(item["es_category"], 0)
+        percent = round((count / total_count) * 100) if total_count else 0
+
+        same_group_items.append({
+            "title": item["display_title"],
+            "es_category": item["es_category"],
+            "percent": percent,
+            "count": count
         })
 
-    # 선택된 관점 기사만 추출
-    selected_articles = [
-        article
-        for article in all_articles
-        if article["viewpoint_group"] == viewpoint
+    compare_groups = [
+        {
+            "group": selected_group_name,
+            "items": same_group_items
+        }
     ]
 
-    selected_count = len(selected_articles)
-    selected_percent = round((selected_count / total_count) * 100) if total_count else 0
-
-    # 감성 분포 계산
-    sentiment_counter = Counter(
-        article["sentiment"]
-        for article in selected_articles
+    # =========================
+    # 선택 관점 기사 조회
+    # =========================
+    search_result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 500,
+            "_source": [
+                "article_id",
+                "title",
+                "content",
+                "summary",
+                "press",
+                "url",
+                "published_at",
+                "sentiment",
+                "keywords",
+                "like_count",
+                "hate_count",
+                "perspective"
+            ],
+            "query": {
+                "nested": {
+                    "path": "perspective",
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "term": {
+                                        "perspective.rank": 1
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "perspective.category": selected_es_category
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "sort": [
+                {
+                    "published_at": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
     )
 
+    hits = search_result["hits"]["hits"]
+    selected_count = search_result["hits"]["total"]["value"]
+
+    articles = []
+    sentiment_counter = Counter()
+    keyword_counter = Counter()
+
+    latest_date = ""
+
+    for hit in hits:
+        source = hit["_source"]
+
+        published_at = source.get("published_at", "")
+
+        if published_at and not latest_date:
+            latest_date = published_at
+
+        sentiment = normalize_sentiment(source.get("sentiment", "neutral"))
+        sentiment_counter[sentiment] += 1
+
+        keywords = parse_keywords(source.get("keywords"))
+
+        for keyword in keywords:
+            keyword_counter[keyword] += 1
+
+        articles.append({
+            "article_id": source.get("article_id", hit.get("_id", "")),
+            "title": source.get("title", "제목 없음"),
+            "press": source.get("press", "언론사 없음"),
+            "summary": source.get("summary") or source.get("content", "")[:120],
+            "url": source.get("url", "#"),
+            "published_at": published_at,
+            "sentiment": sentiment,
+            "keywords": keywords,
+            "like_count": source.get("like_count", 0) or 0,
+            "hate_count": source.get("hate_count", 0) or 0
+        })
+
+    # =========================
+    # 감성 분포
+    # =========================
     positive_count = sentiment_counter.get("positive", 0)
     neutral_count = sentiment_counter.get("neutral", 0)
     negative_count = sentiment_counter.get("negative", 0)
@@ -1193,21 +1187,18 @@ def get_viewpoint_detail(viewpoint: str = "정부 관점"):
         neutral_percent = 0
         negative_percent = 0
 
-    # 키워드 TOP 8
-    keyword_counter = Counter()
-
-    for article in selected_articles:
-        for keyword in article["keywords"]:
-            keyword_counter[keyword] += 1
-
+    # =========================
+    # 주요 키워드
+    # =========================
     keywords = [
         keyword
         for keyword, count in keyword_counter.most_common(8)
     ]
 
+    # =========================
     # 관련 기사 TOP 5
-    # 우선순위: 반응 수 많은 기사 → 최신 기사
-    selected_articles.sort(
+    # =========================
+    articles.sort(
         key=lambda article: (
             article["like_count"] + article["hate_count"],
             article["published_at"] or ""
@@ -1217,7 +1208,7 @@ def get_viewpoint_detail(viewpoint: str = "정부 관점"):
 
     top_articles = []
 
-    for article in selected_articles[:5]:
+    for article in articles[:5]:
         top_articles.append({
             "article_id": article["article_id"],
             "press": article["press"],
@@ -1228,15 +1219,17 @@ def get_viewpoint_detail(viewpoint: str = "정부 관점"):
             "url": article["url"]
         })
 
-    group_info = VIEWPOINT_GROUPS[viewpoint]
+    selected_percent = round((selected_count / total_count) * 100) if total_count else 0
 
     return {
-        "title": viewpoint,
-        "icon": group_info["icon"],
+        "title": selected_title,
+        "es_category": selected_es_category,
         "percent": selected_percent,
+        "count": selected_count,
+        "total_count": total_count,
         "date": format_base_date(latest_date),
-        "analysis_title": group_info["analysis_title"],
-        "analysis_desc": group_info["analysis_desc"],
+        "analysis_title": f"{selected_title} 분석",
+        "analysis_desc": f"{selected_title}에 해당하는 기사 흐름을 분석한 결과입니다.",
         "sentiment": {
             "positive": {
                 "percent": positive_percent,
@@ -1253,5 +1246,5 @@ def get_viewpoint_detail(viewpoint: str = "정부 관점"):
         },
         "keywords": keywords,
         "articles": top_articles,
-        "compare": compare
+        "compare_groups": compare_groups
     }
