@@ -494,6 +494,13 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.keyword-list span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .keyword {
@@ -558,11 +565,10 @@ body {
 .fill.negative { background: #ff4e5f; }
 
 .viewpoints {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 18px 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: center;
 }
 
 .viewpoint {
@@ -937,7 +943,7 @@ body.light-mode .breadcrumb {
 body.light-mode .scope-box,
 body.light-mode .stat-box,
 body.light-mode .news-card {
-  background: #EEF2FC;
+  background: #F7FAF7;
   border: 1px solid #d9e2f2;
   box-shadow: 0 4px 14px rgba(148, 163, 184, 0.08);
 }
