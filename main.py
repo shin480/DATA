@@ -27,6 +27,7 @@ from forgotPassword.temppassword import send_temporary_password
 from mypage.updatepassword import update_user_password
 from mypage.deleteaccount import delete_user_account
 from mypage.passwordcheck import check_user_password, check_auth_status
+from mypage.article_view import view_log
 
 
 
@@ -640,6 +641,9 @@ def vote_article(info: VoteRequest, req: Request):
         "current_vote": current_vote
     }
 
+@app.post("/view")
+def view(req: Request):
+    view_log(req)
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
 def get_article_detail(article_id: str, req: Request):
