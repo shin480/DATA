@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>감성 분류 어드민</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +39,7 @@
     font-size: 14px; line-height: 1.6;
   }
 
-  .page { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
 
   /* 헤더 */
   .header {
@@ -252,11 +253,169 @@
     resize: vertical; min-height: 60px;
   }
   textarea:focus { outline: none; border-color: var(--accent); }
+
+  .admin-model-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg2);
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 270px;
+  background: #0b1020;
+  border-right: 1px solid #121a2d;
+  padding-top: 28px;
+  z-index: 100;
+}
+
+.logo-wrap {
+  padding: 0 24px 32px;
+  cursor: pointer;
+}
+
+.logo-small {
+  color: #6ddcff;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.logo-main {
+  color: #14d9ff;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.side-title-wrap {
+  padding: 0 24px 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #2f3748;
+}
+
+.side-title {
+  color: #6e7c98;
+  font-size: 13px;
+}
+
+.side-menu {
+  list-style: none;
+}
+
+.side-menu li {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 28px;
+  color: #6f7d98;
+  font-size: 15px;
+  border-left: 4px solid transparent;
+  cursor: pointer;
+}
+
+.side-menu li:hover {
+  background: #10192b;
+}
+
+.side-menu li.active {
+  background: #132137;
+  color: #42bfff;
+  border-left-color: #24bfff;
+  font-weight: 700;
+}
+
+.model-main {
+  width: calc(100% - 270px);
+  margin-left: 270px;
+  min-height: 100vh;
+}
+
+/* 우측 상단 관리자 버튼 영역 */
+.admin-top-actions {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 100;
+}
+
+/* 기본 버튼 */
+.top-action-btn {
+  padding: 8px 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+/* hover */
+.top-action-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* 로그아웃 버튼만 살짝 강조 */
+.logout-btn {
+  border-color: rgba(255, 80, 80, 0.25);
+}
+
+.logout-btn:hover {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+  background: rgba(255, 80, 80, 0.08);
+}
 </style>
 </head>
 <body>
-<div class="page">
+<body>
+<div class="admin-model-layout">
 
+  <aside class="sidebar">
+    <div class="logo-wrap" onclick="location.href='/view/admin_dashboard.html'">
+      <div class="logo-small">뉴스를 이해하는 방식</div>
+      <div class="logo-main">DATA 다타</div>
+    </div>
+
+    <div class="side-title-wrap">
+      <div class="side-title">관리자 페이지</div>
+    </div>
+
+    <ul class="side-menu">
+      <li onclick="location.href='/view/admin_dashboard.html'">
+        수집 정보
+      </li>
+      <li onclick="location.href='/view/admin_users.html'">
+        회원 정보
+      </li>
+      <li class="active" onclick="location.href='/view/sentiment_dashboard_dark.html'">
+        모델 보정
+      </li>
+    </ul>
+  </aside>
+
+  <main class="model-main">
+<div class="page">
+  <div class="admin-top-actions">
+  <button type="button" class="top-action-btn" onclick="location.href='/view/main.html'">
+    메인으로
+  </button>
+
+  <button type="button" class="top-action-btn logout-btn" onclick="logout()">
+    로그아웃
+  </button>
+</div>
   <!-- 헤더 -->
   <div class="header">
     <div style="display:flex; align-items:center; gap:10px;">
@@ -496,7 +655,8 @@
   </div>
 
 </div><!-- /page -->
-
+  </main>
+</div>
 <!-- 정정 모달 -->
 <div class="modal-overlay" id="corr-modal">
   <div class="modal">
@@ -528,6 +688,11 @@
 <div id="toast"></div>
 
 <script>
+
+function logout(){
+  axios.post("/logout");
+  location.href='/view/main.html'
+}
 // ── 공통 유틸 ─────────────────────────────────────────
 const LABELS = ['positive','negative','neutral'];
 const BADGE  = { positive:'badge-pos', negative:'badge-neg', neutral:'badge-neu' };
