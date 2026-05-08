@@ -1416,7 +1416,15 @@ function bindGlobalClickEvents() {
 
     if (newsFooterBtn) {
       e.preventDefault();
-      goLoginRequiredPage("/view/article_detail.html");
+
+      const articleId = newsFooterBtn.dataset.articleId;
+
+      if (articleId) {
+        goLoginRequiredPage(`/view/article_detail.html?article_id=${articleId}`);
+      } else {
+        goLoginRequiredPage("/view/article_detail.html");
+      }
+
       return;
     }
 
@@ -1675,11 +1683,8 @@ async function loadHotNews() {
 
                         <button
                             class="news-footer-btn"
-                            onclick="
-                                location.href=
-                                '/view/article_detail.html?article_id=${item.article_id}'
-                            "
-                        >
+                            data-article-id="${item.article_id}"
+                            type="button">
                             상세 보기 >
                         </button>
 
