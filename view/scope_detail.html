@@ -601,9 +601,9 @@ body {
   margin-bottom: 12px;
 }
 
-.column-head.positive { color: #13d77b; }
-.column-head.neutral { color: #f0b83a; }
-.column-head.negative { color: #ff4e5f; }
+.column-head.positive { color: #3DB87A; }
+.column-head.neutral { color: #F2B648; }
+.column-head.negative { color: #E05A5A; }
 
 .news-card {
   background: #0b1223;
@@ -625,18 +625,49 @@ body {
   border-color: #2f6dff;
 }
 
+
 .news-card::before {
   content: "";
   position: absolute;
   left: 0;
   top: 0;
-  width: 3px;
+  width: 4px;
+  opacity: 0.95;
   height: 100%;
 }
 
-.news-card.positive::before { background: #13d77b; }
-.news-card.neutral::before { background: #f0b83a; }
-.news-card.negative::before { background: #ff4e5f; }
+.news-card.positive::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(19, 215, 123, 0) 0%,
+    rgba(19, 215, 123, 0.08) 15%,
+    rgba(19, 215, 123, 0.3) 50%,
+    rgba(19, 215, 123, 0.08) 85%,
+    rgba(19, 215, 123, 0) 100%
+  );
+}
+
+.news-card.neutral::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(240, 184, 58, 0) 0%,
+    rgba(240, 184, 58, 0.08) 15%,
+    rgba(240, 184, 58, 0.3) 50%,
+    rgba(240, 184, 58, 0.08) 85%,
+    rgba(240, 184, 58, 0) 100%
+  );
+}
+
+.news-card.negative::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 78, 95, 0) 0%,
+    rgba(255, 78, 95, 0.08) 15%,
+    rgba(255, 78, 95, 0.3) 50%,
+    rgba(255, 78, 95, 0.08) 85%,
+    rgba(255, 78, 95, 0) 100%
+  );
+}
 
 .card-meta {
   display: flex;
@@ -840,8 +871,6 @@ body.light-mode .footer {
   border-top: 1px solid #d8e0d9;
 }
 
-  border-top: 1px solid #d8e0d9;
-}
 
 body.light-mode .footer-inner {
   color: #6f7d75;
@@ -908,8 +937,14 @@ body.light-mode .breadcrumb {
 body.light-mode .scope-box,
 body.light-mode .stat-box,
 body.light-mode .news-card {
-  background: #ffffff;
-  border-color: #e2e8f0;
+  background: #EEF2FC;
+  border: 1px solid #d9e2f2;
+  box-shadow: 0 4px 14px rgba(148, 163, 184, 0.08);
+}
+
+body.light-mode .news-card:hover {
+  background: #f7f9ff;
+  border-color: #c7d3ea;
 }
 
 body.light-mode .scope-title,

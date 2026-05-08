@@ -471,13 +471,13 @@
 
         // ===== 로그인 실패 횟수 =====
 
-        let loginFailCount =
-            Number(localStorage.getItem("loginFailCount")) || 0;
+        // let loginFailCount =
+        //     Number(localStorage.getItem("loginFailCount")) || 0;
 
         // ===== 로그인 잠금 시간 =====
 
-        let loginLockTime =
-            Number(localStorage.getItem("loginLockTime")) || 0;
+        // let loginLockTime =
+        //     Number(localStorage.getItem("loginLockTime")) || 0;
 
         // ===== 이메일 X 버튼 =====
 
@@ -574,30 +574,30 @@
 
             const now = Date.now();
 
-            if (loginLockTime > now) {
+            // if (loginLockTime > now) {
 
-                const remainHour =
-                    Math.ceil((loginLockTime - now) / (1000 * 60 * 60));
+            //     const remainHour =
+            //         Math.ceil((loginLockTime - now) / (1000 * 60 * 60));
 
-                showAlert(
-                    "로그인 실패 5회로 계정이 잠겼습니다.",
-                    `${remainHour}시간 후 다시 시도해주세요.`
-                );
+            //     showAlert(
+            //         "로그인 실패 5회로 계정이 잠겼습니다.",
+            //         `${remainHour}시간 후 다시 시도해주세요.`
+            //     );
 
-                return;
-            }
+            //     return;
+            // }
 
             // 잠금 해제 시 초기화
-            if (loginLockTime && loginLockTime <= now) {
+            // if (loginLockTime && loginLockTime <= now) {
 
-                localStorage.removeItem("loginFailCount");
+            //     localStorage.removeItem("loginFailCount");
 
-                localStorage.removeItem("loginLockTime");
+            //     localStorage.removeItem("loginLockTime");
 
-                loginFailCount = 0;
+            //     loginFailCount = 0;
 
-                loginLockTime = 0;
-            }
+            //     loginLockTime = 0;
+            // }
 
             // 입력값
             const emailValue =
@@ -642,13 +642,13 @@
 
                 if (data.success) {
 
-                    localStorage.removeItem("loginFailCount");
+                    //localStorage.removeItem("loginFailCount");
 
-                    localStorage.removeItem("loginLockTime");
+                    //localStorage.removeItem("loginLockTime");
 
-                    loginFailCount = 0;
+                    //loginFailCount = 0;
 
-                    loginLockTime = 0;
+                    //loginLockTime = 0;
 
                     // 세션 저장
                     sessionStorage.setItem(
@@ -704,40 +704,39 @@
                     // 비밀번호 초기화
                     passwordInput.value = '';
 
-                    loginFailCount++;
+                    //loginFailCount++;
 
-                    localStorage.setItem(
-                        "loginFailCount",
-                        loginFailCount
-                    );
+                    // localStorage.setItem(
+                    //     "loginFailCount",
+                    //     loginFailCount
+                    // );
 
                     // ===== 5회 실패 =====
 
-                    if (loginFailCount >= 5) {
+                    // if (loginFailCount >= 5) {
 
-                        const lockUntil =
-                            Date.now() + (24 * 60 * 60 * 1000);
+                    //     const lockUntil =
+                    //         Date.now() + (24 * 60 * 60 * 1000);
 
-                        localStorage.setItem(
-                            "loginLockTime",
-                            lockUntil
-                        );
+                    //     localStorage.setItem(
+                    //         //"loginLockTime",
+                    //         lockUntil
+                    //     );
 
-                        loginLockTime = lockUntil;
+                    //     //loginLockTime = lockUntil;
 
-                        showAlert(
-                            "로그인 실패 5회로 계정이 잠겼습니다.",
-                            "24시간 후 다시 시도해주세요."
-                        );
+                    //     showAlert(
+                    //         "로그인 실패 5회로 계정이 잠겼습니다.",
+                    //         "24시간 후 다시 시도해주세요."
+                    //     );
 
-                        return;
-                    }
+                    //     return;
+                    // }
 
                     // ===== 일반 실패 =====
 
                     showAlert(
-                        data.message || "로그인 정보가 일치하지 않습니다.",
-                        `${loginFailCount}회 오류`
+                        data.message || "로그인 정보가 일치하지 않습니다."
                     );
                 }
 
