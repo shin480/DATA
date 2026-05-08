@@ -388,6 +388,100 @@ body {
   background: #22385d;
 }
 
+/* ==============================
+   Article Viewpoint Card
+============================== */
+
+.article-viewpoint-card {
+  margin: 10px auto 34px;
+  padding: 26px 30px;
+  max-width: 720px;
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 22px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+}
+
+.viewpoint-card-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.viewpoint-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #2dd4bf;
+  color: #2dd4bf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.viewpoint-label {
+  margin-bottom: 6px;
+  color: #2dd4bf;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.viewpoint-name {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.viewpoint-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid #16223b;
+}
+
+.viewpoint-meta span {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #111d35;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.viewpoint-meta strong {
+  color: #e5e7eb;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+body.light-mode .article-viewpoint-card {
+  background: #ffffff;
+  border-color: #dbe7df;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+body.light-mode .viewpoint-name {
+  color: #0f172a;
+}
+
+body.light-mode .viewpoint-meta {
+  border-top-color: #e2e8f0;
+}
+
+body.light-mode .viewpoint-meta span {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+body.light-mode .viewpoint-meta strong {
+  color: #0f172a;
+}
+
 .vote-wrap {
   padding: 18px 0 24px;
   text-align: center;
@@ -507,11 +601,7 @@ body {
 ============================== */
 
 #footer {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  overflow: visible;
-
+  width: 100%;
   flex-shrink: 0;
 }
 
@@ -926,11 +1016,27 @@ body.light-mode .footer-modal-content h3 {
         </button>
       </div>
 
+      <section class="article-viewpoint-card">
+        <div class="viewpoint-card-head">
+          <span class="viewpoint-icon">◎</span>
+          <div>
+            <div class="viewpoint-label">분석 관점</div>
+            <h3 class="viewpoint-name" id="articleViewpoint">정부 관점</h3>
+          </div>
+        </div>
+
+        <div class="viewpoint-meta">
+          <span>감성</span>
+          <strong id="articleSentiment">중립</strong>
+        </div>
+
+      </section>
+
       <div class="article-line"></div>
 
       <section class="vote-wrap">
         <div class="vote-title">
-          이 기사의 관점에 대해 어떻게 생각하세요?
+          이 기사에서 분석된 관점에 동의하시나요?
         </div>
 
         <div class="vote-box">
@@ -1602,6 +1708,8 @@ function loadNewsDetail() {
   const content = document.getElementById("newsContent");
   const likeCount = document.getElementById("likeCount");
   const dislikeCount = document.getElementById("hateCount") || document.getElementById("dislikeCount");
+  const viewpoint = document.getElementById("articleViewpoint");
+  const sentiment = document.getElementById("articleSentiment");
 
   if (title) title.innerText = newsDetail.title;
   if (date) date.innerText = "발행일 " + newsDetail.date;
@@ -1610,6 +1718,19 @@ function loadNewsDetail() {
   if (content) content.innerText = newsDetail.content;
   if (likeCount) likeCount.innerText = Number(newsDetail.likeCount || 0).toLocaleString();
   if (dislikeCount) dislikeCount.innerText = Number(newsDetail.dislikeCount || 0).toLocaleString();
+
+  if (viewpoint) {
+    viewpoint.innerText =
+      newsDetail.viewpoint ||
+      newsDetail.perspective ||
+      "관점 정보 없음";
+  }
+
+  if (sentiment) {
+    sentiment.innerText =
+      newsDetail.sentiment ||
+      "감성 정보 없음";
+  }
 
   currentVote = newsDetail.currentVote || "";
 
