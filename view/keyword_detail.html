@@ -2018,9 +2018,7 @@ body.light-mode .toast {
       <section>
         <span class="keyword-badge">ECONOMY</span>
         <h1 class="keyword-title" id="keywordTitle">금리</h1>
-        <p class="keyword-desc" id="keywordDesc">
-          총 28개의 언론사 데이터 기반으로 AI가 분석한 결과입니다.
-        </p>
+        <p class="keyword-desc" id="keywordDesc"></p>
       </section>
 
       <section class="top-grid">
@@ -2698,14 +2696,7 @@ let perspectives = [];
 let articles = [];
 let rollingTimers = [];
 
-async function fetchPerspectiveData() {
-  const params = new URLSearchParams(window.location.search);
-  const keyword = params.get("keyword") || "금리";
-
-  try {
-    const res = await axios.get(`/api/keywords/${encodeURIComponent(keyword)}`);
-    const data = res.data;
-
+function buildPerspectiveData(data) {
     articles = data.articles || [];
 
     perspectives = [
@@ -2717,7 +2708,7 @@ async function fetchPerspectiveData() {
           .slice(0, 4)
           .map(item => ({
             code: "P",
-            press: item.source,
+            press: item.press,
             title: item.title,
             article_id: item.article_id
           })),
@@ -2733,7 +2724,7 @@ async function fetchPerspectiveData() {
           .slice(0, 4)
           .map(item => ({
             code: "N",
-            press: item.source,
+            press: item.press,
             title: item.title,
             article_id: item.article_id
           })),
@@ -2749,7 +2740,7 @@ async function fetchPerspectiveData() {
           .slice(0, 4)
           .map(item => ({
             code: "D",
-            press: item.source,
+            press: item.press,
             title: item.title,
             article_id: item.article_id
           })),
@@ -2760,10 +2751,6 @@ async function fetchPerspectiveData() {
     ];
 
     renderPerspectives();
-
-  } catch (error) {
-    console.error("관점 데이터 불러오기 실패:", error);
-  }
 }
 
 // ==============================
@@ -3035,6 +3022,7 @@ async function fetchKeywordDetail(keyword) {
 
     renderKeyword();
     renderArticles();
+    buildPerspectiveData(keywordData);
 
   } catch (error) {
     console.error("키워드 상세 데이터 불러오기 실패:", error);
@@ -3096,7 +3084,6 @@ window.selectPerspectiveArticle = selectPerspectiveArticle;
 // 최초 실행
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
-  fetchPerspectiveData();
   readKeywordFromUrl();
 
   window.addEventListener("resize", checkPressArrow);
