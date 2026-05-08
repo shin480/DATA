@@ -678,8 +678,8 @@ def vote_article(info: VoteRequest, req: Request):
     }
 
 @app.post("/view")
-def view(req: Request):
-    view_log(req)
+def view(info:Dict[str,str], req: Request):
+    view_log(info, req)
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
 def get_article_detail(article_id: str, req: Request):

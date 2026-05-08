@@ -545,9 +545,12 @@ transition: background 1s ease; }
 
 .news-main-row { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-bottom: 20px; }
 .news-rank-circle { min-width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #00E5FF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #00E5FF; }
-.news-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: left; word-break: keep-all; }
-
-.news-quote { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; text-align: left; }
+.news-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: left; word-break: keep-all;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
+}
+.news-quote { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; text-align: left;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
+}
 
 .reaction-row { display: flex; gap: 16px; margin-bottom: 20px; width: 100%; justify-content: flex-start; }
 .react-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: #94a3b8; }
