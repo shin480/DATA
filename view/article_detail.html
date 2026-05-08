@@ -1704,6 +1704,24 @@ let currentVote = "";
 // ==============================
 // 뉴스 출력
 // ==============================
+function convertSentimentToKorean(sentiment) {
+  const value = String(sentiment || "").toLowerCase();
+
+  if (value === "positive") return "긍정";
+  if (value === "negative") return "부정";
+  if (value === "neutral") return "중립";
+
+  if (value === "pos") return "긍정";
+  if (value === "neg") return "부정";
+  if (value === "neu") return "중립";
+
+  if (value === "긍정" || value === "부정" || value === "중립") {
+    return value;
+  }
+
+  return "감성 정보 없음";
+}
+
 function loadNewsDetail() {
   const title = document.getElementById("newsTitle");
   const date = document.getElementById("newsDate");
@@ -1731,9 +1749,7 @@ function loadNewsDetail() {
   }
 
   if (sentiment) {
-    sentiment.innerText =
-      newsDetail.sentiment ||
-      "감성 정보 없음";
+    sentiment.innerText = convertSentimentToKorean(newsDetail.sentiment);
   }
 
   currentVote = newsDetail.currentVote || "";
