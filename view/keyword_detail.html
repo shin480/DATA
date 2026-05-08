@@ -31,23 +31,31 @@
 html,
 body {
   overflow-x: hidden;
+  min-height: 100%;
 }
 
 body {
   background: #050816;
-  color: #e5e7eb;
+  color: #eef3ee;
   font-family: 'Pretendard', Arial, sans-serif;
 }
 
 .page {
-  width: 1440px;
-  min-height: 100vh;
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
   padding-top: 72px;
   background: #050816;
 
   display: flex;
   flex-direction: column;
+
+  min-height: 100vh;
+}
+
+body.light-mode .page {
+  background: #edf2ee;
+  min-height: 100vh;
 }
 
 .article-wrap {
@@ -147,11 +155,7 @@ body {
 ============================== */
 
 #footer {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  overflow: visible;
-
+  width: 100%;
   flex-shrink: 0;
 }
 
@@ -1597,8 +1601,8 @@ body {
 ============================== */
 
 body.light-mode .keyword-detail-page {
-  background: #edf2ee !important;
-  color: #0f172a !important;
+  background: #eef3ee !important;
+  color: #eef3ee !important;
 }
 
 body.light-mode .keyword-desc,

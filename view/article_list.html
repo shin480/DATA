@@ -389,11 +389,7 @@
 
     /* ===== FOOTER ===== */
     #footer {
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
-      overflow: visible;
-
+      width: 100%;
       flex-shrink: 0;
     }
 
@@ -514,154 +510,243 @@
     }
 
     /* ==============================
-       Light Mode
-    ============================== */
+   Light Mode - Sage Premium Theme
+   전체 UI 세이지톤 통일
+   (포인트 민트색 유지)
+============================== */
 
-    body.light-mode {
-      background: #f8fafc;
-      color: #0f172a;
-    }
+body.light-mode {
+  background: #eef3ee;
+  color: #1f2937;
+}
 
-    body.light-mode .page,
-    body.light-mode .article-page {
-      background: #f8fafc;
-    }
+body.light-mode .article-page {
+  background: #eef3ee;
+}
 
-    body.light-mode .header {
-      background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
-    }
 
-    body.light-mode .nav {
-      color: #64748b;
-    }
+/* ==============================
+   Header
+============================== */
 
-    body.light-mode .nav a:hover {
-      color: #0284c7;
-    }
+body.light-mode .header {
+  background: rgba(241, 246, 242, 0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid #d5ddd6;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+}
 
-    body.light-mode .main-search-wrap {
-      background: #ffffff;
-      border-color: #cbd5e1;
-    }
+body.light-mode .nav {
+  color: #66756d;
+}
 
-    body.light-mode .search-box {
-      color: #0f172a;
-    }
+body.light-mode .nav a:hover {
+  color: #00cfe8;
+}
 
-    body.light-mode .search-box::placeholder {
-      color: #94a3b8;
-    }
+body.light-mode .main-search-wrap {
+  background: #f7faf7;
+  border: 1px solid #d8e1d9;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+}
 
-    body.light-mode .search-icon-btn {
-      color: #64748b;
-    }
+body.light-mode .main-search-wrap:focus-within {
+  border-color: rgba(0, 207, 232, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(0, 207, 232, 0.08),
+    inset 0 1px 2px rgba(15, 23, 42, 0.02);
+}
 
-    body.light-mode .theme-btn {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      color: #334155;
-    }
+body.light-mode .search-box {
+  color: #1f2937;
+}
 
-    body.light-mode .header-btn.join {
-      background: #ffffff;
-      border-color: #94a3b8;
-      color: #334155;
-    }
+body.light-mode .search-box::placeholder {
+  color: #8b9a91;
+}
 
-    body.light-mode .header-btn.login {
-      background: #00cfe8;
-      border-color: #00cfe8;
-      color: #020617;
-    }
+body.light-mode .search-icon-btn {
+  color: #708177;
+}
 
-    body.light-mode .section-label {
-      color: #0284c7;
-    }
+body.light-mode .search-icon-btn:hover {
+  color: #00cfe8;
+}
 
-    body.light-mode .article-count,
-    body.light-mode .article-title {
-      color: #0f172a;
-    }
+body.light-mode .theme-btn {
+  background: #f7faf7;
+  border: 1px solid #d7dfd8;
+  color: #4b5563;
+}
+
+body.light-mode .theme-btn:hover {
+  border-color: #00cfe8;
+  background: #ffffff;
+}
+
+body.light-mode .header-btn.join {
+  background: #f7faf7;
+  border: 1px solid #cfd8d0;
+  color: #55635c;
+}
+
+body.light-mode .header-btn.join:hover {
+  border-color: #00cfe8;
+  color: #00cfe8;
+  background: #ffffff;
+}
+
+body.light-mode .header-btn.login {
+  background: #00cfe8;
+  border-color: #00cfe8;
+  color: #06262b;
+  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.16);
+}
+
+body.light-mode .header-btn.login:hover {
+  filter: brightness(1.04);
+}
+
+/* ==============================
+   자동완성
+============================== */
+
+body.light-mode .search-suggest-box {
+  background: #f8fbf8;
+  border: 1px solid #d7dfd8;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+body.light-mode .search-suggest-item {
+  color: #3f4c45;
+}
+
+body.light-mode .search-suggest-item:hover {
+  background: #ebf8fb;
+  color: #00cfe8;
+}
+
+body.light-mode .search-suggest-icon {
+  background: #dfe7e0;
+  color: #607066;
+}
+
+body.light-mode .search-suggest-arrow {
+  color: #839188;
+}
+
+
+/* ==============================
+   Footer
+============================== */
+
+body.light-mode .footer {
+  background: linear-gradient(
+    180deg,
+    #eef4ef 0%,
+    #e7efe8 100%
+  );
+
+  border-top: 1px solid #d8e0d9;
+}
+
+body.light-mode .footer-inner {
+  color: #6f7d75;
+}
+
+body.light-mode .footer-link {
+  color: #607066;
+}
+
+body.light-mode .footer-link:hover {
+  color: #00cfe8;
+}
+
+body.light-mode .footer-copy {
+  color: #7d8b83;
+}
+
+body.light-mode .footer-divider {
+  background: #cfd8d0;
+}
+
+body.light-mode .footer-logo-white {
+  background-color: #111827;
+}
+
+/* ==============================
+   Footer Modal
+============================== */
+
+body.light-mode .footer-modal {
+  background: rgba(110, 128, 116, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+body.light-mode .footer-modal-box {
+  background: #f8fbf8;
+  border: 1px solid #d9e2da;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+}
+
+body.light-mode .footer-modal-content {
+  color: #4b5563;
+}
+
+body.light-mode .footer-modal-content h3 {
+  color: #1f2937;
+}
+
+body.light-mode .footer-modal-btn {
+  background: #00cfe8;
+  color: #06262b;
+}
+
+    body.light-mode .section-title-wrap h2,
+body.light-mode .news-header h2 {
+  color: #1e293b !important;
+}
 
     body.light-mode .article-card {
-      background: #ffffff;
-      border-color: #e2e8f0;
-    }
+  background: #f8fbf8;
+  border: 1px solid #d8e0d9;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
 
-    body.light-mode .article-card:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-    }
+body.light-mode .article-card:hover {
+  background: #ffffff;
+  border-color: #bfcabf;
+}
 
-    body.light-mode .article-source {
-      color: #0284c7;
-    }
+    body.light-mode .article-title {
+  color: #1f2937;
+}
 
-    body.light-mode .article-summary,
-    body.light-mode .back-link {
-      color: #64748b;
-    }
+body.light-mode .article-summary {
+  color: #6b7280;
+}
+
+body.light-mode .article-count {
+  color: #1f2937;
+}
+
+body.light-mode .back-link {
+  color: #708177;
+}
 
     body.light-mode .origin-btn {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      color: #334155;
-    }
+  background: #ffffff;
+  border: 1px solid #cfd8d0;
+  color: #55635c;
+}
 
-    body.light-mode .origin-btn:hover {
-      border-color: #0284c7;
-      color: #0284c7;
-    }
+body.light-mode .origin-btn:hover {
+  border-color: #00cfe8;
+  color: #00cfe8;
+  background: #f0fdff;
+}
 
-    body.light-mode .search-suggest-box {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
-    }
 
-    body.light-mode .search-suggest-item {
-      color: #334155;
-    }
-
-    body.light-mode .search-suggest-item:hover {
-      background: #e0f7ff;
-      color: #0284c7;
-    }
-
-    body.light-mode .footer {
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    body.light-mode .footer-logo-white {
-      background-color: #020617;
-    }
-
-    body.light-mode .footer-link {
-      color: #475569;
-    }
-
-    body.light-mode .footer-link:hover {
-      color: #0284c7;
-    }
-
-    body.light-mode .footer-copy {
-      color: #64748b;
-    }
-
-    body.light-mode .footer-modal-box {
-      background: #ffffff;
-      border-color: #cbd5e1;
-    }
-
-    body.light-mode .footer-modal-content {
-      color: #334155;
-    }
-
-    body.light-mode .footer-modal-content h3 {
-      color: #0f172a;
-    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -686,6 +771,8 @@
   <div id="footer"></div>
 
 </div>
+
+
 
 <script>
 /* =========================
