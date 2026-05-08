@@ -99,7 +99,7 @@ def logout_user(req: Request):
 
             # 로그아웃 로그 저장
             log_login(user_id, "logout", "success")
-            log_user_activity(user_id, "lgt104", req)
+            log_user_activity(user_id, "lgn104", req)
 
         # 세션 전체 삭제
         req.session.clear()
