@@ -101,7 +101,9 @@ def login(info: Dict[str,Any], req: Request):
 
 @app.post("/logout")
 def logout(req: Request):
-    print(f"로그아웃: {req.get('user_id')}")
+    user = req.session.get("user")
+    user_id = user.get("user_id") if user else "비회원/이미로그아웃"
+    print(f"로그아웃: {user_id}")
     result = logout_user(req)
     return result
 
