@@ -1175,29 +1175,29 @@
 <script>
   /* =========================
      페이지 이탈 감지
-  ========================= */
-  let isInternalNavigation = false;
+  // ========================= */
+  // let isInternalNavigation = false;
 
-  // 1. 사이트 내 링크를 클릭했을 때
-  document.addEventListener('click', (e) => {
-      const target = e.target.closest('a');
-      if (target && target.href && target.href.includes(window.location.origin)) {
-          isInternalNavigation = true;
-      }
-  });
+  // // 1. 사이트 내 링크를 클릭했을 때
+  // document.addEventListener('click', (e) => {
+  //     const target = e.target.closest('a');
+  //     if (target && target.href && target.href.includes(window.location.origin)) {
+  //         isInternalNavigation = true;
+  //     }
+  // });
 
-  // 2. 폼(로그인, 검색 등)을 제출했을 때
-  document.addEventListener('submit', () => {
-      isInternalNavigation = true;
-  });
+  // // 2. 폼(로그인, 검색 등)을 제출했을 때
+  // document.addEventListener('submit', () => {
+  //     isInternalNavigation = true;
+  // });
 
-  // 3. 페이지가 언로드(종료/이동)될 때 실행
-  window.addEventListener('beforeunload', () => {
-      // 내부 이동이 아닐 때만 로그아웃 요청 전송
-      if (!isInternalNavigation) {
-          navigator.sendBeacon('/logout');
-      }
-  });
+  // // 3. 페이지가 언로드(종료/이동)될 때 실행
+  // window.addEventListener('beforeunload', () => {
+  //     // 내부 이동이 아닐 때만 로그아웃 요청 전송
+  //     if (!isInternalNavigation) {
+  //         navigator.sendBeacon('/logout');
+  //     }
+  // });
   function selectMenu(element, pageType) {
     document.querySelectorAll(".side-menu li").forEach(li => {
       li.classList.remove("active");
