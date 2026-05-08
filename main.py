@@ -275,6 +275,7 @@ def get_keyword_detail(keyword: str):
             "article_id": source.get("article_id", ""),
 
             "source": press,
+            "press": press,
 
             "title": source.get("title", "제목 없음"),
 
@@ -312,6 +313,38 @@ def get_keyword_detail(keyword: str):
     first_article = hits[0]["_source"]
 
     # =========================
+    # 여론 흐름 계산
+    # =========================
+    perspective_count = {}
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        perspectives = source.get("perspective", [])
+
+        if not perspectives:
+            continue
+
+        top_perspective = perspectives[0].get("category")
+
+        if not top_perspective:
+            continue
+
+        if top_perspective not in perspective_count:
+            perspective_count[top_perspective] = 0
+
+        perspective_count[top_perspective] += 1
+
+    if perspective_count:
+        flow = max(
+            perspective_count,
+            key=perspective_count.get
+        )
+    else:
+        flow = "관점 분석 없음"
+
+    # =========================
     # 최종 반환
     # =========================
     return {
@@ -326,11 +359,11 @@ def get_keyword_detail(keyword: str):
             first_article.get("summary")
             or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
 
-        "aiCount": 1,
+        "aiCount": total_count,
 
         "newsCount": total_count,
 
-        "flow": "감성 분석",
+        "flow": flow,
 
         "sentiment": {
 
