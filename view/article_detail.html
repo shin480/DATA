@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>뉴스 상세보기 | DATA 다타</title>
-    <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+<link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+
 <style>
 /* 컬러 유틸리티 */
 .c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
@@ -13,8 +13,7 @@
 .c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
 .c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
 .c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
-</style>
-<style>
+
 /* ==============================
    Common
 ============================== */
@@ -23,6 +22,11 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
 }
 
 .hidden {
@@ -41,12 +45,13 @@ body {
   margin: 0 auto;
   padding-top: 72px;
   background: #050816;
-}
 
+  display: flex;
+  flex-direction: column;
+}
 
 /* ==============================
    Header
-   main.html 기준
 ============================== */
 
 .header {
@@ -209,16 +214,9 @@ body {
   color: #00e5ff;
 }
 
-
 /* ==============================
    Search Suggest
 ============================== */
-
-.main-search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
 
 .search-suggest-box {
   position: fixed;
@@ -296,16 +294,16 @@ body {
   font-weight: 900;
 }
 
-
 /* ==============================
    Article Detail Page
 ============================== */
 
 .article-detail-page {
-  min-height: calc(100vh - 72px);
   padding: 40px 24px 100px;
   background: #050916;
   color: #dce8ff;
+
+  flex: 1;
 }
 
 .article-detail-wrap {
@@ -504,25 +502,37 @@ body {
   line-height: 1.6;
 }
 
-
 /* ==============================
    Footer
 ============================== */
 
+#footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: visible;
+
+  flex-shrink: 0;
+}
+
 .footer {
-  border-top: 1px solid #111827;
-  background: #070b1a;
-  padding: 24px 0;
+  width: 100%;
+  min-height: 88px;
+  background: #020617;
+  color: #fff;
+  box-sizing: border-box;
 }
 
 .footer-inner {
-  width: 1440px;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 64px;
+  width: 100%;
+  min-height: 88px;
+  padding: 0 70px;
+  box-sizing: border-box;
+
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 22px;
+
   color: #64748b;
   font-size: 12px;
 }
@@ -578,6 +588,10 @@ body {
   z-index: 30000;
 }
 
+.footer-modal.hidden {
+  display: none !important;
+}
+
 .footer-modal-box {
   width: 520px;
   max-width: calc(100% - 32px);
@@ -612,7 +626,6 @@ body {
   font-weight: 900;
   cursor: pointer;
 }
-
 
 /* ==============================
    Light Mode
@@ -819,7 +832,6 @@ body.light-mode .footer-modal-content h3 {
   color: #0f172a;
 }
 
-
 /* ==============================
    Responsive
 ============================== */
@@ -880,58 +892,77 @@ body.light-mode .footer-modal-content h3 {
   }
 }
 </style>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
 <div class="page">
-<div id="header"></div>
-<main class="article-detail-page">
-<div class="article-detail-wrap">
-  <main class="article-page">
-    <div class="article-wrap">
+
+  <div id="header"></div>
+
+  <main class="article-detail-page">
+    <div class="article-detail-wrap">
+
       <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
-<div class="article-category">ECONOMIC NEWS</div>
-<h1 class="article-detail-title" id="newsTitle"></h1>
-<div class="article-meta">
-<span id="newsDate"></span>
-<span id="newsPress"></span>
-<span id="newsReporter"></span>
-</div>
-<div class="article-line"></div>
-<article class="content-box" id="newsContent"></article>
-<div class="source-wrap">
-<button class="source-btn" onclick="goSource()" type="button">
+
+      <div class="article-category">ECONOMIC NEWS</div>
+
+      <h1 class="article-detail-title" id="newsTitle"></h1>
+
+      <div class="article-meta">
+        <span id="newsDate"></span>
+        <span id="newsPress"></span>
+        <span id="newsReporter"></span>
+      </div>
+
+      <div class="article-line"></div>
+
+      <article class="content-box" id="newsContent"></article>
+
+      <div class="source-wrap">
+        <button class="source-btn" onclick="goSource()" type="button">
           🔗 원문 보기
         </button>
-</div>
-<div class="article-line"></div>
-<section class="vote-wrap">
-<div class="vote-title">
+      </div>
+
+      <div class="article-line"></div>
+
+      <section class="vote-wrap">
+        <div class="vote-title">
           이 기사의 관점에 대해 어떻게 생각하세요?
         </div>
-<div class="vote-box">
-<button class="vote-btn" id="likeBtn" onclick="selectVote('like')" type="button">
+
+        <div class="vote-box">
+          <button class="vote-btn" id="likeBtn" onclick="selectVote('like')" type="button">
             👍 동의해요
             <span id="likeCount">0</span>
-</button>
-<button class="vote-btn" id="hateBtn" onclick="selectVote('hate')" type="button">
+          </button>
+
+          <button class="vote-btn" id="hateBtn" onclick="selectVote('hate')" type="button">
             👎 반대해요
             <span id="hateCount">0</span>
-</button>
-</div>
-</section>
-<div class="article-line"></div>
-<section>
-<div class="deep-title">
+          </button>
+        </div>
+      </section>
+
+      <div class="article-line"></div>
+
+      <section>
+        <div class="deep-title">
           💡 깊이 읽기
         </div>
-<div class="deep-grid" id="deepGrid"></div>
-</section>
+
+        <div class="deep-grid" id="deepGrid"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
 </div>
-</main>
-<div id="footer"></div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
 /* ===== common.js ===== */
 // ==============================
@@ -942,10 +973,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
-
-  // article_detail 기존 실행 코드 그대로 유지
 });
-
 
 // ==============================
 // 로그인 정보 가져오기
@@ -971,7 +999,6 @@ function getLoginInfo() {
       localStorage.getItem("role")
   };
 }
-
 
 // ==============================
 // Header 불러오기
@@ -1076,7 +1103,6 @@ function loadFooter() {
     });
 }
 
-
 // ==============================
 // Header 로그인 상태 처리
 // ==============================
@@ -1119,7 +1145,6 @@ function setHeaderLoginState() {
   }
 }
 
-
 // ==============================
 // 로그인 필요 페이지 이동
 // ==============================
@@ -1134,7 +1159,6 @@ window.goLoginRequiredPage = function (targetUrl) {
 
   location.href = targetUrl;
 };
-
 
 // ==============================
 // 전역 클릭 이벤트
@@ -1257,14 +1281,20 @@ function bindGlobalClickEvents() {
   });
 }
 
-
 // ==============================
 // 검색어 자동완성
 // ==============================
 function bindCommonSearch() {
   const input = document.getElementById("commonSearchInput");
+  const searchBtn = document.getElementById("commonSearchBtn");
 
   if (!input) return;
+
+  if (searchBtn) {
+    searchBtn.addEventListener("click", function () {
+      moveSearch(input.value);
+    });
+  }
 
   input.addEventListener("input", function () {
     renderSearchSuggestions(input.value);
@@ -1435,7 +1465,6 @@ window.logout = function () {
   location.href = "/view/main.html";
 };
 
-
 // ==============================
 // Footer 모달
 // ==============================
@@ -1479,6 +1508,7 @@ window.closeFooterModal = function () {
   modal.classList.add("hidden");
 };
 </script>
+
 <script>
 /* ===== article_detail.js ===== */
 // ==============================
@@ -1496,7 +1526,6 @@ window.closeFooterModal = function () {
     location.href = "/view/login.html";
   }
 })();
-
 
 // ==============================
 // 임시 데이터
@@ -1562,7 +1591,6 @@ const deepNews = [
 
 let currentVote = "";
 
-
 // ==============================
 // 뉴스 출력
 // ==============================
@@ -1579,9 +1607,9 @@ function loadNewsDetail() {
   if (date) date.innerText = "발행일 " + newsDetail.date;
   if (press) press.innerText = "언론사 " + newsDetail.press;
   if (reporter) reporter.innerText = "기자 " + newsDetail.reporter;
-    if (content) content.innerText = newsDetail.content;
-  if (likeCount) likeCount.innerText = newsDetail.likeCount.toLocaleString();
-  if (dislikeCount) dislikeCount.innerText = newsDetail.dislikeCount.toLocaleString();
+  if (content) content.innerText = newsDetail.content;
+  if (likeCount) likeCount.innerText = Number(newsDetail.likeCount || 0).toLocaleString();
+  if (dislikeCount) dislikeCount.innerText = Number(newsDetail.dislikeCount || 0).toLocaleString();
 
   currentVote = newsDetail.currentVote || "";
 
@@ -1602,14 +1630,12 @@ function loadNewsDetail() {
   }
 }
 
-
 // ==============================
 // 원문 보기
 // ==============================
 function goSource() {
   window.open(newsDetail.sourceUrl, "_blank");
 }
-
 
 // ==============================
 // 좋아요 / 싫어요 토글
@@ -1666,7 +1692,6 @@ async function selectVote(type) {
   }
 }
 
-
 // ==============================
 // 깊이 읽기
 // ==============================
@@ -1700,13 +1725,11 @@ function loadDeepNews() {
   `).join("");
 }
 
-
 // ==============================
 // 전역 함수 등록
 // ==============================
 window.goSource = goSource;
 window.selectVote = selectVote;
-
 
 // ==============================
 // 최초 실행

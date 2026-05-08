@@ -13,6 +13,11 @@
       padding: 0;
     }
 
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -29,6 +34,9 @@
       margin: 0 auto;
       padding-top: 72px;
       background: #020617;
+
+      display: flex;
+      flex-direction: column;
     }
 
     /* ===== HEADER ===== */
@@ -274,9 +282,10 @@
     ========================= */
 
     .article-page {
-      min-height: calc(100vh - 72px);
       padding: 56px 0 120px;
       background: #020617;
+
+      flex: 1;
     }
 
     .article-wrap {
@@ -379,20 +388,33 @@
     }
 
     /* ===== FOOTER ===== */
+    #footer {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      overflow: visible;
+
+      flex-shrink: 0;
+    }
+
     .footer {
-      border-top: 1px solid #111827;
-      background: #070b1a;
-      padding: 24px 0;
-      margin-top: 60px;
+      width: 100%;
+      min-height: 88px;
+      background: #020617;
+      color: #fff;
+      box-sizing: border-box;
     }
 
     .footer-inner {
-      width: 1240px;
-      margin: 0 auto;
-      padding: 0 24px;
+      width: 100%;
+      min-height: 88px;
+      padding: 0 70px;
+      box-sizing: border-box;
+
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 22px;
+
       color: #64748b;
       font-size: 12px;
     }
@@ -434,6 +456,7 @@
     }
 
     .footer-copy {
+      margin: 0;
       color: #64748b;
     }
 
@@ -449,6 +472,10 @@
       align-items: center;
       justify-content: center;
       z-index: 30000;
+    }
+
+    .footer-modal.hidden {
+      display: none !important;
     }
 
     .footer-modal-box {
@@ -615,6 +642,10 @@
       color: #475569;
     }
 
+    body.light-mode .footer-link:hover {
+      color: #0284c7;
+    }
+
     body.light-mode .footer-copy {
       color: #64748b;
     }
@@ -657,6 +688,38 @@
 </div>
 
 <script>
+/* =========================
+   공통 유틸
+========================= */
+
+function getLoginInfo() {
+  return {
+    token:
+      sessionStorage.getItem("access_token") ||
+      localStorage.getItem("access_token") ||
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token"),
+
+    role:
+      sessionStorage.getItem("user_role") ||
+      localStorage.getItem("user_role") ||
+      sessionStorage.getItem("role") ||
+      localStorage.getItem("role")
+  };
+}
+
+function isAdminUser() {
+  const loginInfo = getLoginInfo();
+
+  return (
+    loginInfo.role === "ADMIN" ||
+    loginInfo.role === "SUPERADMIN" ||
+    loginInfo.role === "admin" ||
+    loginInfo.role === "superadmin" ||
+    loginInfo.token === "admin-test-token"
+  );
+}
+
 /* =========================
    검색어 자동완성
 ========================= */
@@ -933,14 +996,24 @@ function setHeaderLoginState() {
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  if (!primaryUserBtn || !logoutBtn) return;
+  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
 
-  if (loginBtn) loginBtn.classList.add("hidden");
-  if (joinBtn) joinBtn.classList.add("hidden");
+  const loginInfo = getLoginInfo();
 
+  if (!loginInfo.token) {
+    loginBtn.classList.remove("hidden");
+    joinBtn.classList.remove("hidden");
+    primaryUserBtn.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+    return;
+  }
+
+  loginBtn.classList.add("hidden");
+  joinBtn.classList.add("hidden");
   primaryUserBtn.classList.remove("hidden");
   logoutBtn.classList.remove("hidden");
-  primaryUserBtn.innerText = "마이페이지";
+
+  primaryUserBtn.innerText = isAdminUser() ? "관리자 페이지" : "마이페이지";
 }
 
 function loadFooter() {
@@ -1077,7 +1150,9 @@ document.addEventListener("click", function (e) {
   }
 
   if (primaryUserBtn) {
-    location.href = "/view/mypage_home.html";
+    location.href = isAdminUser()
+      ? "/view/admin_dashboard.html"
+      : "/view/mypage_home.html";
     return;
   }
 

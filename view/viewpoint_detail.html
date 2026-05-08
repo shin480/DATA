@@ -15,6 +15,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 .hidden {
   display: none !important;
 }
@@ -28,6 +33,9 @@ body {
 .app {
   min-height: 100vh;
   background: #030817;
+
+  display: flex;
+  flex-direction: column;
 }
 
 /* ==============================
@@ -281,21 +289,24 @@ body {
 
 .detail-page {
   width: 800px;
-  margin: 0 auto 120px;
+  margin: 0 auto;
   padding-top: 120px;
+  padding-bottom: 120px;
+
+  flex: 1;
 }
 
 .back-btn {
-      display: inline-block;
-      margin-bottom: 26px;
-      color: #3b82a0;
-      font-size: 11px;
-      font-weight: 800;
-      text-decoration: none;
+  display: inline-block;
+  margin-bottom: 26px;
+  color: #3b82a0;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 .back-btn:hover {
-      color: #00e5ff;
+  color: #00e5ff;
 }
 
 .title-section {
@@ -629,23 +640,31 @@ body {
    FOOTER
 ============================== */
 
+#footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: visible;
+
+  flex-shrink: 0;
+}
+
 .footer {
-  border-top: 1px solid #111827;
-  background: #070b1a;
-  padding: 24px 0;
-  margin-top: 60px;
+  width: 100%;
+  background: #020617;
+  color: #fff;
+  box-sizing: border-box;
 }
 
 .footer-inner {
-  width: 1440px;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 64px;
+  width: 100%;
+  min-height: 88px;
+  padding: 0 70px;
+  box-sizing: border-box;
+
   display: flex;
   align-items: center;
-  gap: 14px;
-  color: #64748b;
-  font-size: 12px;
+  gap: 22px;
 }
 
 .footer-logo-white {
@@ -692,11 +711,17 @@ body {
 .footer-modal {
   position: fixed;
   inset: 0;
-  background: rgba(2, 8, 23, 0.75);
+  z-index: 30000;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 30000;
+
+  background: rgba(2, 8, 23, 0.75);
+}
+
+.footer-modal.hidden {
+  display: none !important;
 }
 
 .footer-modal-box {
@@ -944,135 +969,137 @@ body.light-mode .footer-modal-content h3 {
   <div id="header"></div>
 
   <main class="detail-page">
+    <div class="article-page">
+      <div class="article-wrap">
 
-  <main class="article-page">
-    <div class="article-wrap">
-      <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
+        <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
-    <section class="title-section">
-      <div class="main-icon">🏛</div>
-
-      <div>
-        <h1>
-          <span id="viewTitle">정부 관점</span>
-          <strong id="viewPercent">%</strong>
-        </h1>
-        <p>전체 기사 중 비율</p>
-      </div>
-
-      <div class="date">기준일 </div>
-    </section>
-
-    <section class="top-grid">
-      <div class="panel">
-        <h2>관점 해석</h2>
-
-        <div class="analysis-box">
-          <div class="check-icon">✓</div>
-          <div>
-            <h3></h3>
-            <p><br></p>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>감성 분포</h2>
-
-        <div class="sentiment-bar">
-          <div class="positive"></div>
-          <div class="neutral"></div>
-          <div class="negative"></div>
-        </div>
-
-        <div class="sentiment-labels">
-          <div>
-            <span class="tag positive-tag">긍정</span>
-            <strong>%</strong>
-            <button class="count-link" onclick="goArticleList('positive')">(건)</button>
-          </div>
+        <section class="title-section">
+          <div class="main-icon">🏛</div>
 
           <div>
-            <span class="tag neutral-tag">중립</span>
-            <strong>%</strong>
-            <button class="count-link" onclick="goArticleList('neutral')">(건)</button>
+            <h1>
+              <span id="viewTitle">정부 관점</span>
+              <strong id="viewPercent">%</strong>
+            </h1>
+            <p>전체 기사 중 비율</p>
           </div>
 
-          <div>
-            <span class="tag negative-tag">부정</span>
-            <strong>%</strong>
-            <button class="count-link" onclick="goArticleList('negative')">(건)</button>
+          <div class="date">기준일 </div>
+        </section>
+
+        <section class="top-grid">
+          <div class="panel">
+            <h2>관점 해석</h2>
+
+            <div class="analysis-box">
+              <div class="check-icon">✓</div>
+              <div>
+                <h3></h3>
+                <p><br></p>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div class="panel">
+            <h2>감성 분포</h2>
+
+            <div class="sentiment-bar">
+              <div class="positive"></div>
+              <div class="neutral"></div>
+              <div class="negative"></div>
+            </div>
+
+            <div class="sentiment-labels">
+              <div>
+                <span class="tag positive-tag">긍정</span>
+                <strong>%</strong>
+                <button class="count-link" onclick="goArticleList('positive')">(건)</button>
+              </div>
+
+              <div>
+                <span class="tag neutral-tag">중립</span>
+                <strong>%</strong>
+                <button class="count-link" onclick="goArticleList('neutral')">(건)</button>
+              </div>
+
+              <div>
+                <span class="tag negative-tag">부정</span>
+                <strong>%</strong>
+                <button class="count-link" onclick="goArticleList('negative')">(건)</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel keyword-panel">
+          <h2>주요 키워드</h2>
+
+          <div class="keywords">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </section>
+
+        <section class="panel article-panel">
+          <h2>관련 기사 TOP 5</h2>
+
+          <div class="article_list">
+            <div class="article-row">
+              <div class="press-logo blue"></div>
+              <div class="press"></div>
+              <div class="article-title"></div>
+              <span class="article-tag positive-tag"></span>
+              <div class="article-date"></div>
+            </div>
+
+            <div class="article-row">
+              <div class="press-logo sky"></div>
+              <div class="press"></div>
+              <div class="article-title"></div>
+              <span class="article-tag neutral-tag"></span>
+              <div class="article-date"></div>
+            </div>
+
+            <div class="article-row">
+              <div class="press-logo white"></div>
+              <div class="press"></div>
+              <div class="article-title"></div>
+              <span class="article-tag positive-tag"></span>
+              <div class="article-date"></div>
+            </div>
+
+            <div class="article-row">
+              <div class="press-logo red"></div>
+              <div class="press"></div>
+              <div class="article-title"></div>
+              <span class="article-tag negative-tag"></span>
+              <div class="article-date"></div>
+            </div>
+
+            <div class="article-row">
+              <div class="press-logo green"></div>
+              <div class="press"></div>
+              <div class="article-title"></div>
+              <span class="article-tag neutral-tag"></span>
+              <div class="article-date"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel compare-panel">
+          <h2>관점 비교</h2>
+          <div class="compare-grid" id="compareGrid"></div>
+        </section>
+
       </div>
-    </section>
-
-    <section class="panel keyword-panel">
-      <h2>주요 키워드</h2>
-
-      <div class="keywords">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </section>
-
-    <section class="panel article-panel">
-      <h2>관련 기사 TOP 5</h2>
-
-      <div class="article_list">
-        <div class="article-row">
-          <div class="press-logo blue"></div>
-          <div class="press"></div>
-          <div class="article-title"></div>
-          <span class="article-tag positive-tag"></span>
-          <div class="article-date"></div>
-        </div>
-
-        <div class="article-row">
-          <div class="press-logo sky"></div>
-          <div class="press"></div>
-          <div class="article-title"></div>
-          <span class="article-tag neutral-tag"></span>
-          <div class="article-date"></div>
-        </div>
-
-        <div class="article-row">
-          <div class="press-logo white"></div>
-          <div class="press"></div>
-          <div class="article-title"></div>
-          <span class="article-tag positive-tag"></span>
-          <div class="article-date"></div>
-        </div>
-
-        <div class="article-row">
-          <div class="press-logo red"></div>
-          <div class="press"></div>
-          <div class="article-title"></div>
-          <span class="article-tag negative-tag"></span>
-          <div class="article-date"></div>
-        </div>
-
-        <div class="article-row">
-          <div class="press-logo green"></div>
-          <div class="press"></div>
-          <div class="article-title"></div>
-          <span class="article-tag neutral-tag"></span>
-          <div class="article-date"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel compare-panel">
-      <h2>관점 비교</h2>
-      <div class="compare-grid" id="compareGrid"></div>
-    </section>
-
+    </div>
   </main>
 
   <div id="footer"></div>
