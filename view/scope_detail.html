@@ -1412,7 +1412,7 @@ window.logout = function () {
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("userName");
-
+  axios.post("/logout");
   location.href = "/view/main.html";
 };
 
