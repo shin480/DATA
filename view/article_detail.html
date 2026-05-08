@@ -1522,15 +1522,13 @@ async function fetchArticleDetail() {
     return;
   }
 
-  // 좋아요 → 싫어요 변경
-  else if (currentVote === "like" && type === "hate") {
-    action = "change";
-
-    likeCount--;
-    hateCount++;
-
   try {
-    const res = await axios.get(`/api/articles/${encodeURIComponent(articleId)}`);
+    const res = await axios.get(
+      `/api/articles/${encodeURIComponent(articleId)}`,
+      {
+        withCredentials: true
+      }
+    );
 
     newsDetail = res.data;
 
@@ -1576,9 +1574,27 @@ function loadNewsDetail() {
   if (date) date.innerText = "발행일 " + newsDetail.date;
   if (press) press.innerText = "언론사 " + newsDetail.press;
   if (reporter) reporter.innerText = "기자 " + newsDetail.reporter;
-  if (content) content.innerText = newsDetail.content;
+    if (content) content.innerText = newsDetail.content;
   if (likeCount) likeCount.innerText = newsDetail.likeCount.toLocaleString();
   if (dislikeCount) dislikeCount.innerText = newsDetail.dislikeCount.toLocaleString();
+
+  currentVote = newsDetail.currentVote || "";
+
+  const likeBtn = document.getElementById("likeBtn");
+  const hateBtn = document.getElementById("hateBtn");
+
+  if (likeBtn && hateBtn) {
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+
+    if (currentVote === "like") {
+      likeBtn.classList.add("active");
+    }
+
+    if (currentVote === "hate") {
+      hateBtn.classList.add("active");
+    }
+  }
 }
 
 
@@ -1609,86 +1625,33 @@ async function selectVote(type) {
 
   if (!likeBtn || !hateBtn || !likeCountEl || !hateCountEl) return;
 
-  let likeCount = parseInt(likeCountEl.innerText.replace(/,/g, "")) || 0;
-  let hateCount = parseInt(hateCountEl.innerText.replace(/,/g, "")) || 0;
-
-  let action = "add";
-
-  // 같은 버튼 다시 클릭 → 취소
-  if (currentVote === type) {
-    action = "cancel";
-
-    if (type === "like") {
-      likeCount--;
-      likeBtn.classList.remove("active");
-    }
-
-    if (type === "hate") {
-      hateCount--;
-      hateBtn.classList.remove("active");
-    }
-
-    currentVote = "";
-  }
-
-    likeBtn.classList.remove("active");
-    hateBtn.classList.add("active");
-
-    currentVote = "hate";
-  }
-
-  // 싫어요 → 좋아요 변경
-  else if (currentVote === "hate" && type === "like") {
-    action = "change";
-
-    hateCount--;
-    likeCount++;
-
-    hateBtn.classList.remove("active");
-    likeBtn.classList.add("active");
-
-    currentVote = "like";
-  }
-
-  // 처음 선택
-  else {
-    action = "add";
-
-    if (type === "like") {
-      likeCount++;
-      likeBtn.classList.add("active");
-    }
-
-    if (type === "hate") {
-      hateCount++;
-      hateBtn.classList.add("active");
-    }
-
-    currentVote = type;
-  }
-
-  likeCountEl.innerText = likeCount.toLocaleString();
-  hateCountEl.innerText = hateCount.toLocaleString();
-
   try {
     const res = await axios.post("/api/articles/vote", {
       article_id: articleId,
-      vote_type: type,
-      action: action
+      vote_type: type
+    }, {
+      withCredentials: true
     });
 
-    if (res.data) {
-      if (typeof res.data.like_count !== "undefined") {
-        likeCountEl.innerText = Number(res.data.like_count).toLocaleString();
-      }
+    if (!res.data.success) {
+      alert(res.data.message || "투표 처리에 실패했습니다.");
+      return;
+    }
 
-      if (typeof res.data.hate_count !== "undefined") {
-        hateCountEl.innerText = Number(res.data.hate_count).toLocaleString();
-      }
+    likeCountEl.innerText = Number(res.data.like_count).toLocaleString();
+    hateCountEl.innerText = Number(res.data.hate_count).toLocaleString();
 
-      if (typeof res.data.current_vote !== "undefined") {
-        currentVote = res.data.current_vote || "";
-      }
+    currentVote = res.data.current_vote || "";
+
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+
+    if (currentVote === "like") {
+      likeBtn.classList.add("active");
+    }
+
+    if (currentVote === "hate") {
+      hateBtn.classList.add("active");
     }
 
   } catch (error) {

@@ -469,11 +469,12 @@ def vote_article(info: VoteRequest, req: Request):
     es = get_es()
     db = get_engine()
 
-    print("투표 세션:", req.session)
-    print("투표 user_id:", req.session.get("user_id"))
-    print("투표 요청:", info)
+    login_user = req.session.get("user")
+    user_id = login_user.get("user_id") if login_user else None
 
-    user_id = req.session.get("user_id")
+    print("투표 세션:", req.session)
+    print("투표 user_id:", user_id)
+    print("투표 요청:", info)
 
     if not user_id:
         db.close()
@@ -492,6 +493,19 @@ def vote_article(info: VoteRequest, req: Request):
             "message": "잘못된 투표 타입입니다."
         }
 
+    db.execute(
+        text("""
+            INSERT IGNORE INTO article_meta (article_id)
+            VALUES(:article_id)
+        """),
+        {
+            "article_id": article_id,
+        }
+    )
+
+    # 프론트는 hate, DB는 dislike로 저장
+    db_vote_type = "dislike" if vote_type == "hate" else "like"
+
     row = db.execute(
         text("""
             SELECT reaction_type
@@ -507,6 +521,9 @@ def vote_article(info: VoteRequest, req: Request):
 
     old_vote = row[0] if row else None
 
+    # DB에 저장된 dislike를 프론트 기준 hate로 변환
+    old_vote_front = "hate" if old_vote == "dislike" else old_vote
+
     # 1. 처음 누름
     if old_vote is None:
         db.execute(
@@ -519,7 +536,7 @@ def vote_article(info: VoteRequest, req: Request):
             {
                 "user_id": user_id,
                 "article_id": article_id,
-                "reaction_type": vote_type
+                "reaction_type": db_vote_type
             }
         )
 
@@ -537,7 +554,7 @@ def vote_article(info: VoteRequest, req: Request):
         current_vote = vote_type
 
     # 2. 같은 버튼 다시 누름 → 취소
-    elif old_vote == vote_type:
+    elif old_vote_front == vote_type:
         db.execute(
             text("""
                 DELETE FROM article_reactions
@@ -573,7 +590,7 @@ def vote_article(info: VoteRequest, req: Request):
                   AND article_id = :article_id
             """),
             {
-                "reaction_type": vote_type,
+                "reaction_type": db_vote_type,
                 "user_id": user_id,
                 "article_id": article_id
             }
@@ -625,7 +642,7 @@ def vote_article(info: VoteRequest, req: Request):
 
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
-def get_article_detail(article_id: str):
+def get_article_detail(article_id: str, req: Request):
     es = get_es()
 
     result = es.get(
@@ -634,6 +651,32 @@ def get_article_detail(article_id: str):
     )
 
     source = result["_source"]
+
+    login_user = req.session.get("user")
+    user_id = login_user.get("user_id") if login_user else None
+
+    current_vote = ""
+
+    if user_id:
+        db = get_engine()
+
+        row = db.execute(
+            text("""
+                SELECT reaction_type
+                FROM article_reactions
+                WHERE user_id = :user_id
+                  AND article_id = :article_id
+            """),
+            {
+                "user_id": user_id,
+                "article_id": article_id
+            }
+        ).fetchone()
+
+        db.close()
+
+        if row:
+            current_vote = "hate" if row[0] == "dislike" else row[0]
 
     return {
         "article_id": source.get("article_id", ""),
@@ -646,7 +689,8 @@ def get_article_detail(article_id: str):
         "sourceUrl": source.get("url", ""),
         "sentiment": source.get("sentiment", ""),
         "likeCount": source.get("like_count", 0),
-        "dislikeCount": source.get("hate_count", 0)
+        "dislikeCount": source.get("hate_count", 0),
+        "currentVote": current_vote
     }
 
 @app.get("/crawl")
