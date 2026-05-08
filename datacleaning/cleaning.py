@@ -2,6 +2,9 @@ import pandas as pd
 import re
 
 from util.es import get_es, tokenizer, bulk
+from elasticsearch.helpers import scan
+from sqlalchemy import text
+from util.db import get_engine
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -166,9 +169,34 @@ def get_preprocessed_data():
         })
 
     if actions:
+        # es에 저장
         bulk(es, actions)
         print(f"[저장완료] news_economy에 {len(actions)}건 저장.")
 
+        # db에 저장
+        db_insert_data = [
+            {"article_id": row.get('article_id')}
+            for row in final_data if row.get('article_id')
+        ]
+
+        if db_insert_data:
+            conn = None
+            try:
+                conn = get_engine()
+                # INSERT IGNORE를 사용하여 이미 존재하는 ID일 경우 무시 (중복 방어)
+                # created_at은 DB의 NOW() 함수를 사용하거나 생략(Default 설정 시) 가능합니다.
+                sql = text("""
+                            INSERT IGNORE INTO article_meta (article_id, created_at) 
+                            VALUES (:article_id, NOW())
+                        """)
+                conn.execute(sql, db_insert_data)
+                conn.commit()
+                print(f"[DB저장완료] article_meta 테이블에 {len(db_insert_data)}건 반영.")
+            except Exception as e:
+                print(f"[DB에러] article_meta 저장 중 오류 발생: {e}")
+            finally:
+                if conn:
+                    conn.close()
     # 원문 데이터에 업뎃
     if not DEBUG_MODE:
         update_actions = [
@@ -239,3 +267,58 @@ def get_preprocessed_data():
         "count": len(token_model_inputs),
         "data": token_model_inputs  # [id, token] 리스트 반환
     }
+
+
+#db에 article_id 넣기
+def sync_es_to_db():
+    print(">>> ES 데이터 DB 동기화 작업을 시작합니다.")
+
+    # 1. Elasticsearch 연결 및 데이터 추출
+    es = get_es()
+    target_index = "news_economy"
+
+    # scan을 사용하면 1만 건 이상의 대량 데이터도 끊김 없이 가져올 수 있습니다.
+    es_data_generator = scan(
+        es,
+        index=target_index,
+        query={"query": {"match_all": {}}, "_source": ["article_id"]}
+    )
+
+    # ES에서 article_id만 리스트로 추출
+    es_ids = [doc['_source'].get('article_id') for doc in es_data_generator if doc['_source'].get('article_id')]
+
+    if not es_ids:
+        print("ES에 동기화할 데이터가 존재하지 않습니다.")
+        return
+
+    print(f"ES에서 총 {len(es_ids)}건의 article_id를 발견했습니다.")
+
+    # 2. DB 저장 (사용자님의 Session 반환 규칙 적용)
+    # 대량 데이터를 한 번에 넣으면 DB 부하가 생길 수 있으므로 1,000건씩 나누어 처리합니다.
+    batch_size = 1000
+    session = None
+
+    try:
+        session = get_engine()  # 사용자님 규칙: Session 객체 획득
+
+        sql = text("""
+            INSERT IGNORE INTO article_meta (article_id, created_at)
+            VALUES (:article_id, NOW())
+        """)
+
+        for i in range(0, len(es_ids), batch_size):
+            batch = [{"article_id": aid} for aid in es_ids[i:i + batch_size]]
+            session.execute(sql, batch)
+            session.commit()  # 배치 단위로 커밋
+            print(f"[{i + len(batch)}/{len(es_ids)}] 동기화 진행 중...")
+
+        print(">>> [완료] 모든 데이터가 성공적으로 DB에 동기화되었습니다.")
+
+    except Exception as e:
+        if session:
+            session.rollback()  # 에러 발생 시 롤백
+        print(f"🚨 [오류발생] 동기화 중 에러가 발생했습니다: {e}")
+
+    finally:
+        if session:
+            session.close()  # 세션 종료 (연결 반환)
