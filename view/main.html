@@ -484,6 +484,7 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .view-grid.expanded { max-height: 2500px; }
 .view-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
 .view-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.view-icon-img{width:22px; height:22px; object-fit:contain; }
 .view-icon-box { width: 44px; height: 44px; border-radius: 50%; background: #0f172a; border: 2px solid; display: grid; place-items: center; font-size: 20px; }
 .view-title-group .vt { font-size: 14px; font-weight: 700; }
 .view-title-group .vp { font-size: 24px; font-weight: 900; }
@@ -1673,37 +1674,40 @@ window.closeFooterModal = function () {
 
 /* ===== main.js ===== */
 
-/* 
+/*
    [확실] 기준 데이터 (마스터 템플릿)
    - 타이틀, 아이콘, 색상, 순서는 여기서 관리합니다.
    - 서버 데이터와 매핑하기 위해 고유 'id'를 추가했습니다.
 */
 const groups = [
     { name: "주체", items: [
-        { id: "gov", title: "정부 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏛️", color: "teal" },
-        { id: "ind", title: "개인 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "👤", color: "purple" },
-        { id: "complex", title: "복합 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "◎", color: "blue" },
-        { id: "corp", title: "기업 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "💼", color: "orange" },
-        { id: "ext", title: "외부 관점", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🌐", color: "yellow" }
+        { id: "gov", title: "정부 관점", icon: "/view/icons/gov.svg", color: "teal" },
+        { id: "ind", title: "개인 관점", icon: "/view/icons/person.svg", color: "purple" },
+        { id: "complex", title: "복합 관점", icon: "/view/icons/complex.svg", color: "blue" },
+        { id: "corp", title: "기업 관점", icon: "/view/icons/company.svg", color: "orange" },
+        { id: "ext", title: "외부 관점", icon: "/view/icons/global.svg", color: "yellow" }
     ]},
+
     { name: "감성", items: [
-        { id: "exp", title: "기대", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⭐", color: "teal" },
-        { id: "praise", title: "성과 예찬", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏆", color: "purple" },
-        { id: "crit", title: "비판적 태도", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "💬", color: "blue" },
-        { id: "worry", title: "우려", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚠️", color: "orange" }
+        { id: "exp", title: "기대", icon: "/view/icons/star.svg", color: "teal" },
+        { id: "praise", title: "성과 예찬", icon: "/view/icons/trophy.svg", color: "purple" },
+        { id: "crit", title: "비판적 태도", icon: "/view/icons/chat.svg", color: "blue" },
+        { id: "worry", title: "우려", icon: "/view/icons/warning.svg", color: "orange" }
     ]},
+
     { name: "분석", items: [
-        { id: "res", title: "결과 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📊", color: "teal" },
-        { id: "fore", title: "전망 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📈", color: "purple" },
-        { id: "simp", title: "단순 전달", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📰", color: "blue" },
-        { id: "resp", title: "대응 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚙️", color: "orange" },
-        { id: "cause", title: "원인 분석", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🔍", color: "yellow" }
+        { id: "res", title: "결과 분석", icon: "/view/icons/chart.svg", color: "teal" },
+        { id: "fore", title: "전망 분석", icon: "/view/icons/graph.svg", color: "purple" },
+        { id: "simp", title: "단순 전달", icon: "/view/icons/news.svg", color: "blue" },
+        { id: "resp", title: "대응 분석", icon: "/view/icons/gear.svg", color: "orange" },
+        { id: "cause", title: "원인 분석", icon: "/view/icons/search.svg", color: "yellow" }
     ]},
+
     { name: "요인", items: [
-        { id: "mkt", title: "시장 자율 강조", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚖️", color: "teal" },
-        { id: "intr", title: "정부 개입 강조", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "🏢", color: "purple" },
-        { id: "pol", title: "정책 요인(국내)", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "📍", color: "blue" },
-        { id: "neu", title: "중립", percent: 0, reason: "데이터를 불러오는 중입니다...", icon: "⚖️", color: "yellow" }
+        { id: "mkt", title: "시장 자율 강조", icon: "/view/icons/balance.svg", color: "teal" },
+        { id: "intr", title: "정부 개입 강조", icon: "/view/icons/building.svg", color: "purple" },
+        { id: "pol", title: "정책 요인(국내)", icon: "/view/icons/location.svg", color: "blue" },
+        { id: "neu", title: "중립", icon: "/view/icons/neutral.svg", color: "yellow" }
     ]}
 ];
 
@@ -1719,7 +1723,9 @@ function renderViewGrid(data) {
             htmlContent += `
                 <div class="view-card">
                     <div class="view-top">
-                        <div class="view-icon-box c-${item.color}">${item.icon}</div>
+                        <div class="view-icon-box c-${item.color}">${item.icon}</div><div class="view-icon-box c-${item.color}">
+    <img src="${item.icon}" class="view-icon-img">
+</div>
                         <div class="view-title-group">
                             <div class="vt c-${item.color}">${item.title}</div>
                             <div class="vp c-${item.color}">${item.percent}%</div>
@@ -1754,7 +1760,7 @@ async function loadAnalysisData() {
     try {
         // 백엔드 API 호출 (실제 FastAPI 주소로 변경하세요)
         // const { data: mlResults } = await axios.get("/api/v1/analysis");
-        
+
         // 예시용 가짜 데이터 (서버에서 올 데이터 구조)
         const mockServerData = {
             "gov": { "percent": 0, "reason": "데이터를 불러오는 중입니다..." },
@@ -1764,7 +1770,7 @@ async function loadAnalysisData() {
 
         // 기준 데이터(groups)를 깊은 복사하여 수치 업데이트
         const updatedData = JSON.parse(JSON.stringify(groups));
-        
+
         updatedData.forEach(group => {
             group.items.forEach(item => {
                 if (mockServerData[item.id]) {

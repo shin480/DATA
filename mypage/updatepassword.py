@@ -15,7 +15,7 @@ def update_user_password(info: Dict[str, Any], req: Request):
     new_pw = info.get("new_pw")
 
     # 2. 보안 검증 (세션 이메일 vs 요청 이메일)
-    if session_user.get('email') != email:
+    if session_user.get('user_id') != email:
         return {"success": False, "message": "권한이 없습니다."}
 
     conn = None
