@@ -690,6 +690,19 @@
 <script>
 
 function logout(){
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_name");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userName");
+
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("user_name");
+  sessionStorage.removeItem("user_role");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("userName");
   axios.post("/logout");
   location.href='/view/main.html'
 }
