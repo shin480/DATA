@@ -726,13 +726,12 @@ body {
 }
 
 .news-card {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 24px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  min-height: 320px;
+  background: #202c40;
+  border-radius: 14px;
+  padding: 18px;
+  min-height: 180px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .news-card-top {
@@ -1124,7 +1123,7 @@ body {
   max-width: 1060px;
   margin: 0 auto;
   padding: 40px 24px 120px;
-  background: #020817;
+  background: #050816;
   color: #f8fafc;
 
   flex: 1;
@@ -1340,8 +1339,9 @@ body {
 
 .perspective-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+  width: 100%;
 }
 
 .news-card {
@@ -1349,6 +1349,7 @@ body {
   border-radius: 14px;
   padding: 18px;
   min-height: 180px;
+  min-width: 0;
 }
 
 .news-card.positive {
@@ -1391,9 +1392,16 @@ body {
 .news-meta {
   display: flex;
   gap: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   scroll-behavior: smooth;
   flex: 1;
+  min-width: 0;
+  scrollbar-width: none;
+}
+
+.news-meta::-webkit-scrollbar {
+  display: none;
 }
 
 .meta-pill {
@@ -1450,24 +1458,32 @@ body {
   height: 46px;
   overflow: hidden;
   margin-bottom: 16px;
+  min-width: 0;
+  width: 100%;
 }
 
 .news-title-track {
-  will-change: transform;
+  width: 100%;
+  min-width: 0;
 }
 
 .news-title-item {
   height: 46px;
-  display: flex;
-  align-items: center;
+  display: block;
   padding: 0 13px;
   font-size: 13px;
   font-weight: 900;
-  line-height: 1.4;
+  line-height: 46px;
   color: #f8fafc;
+
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .score-bar {
@@ -1581,7 +1597,7 @@ body {
 ============================== */
 
 body.light-mode .keyword-detail-page {
-  background: #f8fafc !important;
+  background: #edf2ee !important;
   color: #0f172a !important;
 }
 
@@ -1592,10 +1608,12 @@ body.light-mode .article-desc {
 
 body.light-mode .keyword-card,
 body.light-mode .article-card {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  background: #f7faf7 !important;
+  border-color: #dbe4dc !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
 }
+
+
 
 body.light-mode .summary-title,
 body.light-mode .perspective-title,
@@ -1603,10 +1621,14 @@ body.light-mode .article-title {
   color: #0f172a !important;
 }
 
+body.light-mode .news-card {
+  background: #eef2ec !important;
+  border-color: #dbe4dc !important;
+}
+
 body.light-mode .stat-box,
-body.light-mode .news-card,
 body.light-mode .news-title-roller {
-  background: #f1f5f9 !important;
+  background: #eef2ec !important;
 }
 
 body.light-mode .stat-value,
@@ -1629,7 +1651,7 @@ body.light-mode .score-row {
 
 body.light-mode .original-btn {
   background: #ecfeff !important;
-  color: #0891b2 !important;
+  color: #00cfe8 !important;
   border: 1px solid #67e8f9;
 }
 
@@ -1643,66 +1665,130 @@ body.light-mode .article-category {
 }
 
 /* ==============================
-   Common Light Mode
+   Light Mode - Sage Premium Theme
+   전체 UI 세이지톤 통일
+   (포인트 민트색 유지)
 ============================== */
 
 body.light-mode {
-  background: #f8fafc;
-  color: #0f172a;
+  background: #edf2ee;
+  color: #1f2937;
 }
 
 body.light-mode .page {
-  background: #f8fafc;
+  background: #edf2ee;
 }
 
-/* Header */
+/* ==============================
+   Header
+============================== */
+
 body.light-mode .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: rgba(241, 246, 242, 0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid #d5ddd6;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
 }
 
 body.light-mode .nav {
-  color: #64748b;
+  color: #66756d;
 }
 
 body.light-mode .nav a:hover {
-  color: #0284c7;
+  color: #00cfe8;
 }
 
 body.light-mode .main-search-wrap {
-  background: #ffffff;
-  border-color: #cbd5e1;
+  background: #f7faf7;
+  border: 1px solid #d8e1d9;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+body.light-mode .main-search-wrap:focus-within {
+  border-color: rgba(0, 207, 232, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(0, 207, 232, 0.08),
+    inset 0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 body.light-mode .search-box {
-  color: #0f172a;
+  color: #1f2937;
 }
 
 body.light-mode .search-box::placeholder {
-  color: #94a3b8;
+  color: #8b9a91;
 }
 
 body.light-mode .search-icon-btn {
-  color: #64748b;
+  color: #708177;
+}
+
+body.light-mode .search-icon-btn:hover {
+  color: #00cfe8;
 }
 
 body.light-mode .theme-btn {
+  background: #f7faf7;
+  border: 1px solid #d7dfd8;
+  color: #4b5563;
+}
+
+body.light-mode .theme-btn:hover {
+  border-color: #00cfe8;
   background: #ffffff;
-  border-color: #cbd5e1;
-  color: #334155;
 }
 
 body.light-mode .header-btn.join {
+  background: #f7faf7;
+  border: 1px solid #cfd8d0;
+  color: #55635c;
+}
+
+body.light-mode .header-btn.join:hover {
+  border-color: #00cfe8;
+  color: #00cfe8;
   background: #ffffff;
-  border-color: #94a3b8;
-  color: #334155;
 }
 
 body.light-mode .header-btn.login {
   background: #00cfe8;
   border-color: #00cfe8;
-  color: #020617;
+  color: #06262b;
+  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.16);
 }
+
+body.light-mode .header-btn.login:hover {
+  filter: brightness(1.04);
+}
+
+/* ==============================
+   자동완성
+============================== */
+
+body.light-mode .search-suggest-box {
+  background: #f8fbf8;
+  border: 1px solid #d7dfd8;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+body.light-mode .search-suggest-item {
+  color: #3f4c45;
+}
+
+body.light-mode .search-suggest-item:hover {
+  background: #ebf8fb;
+  color: #00cfe8;
+}
+
+body.light-mode .search-suggest-icon {
+  background: #dfe7e0;
+  color: #607066;
+}
+
+body.light-mode .search-suggest-arrow {
+  color: #839188;
+}
+
 
 /* 자동완성 */
 body.light-mode .search-suggest-box {
@@ -1729,39 +1815,155 @@ body.light-mode .search-suggest-arrow {
   color: #64748b;
 }
 
-/* Footer */
+/* ==============================
+   Footer
+============================== */
+
 body.light-mode .footer {
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  background: linear-gradient(
+    180deg,
+    #eef4ef 0%,
+    #e7efe8 100%
+  );
+
+  border-top: 1px solid #d8e0d9;
 }
 
-body.light-mode .footer-logo-white {
-  background-color: #020617;
+body.light-mode .footer-inner {
+  color: #6f7d75;
 }
 
 body.light-mode .footer-link {
-  color: #475569;
+  color: #607066;
 }
 
 body.light-mode .footer-link:hover {
-  color: #0284c7;
+  color: #00cfe8;
 }
 
 body.light-mode .footer-copy {
-  color: #64748b;
+  color: #7d8b83;
+}
+
+body.light-mode .footer-divider {
+  background: #cfd8d0;
+}
+
+body.light-mode .footer-logo-white {
+  background-color: #111827;
+}
+
+/* ==============================
+   Footer Modal
+============================== */
+
+body.light-mode .footer-modal {
+  background: rgba(110, 128, 116, 0.18);
+  backdrop-filter: blur(4px);
 }
 
 body.light-mode .footer-modal-box {
-  background: #ffffff;
-  border-color: #cbd5e1;
+  background: #f8fbf8;
+  border: 1px solid #d9e2da;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
 }
 
 body.light-mode .footer-modal-content {
-  color: #334155;
+  color: #4b5563;
 }
 
 body.light-mode .footer-modal-content h3 {
+  color: #1f2937;
+}
+
+body.light-mode .footer-modal-btn {
+  background: #00cfe8;
+  color: #06262b;
+}
+
+    body.light-mode .section-title-wrap h2,
+body.light-mode .news-header h2 {
+  color: #1e293b !important;
+}
+
+    /* 배지 */
+body.light-mode .keyword-badge {
+  border-color: #06b6d4;
+  color: #00cfe8;
+  background: #ecfeff;
+}
+
+/* 섹션 라벨 */
+body.light-mode .section-label,
+body.light-mode .reference-label {
+  color: #00cfe8;
+}
+
+/* 뉴스 카드 */
+body.light-mode .news-card {
+  background: #eef2ec !important;
+  border: 1px solid #e2e8f0;
+}
+
+/* 뉴스 타입 */
+body.light-mode .news-type.positive {
+  color: #0f766e;
+}
+
+body.light-mode .news-type.neutral {
+  color: #64748b;
+}
+
+body.light-mode .news-type.negative {
+  color: #dc2626;
+}
+
+/* 메타 버튼 */
+body.light-mode .meta-pill {
+  background: #ffffff;
+}
+
+body.light-mode .meta-pill.active {
+  background: #ecfeff;
+  border-color: #06b6d4;
+  color: #00cfe8;
+}
+
+/* 좌우 화살표 */
+body.light-mode .meta-arrow {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* 뉴스 타이틀 롤러 */
+body.light-mode .news-title-roller {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
+}
+
+/* 점수 바 */
+body.light-mode .score-bar {
+  opacity: 0.85;
+}
+
+/* 도넛 중앙 */
+body.light-mode .donut::after {
+  background: #f8fafc !important;
+}
+
+/* 강조 기사 */
+body.light-mode .article-card.highlight {
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.18);
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+/* 토스트 */
+body.light-mode .toast {
+  background: #ffffff;
+  border-color: #67e8f9;
   color: #0f172a;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
 /* ==============================
@@ -1795,6 +1997,12 @@ body.light-mode .footer-modal-content h3 {
     flex-direction: column;
   }
 }
+
+#loadTrigger {
+  width: 100%;
+  height: 20px;
+}
+
 </style>
 </head>
 
@@ -1870,6 +2078,7 @@ body.light-mode .footer-modal-content h3 {
         <div class="section-label">PERSPECTIVE CONTRAST</div>
         <h2 class="perspective-title">같은 이슈, 다른 시각</h2>
         <div class="perspective-grid" id="perspectiveGrid"></div>
+          <div id="loadTrigger"></div>
       </section>
 
       <section>
@@ -2483,52 +2692,79 @@ let keywordData = {
 };
 
 // ==============================
-// 임시 데이터
+// 서버 데이터
 // ==============================
-const perspectives = [
-  {
-    type: "긍정 관점",
-    className: "positive",
-    articles: [
-      { code: "E", press: "경제A", title: "기준금리 인하에 소비 심리 회복 기대" },
-      { code: "N", press: "경향신문", title: "한은 금리 인하, 내수 회복의 마중물 될 것" },
-      { code: "B", press: "비교됨", title: "금리 완화로 기업 투자 부담 줄어든다" },
-      { code: "M", press: "매일경제", title: "금리 완화 기대감에 투자 심리 개선 흐름" }
-    ],
-    positive: 63,
-    neutral: 24,
-    negative: 13
-  },
-  {
-    type: "중립 관점",
-    className: "neutral",
-    articles: [
-      { code: "E", press: "경제A", title: "금리 인하 효과는 경기 흐름에 따라 달라질 전망" },
-      { code: "N", press: "경향신문", title: "한은 금리 인하, 시장 영향은 제한적일 가능성" },
-      { code: "B", press: "증권B", title: "금융시장 반응은 아직 관망세" },
-      { code: "S", press: "서울경제", title: "금리 인하 이후 시장 흐름은 추가 지표가 변수" }
-    ],
-    positive: 45,
-    neutral: 42,
-    negative: 13
-  },
-  {
-    type: "부정 관점",
-    className: "negative",
-    articles: [
-      { code: "E", press: "경제A", title: "금리 인하에도 가계부채 부담은 여전" },
-      { code: "N", press: "경향신문", title: "한은 금리 인하, 대출 규제와 맞물려 효과 제한" },
-      { code: "B", press: "비교됨", title: "시장 불확실성 커져 정책 효과 반감 우려" },
-      { code: "H", press: "한국경제", title: "금리 인하 기대에도 부채 리스크는 지속" }
-    ],
-    positive: 23,
-    neutral: 31,
-    negative: 46
-  }
-];
-
+let perspectives = [];
 let articles = [];
 let rollingTimers = [];
+
+async function fetchPerspectiveData() {
+  const params = new URLSearchParams(window.location.search);
+  const keyword = params.get("keyword") || "금리";
+
+  try {
+    const res = await axios.get(`/api/keywords/${encodeURIComponent(keyword)}`);
+    const data = res.data;
+
+    articles = data.articles || [];
+
+    perspectives = [
+      {
+        type: "긍정 관점",
+        className: "positive",
+        articles: articles
+          .filter(item => item.sentiment === "positive")
+          .slice(0, 4)
+          .map(item => ({
+            code: "P",
+            press: item.source,
+            title: item.title,
+            article_id: item.article_id
+          })),
+        positive: data.sentiment?.positive || 0,
+        neutral: data.sentiment?.neutral || 0,
+        negative: data.sentiment?.negative || 0
+      },
+      {
+        type: "중립 관점",
+        className: "neutral",
+        articles: articles
+          .filter(item => item.sentiment === "neutral")
+          .slice(0, 4)
+          .map(item => ({
+            code: "N",
+            press: item.source,
+            title: item.title,
+            article_id: item.article_id
+          })),
+        positive: data.sentiment?.positive || 0,
+        neutral: data.sentiment?.neutral || 0,
+        negative: data.sentiment?.negative || 0
+      },
+      {
+        type: "부정 관점",
+        className: "negative",
+        articles: articles
+          .filter(item => item.sentiment === "negative")
+          .slice(0, 4)
+          .map(item => ({
+            code: "D",
+            press: item.source,
+            title: item.title,
+            article_id: item.article_id
+          })),
+        positive: data.sentiment?.positive || 0,
+        neutral: data.sentiment?.neutral || 0,
+        negative: data.sentiment?.negative || 0
+      }
+    ];
+
+    renderPerspectives();
+
+  } catch (error) {
+    console.error("관점 데이터 불러오기 실패:", error);
+  }
+}
 
 // ==============================
 // Toast
@@ -2700,12 +2936,11 @@ function updateActivePress(cardIndex, articleIndex) {
       pill.classList.add("active", `${cardType}-active`);
 
       if (list) {
-        const pillLeft = pill.offsetLeft;
-        const pillWidth = pill.offsetWidth;
-        const listWidth = list.clientWidth;
+        const targetLeft =
+          pill.offsetLeft - list.offsetLeft - (list.clientWidth / 2) + (pill.clientWidth / 2);
 
         list.scrollTo({
-          left: pillLeft - listWidth / 2 + pillWidth / 2,
+          left: targetLeft,
           behavior: "smooth"
         });
       }
@@ -2833,7 +3068,7 @@ function startRolling() {
       track.style.transform = `translateY(-${46 * current}px)`;
 
       if (current === realCount) {
-        updateActivePress(cardIndex, 0);
+        updateActivePress(cardIndex, 0);  
 
         setTimeout(() => {
           track.style.transition = "none";
@@ -2861,7 +3096,7 @@ window.selectPerspectiveArticle = selectPerspectiveArticle;
 // 최초 실행
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
-  renderPerspectives();
+  fetchPerspectiveData();
   readKeywordFromUrl();
 
   window.addEventListener("resize", checkPressArrow);
