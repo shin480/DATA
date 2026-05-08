@@ -1,19 +1,26 @@
 """
 뉴스 분류 파이프라인 FastAPI 앱
 
-스케줄:
-  - 1일 1회 (새벽 2시): scopeID 클러스터링 (분류 파이프라인)
-  - 1일 1회 (새벽 2시 10분): 감성 분류
-  - 1일 1회 (새벽 2시 20분): 키워드 추출
-  - 1일 1회 (새벽 2시 30분): 뉴스 요약
-  - 1일 1회 (새벽 3시): scope 감성 집계
-  - 1일 1회 (새벽 3시 10분): scope 대표 요약 생성/갱신
+스케줄 (체이닝 방식 — 선행 작업 완료 후 다음 작업 즉시 실행):
+  [일 1회 체인, 새벽 2시 시작]
+    classification → sentiment → keywords → summary
+      → scope_sentiment → scope_summary
+
+  [독립 배치]
   - 30분 간격: scope 키워드 집계
   - 30분 간격: scopeTitle 큐 배치 처리
+  - 1시간 간격: fine-tuning 자동 트리거 확인
+
+※ 각 작업은 선행 작업이 정상 완료된 경우에만 다음 작업을 예약합니다.
+   실패 또는 타임아웃 시 체인이 중단되고 pipeline_error_log에 기록됩니다.
+
+타임아웃 기본값: 각 job당 30분 (JOB_TIMEOUT_SEC)
+  → 무한루프 등으로 초과 시 TimeoutError 발생, 체인 중단
 """
 
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_MISSED
@@ -43,6 +50,30 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# ── 타임아웃 설정 ──────────────────────────────────────
+# 각 job의 최대 허용 실행 시간 (초). 초과 시 TimeoutError → 체인 중단.
+# 운영: 1800 (30분) / 테스트: 300 (5분) 등으로 조정
+JOB_TIMEOUT_SEC = 300
+
+
+def _run_with_timeout(fn, job_id: str, timeout_sec: int = JOB_TIMEOUT_SEC):
+    """
+    fn을 별도 스레드에서 실행하고 timeout_sec 내에 완료되지 않으면
+    FuturesTimeoutError를 raise합니다.
+    - TimeoutError: 무한루프 등 초과 시 → 체인 중단, _on_job_error 기록
+    - 일반 Exception: 서비스 내부 오류 → 동일하게 체인 중단
+    """
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(fn)
+        try:
+            future.result(timeout=timeout_sec)
+        except FuturesTimeoutError:
+            logger.critical(
+                f"[타임아웃] {job_id} — {timeout_sec}초 초과. 체인 중단."
+            )
+            raise
+
 
 # ── FastAPI 앱 ─────────────────────────────────────────
 app = FastAPI(
@@ -89,6 +120,83 @@ def _on_job_missed(event):
     logger.warning(f"[APScheduler] 잡 실행 누락: job_id={event.job_id} | scheduled={event.scheduled_run_time}")
 
 
+# ── 체이닝 래퍼 함수 ───────────────────────────────────
+# 각 함수는 _run_with_timeout으로 실행 → 정상 완료 시 다음 job 예약.
+# 타임아웃 또는 예외 발생 시 체인 중단, _on_job_error + pipeline_error_log 기록.
+
+def classification_job():
+    """[1/6] 분류 파이프라인 → 완료 시 sentiment_job 예약"""
+    logger.info("[체인 1/6] classification 시작")
+    _run_with_timeout(run_classification_pipeline, "classification")
+    logger.info("[체인 1/6] classification 완료 → sentiment 예약")
+    scheduler.add_job(
+        sentiment_job,
+        trigger="date",
+        id="sentiment",
+        replace_existing=True,
+    )
+
+
+def sentiment_job():
+    """[2/6] 감성 분류 → 완료 시 keyword_job 예약"""
+    logger.info("[체인 2/6] sentiment 시작")
+    _run_with_timeout(run_sentiment_pipeline, "sentiment")
+    logger.info("[체인 2/6] sentiment 완료 → keywords 예약")
+    scheduler.add_job(
+        keyword_job,
+        trigger="date",
+        id="keywords",
+        replace_existing=True,
+    )
+
+
+def keyword_job():
+    """[3/6] 키워드 추출 → 완료 시 summary_job 예약"""
+    logger.info("[체인 3/6] keywords 시작")
+    _run_with_timeout(run_keyword_pipeline, "keywords")
+    logger.info("[체인 3/6] keywords 완료 → summary 예약")
+    scheduler.add_job(
+        summary_job,
+        trigger="date",
+        id="summary",
+        replace_existing=True,
+    )
+
+
+def summary_job():
+    """[4/6] 뉴스 요약 → 완료 시 scope_sentiment_job 예약"""
+    logger.info("[체인 4/6] summary 시작")
+    _run_with_timeout(run_summary_pipeline, "summary")
+    logger.info("[체인 4/6] summary 완료 → scope_sentiment 예약")
+    scheduler.add_job(
+        scope_sentiment_job,
+        trigger="date",
+        id="scope_sentiment",
+        replace_existing=True,
+    )
+
+
+def scope_sentiment_job():
+    """[5/6] scope 감성 집계 → 완료 시 scope_summary_job 예약"""
+    logger.info("[체인 5/6] scope_sentiment 시작")
+    _run_with_timeout(run_scope_sentiment_batch, "scope_sentiment")
+    logger.info("[체인 5/6] scope_sentiment 완료 → scope_summary 예약")
+    scheduler.add_job(
+        scope_summary_job,
+        trigger="date",
+        id="scope_summary_batch",
+        replace_existing=True,
+    )
+
+
+def scope_summary_job():
+    """[6/6] scope 대표 요약 생성/갱신 (체인 종료)"""
+    logger.info("[체인 6/6] scope_summary 시작")
+    _run_with_timeout(run_scope_summary_batch, "scope_summary_batch")
+    logger.info("[체인 6/6] scope_summary 완료 — 일배치 체인 종료")
+
+
+# ── 앱 생명주기 ────────────────────────────────────────
 @app.on_event("startup")
 def startup():
     # DB/ES 초기화 (없으면 생성)
@@ -99,45 +207,20 @@ def startup():
     except Exception as e:
         logger.warning(f"init_db 실패 (이미 존재하거나 연결 불가): {e}")
 
-    # ── 1일 1회 배치 (순차 실행, 앞 작업 결과를 뒤 작업이 소비) ──
+    # ── 일배치 체인 시작점 ─────────────────────────────
+    # classification_job 완료 → sentiment_job → keyword_job
+    # → summary_job → scope_sentiment_job → scope_summary_job
+    #
+    # TODO [테스트 완료 후 교체]
+    #   운영: trigger="cron", hour=2, minute=0  (day_of_week 제거)
     scheduler.add_job(
-        run_classification_pipeline,
-        trigger="cron", hour=2, minute=0,
+        classification_job,
+        trigger="cron", day_of_week="mon", hour=1, minute=0,  # 테스트: 월요일 01:00
         id="classification",
         replace_existing=True,
     )
-    scheduler.add_job(
-        run_sentiment_pipeline,
-        trigger="cron", hour=2, minute=10,
-        id="sentiment",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        run_keyword_pipeline,
-        trigger="cron", hour=2, minute=20,
-        id="keywords",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        run_summary_pipeline,
-        trigger="cron", hour=2, minute=30,
-        id="summary",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        run_scope_sentiment_batch,
-        trigger="cron", hour=3, minute=0,
-        id="scope_sentiment",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        run_scope_summary_batch,
-        trigger="cron", hour=3, minute=10,
-        id="scope_summary_batch",
-        replace_existing=True,
-    )
 
-    # ── 30분 간격 배치 ─────────────────────────────────
+    # ── 독립 배치 (체인과 무관하게 별도 실행) ──────────
     scheduler.add_job(
         run_scope_keywords_batch,
         trigger="interval", minutes=30,
@@ -150,8 +233,6 @@ def startup():
         id="scope_title_batch",
         replace_existing=True,
     )
-
-    # ── 1시간 간격: fine-tuning 자동 트리거 확인 ───────
     scheduler.add_job(
         check_and_trigger_finetune,
         trigger="interval", hours=1,
