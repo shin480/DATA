@@ -106,25 +106,22 @@
 }
 
 
-/* ==============================
-   Footer
-============================== */
+/* ===== FOOTER ===== */
 
-/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
+/* 현재 페이지는 .page가 100%라서 footer를 따로 밀 필요 없음 */
 #footer {
   width: 100%;
   flex-shrink: 0;
 }
 
-/* 실제 footer */
 .footer {
   width: 100%;
+  min-height: 88px;
   background: #020617;
   color: #fff;
   box-sizing: border-box;
 }
 
-/* footer 안쪽 내용 */
 .footer-inner {
   width: 100%;
   min-height: 88px;
@@ -134,11 +131,9 @@
   display: flex;
   align-items: center;
   gap: 22px;
-}
 
-html,
-body {
-  overflow-x: hidden;
+  color: #64748b;
+  font-size: 12px;
 }
 
 .footer-logo-white {
