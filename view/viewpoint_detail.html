@@ -591,12 +591,13 @@ body {
 
 .compare-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 14px;
 }
 
 .compare-card {
-  height: 180px;
+  min-height: 130px;
+  height: auto;
   border-radius: 12px;
   background: #202d42;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -638,6 +639,25 @@ body {
   height: 100%;
   border-radius: 999px;
   background: #2dd4bf;
+}
+
+.compare-groups {
+  display: block;
+}
+
+.compare-group {
+  margin-bottom: 28px;
+}
+
+.compare-group:last-child {
+  margin-bottom: 0;
+}
+
+.compare-group-title {
+  margin-bottom: 12px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 900;
 }
 
 /* ==============================
@@ -983,8 +1003,8 @@ body.light-mode .footer-modal-content h3 {
 
           <div>
             <h1>
-              <span id="viewTitle">정부 관점</span>
-              <strong id="viewPercent">%</strong>
+              <span id="viewTitle">관점 불러오는 중</span>
+              <strong id="viewPercent">0%</strong>
             </h1>
             <p>전체 기사 중 비율</p>
           </div>
@@ -1099,7 +1119,7 @@ body.light-mode .footer-modal-content h3 {
 
         <section class="panel compare-panel">
           <h2>관점 비교</h2>
-          <div class="compare-grid" id="compareGrid"></div>
+          <div class="compare-groups" id="compareGrid"></div>
         </section>
 
       </div>
@@ -1538,7 +1558,12 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-let viewTitle = localStorage.getItem("viewpoint_title") || "정부 관점";
+const viewpointParams = new URLSearchParams(location.search);
+
+let viewTitle =
+  viewpointParams.get("viewpoint") ||
+  localStorage.getItem("viewpoint_title") ||
+  "";
 
 function getSentimentText(sentiment) {
   if (sentiment === "positive") return "긍정";
@@ -1567,10 +1592,14 @@ function formatDate(dateText) {
 
 async function loadViewpointDetail(selectedTitle) {
   try {
+    const requestParams = {};
+
+    if (selectedTitle) {
+      requestParams.viewpoint = selectedTitle;
+    }
+
     const res = await axios.get("/api/viewpoints/detail", {
-      params: {
-        viewpoint: selectedTitle
-      }
+      params: requestParams
     });
 
     const data = res.data;
@@ -1632,7 +1661,7 @@ function renderViewpointDetail(data) {
   renderSentiment(data.sentiment);
   renderKeywords(data.keywords);
   renderArticles(data.articles);
-  renderCompareCards(data.compare);
+  renderCompareCards(data.compare_groups);
 }
 
 function renderSentiment(sentiment) {
@@ -1741,33 +1770,44 @@ function renderArticles(articles) {
   }).join("");
 }
 
-function renderCompareCards(compare) {
+function renderCompareCards(compareGroups) {
   const compareGrid = document.getElementById("compareGrid");
 
   if (!compareGrid) return;
 
-  if (!compare || compare.length === 0) {
+  if (!compareGroups || compareGroups.length === 0) {
     compareGrid.innerHTML = "";
     return;
   }
 
-  compareGrid.innerHTML = compare.map(function (item) {
-    const isActive = item.title === viewTitle;
+  compareGrid.innerHTML = compareGroups.map(function (group) {
+    const itemsHtml = group.items.map(function (item) {
+      const isActive = item.title === viewTitle;
+
+      return `
+        <button
+          class="compare-card ${isActive ? "active" : ""}"
+          type="button"
+          data-title="${item.title}"
+        >
+          <div class="compare-title">${item.title}</div>
+
+          <div class="compare-percent">${item.percent}%</div>
+
+          <div class="compare-bar">
+            <div class="compare-fill" style="width:${Math.min(item.percent * 3, 100)}%"></div>
+          </div>
+        </button>
+      `;
+    }).join("");
 
     return `
-      <button
-        class="compare-card ${isActive ? "active" : ""}"
-        type="button"
-        data-title="${item.title}"
-      >
-        <div class="compare-title">${item.title}</div>
-
-        <div class="compare-percent">${item.percent}%</div>
-
-        <div class="compare-bar">
-          <div class="compare-fill" style="width:${Math.min(item.percent * 3, 100)}%"></div>
+      <div class="compare-group">
+        <div class="compare-group-title">${group.group}</div>
+        <div class="compare-grid">
+          ${itemsHtml}
         </div>
-      </button>
+      </div>
     `;
   }).join("");
 
@@ -1776,6 +1816,13 @@ function renderCompareCards(compare) {
       const selectedTitle = card.dataset.title;
 
       if (!selectedTitle || selectedTitle === viewTitle) return;
+
+      localStorage.setItem("viewpoint_title", selectedTitle);
+
+      const nextUrl =
+        `/view/viewpoint_detail.html?viewpoint=${encodeURIComponent(selectedTitle)}`;
+
+      history.pushState(null, "", nextUrl);
 
       loadViewpointDetail(selectedTitle);
     });
