@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <title>관리자 회원정보 | DATA 다타</title>
     <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 <style>
@@ -683,7 +684,7 @@ td select {
 
   if (!isAdmin) {
     alert("관리자만 접근할 수 있습니다.");
-    location.href = "/view/index.html";
+    location.href = "/view/main.html";
   }
 })();
 
@@ -761,7 +762,9 @@ function adminUsersLogout() {
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("userName");
 
-  location.href = "/view/index.html";
+  axios.post("/logout");
+
+  location.href = "/view/main.html";
 }
 
 
