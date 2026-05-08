@@ -13,6 +13,10 @@
       padding: 0;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     body {
       background: #020617;
       color: #e5e7eb;
@@ -23,77 +27,61 @@
       width: 1440px;
       min-height: 100vh;
       margin: 0 auto;
+      padding-top: 72px;
       background: #020617;
     }
 
-    /* =========================
-       HEADER
-    ========================= */
-
+    /* ===== HEADER ===== */
     .header {
-      height: 86px;
-      padding: 0 44px;
-      background: #050a1a;
-      border-bottom: 1px solid #111827;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: none;
+      z-index: 10000;
 
-    .header-left {
+      width: 100%;
+      height: 72px;
+      padding: 0 56px;
+
       display: flex;
       align-items: center;
-      gap: 58px;
+
+      background: #070b1a;
+      border-bottom: 1px solid #111827;
     }
 
     .logo {
+      width: 155px;
+      height: 52px;
       display: flex;
       align-items: center;
-      gap: 10px;
       text-decoration: none;
+      flex-shrink: 0;
+      overflow: hidden;
     }
 
-    .logo-img {
-      width: 170px;
-      height: 170px;
-      object-fit: contain;
+    .header-logo-full {
+      height: 52px;
+      width: auto;
       display: block;
-    }
-
-    .logo-text-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .logo-sub {
-      color: #64748b;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: -0.2px;
-      line-height: 1;
-    }
-
-    .logo-main {
-      color: #00e5ff;
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: -1px;
-      line-height: 1;
+      object-fit: contain;
     }
 
     .nav {
       display: flex;
       align-items: center;
-      gap: 44px;
+      gap: 30px;
+      margin-left: 22px;
+      color: #6b7280;
+      font-size: 15px;
+      font-weight: 700;
+      flex-shrink: 0;
     }
 
     .nav a {
-      color: #64748b;
       text-decoration: none;
-      font-size: 17px;
-      font-weight: 800;
-      transition: color 0.2s ease;
+      color: inherit;
+      transition: color 0.2s;
     }
 
     .nav a:hover {
@@ -101,93 +89,184 @@
     }
 
     .header-right {
+      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .search-wrap {
-      width: 270px;
-      height: 34px;
-      border: 1px solid #1e293b;
+    .main-search-wrap {
+      position: relative;
+      width: 410px;
+      height: 40px;
       border-radius: 999px;
-      background: #050816;
+      background: #070b1a;
+      border: 1px solid #1f2937;
       display: flex;
       align-items: center;
-      padding: 0 12px 0 18px;
+      padding: 0 14px 0 20px;
     }
 
-    .search-wrap input {
+    .search-box {
       flex: 1;
+      width: 100%;
       height: 100%;
       border: 0;
       outline: none;
       background: transparent;
       color: #cbd5e1;
-      font-size: 12px;
+      font-size: 15px;
+      padding: 0;
     }
 
-    .search-wrap input::placeholder {
-      color: #64748b;
+    .search-box::placeholder {
+      color: #7c8493;
     }
 
-    .search-btn {
-      width: 22px;
-      height: 22px;
+    .main-search-wrap:focus-within {
+      border-color: #334155;
+    }
+
+    .search-icon-btn {
+      width: 24px;
+      height: 24px;
       border: 0;
       background: transparent;
-      color: #64748b;
+      color: #8b95a7;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
+      flex-shrink: 0;
     }
 
-    .search-btn:hover {
+    .search-icon-btn:hover {
       color: #00e5ff;
     }
 
     .theme-btn {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      border: 1px solid #1e293b;
-      background: #050816;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      background: #070b1a;
       color: #facc15;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+    }
+
+    .theme-btn:hover {
+      border-color: #334155;
     }
 
     .header-btn {
-      height: 34px;
-      padding: 0 16px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: transparent;
-      color: #cbd5e1;
-      font-size: 12px;
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-size: 14px;
       font-weight: 800;
       cursor: pointer;
     }
 
-    .header-btn.primary {
-      border-color: #00e5ff;
-      background: #00e5ff;
+    .header-btn.login {
+      border: 1px solid #00cfe8;
+      background: #00cfe8;
       color: #020617;
     }
 
-    .header-btn:hover {
+    .header-btn.login:hover {
+      filter: brightness(1.08);
+    }
+
+    .header-btn.join {
+      border: 1px solid #475569;
+      background: transparent;
+      color: #cbd5e1;
+    }
+
+    .header-btn.join:hover {
       border-color: #00e5ff;
       color: #00e5ff;
     }
 
-    .header-btn.primary:hover {
-      color: #020617;
-      filter: brightness(1.08);
+    /* ===== SEARCH SUGGEST ===== */
+    .search-suggest-box {
+      position: fixed;
+      width: 410px;
+      max-width: 80vw;
+      padding: 10px 0 12px;
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      background: #050b1c;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      z-index: 20000;
+      overflow: hidden;
+    }
+
+    .search-suggest-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-suggest-item {
+      width: 100%;
+      height: 38px;
+      padding: 0 16px;
+      border: 0;
+      background: transparent;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      text-align: left;
+    }
+
+    .search-suggest-item:hover {
+      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
+    }
+
+    .search-suggest-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .search-suggest-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #94a3b8;
+      color: #020817;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .search-suggest-keyword {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .search-suggest-arrow {
+      color: #94a3b8;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .search-highlight {
+      color: #00e5ff;
+      font-weight: 900;
     }
 
     /* =========================
@@ -195,7 +274,7 @@
     ========================= */
 
     .article-page {
-      min-height: calc(100vh - 86px);
+      min-height: calc(100vh - 72px);
       padding: 56px 0 120px;
       background: #020617;
     }
@@ -299,21 +378,18 @@
       color: #00e5ff;
     }
 
-    /* =========================
-       FOOTER
-    ========================= */
-
+    /* ===== FOOTER ===== */
     .footer {
       border-top: 1px solid #111827;
       background: #070b1a;
       padding: 24px 0;
+      margin-top: 60px;
     }
 
     .footer-inner {
-      width: 1440px;
-      max-width: 100%;
+      width: 1240px;
       margin: 0 auto;
-      padding: 0 64px;
+      padding: 0 24px;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -358,13 +434,12 @@
     }
 
     .footer-copy {
-      margin: 0;
       color: #64748b;
     }
 
-    .hidden {
-      display: none !important;
-    }
+    /* ==============================
+       Footer Modal
+    ============================== */
 
     .footer-modal {
       position: fixed;
@@ -410,131 +485,161 @@
       font-weight: 900;
       cursor: pointer;
     }
-.search-suggest-item {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
-  cursor: pointer;
-  color: #dbeafe;
-  transition: 0.2s;
-}
 
-.search-suggest-item:hover {
-  background: #0f172a;
-}
+    /* ==============================
+       Light Mode
+    ============================== */
 
-.search-suggest-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+    body.light-mode {
+      background: #f8fafc;
+      color: #0f172a;
+    }
 
-.search-suggest-icon {
-  color: #38bdf8;
-  font-size: 13px;
-}
+    body.light-mode .page,
+    body.light-mode .article-page {
+      background: #f8fafc;
+    }
 
-.search-suggest-keyword {
-  font-size: 14px;
-}
+    body.light-mode .header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
 
-.search-suggest-arrow {
-  color: #64748b;
-  font-size: 12px;
-}
+    body.light-mode .nav {
+      color: #64748b;
+    }
 
-.search-highlight {
-  color: #00e5ff;
-  font-weight: 700;
-}
-.main-search-wrap {
-  position: relative;
-}
-.search-suggest-box {
-  position: fixed;
-  width: 270px;
-  max-width: 80vw;
-  padding: 10px 0 12px;
-  border: 1px solid #1e293b;
-  border-top: 0;
-  border-radius: 0 0 18px 18px;
-  background: #050b1c;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-  z-index: 20000;
-  overflow: hidden;
-}
+    body.light-mode .nav a:hover {
+      color: #0284c7;
+    }
 
-.search-suggest-list {
-  display: flex;
-  flex-direction: column;
-}
+    body.light-mode .main-search-wrap {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    body.light-mode .search-box {
+      color: #0f172a;
+    }
+
+    body.light-mode .search-box::placeholder {
+      color: #94a3b8;
+    }
+
+    body.light-mode .search-icon-btn {
+      color: #64748b;
+    }
+
+    body.light-mode .theme-btn {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.light-mode .header-btn.join {
+      background: #ffffff;
+      border-color: #94a3b8;
+      color: #334155;
+    }
+
+    body.light-mode .header-btn.login {
+      background: #00cfe8;
+      border-color: #00cfe8;
+      color: #020617;
+    }
+
+    body.light-mode .section-label {
+      color: #0284c7;
+    }
+
+    body.light-mode .article-count,
+    body.light-mode .article-title {
+      color: #0f172a;
+    }
+
+    body.light-mode .article-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+
+    body.light-mode .article-card:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    body.light-mode .article-source {
+      color: #0284c7;
+    }
+
+    body.light-mode .article-summary,
+    body.light-mode .back-link {
+      color: #64748b;
+    }
+
+    body.light-mode .origin-btn {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.light-mode .origin-btn:hover {
+      border-color: #0284c7;
+      color: #0284c7;
+    }
+
+    body.light-mode .search-suggest-box {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+    }
+
+    body.light-mode .search-suggest-item {
+      color: #334155;
+    }
+
+    body.light-mode .search-suggest-item:hover {
+      background: #e0f7ff;
+      color: #0284c7;
+    }
+
+    body.light-mode .footer {
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .footer-logo-white {
+      background-color: #020617;
+    }
+
+    body.light-mode .footer-link {
+      color: #475569;
+    }
+
+    body.light-mode .footer-copy {
+      color: #64748b;
+    }
+
+    body.light-mode .footer-modal-box {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    body.light-mode .footer-modal-content {
+      color: #334155;
+    }
+
+    body.light-mode .footer-modal-content h3 {
+      color: #0f172a;
+    }
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
 <div class="page">
 
-  <header class="header">
-    <div class="header-left">
-      <a class="logo" href="/view/main.html">
-        <img class="logo-img" src="/view/img/header_logo.png" alt="DATA 로고" />
-        <!-- <div class="logo-text-wrap">
-          <div class="logo-sub">뉴스를 이해하는 방식</div>
-          <div class="logo-main">DATA 다타</div>
-        </div> -->
-      </a>
-
-      <nav class="nav">
-        <a href="/view/main.html">뉴스흐름</a>
-        <a href="/view/keyword_detail.html">키워드</a>
-        <a href="/view/article_list.html">뉴스</a>
-      </nav>
-    </div>
-
-    <div class="header-right">
-      <div class="main-search-wrap">
-
-      <div class="search-wrap">
-
-        <input
-          id="commonSearchInput"
-          type="text"
-          autocomplete="off"
-          placeholder="예: 금리, 취업, 전세, 반도체"
-        />
-
-        <button
-          class="search-btn"
-          type="button"
-          onclick="moveSearch(document.getElementById('commonSearchInput').value)"
-          aria-label="검색"
-        >
-
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-            <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-
-        </button>
-
-      </div>
-
-      <div class="search-suggest-box hidden" id="searchSuggestBox">
-        <div class="search-suggest-list" id="searchSuggestList"></div>
-      </div>
-
-    </div>
-
-      <button class="theme-btn" type="button">🌙</button>
-      <button class="header-btn primary" type="button" onclick="location.href='/view/mypage_home.html'">마이페이지</button>
-      <button class="header-btn" type="button" onclick="logout()">로그아웃</button>
-    </div>
-  </header>
+  <div id="header"></div>
 
   <main class="article-page">
     <div class="article-wrap">
@@ -547,214 +652,184 @@
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-logo-white" aria-label="DATA 로고"></div>
-
-      <button class="footer-link" type="button" onclick="openFooterTermsModal()">
-        이용약관
-      </button>
-
-      <div class="footer-divider"></div>
-
-      <button class="footer-link" type="button" onclick="openFooterPrivacyModal()">
-        개인정보처리방침
-      </button>
-
-      <div class="footer-divider"></div>
-
-      <p class="footer-copy">
-        Copyright © 2026 DATA 다타. All Rights Reserved.
-      </p>
-    </div>
-
-    <div class="footer-modal hidden" id="footerModal">
-      <div class="footer-modal-box">
-        <div class="footer-modal-content" id="footerModalContent"></div>
-
-        <button class="footer-modal-btn" type="button" onclick="closeFooterModal()">
-          확인
-        </button>
-      </div>
-    </div>
-  </footer>
+  <div id="footer"></div>
 
 </div>
 
 <script>
-  function goLoginRequiredPage(targetUrl) {
-  const token =
-    sessionStorage.getItem("access_token") ||
-    localStorage.getItem("access_token") ||
-    sessionStorage.getItem("token") ||
-    localStorage.getItem("token");
+  /* =========================
+     검색어 자동완성
+  ========================= */
 
-  if (!token) {
-    alert("로그인이 필요한 서비스입니다.");
-    location.href = "/view/login.html";
-    return;
+  function bindCommonSearch() {
+    const input = document.getElementById("commonSearchInput");
+    const searchBtn = document.getElementById("commonSearchBtn");
+
+    if (!input) return;
+
+    if (searchBtn) {
+      searchBtn.addEventListener("click", function () {
+        moveSearch(input.value);
+      });
+    }
+
+    input.addEventListener("input", function () {
+      renderSearchSuggestions(input.value);
+    });
+
+    input.addEventListener("focus", function () {
+      renderSearchSuggestions(input.value);
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        moveSearch(input.value);
+      }
+
+      if (e.key === "Escape") {
+        hideSearchSuggestions();
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      const searchWrap = document.querySelector(".main-search-wrap");
+
+      if (!searchWrap) return;
+
+      if (!searchWrap.contains(e.target)) {
+        hideSearchSuggestions();
+      }
+    });
+
+    window.addEventListener("resize", positionSearchSuggestBox);
+    window.addEventListener("scroll", positionSearchSuggestBox);
   }
 
-  location.href = targetUrl;
-}
-  
-  // ==============================
-// 검색어 자동완성
-// ==============================
-function bindCommonSearch() {
-  const input = document.getElementById("commonSearchInput");
+  function highlightKeyword(text, keyword) {
+    if (!keyword) return text;
 
-  if (!input) return;
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedKeyword})`, "gi");
 
-  input.addEventListener("input", function () {
-    renderSearchSuggestions(input.value);
-  });
-
-  input.addEventListener("focus", function () {
-    renderSearchSuggestions(input.value);
-  });
-
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      moveSearch(input.value);
-    }
-
-    if (e.key === "Escape") {
-      hideSearchSuggestions();
-    }
-  });
-
-  document.addEventListener("click", function (e) {
-    const searchWrap = document.querySelector(".main-search-wrap");
-
-    if (!searchWrap) return;
-
-    if (!searchWrap.contains(e.target)) {
-      hideSearchSuggestions();
-    }
-  });
-
-  window.addEventListener("resize", positionSearchSuggestBox);
-  window.addEventListener("scroll", positionSearchSuggestBox);
-}
-
-function highlightKeyword(text, keyword) {
-  if (!keyword) return text;
-
-  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escapedKeyword})`, "gi");
-
-  return text.replace(regex, `<span class="search-highlight">$1</span>`);
-}
-
-async function renderSearchSuggestions(keyword) {
-  const list = document.getElementById("searchSuggestList");
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!list || !suggestBox) return;
-
-  const value = keyword.trim();
-
-  if (!value) {
-    hideSearchSuggestions();
-    return;
+    return text.replace(regex, `<span class="search-highlight">$1</span>`);
   }
 
-  try {
-    const res = await axios.get(
-      `/api/search/suggest?q=${encodeURIComponent(value)}`
-    );
+  async function renderSearchSuggestions(keyword) {
+    const list = document.getElementById("searchSuggestList");
+    const suggestBox = document.getElementById("searchSuggestBox");
 
-    const results = res.data || [];
+    if (!list || !suggestBox) return;
 
-    if (results.length === 0) {
+    const value = keyword.trim();
+
+    if (!value) {
       hideSearchSuggestions();
       return;
     }
 
-    list.innerHTML = results.map(function (item) {
-      return `
-        <button
-          class="search-suggest-item"
-          type="button"
-          data-suggest-keyword="${item}"
-        >
-          <span class="search-suggest-left">
-            <span class="search-suggest-icon">⌕</span>
+    try {
+      const res = await axios.get(
+        `/api/search/suggest?q=${encodeURIComponent(value)}`
+      );
 
-            <span class="search-suggest-keyword">
-              ${highlightKeyword(item, value)}
+      const results = res.data || [];
+
+      if (results.length === 0) {
+        hideSearchSuggestions();
+        return;
+      }
+
+      list.innerHTML = results.map(function (item) {
+        return `
+          <button
+            class="search-suggest-item"
+            type="button"
+            data-suggest-keyword="${item}"
+          >
+            <span class="search-suggest-left">
+              <span class="search-suggest-icon">⌕</span>
+
+              <span class="search-suggest-keyword">
+                ${highlightKeyword(item, value)}
+              </span>
             </span>
-          </span>
 
-          <span class="search-suggest-arrow">↖</span>
-        </button>
-      `;
-    }).join("");
+            <span class="search-suggest-arrow">↖</span>
+          </button>
+        `;
+      }).join("");
 
-    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const keyword = btn.dataset.suggestKeyword;
-
-        selectSearchSuggestion(keyword);
+      document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const keyword = btn.dataset.suggestKeyword;
+          selectSearchSuggestion(keyword);
+        });
       });
-    });
 
-    positionSearchSuggestBox();
+      positionSearchSuggestBox();
+      suggestBox.classList.remove("hidden");
 
-    suggestBox.classList.remove("hidden");
+    } catch (error) {
+      console.error("검색 자동완성 실패:", error);
+      hideSearchSuggestions();
+    }
+  }
 
-  } catch (error) {
-    console.error("검색 자동완성 실패:", error);
+  function positionSearchSuggestBox() {
+    const searchWrap = document.querySelector(".main-search-wrap");
+    const suggestBox = document.getElementById("searchSuggestBox");
+
+    if (!searchWrap || !suggestBox) return;
+
+    const rect = searchWrap.getBoundingClientRect();
+
+    suggestBox.style.top = `${rect.bottom + 4}px`;
+    suggestBox.style.left = `${rect.left}px`;
+    suggestBox.style.width = `${rect.width}px`;
+  }
+
+  function hideSearchSuggestions() {
+    const suggestBox = document.getElementById("searchSuggestBox");
+
+    if (!suggestBox) return;
+
+    suggestBox.classList.add("hidden");
+  }
+
+  function selectSearchSuggestion(keyword) {
+    const input = document.getElementById("commonSearchInput");
+
+    if (input) {
+      input.value = keyword;
+    }
 
     hideSearchSuggestions();
-  }
-}
 
-function positionSearchSuggestBox() {
-  const input = document.getElementById("commonSearchInput");
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!input || !suggestBox) return;
-
-  const rect = input.getBoundingClientRect();
-
-  suggestBox.style.top = `${rect.bottom + 4}px`;
-  suggestBox.style.left = `${rect.left}px`;
-  suggestBox.style.width = `${rect.width}px`;
-}
-
-function hideSearchSuggestions() {
-  const suggestBox = document.getElementById("searchSuggestBox");
-
-  if (!suggestBox) return;
-
-  suggestBox.classList.add("hidden");
-}
-
-function selectSearchSuggestion(keyword) {
-  const input = document.getElementById("commonSearchInput");
-
-  if (input) {
-    input.value = keyword;
+    goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
   }
 
-  hideSearchSuggestions();
+  function moveSearch(keyword) {
+    const value = keyword.trim();
 
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
-}
+    if (!value) return;
 
-function moveSearch(keyword) {
-  const value = keyword.trim();
+    hideSearchSuggestions();
 
-  if (!value) return;
+    goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+  }
 
-  hideSearchSuggestions();
+  function goLoginRequiredPage(targetUrl) {
+    location.href = targetUrl;
+  }
 
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
-}
+  /* =========================
+     기사 목록
+  ========================= */
 
   let articles = [];
+  let visibleArticleCount = 5;
+  const articleStep = 5;
+  let isAutoLoading = false;
 
   async function fetchArticles() {
     try {
@@ -771,42 +846,41 @@ function moveSearch(keyword) {
     }
   }
 
-let visibleArticleCount = 5;
-const articleStep = 5;
+  function renderArticles() {
+    const articleList = document.getElementById("articleList");
+    const articleCount = document.getElementById("articleCount");
 
-function renderArticles() {
-  const articleList = document.getElementById("articleList");
-  const articleCount = document.getElementById("articleCount");
+    if (!articleList || !articleCount) return;
 
-  articleCount.innerText = `(${articles.length}건)`;
+    articleCount.innerText = `(${articles.length}건)`;
 
-  const visibleArticles = articles.slice(0, visibleArticleCount);
+    const visibleArticles = articles.slice(0, visibleArticleCount);
 
-  articleList.innerHTML = visibleArticles.map(function (item) {
-    return `
-      <article class="article-card">
-        <div>
-          <div class="article-source">${item.source}</div>
-          <h2 class="article-title">${item.title}</h2>
-          <p class="article-summary">${item.summary}</p>
-        </div>
+    articleList.innerHTML = visibleArticles.map(function (item) {
+      return `
+        <article class="article-card">
+          <div>
+            <div class="article-source">${item.source || item.press || ""}</div>
+            <h2 class="article-title">${item.title || ""}</h2>
+            <p class="article-summary">${item.summary || ""}</p>
+          </div>
 
-        <button
-          class="origin-btn"
-          type="button"
-          onclick="openArticleDetail('${item.article_id}')"
-        >
-          원문 보기
-        </button>
-      </article>
-    `;
-  }).join("");
-}
+          <button
+            class="origin-btn"
+            type="button"
+            onclick="openArticleDetail('${item.article_id}')"
+          >
+            원문 보기
+          </button>
+        </article>
+      `;
+    }).join("");
+  }
 
-function loadMoreArticles() {
-  visibleArticleCount += articleStep;
-  renderArticles();
-}
+  function loadMoreArticles() {
+    visibleArticleCount += articleStep;
+    renderArticles();
+  }
 
   function openArticleDetail(articleId) {
     if (!articleId) {
@@ -817,11 +891,130 @@ function loadMoreArticles() {
     location.href = `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
   }
 
-  function logout() {
-    localStorage.clear();
-    sessionStorage.clear();
-    location.href = "/view/main.html";
+  /* =========================
+     Header / Footer
+  ========================= */
+
+  function loadHeader() {
+    const headerArea = document.getElementById("header");
+
+    if (!headerArea) return;
+
+    if (headerArea.innerHTML.trim()) {
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
+      return;
+    }
+
+    fetch("/view/header.html?v=999")
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("header.html 경로 오류");
+        }
+
+        return res.text();
+      })
+      .then(function (html) {
+        headerArea.innerHTML = html;
+
+        setHeaderLoginState();
+        bindCommonSearch();
+        applyThemeMode();
+      })
+      .catch(function (err) {
+        console.error("header 로드 실패:", err);
+      });
   }
+
+  function setHeaderLoginState() {
+    const loginBtn = document.getElementById("loginBtn");
+    const joinBtn = document.getElementById("joinBtn");
+    const primaryUserBtn = document.getElementById("primaryUserBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (!primaryUserBtn || !logoutBtn) return;
+
+    if (loginBtn) loginBtn.classList.add("hidden");
+    if (joinBtn) joinBtn.classList.add("hidden");
+
+    primaryUserBtn.classList.remove("hidden");
+    logoutBtn.classList.remove("hidden");
+    primaryUserBtn.innerText = "마이페이지";
+  }
+
+  function loadFooter() {
+    const footerArea = document.getElementById("footer");
+
+    if (!footerArea) return;
+
+    if (footerArea.innerHTML.trim()) {
+      return;
+    }
+
+    fetch("/view/footer.html?v=999")
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("footer.html 경로 오류");
+        }
+
+        return res.text();
+      })
+      .then(function (html) {
+        footerArea.innerHTML = html;
+      })
+      .catch(function (err) {
+        console.error("footer 로드 실패:", err);
+      });
+  }
+
+  /* =========================
+     Theme
+  ========================= */
+
+  function applyThemeMode() {
+    const savedTheme = localStorage.getItem("theme_mode");
+    const themeBtn = document.getElementById("themeToggleBtn");
+
+    if (savedTheme === "light") {
+      document.body.classList.add("light-mode");
+
+      if (themeBtn) {
+        themeBtn.innerText = "☀️";
+      }
+    } else {
+      document.body.classList.remove("light-mode");
+
+      if (themeBtn) {
+        themeBtn.innerText = "🌙";
+      }
+    }
+  }
+
+  function toggleThemeMode() {
+    const isLight = document.body.classList.contains("light-mode");
+    const themeBtn = document.getElementById("themeToggleBtn");
+
+    if (isLight) {
+      document.body.classList.remove("light-mode");
+      localStorage.setItem("theme_mode", "dark");
+
+      if (themeBtn) {
+        themeBtn.innerText = "🌙";
+      }
+    } else {
+      document.body.classList.add("light-mode");
+      localStorage.setItem("theme_mode", "light");
+
+      if (themeBtn) {
+        themeBtn.innerText = "☀️";
+      }
+    }
+  }
+
+  /* =========================
+     Footer Modal
+  ========================= */
 
   window.openFooterTermsModal = function () {
     const modal = document.getElementById("footerModal");
@@ -863,44 +1056,98 @@ function loadMoreArticles() {
     modal.classList.add("hidden");
   };
 
-  fetchArticles();
-  bindCommonSearch();
+  /* =========================
+     공통 클릭 이벤트
+  ========================= */
 
-  let isAutoLoading = false;
+  document.addEventListener("click", function (e) {
+    const primaryUserBtn = e.target.closest("#primaryUserBtn");
+    const logoutBtn = e.target.closest("#logoutBtn");
+    const themeToggleBtn = e.target.closest("#themeToggleBtn");
+    const loginRequiredLink = e.target.closest("[data-login-page]");
 
-window.addEventListener("scroll", function () {
+    const footerTermsBtn = e.target.closest("#footerTermsBtn");
+    const footerPrivacyBtn = e.target.closest("#footerPrivacyBtn");
+    const footerModalCloseBtn = e.target.closest("#footerModalCloseBtn");
 
-  if (isAutoLoading) return;
-
-  const scrollTop =
-    window.scrollY;
-
-  const windowHeight =
-    window.innerHeight;
-
-  const documentHeight =
-    document.documentElement.scrollHeight;
-
-  const scrollPercent =
-    (scrollTop + windowHeight) / documentHeight;
-
-  // 90% 내려오면 실행
-  if (scrollPercent >= 0.9) {
-
-    // 이미 다 불러왔으면 종료
-    if (visibleArticleCount >= articles.length) {
+    if (themeToggleBtn) {
+      e.preventDefault();
+      toggleThemeMode();
       return;
     }
 
-    isAutoLoading = true;
+    if (primaryUserBtn) {
+      location.href = "/view/mypage_home.html";
+      return;
+    }
 
-    loadMoreArticles();
+    if (logoutBtn) {
+      localStorage.clear();
+      sessionStorage.clear();
 
-    setTimeout(function () {
-      isAutoLoading = false;
-    }, 200);
-  }
-});
+      location.href = "/view/main.html";
+      return;
+    }
+
+    if (loginRequiredLink) {
+      const targetUrl = loginRequiredLink.dataset.loginPage;
+      location.href = targetUrl;
+      return;
+    }
+
+    if (footerTermsBtn) {
+      openFooterTermsModal();
+      return;
+    }
+
+    if (footerPrivacyBtn) {
+      openFooterPrivacyModal();
+      return;
+    }
+
+    if (footerModalCloseBtn) {
+      closeFooterModal();
+      return;
+    }
+  });
+
+  /* =========================
+     무한 스크롤
+  ========================= */
+
+  window.addEventListener("scroll", function () {
+    if (isAutoLoading) return;
+
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    const scrollPercent = (scrollTop + windowHeight) / documentHeight;
+
+    if (scrollPercent >= 0.9) {
+      if (visibleArticleCount >= articles.length) {
+        return;
+      }
+
+      isAutoLoading = true;
+      loadMoreArticles();
+
+      setTimeout(function () {
+        isAutoLoading = false;
+      }, 200);
+    }
+  });
+
+  /* =========================
+     Init
+  ========================= */
+
+  document.addEventListener("DOMContentLoaded", function () {
+    applyThemeMode();
+    loadHeader();
+    loadFooter();
+    fetchArticles();
+  });
 </script>
 </body>
 </html>

@@ -87,3 +87,34 @@ def login_user(info: Dict[str, Any], req: Request):
     finally:
         if conn:
             conn.close()
+
+def logout_user(req: Request):
+    try:
+        # 현재 세션 사용자 확인
+        user = req.session.get("user")
+
+        # 로그인 상태였으면 로그 기록
+        if user:
+            user_id = user.get("user_id", "")
+
+            # 로그아웃 로그 저장
+            log_login(user_id, "logout", "success")
+            log_user_activity(user_id, "lgn104", req)
+
+        # 세션 전체 삭제
+        req.session.clear()
+
+        # 혹시 특정 키만 제거하고 싶다면:
+        # req.session.pop("user", None)
+
+        return {
+            "success": True,
+            "message": "로그아웃되었습니다."
+        }
+
+    except Exception as e:
+        print(f"🚨 로그아웃 로직 에러: {e}")
+        return {
+            "success": False,
+            "message": "로그아웃 중 서버 오류가 발생했습니다."
+        }

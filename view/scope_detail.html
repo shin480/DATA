@@ -2,441 +2,1464 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DATA 다타 - 스콥 상세</title>
 
+<link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+/* ==============================
+   Common Utility Only
+============================== */
 
-body{
-  background:#050916;
-  color:#dce8ff;
-  font-family:"Pretendard","Noto Sans KR",sans-serif;
+.hidden {
+  display: none !important;
 }
 
-header{
-  height:74px;
-  border-bottom:1px solid #111a2f;
-  background:#070b1a;
-  display:flex;
-  align-items:center;
-  padding:0 38px;
+/* ==============================
+   기본
+============================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo{
-  color:#14d9ff;
-  font-size:30px;
-  font-weight:800;
-  margin-right:70px;
+body {
+  background: #050816;
+  color: #e5e7eb;
+  font-family: "Pretendard", Arial, sans-serif;
 }
 
-nav a{
-  color:#7d8ca8;
-  text-decoration:none;
-  margin-right:38px;
-  font-size:17px;
-  font-weight:600;
+.page {
+  width: 1440px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-top: 72px;
+  background: #050816;
 }
 
-.header-right{
-  margin-left:auto;
-  display:flex;
-  align-items:center;
-  gap:14px;
+/* ==============================
+   Header
+   main.html 기준 그대로
+============================== */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: none;
+  z-index: 10000;
+
+  width: 100%;
+  height: 72px;
+  padding: 0 56px;
+
+  display: flex;
+  align-items: center;
+
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
 }
 
-.search{
-  width:260px;
-  height:34px;
-  border:1px solid #1a2742;
-  border-radius:20px;
-  background:#050916;
-  color:#7d8ca8;
-  padding:0 18px;
+.logo {
+  width: 155px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-.btn{
-  border:none;
-  border-radius:8px;
-  padding:10px 16px;
-  font-weight:700;
-  cursor:pointer;
-  font-size:13px;
+.header-logo-full {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
-.btn-cyan{
-  background:#10d9ff;
-  color:#00131f;
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-left: 22px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-.btn-dark{
-  background:transparent;
-  color:#b8c8e6;
-  border:1px solid #253452;
+.nav a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
 }
 
-.wrap{
-  width:1040px;
-  margin:0 auto;
-  padding:34px 0 100px;
+.nav a:hover {
+  color: #00e5ff;
 }
 
-.breadcrumb{
-  color:#53637f;
-  font-size:12px;
-  margin-bottom:22px;
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.top-area{
-  display:grid;
-  grid-template-columns:1fr 360px;
-  gap:18px;
-  margin-bottom:24px;
+.main-search-wrap {
+  position: relative;
+  width: 410px;
+  height: 40px;
+  border-radius: 999px;
+  background: #070b1a;
+  border: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 20px;
+}
+
+.search-box {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 15px;
+  padding: 0;
+}
+
+.search-box::placeholder {
+  color: #7c8493;
+}
+
+.main-search-wrap:focus-within {
+  border-color: #334155;
+}
+
+.search-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #8b95a7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.search-icon-btn:hover {
+  color: #00e5ff;
+}
+
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #070b1a;
+  color: #facc15;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-btn:hover {
+  border-color: #334155;
+}
+
+.header-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.header-btn.login {
+  border: 1px solid #00cfe8;
+  background: #00cfe8;
+  color: #020617;
+}
+
+.header-btn.login:hover {
+  filter: brightness(1.08);
+}
+
+.header-btn.join {
+  border: 1px solid #475569;
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.header-btn.join:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+/* ==============================
+   Search Suggest Dropdown
+============================== */
+
+.search-suggest-box {
+  position: fixed;
+  width: 410px;
+  max-width: 80vw;
+  padding: 10px 0 12px;
+  border: 1px solid #1e293b;
+  border-radius: 18px;
+  background: #050b1c;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  z-index: 20000;
+  overflow: hidden;
+}
+
+.search-suggest-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-suggest-item {
+  width: 100%;
+  height: 38px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  text-align: left;
+}
+
+.search-suggest-item:hover {
+  background: rgba(56, 189, 248, 0.1);
+  color: #ffffff;
+}
+
+.search-suggest-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.search-suggest-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #94a3b8;
+  color: #020817;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.search-suggest-keyword {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggest-arrow {
+  color: #94a3b8;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.search-highlight {
+  color: #00e5ff;
+  font-weight: 900;
+}
+
+/* ==============================
+   Footer
+   main.html 기준 그대로
+============================== */
+
+.footer {
+  border-top: 1px solid #111827;
+  background: #070b1a;
+  padding: 24px 0;
+}
+
+.footer-inner {
+  width: 1440px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.footer-logo-white {
+  width: 34px;
+  height: 34px;
+  background-color: #ffffff;
+
+  -webkit-mask-image: url("/view/img/data_favicon.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/view/img/data_favicon.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  flex-shrink: 0;
+}
+
+.footer-link {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.footer-link:hover {
+  color: #00e5ff;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 12px;
+  background: #334155;
+}
+
+.footer-copy {
+  margin: 0;
+  color: #64748b;
+}
+
+/* ==============================
+   Footer Modal
+============================== */
+
+.footer-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 23, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30000;
+}
+
+.footer-modal-box {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.footer-modal-content {
+  color: #cbd5e1;
+  line-height: 1.8;
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.footer-modal-content h3 {
+  margin: 0 0 16px;
+  color: #f8fafc;
+}
+
+.footer-modal-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #00e5ff;
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ==============================
+   scope_detail 본문 CSS
+============================== */
+
+.wrap {
+  width: 1040px;
+  margin: 0 auto;
+  padding: 34px 0 100px;
+}
+
+.breadcrumb {
+  color: #53637f;
+  font-size: 12px;
+  margin-bottom: 22px;
+}
+
+.top-area {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 18px;
+  margin-bottom: 24px;
 }
 
 .scope-box,
-.stat-box{
-  background:#0b1223;
-  border:1px solid #16223b;
-  border-radius:14px;
-  padding:24px;
+.stat-box {
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 14px;
+  padding: 24px;
 }
 
-.scope-label{
-  color:#16d9ff;
-  font-size:12px;
-  font-weight:800;
-  margin-bottom:12px;
+.scope-label {
+  color: #16d9ff;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 12px;
 }
 
-.scope-title{
-  color:#f1f6ff;
-  font-size:24px;
-  font-weight:900;
-  margin-bottom:16px;
-  line-height:1.4;
+.scope-title {
+  color: #f1f6ff;
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  line-height: 1.4;
 }
 
-.scope-summary{
-  border-left:3px solid #14d9ff;
-  padding-left:14px;
-  color:#8fa0bd;
-  font-size:14px;
-  line-height:1.7;
-  margin-bottom:22px;
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
+.scope-summary {
+  border-left: 3px solid #14d9ff;
+  padding-left: 14px;
+  color: #8fa0bd;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 22px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.keyword-list{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
+.keyword-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.keyword{
-  background:#073044;
-  color:#16d9ff;
-  border:1px solid #0c6e8a;
-  border-radius:18px;
-  padding:7px 12px;
-  font-size:12px;
-  font-weight:700;
+.keyword {
+  background: #073044;
+  color: #16d9ff;
+  border: 1px solid #0c6e8a;
+  border-radius: 18px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.keyword.main{
-  background:#0b3d55;
-  border-color:#16d9ff;
-  color:#ffffff;
+.keyword.main {
+  background: #0b3d55;
+  border-color: #16d9ff;
+  color: #ffffff;
 }
 
-.stat-title{
-  color:#7f8ea9;
-  font-size:12px;
-  font-weight:800;
-  text-align:center;
-  margin-bottom:16px;
+.stat-title {
+  color: #7f8ea9;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 16px;
 }
 
-.sentiment-row{
-  display:grid;
-  grid-template-columns:55px 1fr 40px;
-  align-items:center;
-  gap:10px;
-  margin-bottom:12px;
-  font-size:12px;
+.sentiment-row {
+  display: grid;
+  grid-template-columns: 55px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 12px;
 }
 
-.dot{
-  display:inline-block;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  margin-right:6px;
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
 }
 
-.positive-dot{background:#13d77b}
-.neutral-dot{background:#f0b83a}
-.negative-dot{background:#ff4e5f}
+.positive-dot { background: #13d77b; }
+.neutral-dot { background: #f0b83a; }
+.negative-dot { background: #ff4e5f; }
 
-.bar{
-  height:6px;
-  background:#1a2540;
-  border-radius:10px;
-  overflow:hidden;
+.bar {
+  height: 6px;
+  background: #1a2540;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.fill{
-  height:100%;
-  border-radius:10px;
+.fill {
+  height: 100%;
+  border-radius: 10px;
 }
 
-.fill.positive{background:#13d77b}
-.fill.neutral{background:#f0b83a}
-.fill.negative{background:#ff4e5f}
+.fill.positive { background: #13d77b; }
+.fill.neutral { background: #f0b83a; }
+.fill.negative { background: #ff4e5f; }
 
-.viewpoints{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  justify-content:center;
-  margin:18px 0;
+.viewpoints {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 18px 0;
 }
 
-.viewpoint{
-  border:1px solid #2a3854;
-  color:#9fb0ca;
-  border-radius:16px;
-  padding:6px 10px;
-  font-size:12px;
+.viewpoint {
+  border: 1px solid #2a3854;
+  color: #9fb0ca;
+  border-radius: 16px;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 
-.meta-info{
-  border-top:1px solid #17223a;
-  padding-top:14px;
-  font-size:12px;
-  color:#7f8ea9;
+.meta-info {
+  border-top: 1px solid #17223a;
+  padding-top: 14px;
+  font-size: 12px;
+  color: #7f8ea9;
 }
 
-.meta-line{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
+.meta-line {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
 }
 
-.news-columns{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:16px;
+.news-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
 }
 
-.column-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:13px;
-  font-weight:800;
-  margin-bottom:12px;
+.column-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 12px;
 }
 
-.column-head.positive{color:#13d77b}
-.column-head.neutral{color:#f0b83a}
-.column-head.negative{color:#ff4e5f}
+.column-head.positive { color: #13d77b; }
+.column-head.neutral { color: #f0b83a; }
+.column-head.negative { color: #ff4e5f; }
 
-.news-card{
-  background:#0b1223;
-  border:1px solid #16223b;
-  border-radius:12px;
-  padding:16px;
-  margin-bottom:12px;
-  cursor:pointer;
-  transition:.2s;
-  position:relative;
-  overflow:hidden;
+.news-card {
+  background: #0b1223;
+  border: 1px solid #16223b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: .2s;
+  position: relative;
+  overflow: hidden;
+
+  display: block;
+  min-height: auto;
 }
 
-.news-card:hover{
-  transform:translateY(-2px);
-  border-color:#2f6dff;
+.news-card:hover {
+  transform: translateY(-2px);
+  border-color: #2f6dff;
 }
 
-.news-card::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:0;
-  width:3px;
-  height:100%;
+.news-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
 }
 
-.news-card.positive::before{background:#13d77b}
-.news-card.neutral::before{background:#f0b83a}
-.news-card.negative::before{background:#ff4e5f}
+.news-card.positive::before { background: #13d77b; }
+.news-card.neutral::before { background: #f0b83a; }
+.news-card.negative::before { background: #ff4e5f; }
 
-.card-meta{
-  display:flex;
-  justify-content:space-between;
-  color:#63728d;
-  font-size:11px;
-  margin-bottom:12px;
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #63728d;
+  font-size: 11px;
+  margin-bottom: 12px;
 }
 
-.press{
-  font-weight:800;
+.press {
+  font-weight: 800;
 }
 
-.card-title{
-  color:#f1f6ff;
-  font-size:14px;
-  font-weight:800;
-  line-height:1.5;
-  margin-bottom:12px;
+.card-title {
+  color: #f1f6ff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
 
-.card-summary{
-  color:#8fa0bd;
-  font-size:12px;
-  line-height:1.6;
-  margin-bottom:12px;
+.card-summary {
+  color: #8fa0bd;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 12px;
 }
 
-.tag-list{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
+.tag-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.card-tag{
-  background:#151d31;
-  color:#8fa0bd;
-  border-radius:5px;
-  padding:5px 7px;
-  font-size:11px;
+.card-tag {
+  background: #151d31;
+  color: #8fa0bd;
+  border-radius: 5px;
+  padding: 5px 7px;
+  font-size: 11px;
 }
 
-.card-with-img .title-row{
-  display:grid;
-  grid-template-columns:1fr 78px;
-  gap:10px;
-  align-items:start;
+.empty-state {
+  height: 250px;
+  border: 1px dashed #253452;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6f7d98;
+  font-size: 13px;
+  text-align: center;
 }
 
-.thumb{
-  width:78px;
-  height:58px;
-  border-radius:8px;
-  background:#1a2540;
-  object-fit:cover;
+.empty-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #53637f;
+  margin-bottom: 14px;
 }
 
-.empty-state{
-  height:250px;
-  border:1px dashed #253452;
-  border-radius:12px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  color:#6f7d98;
-  font-size:13px;
-  text-align:center;
+.empty-title {
+  color: #dce8ff;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
-.empty-icon{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  border:1px solid #53637f;
-  margin-bottom:14px;
+/* ==============================
+   Light Mode
+   header/footer/autocomplete + scope_detail
+============================== */
+
+body.light-mode {
+  background: #f8fafc;
+  color: #0f172a;
 }
 
-.empty-title{
-  color:#dce8ff;
-  font-weight:800;
-  margin-bottom:8px;
+body.light-mode .page {
+  background: #f8fafc;
+}
+
+/* Header */
+body.light-mode .header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.light-mode .nav {
+  color: #64748b;
+}
+
+body.light-mode .nav a:hover {
+  color: #0284c7;
+}
+
+body.light-mode .main-search-wrap {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .search-box {
+  color: #0f172a;
+}
+
+body.light-mode .search-box::placeholder {
+  color: #94a3b8;
+}
+
+body.light-mode .search-icon-btn {
+  color: #64748b;
+}
+
+body.light-mode .theme-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+body.light-mode .header-btn.join {
+  background: #ffffff;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+body.light-mode .header-btn.login {
+  background: #00cfe8;
+  border-color: #00cfe8;
+  color: #020617;
+}
+
+/* 자동완성 */
+body.light-mode .search-suggest-box {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+}
+
+body.light-mode .search-suggest-item {
+  color: #334155;
+}
+
+body.light-mode .search-suggest-item:hover {
+  background: #e0f7ff;
+  color: #0284c7;
+}
+
+body.light-mode .search-suggest-icon {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+body.light-mode .search-suggest-arrow {
+  color: #64748b;
+}
+
+/* Footer */
+body.light-mode .footer {
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+
+body.light-mode .footer-link {
+  color: #475569;
+}
+
+body.light-mode .footer-link:hover {
+  color: #0284c7;
+}
+
+body.light-mode .footer-copy {
+  color: #64748b;
+}
+
+body.light-mode .footer-modal-box {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .footer-modal-content {
+  color: #334155;
+}
+
+body.light-mode .footer-modal-content h3 {
+  color: #0f172a;
+}
+
+body.light-mode .footer-logo-white {
+  background-color: #020617;
+}
+
+/* scope_detail light */
+body.light-mode .breadcrumb {
+  color: #64748b;
+}
+
+body.light-mode .scope-box,
+body.light-mode .stat-box,
+body.light-mode .news-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+body.light-mode .scope-title,
+body.light-mode .card-title,
+body.light-mode .empty-title {
+  color: #0f172a;
+}
+
+body.light-mode .scope-summary,
+body.light-mode .card-summary,
+body.light-mode .meta-info,
+body.light-mode .meta-line,
+body.light-mode .viewpoint,
+body.light-mode .card-tag {
+  color: #64748b;
+}
+
+body.light-mode .stat-title {
+  color: #64748b;
+}
+
+body.light-mode .bar {
+  background: #e2e8f0;
+}
+
+body.light-mode .card-tag {
+  background: #f1f5f9;
+}
+
+body.light-mode .empty-state {
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+
+body.light-mode .viewpoint {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+body.light-mode .keyword {
+  background: #e8f8fc;
+  color: #0284a8;
+  border-color: #9ee7f5;
+}
+
+body.light-mode .keyword.main {
+  background: #dff7ff;
+  border-color: #16d9ff;
+  color: #075985;
+}
+
+body.light-mode .meta-info {
+  border-top-color: #e2e8f0;
+}
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 1100px) {
+  .page {
+    width: 100%;
+  }
+
+  .wrap {
+    width: calc(100% - 40px);
+  }
+}
+
+@media (max-width: 980px) {
+  .header {
+    padding: 0 24px;
+  }
+
+  .main-search-wrap {
+    width: 300px;
+  }
+
+  .footer-inner {
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .top-area {
+    grid-template-columns: 1fr;
+  }
+
+  .news-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-suggest-box {
+    left: 18px !important;
+    right: 18px !important;
+    width: auto !important;
+    max-width: none;
+  }
+
+  .footer-inner {
+    padding: 0 18px;
+  }
 }
 </style>
 </head>
 
 <body>
+<div class="page">
 
-<header>
-  <div class="logo">DATA 다타</div>
+  <div id="header"></div>
 
-  <nav>
-    <a href="#">뉴스흐름</a>
-    <a href="#">키워드</a>
-    <a href="#">뉴스</a>
-  </nav>
+  <div class="wrap">
+    <div class="breadcrumb">AI 뉴스 분석  &gt; <span id="breadcrumbTitle"></span></div>
 
-  <div class="header-right">
-    <input class="search" placeholder="예: 금리, 취업, 전세, 반도체" />
-    <button class="btn btn-cyan">마이페이지</button>
-    <button class="btn btn-dark">로그아웃</button>
-  </div>
-</header>
+    <div class="top-area">
+      <section class="scope-box">
+        <div class="scope-label">AI 뉴스 분석</div>
+        <h1 class="scope-title" id="scopeTitle"></h1>
+        <p class="scope-summary" id="scopeSummary"></p>
+        <div class="keyword-list" id="keywordList"></div>
+      </section>
 
-<div class="wrap">
-  <div class="breadcrumb">AI 뉴스 분석  > <span id="breadcrumbTitle"></span></div>
+      <aside class="stat-box">
+        <div class="stat-title">감성 분포</div>
+        <div id="sentimentArea"></div>
 
-  <div class="top-area">
-    <section class="scope-box">
-      <div class="scope-label">AI 뉴스 분석</div>
-      <h1 class="scope-title" id="scopeTitle"></h1>
-      <p class="scope-summary" id="scopeSummary"></p>
-      <div class="keyword-list" id="keywordList"></div>
+        <div class="stat-title" style="margin-top:22px;">관점 상위 4개</div>
+        <div class="viewpoints" id="viewpointArea"></div>
+
+        <div class="meta-info">
+          <div class="meta-line">
+            <span>관련 기사</span>
+            <strong id="articleCount"></strong>
+          </div>
+          <div class="meta-line">
+            <span>마지막 업데이트</span>
+            <strong id="lastUpdated"></strong>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="news-columns">
+      <div>
+        <div class="column-head positive">
+          <span><span class="dot positive-dot"></span>긍정</span>
+          <span id="positiveCount"></span>
+        </div>
+        <div id="positiveList"></div>
+      </div>
+
+      <div>
+        <div class="column-head neutral">
+          <span><span class="dot neutral-dot"></span>중립</span>
+          <span id="neutralCount"></span>
+        </div>
+        <div id="neutralList"></div>
+      </div>
+
+      <div>
+        <div class="column-head negative">
+          <span><span class="dot negative-dot"></span>부정</span>
+          <span id="negativeCount"></span>
+        </div>
+        <div id="negativeList"></div>
+      </div>
     </section>
-
-    <aside class="stat-box">
-      <div class="stat-title">감성 분포</div>
-      <div id="sentimentArea"></div>
-
-      <div class="stat-title" style="margin-top:22px;">관점 상위 4개</div>
-      <div class="viewpoints" id="viewpointArea"></div>
-
-      <div class="meta-info">
-        <div class="meta-line">
-          <span>관련 기사</span>
-          <strong id="articleCount"></strong>
-        </div>
-        <div class="meta-line">
-          <span>마지막 업데이트</span>
-          <strong id="lastUpdated"></strong>
-        </div>
-      </div>
-    </aside>
   </div>
 
-  <section class="news-columns">
-    <div>
-      <div class="column-head positive">
-        <span><span class="dot positive-dot"></span>긍정</span>
-        <span id="positiveCount"></span>
-      </div>
-      <div id="positiveList"></div>
-    </div>
+  <div id="footer"></div>
 
-    <div>
-      <div class="column-head neutral">
-        <span><span class="dot neutral-dot"></span>중립</span>
-        <span id="neutralCount"></span>
-      </div>
-      <div id="neutralList"></div>
-    </div>
-
-    <div>
-      <div class="column-head negative">
-        <span><span class="dot negative-dot"></span>부정</span>
-        <span id="negativeCount"></span>
-      </div>
-      <div id="negativeList"></div>
-    </div>
-  </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
-/* 서버 연결 전 임시 데이터 */
+/* ==============================
+   common.js
+   main.html 기준 기능 그대로
+============================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+  applyThemeMode();
+  loadHeader();
+  loadFooter();
+  bindGlobalClickEvents();
+
+  loadScopeInfo();
+  loadSentimentDist();
+  loadViewpoints();
+  loadArticleColumns();
+});
+
+function applyThemeMode() {
+  const savedTheme = localStorage.getItem("theme_mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
+
+    if (themeBtn) {
+      themeBtn.innerText = "☀️";
+    }
+  } else {
+    document.body.classList.remove("light-mode");
+
+    if (themeBtn) {
+      themeBtn.innerText = "🌙";
+    }
+  }
+}
+
+function toggleThemeMode() {
+  const isLight = document.body.classList.contains("light-mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+
+  if (isLight) {
+    document.body.classList.remove("light-mode");
+    localStorage.setItem("theme_mode", "dark");
+
+    if (themeBtn) {
+      themeBtn.innerText = "🌙";
+    }
+  } else {
+    document.body.classList.add("light-mode");
+    localStorage.setItem("theme_mode", "light");
+
+    if (themeBtn) {
+      themeBtn.innerText = "☀️";
+    }
+  }
+}
+
+function getLoginInfo() {
+  return {
+    token:
+      sessionStorage.getItem("access_token") ||
+      localStorage.getItem("access_token") ||
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token"),
+
+    userName:
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName"),
+
+    role:
+      sessionStorage.getItem("user_role") ||
+      localStorage.getItem("user_role") ||
+      sessionStorage.getItem("role") ||
+      localStorage.getItem("role")
+  };
+}
+
+function loadHeader() {
+  const headerArea = document.getElementById("header");
+
+  if (!headerArea) return;
+
+  if (headerArea.innerHTML.trim()) {
+    setHeaderLoginState();
+    bindCommonSearch();
+    applyThemeMode();
+    return;
+  }
+
+  fetch("/view/header.html?v=999")
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("header.html 경로 오류");
+      }
+
+      return res.text();
+    })
+    .then(function (html) {
+      headerArea.innerHTML = html;
+
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
+    })
+    .catch(function (err) {
+      console.error("header 로드 실패:", err);
+    });
+}
+
+function loadFooter() {
+  const footerArea = document.getElementById("footer");
+
+  if (!footerArea) return;
+
+  if (footerArea.innerHTML.trim()) {
+    return;
+  }
+
+  fetch("/view/footer.html?v=999")
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("footer.html 경로 오류");
+      }
+
+      return res.text();
+    })
+    .then(function (html) {
+      footerArea.innerHTML = html;
+    })
+    .catch(function (err) {
+      console.error("footer 로드 실패:", err);
+    });
+}
+
+function setHeaderLoginState() {
+  const loginBtn = document.getElementById("loginBtn");
+  const joinBtn = document.getElementById("joinBtn");
+  const primaryUserBtn = document.getElementById("primaryUserBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
+
+  const loginInfo = getLoginInfo();
+  const token = loginInfo.token;
+  const role = loginInfo.role;
+
+  if (!token) {
+    loginBtn.classList.remove("hidden");
+    joinBtn.classList.remove("hidden");
+    primaryUserBtn.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+    return;
+  }
+
+  loginBtn.classList.add("hidden");
+  joinBtn.classList.add("hidden");
+  primaryUserBtn.classList.remove("hidden");
+  logoutBtn.classList.remove("hidden");
+
+  const isAdmin =
+    role === "ADMIN" ||
+    role === "SUPERADMIN" ||
+    role === "admin" ||
+    role === "superadmin" ||
+    token === "admin-test-token";
+
+  if (isAdmin) {
+    primaryUserBtn.innerText = "관리자 페이지";
+  } else {
+    primaryUserBtn.innerText = "마이페이지";
+  }
+}
+
+window.goLoginRequiredPage = function (targetUrl) {
+  const loginInfo = getLoginInfo();
+
+  if (!loginInfo.token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.href = "/view/login.html";
+    return;
+  }
+
+  location.href = targetUrl;
+};
+
+function bindGlobalClickEvents() {
+  document.addEventListener("click", function (e) {
+    const loginBtn = e.target.closest("#loginBtn");
+    const joinBtn = e.target.closest("#joinBtn");
+    const primaryUserBtn = e.target.closest("#primaryUserBtn");
+    const logoutBtn = e.target.closest("#logoutBtn");
+    const themeToggleBtn = e.target.closest("#themeToggleBtn");
+    const loginRequiredLink = e.target.closest("[data-login-page]");
+
+    if (themeToggleBtn) {
+      e.preventDefault();
+      toggleThemeMode();
+      return;
+    }
+
+    if (loginBtn) {
+      e.preventDefault();
+      location.href = "/view/login.html";
+      return;
+    }
+
+    if (joinBtn) {
+      e.preventDefault();
+      location.href = "/view/terms.html";
+      return;
+    }
+
+    if (primaryUserBtn) {
+      e.preventDefault();
+
+      const loginInfo = getLoginInfo();
+      const role = loginInfo.role;
+      const token = loginInfo.token;
+
+      const isAdmin =
+        role === "ADMIN" ||
+        role === "SUPERADMIN" ||
+        role === "admin" ||
+        role === "superadmin" ||
+        token === "admin-test-token";
+
+      if (isAdmin) {
+        location.href = "/view/admin_dashboard.html";
+      } else {
+        location.href = "/view/mypage_home.html";
+      }
+
+      return;
+    }
+
+    if (logoutBtn) {
+      e.preventDefault();
+      logout();
+      return;
+    }
+
+    if (loginRequiredLink) {
+      e.preventDefault();
+
+      const targetUrl = loginRequiredLink.dataset.loginPage;
+      goLoginRequiredPage(targetUrl);
+      return;
+    }
+  });
+}
+
+function bindCommonSearch() {
+  const input = document.getElementById("commonSearchInput");
+  const searchBtn = document.getElementById("commonSearchBtn");
+
+  if (!input) return;
+
+  if (searchBtn) {
+    searchBtn.addEventListener("click", function () {
+      moveSearch(input.value);
+    });
+  }
+
+  input.addEventListener("input", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("focus", function () {
+    renderSearchSuggestions(input.value);
+  });
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      moveSearch(input.value);
+    }
+
+    if (e.key === "Escape") {
+      hideSearchSuggestions();
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    const searchWrap = document.querySelector(".main-search-wrap");
+
+    if (!searchWrap) return;
+
+    if (!searchWrap.contains(e.target)) {
+      hideSearchSuggestions();
+    }
+  });
+
+  window.addEventListener("resize", positionSearchSuggestBox);
+  window.addEventListener("scroll", positionSearchSuggestBox);
+}
+
+function highlightKeyword(text, keyword) {
+  if (!keyword) return text;
+
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedKeyword})`, "gi");
+
+  return text.replace(regex, `<span class="search-highlight">$1</span>`);
+}
+
+async function renderSearchSuggestions(keyword) {
+  const list = document.getElementById("searchSuggestList");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!list || !suggestBox) return;
+
+  const value = keyword.trim();
+
+  if (!value) {
+    hideSearchSuggestions();
+    return;
+  }
+
+  try {
+    const res = await axios.get(
+      `/api/search/suggest?q=${encodeURIComponent(value)}`
+    );
+
+    const results = res.data || [];
+
+    if (results.length === 0) {
+      hideSearchSuggestions();
+      return;
+    }
+
+    list.innerHTML = results.map(function (item) {
+      return `
+        <button
+          class="search-suggest-item"
+          type="button"
+          data-suggest-keyword="${item}"
+        >
+          <span class="search-suggest-left">
+            <span class="search-suggest-icon">⌕</span>
+
+            <span class="search-suggest-keyword">
+              ${highlightKeyword(item, value)}
+            </span>
+          </span>
+
+          <span class="search-suggest-arrow">↖</span>
+        </button>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const keyword = btn.dataset.suggestKeyword;
+
+        selectSearchSuggestion(keyword);
+      });
+    });
+
+    positionSearchSuggestBox();
+
+    suggestBox.classList.remove("hidden");
+
+  } catch (error) {
+    console.error("검색 자동완성 실패:", error);
+    hideSearchSuggestions();
+  }
+}
+
+function positionSearchSuggestBox() {
+  const searchWrap = document.querySelector(".main-search-wrap");
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!searchWrap || !suggestBox) return;
+
+  const rect = searchWrap.getBoundingClientRect();
+
+  suggestBox.style.top = `${rect.bottom + 4}px`;
+  suggestBox.style.left = `${rect.left}px`;
+  suggestBox.style.width = `${rect.width}px`;
+}
+
+function hideSearchSuggestions() {
+  const suggestBox = document.getElementById("searchSuggestBox");
+
+  if (!suggestBox) return;
+
+  suggestBox.classList.add("hidden");
+}
+
+function selectSearchSuggestion(keyword) {
+  const input = document.getElementById("commonSearchInput");
+
+  if (input) {
+    input.value = keyword;
+  }
+
+  hideSearchSuggestions();
+
+  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+}
+
+function moveSearch(keyword) {
+  const value = keyword.trim();
+
+  if (!value) return;
+
+  hideSearchSuggestions();
+
+  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+}
+
+window.logout = function () {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user_name");
+  localStorage.removeItem("user_role");
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userName");
+
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("user_name");
+  sessionStorage.removeItem("user_role");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("role");
+  sessionStorage.removeItem("userName");
+
+  location.href = "/view/main.html";
+};
+
+window.openFooterTermsModal = function () {
+  const modal = document.getElementById("footerModal");
+  const content = document.getElementById("footerModalContent");
+
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <h3>이용약관</h3>
+    <p>DATA 다타는 뉴스 데이터를 기반으로 키워드, 감성, 관점 분석 정보를 제공하는 서비스입니다.</p>
+    <p>이용자는 서비스를 부정한 목적으로 이용할 수 없으며, 제공되는 정보는 참고용으로 활용해야 합니다.</p>
+    <p>서비스에서 제공되는 분석 결과는 참고용 정보이며, 투자·정책·법률 판단의 최종 근거로 사용해서는 안 됩니다.</p>
+  `;
+
+  modal.classList.remove("hidden");
+};
+
+window.openFooterPrivacyModal = function () {
+  const modal = document.getElementById("footerModal");
+  const content = document.getElementById("footerModalContent");
+
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <h3>개인정보처리방침</h3>
+    <p>DATA 다타는 회원가입 및 서비스 제공을 위해 이메일, 비밀번호, 이름, 생년월일, 성별 등의 개인정보를 수집할 수 있습니다.</p>
+    <p>수집된 개인정보는 회원 식별, 서비스 제공, 이용 기록 관리, 사용자 맞춤형 서비스 제공 목적 외에는 사용하지 않습니다.</p>
+    <p>개인정보 관련 문의: data260417@gmail.com</p>
+  `;
+
+  modal.classList.remove("hidden");
+};
+
+window.closeFooterModal = function () {
+  const modal = document.getElementById("footerModal");
+
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+};
+
+/* ==============================
+   scope_detail.js
+============================== */
+
 const scopeData = {
   title: "삼성전자 반도체 수출 목표 상향 조정",
   summary:
@@ -467,7 +1490,7 @@ const scopeData = {
       title: "삼성전자, 2분기 반도체 수출 목표 15% 상향... HBM 호조 효과",
       summary: "AI 수요 확대로 HBM 물량이 급증하며 수출 목표 상향 조정에 나섰다.",
       keywords: ["삼성전자", "HBM", "수출"],
-      url: "news_detail.html"
+      url: "/view/article_detail.html"
     },
     {
       sentiment: "positive",
@@ -476,7 +1499,7 @@ const scopeData = {
       title: "삼성전자, 2분기 반도체 수출 목표 15% 상향... HBM 호조",
       summary: "AI 서버와 데이터센터 수요가 반도체 실적 개선 기대를 키우고 있다.",
       keywords: ["반도체", "HBM", "수출"],
-      url: "news_detail.html"
+      url: "/view/article_detail.html"
     },
     {
       sentiment: "neutral",
@@ -485,7 +1508,7 @@ const scopeData = {
       title: "삼성전자 수출 목표 상향, 배경과 시장 반응 점검",
       summary: "이번 상향 조정의 구체적 수치와 업계 반응을 중립적으로 정리했다.",
       keywords: ["수출전망", "반도체"],
-      url: "news_detail.html"
+      url: "/view/article_detail.html"
     },
     {
       sentiment: "neutral",
@@ -494,7 +1517,7 @@ const scopeData = {
       title: "삼성전자 수출 목표 상향, 글로벌 시장 반응 엇갈림",
       summary: "주요 증권가에서는 긍정적 전망과 신중론이 함께 나오고 있다.",
       keywords: ["시장반응", "전망"],
-      url: "news_detail.html"
+      url: "/view/article_detail.html"
     },
     {
       sentiment: "negative",
@@ -503,7 +1526,7 @@ const scopeData = {
       title: "반도체 업황 점검... HBM 중심 실적 개선 여부는",
       summary: "수출 목표 달성 가능성을 두고 공급망과 가격 변동성 우려가 제기된다.",
       keywords: ["업황", "실적전망"],
-      url: "news_detail.html"
+      url: "/view/article_detail.html"
     }
   ]
 };
@@ -528,7 +1551,7 @@ function loadScopeInfo() {
   const keywordList = document.getElementById("keywordList");
   keywordList.innerHTML = "";
 
-  scopeData.keywords.slice(0, 5).forEach((keyword, index) => {
+  scopeData.keywords.slice(0, 5).forEach(function(keyword, index) {
     keywordList.innerHTML += `
       <span class="keyword ${index === 0 ? "main" : ""}">
         ${keyword}
@@ -553,7 +1576,9 @@ function loadSentimentDist() {
     ["negative", "부정"]
   ];
 
-  rows.forEach(([key, label]) => {
+  rows.forEach(function(row) {
+    const key = row[0];
+    const label = row[1];
     const value = scopeData.sentimentDist[key];
 
     area.innerHTML += `
@@ -576,7 +1601,7 @@ function loadViewpoints() {
   const area = document.getElementById("viewpointArea");
   area.innerHTML = "";
 
-  scopeData.viewpoints.slice(0, 4).forEach(item => {
+  scopeData.viewpoints.slice(0, 4).forEach(function(item) {
     area.innerHTML += `
       <span class="viewpoint">${item.name} ${item.percent}%</span>
     `;
@@ -584,9 +1609,17 @@ function loadViewpoints() {
 }
 
 function loadArticleColumns() {
-  const positive = scopeData.articles.filter(a => a.sentiment === "positive");
-  const neutral = scopeData.articles.filter(a => a.sentiment === "neutral");
-  const negative = scopeData.articles.filter(a => a.sentiment === "negative");
+  const positive = scopeData.articles.filter(function(article) {
+    return article.sentiment === "positive";
+  });
+
+  const neutral = scopeData.articles.filter(function(article) {
+    return article.sentiment === "neutral";
+  });
+
+  const negative = scopeData.articles.filter(function(article) {
+    return article.sentiment === "negative";
+  });
 
   document.getElementById("positiveCount").innerText = positive.length + "건";
   document.getElementById("neutralCount").innerText = neutral.length + "건";
@@ -612,14 +1645,18 @@ function renderArticleList(targetId, articles, sentiment) {
     return;
   }
 
-  articles.forEach(article => {
+  articles.forEach(function(article) {
     const tags = article.keywords
-      .map(tag => `<span class="card-tag">${tag}</span>`)
+      .map(function(tag) {
+        return `<span class="card-tag">${tag}</span>`;
+      })
       .join("");
 
     target.innerHTML += `
-      <article class="news-card ${sentimentClass[article.sentiment]}"
-               onclick="location.href='${article.url}'">
+      <article
+        class="news-card ${sentimentClass[article.sentiment]}"
+        data-login-page="${article.url}"
+      >
 
         <div class="card-meta">
           <span class="press">
@@ -640,13 +1677,6 @@ function renderArticleList(targetId, articles, sentiment) {
     `;
   });
 }
-
-window.onload = function() {
-  loadScopeInfo();
-  loadSentimentDist();
-  loadViewpoints();
-  loadArticleColumns();
-};
 </script>
 
 </body>
