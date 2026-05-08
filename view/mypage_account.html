@@ -1228,45 +1228,45 @@
      Theme
   ========================= */
 
-  function applyThemeMode() {
-    const savedTheme = localStorage.getItem("theme_mode");
-    const themeBtn = document.getElementById("themeToggleBtn");
+function applyThemeMode() {
+  const savedTheme = localStorage.getItem("theme_mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
 
-    if (savedTheme === "light") {
-      document.body.classList.add("light-mode");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
 
-      if (themeBtn) {
-        themeBtn.innerText = "☀️";
-      }
-    } else {
-      document.body.classList.remove("light-mode");
+    if (themeBtn) {
+      themeBtn.innerText = "☀️";
+    }
+  } else {
+    document.body.classList.remove("light-mode");
 
-      if (themeBtn) {
-        themeBtn.innerText = "🌙";
-      }
+    if (themeBtn) {
+      themeBtn.innerText = "🌙";
     }
   }
+}
 
-  function toggleThemeMode() {
-    const isLight = document.body.classList.contains("light-mode");
-    const themeBtn = document.getElementById("themeToggleBtn");
+function toggleThemeMode() {
+  const isLight = document.body.classList.contains("light-mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
 
-    if (isLight) {
-      document.body.classList.remove("light-mode");
-      localStorage.setItem("theme_mode", "dark");
+  if (isLight) {
+    document.body.classList.remove("light-mode");
+    localStorage.setItem("theme_mode", "dark");
 
-      if (themeBtn) {
-        themeBtn.innerText = "🌙";
-      }
-    } else {
-      document.body.classList.add("light-mode");
-      localStorage.setItem("theme_mode", "light");
+    if (themeBtn) {
+      themeBtn.innerText = "🌙";
+    }
+  } else {
+    document.body.classList.add("light-mode");
+    localStorage.setItem("theme_mode", "light");
 
-      if (themeBtn) {
-        themeBtn.innerText = "☀️";
-      }
+    if (themeBtn) {
+      themeBtn.innerText = "☀️";
     }
   }
+}
 
   /* =========================
      Footer Modal
@@ -1338,8 +1338,19 @@
     }
 
     if (logoutBtn) {
-      localStorage.clear();
-      sessionStorage.clear();
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_name");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userName");
+
+      sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem("user_name");
+      sessionStorage.removeItem("user_role");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("role");
+      sessionStorage.removeItem("userName");
 
       axios.post("/logout");
 

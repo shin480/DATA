@@ -938,10 +938,12 @@ body.light-mode .footer-modal-content h3 {
 // 공통 UI 로드
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
+  applyThemeMode();
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
-  applyThemeMode();
+
+  // article_detail 기존 실행 코드 그대로 유지
 });
 
 
@@ -982,6 +984,7 @@ function loadHeader() {
   if (headerArea.innerHTML.trim()) {
     setHeaderLoginState();
     bindCommonSearch();
+    applyThemeMode();
     return;
   }
 
@@ -998,6 +1001,7 @@ function loadHeader() {
 
       setHeaderLoginState();
       bindCommonSearch();
+      applyThemeMode();
     })
     .catch(function (err) {
       console.error("header 로드 실패:", err);
@@ -1142,7 +1146,7 @@ function bindGlobalClickEvents() {
     const joinBtn = e.target.closest("#joinBtn");
     const primaryUserBtn = e.target.closest("#primaryUserBtn");
     const logoutBtn = e.target.closest("#logoutBtn");
-    const themeBtn = e.target.closest("#themeToggleBtn");
+    const themeToggleBtn = e.target.closest("#themeToggleBtn");
     const loginRequiredLink = e.target.closest("[data-login-page]");
 
     const heroTag = e.target.closest(".h-tag");
@@ -1151,7 +1155,7 @@ function bindGlobalClickEvents() {
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
 
-    if (themeBtn) {
+    if (themeToggleBtn) {
       e.preventDefault();
       toggleThemeMode();
       return;

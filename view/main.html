@@ -1119,6 +1119,8 @@ document.addEventListener("DOMContentLoaded", function () {
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
+
+  // 기존 main 페이지 실행 코드들은 그대로 유지
 });
 
 
@@ -1201,9 +1203,9 @@ function loadHeader() {
   if (!headerArea) return;
 
   if (headerArea.innerHTML.trim()) {
-        setHeaderLoginState();
-        bindCommonSearch();
-        applyThemeMode();
+    setHeaderLoginState();
+    bindCommonSearch();
+    applyThemeMode();
     return;
   }
 
@@ -1218,9 +1220,9 @@ function loadHeader() {
     .then(function (html) {
       headerArea.innerHTML = html;
 
-        setHeaderLoginState();
-        bindCommonSearch();
-        applyThemeMode();
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
     })
     .catch(function (err) {
       console.error("header 로드 실패:", err);
