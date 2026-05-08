@@ -3,6 +3,7 @@ from typing import Dict, Any
 from starlette.requests import Request
 
 from util.db import get_engine
+from util.logger import log_user_activity
 from regist.hashing import hash_password
 
 def update_user_password(info: Dict[str, Any], req: Request):
@@ -33,6 +34,8 @@ def update_user_password(info: Dict[str, Any], req: Request):
 
         conn.execute(sql, {"hashed_pw": hashed_pw, "email": email})
         conn.commit()
+
+        log_user_activity(email, "mpac103", req)
 
         return {"success": True, "message": "비밀번호가 성공적으로 변경되었습니다."}
 
