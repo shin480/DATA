@@ -1730,6 +1730,51 @@ window.closeFooterModal = function () {
 };
 
 /* ===== main.js ===== */
+// ==============================
+// 1위 키워드 불러오기
+// ==============================
+async function loadTopKeyword() {
+
+    try {
+
+        const res = await axios.get("/api/main/top-keyword");
+
+        const data = res.data;
+
+        // 제목
+        const keywordTitle = document.querySelector(
+            ".grid-2 .card .section-title-wrap h2"
+        );
+
+        if (keywordTitle) {
+            keywordTitle.innerText = data.keyword;
+        }
+
+        // 상태 배지
+        const statusBadge = document.querySelector(".status-badge");
+
+        if (statusBadge) {
+            statusBadge.innerText = data.status;
+        }
+
+        // 게이지
+        updateGauge(".gauge-circle.pos", data.positive);
+        updateGauge(".gauge-circle.neg", data.negative);
+        updateGauge(".gauge-circle.neu", data.neutral);
+
+        // 키워드 칩
+        const chips = document.querySelectorAll(".chip");
+
+        chips.forEach((chip, index) => {
+            chip.innerText = data.chips[index] || "";
+        });
+
+    } catch (err) {
+
+        console.error("1위 키워드 로딩 실패:", err);
+
+    }
+}
 
 /*
    [확실] 기준 데이터 (마스터 템플릿)
@@ -2039,6 +2084,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderViewGrid(groups);
     // 2. 그 다음 실제 데이터를 서버에서 가져옵니다.
     loadAnalysisData();
+    loadTopKeyword();
+
 });
 
     function updateGauge(selector, percent) {

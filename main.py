@@ -101,7 +101,9 @@ def login(info: Dict[str,Any], req: Request):
 
 @app.post("/logout")
 def logout(req: Request):
-    print(f"로그아웃: {req.get('user_id')}")
+    user = req.session.get("user")
+    user_id = user.get("user_id") if user else "비회원/이미로그아웃"
+    print(f"로그아웃: {user_id}")
     result = logout_user(req)
     return result
 
@@ -729,6 +731,71 @@ def get_article_detail(article_id: str, req: Request):
         "dislikeCount": source.get("hate_count", 0),
         "currentVote": current_vote
     }
+
+# =========================
+# 메인 1위 키워드
+# =========================
+@app.get("/api/main/top-keyword")
+def get_top_keyword():
+
+    es = get_es()
+
+    result = es.search(
+        index="daily_top_issue_report",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    if not hits:
+        return {
+            "keyword": "데이터 없음",
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0,
+            "status": "분석 데이터 없음",
+            "chips": []
+        }
+
+    source = hits[0]["_source"]
+
+    sentiment = source.get("sentiment_distribution", {})
+
+    positive = sentiment.get("positive", 0)
+    neutral = sentiment.get("neutral", 0)
+    negative = sentiment.get("negative", 0)
+
+    # 여론 흐름 계산
+    if positive >= neutral and positive >= negative:
+        status = "긍정 여론 우세"
+
+    elif neutral >= positive and neutral >= negative:
+        status = "중립 여론 우세"
+
+    else:
+        status = "부정 여론 우세"
+
+    return {
+        "keyword": source.get("top_keyword", "키워드 없음"),
+
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative,
+
+        "status": status,
+
+        "chips": source.get("top_keywords", [])
+    }
+
 
 @app.get("/crawl")
 async def crawl():
