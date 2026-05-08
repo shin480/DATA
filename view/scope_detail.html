@@ -297,23 +297,23 @@ body {
    Footer
 ============================== */
 
+/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
 #footer {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   overflow: visible;
-
-  flex-shrink: 0;
 }
 
+/* 실제 footer */
 .footer {
   width: 100%;
-  min-height: 88px;
   background: #020617;
   color: #fff;
   box-sizing: border-box;
 }
 
+/* footer 안쪽 내용 */
 .footer-inner {
   width: 100%;
   min-height: 88px;
@@ -323,9 +323,11 @@ body {
   display: flex;
   align-items: center;
   gap: 22px;
+}
 
-  color: #64748b;
-  font-size: 12px;
+html,
+body {
+  overflow-x: hidden;
 }
 
 .footer-logo-white {
@@ -369,18 +371,22 @@ body {
   color: #64748b;
 }
 
+
 /* ==============================
    Footer Modal
 ============================== */
 
+/* 모달은 화면 중앙 고정 */
 .footer-modal {
   position: fixed;
   inset: 0;
-  background: rgba(2, 8, 23, 0.75);
+  z-index: 30000;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 30000;
+
+  background: rgba(2, 8, 23, 0.75);
 }
 
 .footer-modal.hidden {
