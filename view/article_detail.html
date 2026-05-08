@@ -600,19 +600,23 @@ body.light-mode .viewpoint-meta strong {
    Footer
 ============================== */
 
+/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
 #footer {
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   flex-shrink: 0;
 }
 
+/* 실제 footer */
 .footer {
   width: 100%;
-  min-height: 88px;
   background: #020617;
   color: #fff;
   box-sizing: border-box;
 }
 
+/* footer 안쪽 내용 */
 .footer-inner {
   width: 100%;
   min-height: 88px;
@@ -622,9 +626,11 @@ body.light-mode .viewpoint-meta strong {
   display: flex;
   align-items: center;
   gap: 22px;
+}
 
-  color: #64748b;
-  font-size: 12px;
+html,
+body {
+  overflow-x: hidden;
 }
 
 .footer-logo-white {
