@@ -1077,6 +1077,7 @@ body.light-mode .footer-modal-content h3 {
 
 <script>
 /* ===== common.js ===== */
+
 // ==============================
 // 공통 UI 로드
 // ==============================
@@ -1656,6 +1657,53 @@ let newsDetail = {
 function getArticleIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("article_id");
+}
+
+// ==============================
+// 유효 조회 확인
+// ==============================
+async function view(){
+  const articleId = getArticleIdFromUrl();
+
+  if (!articleId) return;
+
+  try {
+    console.log("조회");
+    await axios.post("/view", {
+      article_id: articleId
+    }, {
+      withCredentials: true
+    });
+
+        // 3초 뒤 유효 조회 처리
+    setTimeout(() => {
+      validateView();
+    }, 3000);
+
+
+  } catch (error) {
+    console.error("조회수 증가 실패:", error);
+  }
+}
+view()
+
+// ==============================
+// 3초 이상 체류 시 True 업데이트
+// ==============================
+async function validateView() {
+  const articleId = getArticleIdFromUrl();
+  
+  if (!articleId) return;
+
+  try {
+    await axios.post("/view", {
+      article_id: articleId,
+      is_valid_view: 1
+    });
+
+  } catch (error) {
+    console.error("유효 조회 업데이트 실패:", error);
+  }
 }
 
 async function fetchArticleDetail() {

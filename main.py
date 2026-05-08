@@ -678,7 +678,7 @@ def vote_article(info: VoteRequest, req: Request):
     }
 
 @app.post("/view")
-def view(info:Dict[str,str], req: Request):
+def view(info:Dict[str,Any], req: Request):
     view_log(info, req)
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
