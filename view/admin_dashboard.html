@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 
 <html lang="ko">
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>관리자 대시보드 | DATA 다타</title>
     <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 <style>
+  
 /* ===== admin_dashboard.css ===== */
 /* ==============================
    Reset
@@ -712,7 +714,7 @@ td[title] {
 <!-- Main -->
 <main class="dashboard-main">
 <header class="dashboard-header">
-<button class="main-btn" onclick="location.href='/view/index.html'" type="button">
+<button class="main-btn" onclick="location.href='/view/main.html'" type="button">
         메인으로
       </button>
 <button class="logout-btn" onclick="adminDashboardLogout()" type="button">
@@ -943,7 +945,7 @@ td[title] {
 
   if (!isAdmin) {
     alert("관리자만 접근할 수 있습니다.");
-    location.href = "/view/index.html";
+    location.href = "/view/main.html";
   }
 })();
 
@@ -1396,7 +1398,9 @@ function adminDashboardLogout() {
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("userName");
 
-  location.href = "/view/index.html";
+  axios.post("/logout");
+
+  location.href = "/view/main.html";
 }
 
 
