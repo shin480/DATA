@@ -795,6 +795,73 @@ def get_top_keyword():
 
         "chips": source.get("top_keywords", [])
     }
+# =========================
+# 지금 뜨는 뉴스 - 최근 1시간 반응순
+# =========================
+@app.get("/api/main/hot-news")
+def get_hot_news():
+    es = get_es()
+    db = get_engine()
+
+    rows = db.execute(
+        # text("""
+        #     SELECT
+        #         article_id,
+        #         SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END) AS like_count,
+        #         SUM(CASE WHEN reaction_type IN ('hate', 'dislike') THEN 1 ELSE 0 END) AS hate_count,
+        #         COUNT(*) AS reaction_count
+        #     FROM article_reactions
+        #     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+        #     GROUP BY article_id
+        #     ORDER BY reaction_count DESC
+        #     LIMIT 5
+        # """)
+        text("""
+                SELECT
+                    article_id,
+                    SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END) AS like_count,
+                    SUM(CASE WHEN reaction_type IN ('hate', 'dislike') THEN 1 ELSE 0 END) AS hate_count,
+                    COUNT(*) AS reaction_count
+                FROM article_reactions
+                GROUP BY article_id
+                ORDER BY reaction_count DESC
+                LIMIT 5
+            """)
+    ).fetchall()
+
+    db.close()
+
+    articles = []
+
+    for row in rows:
+        article_id = row.article_id
+
+        try:
+            result = es.get(
+                index=NEWS_ECONOMY_INDEX,
+                id=article_id
+            )
+
+            source = result["_source"]
+
+            articles.append({
+                "article_id": article_id,
+                "title": source.get("title", "제목 없음"),
+                "press": source.get("press", "언론사 없음"),
+                "summary": source.get("summary") or source.get("content", "")[:120],
+                "sentiment": source.get("sentiment", "neutral"),
+                "like_count": int(row.like_count or 0),
+                "hate_count": int(row.hate_count or 0),
+                "reaction_count": int(row.reaction_count or 0)
+            })
+
+        except Exception as e:
+            print("지금 뜨는 뉴스 ES 조회 실패:", article_id, e)
+            continue
+
+    return {
+        "articles": articles
+    }
 
 
 @app.get("/crawl")

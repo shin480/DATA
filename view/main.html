@@ -1102,73 +1102,7 @@ body.light-mode .news-header h2 {
 <div class="realtime-dot">
 <div class="dot"></div>실시간 반응순</div>
 </div>
-<div class="news-grid">
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">1</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-like"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">2</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">3</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-like"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">4</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-<div class="news-item-card">
-<div class="news-badge badge-dislike"></div>
-<div class="news-main-row">
-<div class="news-rank-circle">5</div>
-<div class="news-title"></div>
-</div>
-<div class="news-quote"></div>
-<div class="reaction-row">
-<div class="react-item up">👍</div>
-<div class="react-item down">👎</div>
-</div>
-<button class="news-footer-btn" type="button">상세 보기 &gt;</button>
-</div>
-</div>
+<div class="news-grid" id="hotNewsGrid"></div>
 </section>
 </main>
 <div id="footer"></div>
@@ -1669,6 +1603,102 @@ function moveSearch(keyword) {
   goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
 }
 
+// ==============================
+// 지금 뜨는 뉴스
+// ==============================
+async function loadHotNews() {
+
+    try {
+
+        const res = await axios.get("/api/main/hot-news");
+
+        const articles = res.data.articles || [];
+
+        const grid =
+            document.getElementById("hotNewsGrid");
+
+        if (!grid) return;
+
+        grid.innerHTML =
+            articles.map((item, index) => {
+
+                const likeCount = Number(item.like_count) || 0;
+                const hateCount = Number(item.hate_count) || 0;
+
+                const isLike = likeCount >= hateCount;
+
+                return `
+
+                    <div class="news-item-card">
+
+                        <div class="news-badge ${
+                            isLike
+                                ? "badge-like"
+                                : "badge-dislike"
+                        }">
+
+                            ${
+                                isLike
+                                    ? "👍 긍정 반응 우세"
+                                    : "👎 부정 반응 우세"
+                            }
+
+                        </div>
+
+                        <div class="news-main-row">
+
+                            <div class="news-rank-circle">
+                                ${index + 1}
+                            </div>
+
+                            <div class="news-title">
+                                ${item.title}
+                            </div>
+
+                        </div>
+
+                        <div class="news-quote">
+                            ${item.summary || ""}
+                        </div>
+
+                        <div class="reaction-row">
+
+                            <div class="react-item up">
+                                👍 ${likeCount}
+                            </div>
+
+                            <div class="react-item down">
+                                👎 ${hateCount}
+                            </div>
+
+                        </div>
+
+                        <button
+                            class="news-footer-btn"
+                            onclick="
+                                location.href=
+                                '/view/article_detail.html?article_id=${item.article_id}'
+                            "
+                        >
+                            상세 보기 >
+                        </button>
+
+                    </div>
+
+                `;
+
+            }).join("");
+
+    } catch (err) {
+
+        console.error(
+            "지금 뜨는 뉴스 로딩 실패:",
+            err
+        );
+
+    }
+}
+
 
 // ==============================
 // 로그아웃
@@ -2093,6 +2123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. 그 다음 실제 데이터를 서버에서 가져옵니다.
     loadAnalysisData();
     loadTopKeyword();
+    loadHotNews();
 
 });
 
