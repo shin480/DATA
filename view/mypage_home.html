@@ -1374,149 +1374,186 @@
     goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
   }
 
-  const newsPages = [
-    [
-      { num: "01", title: "한국은행 기준금리 동결", desc: "통화정책 방향 분석 기사입니다.", category: "기준 금리" },
-      { num: "02", title: "코스피 2860선 회복", desc: "외국인 반도체주 집중 매수.", category: "증시" },
-      { num: "03", title: "정부 추경예산 12조 편성", desc: "민생·수출 지원 집중.", category: "정책" },
-      { num: "04", title: "환율 1370원대 진입", desc: "달러 강세 영향.", category: "환율" },
-      { num: "05", title: "현대차 북미 생산 확대", desc: "관세 대응 가속.", category: "자동차" },
-      { num: "06", title: "삼성전자 실적 개선", desc: "반도체 회복세.", category: "반도체" },
-      { num: "07", title: "물가 2.3% 상승", desc: "식료품 가격 상승.", category: "물가" },
-      { num: "08", title: "부동산 PF 우려", desc: "금융당국 점검 강화.", category: "부동산" },
-      { num: "09", title: "청년 고용률 상승", desc: "서비스업 채용 회복.", category: "취업" },
-      { num: "10", title: "국제 유가 하락", desc: "물류비 부담 완화 기대.", category: "유가" }
-    ],
-    [
-      { num: "11", title: "한국은행 기준금리 동결", desc: "통화정책 방향 분석 기사입니다.", category: "기준 금리" },
-      { num: "12", title: "코스피 2860선 회복", desc: "외국인 반도체주 집중 매수.", category: "증시" },
-      { num: "13", title: "정부 추경예산 12조 편성", desc: "민생·수출 지원 집중.", category: "정책" },
-      { num: "14", title: "환율 1370원대 진입", desc: "달러 강세 영향.", category: "환율" },
-      { num: "15", title: "현대차 북미 생산 확대", desc: "관세 대응 가속.", category: "자동차" },
-      { num: "16", title: "삼성전자 실적 개선", desc: "반도체 회복세.", category: "반도체" },
-      { num: "17", title: "물가 2.3% 상승", desc: "식료품 가격 상승.", category: "물가" },
-      { num: "18", title: "부동산 PF 우려", desc: "금융당국 점검 강화.", category: "부동산" },
-      { num: "19", title: "청년 고용률 상승", desc: "서비스업 채용 회복.", category: "취업" },
-      { num: "20", title: "국제 유가 하락", desc: "물류비 부담 완화 기대.", category: "유가" }
-    ],
-    [
-      { num: "21", title: "한국은행 기준금리 동결", desc: "통화정책 방향 분석 기사입니다.", category: "기준 금리" },
-      { num: "22", title: "코스피 2860선 회복", desc: "외국인 반도체주 집중 매수.", category: "증시" },
-      { num: "23", title: "정부 추경예산 12조 편성", desc: "민생·수출 지원 집중.", category: "정책" },
-      { num: "24", title: "환율 1370원대 진입", desc: "달러 강세 영향.", category: "환율" },
-      { num: "25", title: "현대차 북미 생산 확대", desc: "관세 대응 가속.", category: "자동차" },
-      { num: "26", title: "삼성전자 실적 개선", desc: "반도체 회복세.", category: "반도체" },
-      { num: "27", title: "물가 2.3% 상승", desc: "식료품 가격 상승.", category: "물가" },
-      { num: "28", title: "부동산 PF 우려", desc: "금융당국 점검 강화.", category: "부동산" },
-      { num: "29", title: "청년 고용률 상승", desc: "서비스업 채용 회복.", category: "취업" },
-      { num: "30", title: "국제 유가 하락", desc: "물류비 부담 완화 기대.", category: "유가" }
-    ]
-  ];
+  const pageSize = 10;
 
-  function showPage(page) {
+function moveNewsDetail(articleId) {
+  if (!articleId) return;
+  location.href = `/view/news_detail.html?article_id=${encodeURIComponent(articleId)}`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+
+  const date = new Date(dateStr);
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+
+  return `${mm}.${dd}`;
+}
+
+function renderMiniNewsFromServer(selector, list) {
+  const rows = document.querySelectorAll(selector + " .mini-news");
+
+  rows.forEach((row, index) => {
+    const item = list[index];
+    const titleEl = row.querySelector("span:first-child");
+    const dateEl = row.querySelector(".date");
+
+    if (item) {
+      titleEl.textContent = item.title || "제목 없음";
+      dateEl.textContent = formatDate(item.created_at || item.date);
+      row.onclick = () => moveNewsDetail(item.article_id);
+    } else {
+      titleEl.textContent = "";
+      dateEl.textContent = "";
+      row.onclick = null;
+    }
+  });
+}
+
+function renderReactionPagination(targetId, totalCount, currentPage, type) {
+  const totalPage = Math.ceil(totalCount / pageSize);
+  const el = document.getElementById(targetId);
+
+  if (!el || totalPage <= 1) {
+    if (el) el.innerHTML = "";
+    return;
+  }
+
+  let html = "";
+
+  html += `<span onclick="loadReactionNews('${type}', 1)"><<</span> `;
+  html += `<span onclick="loadReactionNews('${type}', ${Math.max(1, currentPage - 1)})"><</span> `;
+
+  for (let i = 1; i <= totalPage; i++) {
+    html += i === currentPage
+      ? `<b>${i}</b> `
+      : `<span onclick="loadReactionNews('${type}', ${i})">${i}</span> `;
+  }
+
+  html += `<span onclick="loadReactionNews('${type}', ${Math.min(totalPage, currentPage + 1)})">></span> `;
+  html += `<span onclick="loadReactionNews('${type}', ${totalPage})">>></span>`;
+
+  el.innerHTML = html;
+}
+
+async function loadReactionNews(type, page = 1) {
+  try {
+    const { data } = await axios.get("/api/mypage/reactions", {
+      params: { type, page, size: pageSize }
+    });
+
+    const isLike = type === "like";
+
+    const selector = isLike
+      ? ".cards .card:first-child"
+      : ".cards .card:last-child";
+
+    const paginationId = isLike
+      ? "likePagination"
+      : "dislikePagination";
+
+    const countEl = isLike
+      ? document.querySelector(".like").nextElementSibling
+      : document.querySelector(".dislike").nextElementSibling;
+
+    countEl.innerText = `총 ${data.total_count || 0}건`;
+
+    renderMiniNewsFromServer(selector, data.articles || []);
+    renderReactionPagination(paginationId, data.total_count || 0, page, type);
+
+  } catch (err) {
+    console.error("선호/비선호 뉴스 로드 실패:", err);
+  }
+}
+
+function loadLikePage(page = 1) {
+  loadReactionNews("like", page);
+}
+
+function loadDislikePage(page = 1) {
+  loadReactionNews("dislike", page);
+}
+
+async function loadViewedNews(page = 1) {
+  try {
+    const { data } = await axios.get("/api/mypage/viewed-news", {
+      params: {
+        page,
+        size: 10
+      }
+    });
+
     const newsList = document.querySelector(".news-list");
-    const dots = document.querySelectorAll(".dot");
+
+    if (!newsList) return;
 
     newsList.innerHTML = "";
 
-    newsPages[page - 1].forEach(item => {
+    const articles = data.articles || [];
+
+    articles.forEach((item, index) => {
       newsList.innerHTML += `
-        <div class="news-item">
-          <div class="num">${item.num}</div>
-          <div>
-            <div class="title">${item.title}</div>
-            <div class="desc">${item.desc}</div>
+        <div class="news-item"
+             onclick="moveNewsDetail('${item.article_id}')">
+
+          <div class="num">
+            ${String(index + 1).padStart(2, "0")}
           </div>
-          <span class="category">${item.category}</span>
+
+          <div>
+            <div class="title">
+              ${item.title || "제목 없음"}
+            </div>
+
+            <div class="desc">
+              ${item.description || ""}
+            </div>
+          </div>
+
+          <span class="category">
+            ${item.category || "경제"}
+          </span>
         </div>
       `;
     });
 
-    dots.forEach(dot => dot.classList.remove("active"));
-    if (dots[page - 1]) dots[page - 1].classList.add("active");
-  }
+    const badge = document.querySelector(".badge");
 
-  const likeNews = [
-    "한국은행 기준금리 동결",
-    "코스피 2860선 회복",
-    "현대차 북미 생산 확대",
-    "삼성전자 실적 개선",
-    "물가 상승률 둔화",
-    "반도체 수출 증가",
-    "네이버 AI 사업 확대",
-    "청년 고용률 상승",
-    "국제 유가 하락",
-    "서울 아파트 거래 증가",
-    "카카오 실적 반등",
-    "엔비디아 신고가"
-  ];
-
-  const dislikeNews = [
-    "환율 1370원 돌파",
-    "부동산 PF 우려 확대",
-    "중국 경기 둔화 우려",
-    "전세사기 피해 증가",
-    "가계부채 상승세",
-    "대출금리 부담 확대"
-  ];
-
-  function renderMiniNews(selector, list, page = 1) {
-    const pageSize = 10;
-    const start = (page - 1) * pageSize;
-    const rows = document.querySelectorAll(selector + " .mini-news");
-
-    rows.forEach((row, index) => {
-      const item = list[start + index];
-
-      if (item) {
-        row.children[0].innerText = item;
-        row.children[1].innerText = "04." + String(index + 1).padStart(2, "0");
-      } else {
-        row.children[0].innerText = "";
-        row.children[1].innerText = "";
-      }
-    });
-  }
-
-  function renderPagination(targetId, totalCount, currentPage, callbackName) {
-    const pageSize = 10;
-    const totalPage = Math.ceil(totalCount / pageSize);
-    const el = document.getElementById(targetId);
-
-    let html = "";
-
-    html += `<span onclick="${callbackName}(1)"><<</span> `;
-    html += `<span onclick="${callbackName}(${Math.max(1, currentPage - 1)})"><</span> `;
-
-    for (let i = 1; i <= totalPage; i++) {
-      if (i === currentPage) {
-        html += `<b>${i}</b> `;
-      } else {
-        html += `<span onclick="${callbackName}(${i})">${i}</span> `;
-      }
+    if (badge) {
+      badge.innerText = `${data.total_count || 0}개`;
     }
 
-    html += `<span onclick="${callbackName}(${Math.min(totalPage, currentPage + 1)})">></span> `;
-    html += `<span onclick="${callbackName}(${totalPage})">>></span>`;
+    renderViewedPagination(
+      data.total_count || 0,
+      page
+    );
 
-    el.innerHTML = html;
+  } catch (err) {
+    console.error("내가 본 뉴스 로딩 실패:", err);
+  }
+}
+
+function renderViewedPagination(totalCount, currentPage) {
+  const dots = document.querySelector(".dots");
+
+  if (!dots) return;
+
+  const totalPage = Math.ceil(totalCount / 10);
+
+  let html = "";
+
+  for (let i = 1; i <= totalPage; i++) {
+    html += `
+      <span
+        class="dot ${i === currentPage ? "active" : ""}"
+        onclick="loadViewedNews(${i})">
+      </span>
+    `;
   }
 
-  function loadLikePage(page = 1) {
-    document.querySelector(".like").nextElementSibling.innerText =
-      `총 ${likeNews.length}건`;
-
-    renderMiniNews(".cards .card:first-child", likeNews, page);
-    renderPagination("likePagination", likeNews.length, page, "loadLikePage");
-  }
-
-  function loadDislikePage(page = 1) {
-    document.querySelector(".dislike").nextElementSibling.innerText =
-      `총 ${dislikeNews.length}건`;
-
-    renderMiniNews(".cards .card:last-child", dislikeNews, page);
-    renderPagination("dislikePagination", dislikeNews.length, page, "loadDislikePage");
-  }
+  dots.innerHTML = html;
+}
 
   function loadNotice() {
     const box = document.getElementById("noticeBox");
@@ -1799,7 +1836,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     applyThemeMode();
     loadHeader();
-    showPage(1);
+    loadViewedNews(1);
     loadLikePage(1);
     loadDislikePage(1);
     loadNotice();
