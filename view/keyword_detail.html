@@ -726,13 +726,12 @@ body {
 }
 
 .news-card {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 24px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  min-height: 320px;
+  background: #202c40;
+  border-radius: 14px;
+  padding: 18px;
+  min-height: 180px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .news-card-top {
@@ -1391,9 +1390,16 @@ body {
 .news-meta {
   display: flex;
   gap: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   scroll-behavior: smooth;
   flex: 1;
+  min-width: 0;
+  scrollbar-width: none;
+}
+
+.news-meta::-webkit-scrollbar {
+  display: none;
 }
 
 .meta-pill {
@@ -1450,21 +1456,28 @@ body {
   height: 46px;
   overflow: hidden;
   margin-bottom: 16px;
+  min-width: 0;
+  width: 100%;
 }
 
 .news-title-track {
-  will-change: transform;
+  width: 100%;
+  min-width: 0;
 }
 
 .news-title-item {
   height: 46px;
-  display: flex;
-  align-items: center;
+  display: block;
   padding: 0 13px;
   font-size: 13px;
   font-weight: 900;
-  line-height: 1.4;
+  line-height: 46px;
   color: #f8fafc;
+
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2483,52 +2496,79 @@ let keywordData = {
 };
 
 // ==============================
-// 임시 데이터
+// 서버 데이터
 // ==============================
-const perspectives = [
-  {
-    type: "긍정 관점",
-    className: "positive",
-    articles: [
-      { code: "E", press: "경제A", title: "기준금리 인하에 소비 심리 회복 기대" },
-      { code: "N", press: "경향신문", title: "한은 금리 인하, 내수 회복의 마중물 될 것" },
-      { code: "B", press: "비교됨", title: "금리 완화로 기업 투자 부담 줄어든다" },
-      { code: "M", press: "매일경제", title: "금리 완화 기대감에 투자 심리 개선 흐름" }
-    ],
-    positive: 63,
-    neutral: 24,
-    negative: 13
-  },
-  {
-    type: "중립 관점",
-    className: "neutral",
-    articles: [
-      { code: "E", press: "경제A", title: "금리 인하 효과는 경기 흐름에 따라 달라질 전망" },
-      { code: "N", press: "경향신문", title: "한은 금리 인하, 시장 영향은 제한적일 가능성" },
-      { code: "B", press: "증권B", title: "금융시장 반응은 아직 관망세" },
-      { code: "S", press: "서울경제", title: "금리 인하 이후 시장 흐름은 추가 지표가 변수" }
-    ],
-    positive: 45,
-    neutral: 42,
-    negative: 13
-  },
-  {
-    type: "부정 관점",
-    className: "negative",
-    articles: [
-      { code: "E", press: "경제A", title: "금리 인하에도 가계부채 부담은 여전" },
-      { code: "N", press: "경향신문", title: "한은 금리 인하, 대출 규제와 맞물려 효과 제한" },
-      { code: "B", press: "비교됨", title: "시장 불확실성 커져 정책 효과 반감 우려" },
-      { code: "H", press: "한국경제", title: "금리 인하 기대에도 부채 리스크는 지속" }
-    ],
-    positive: 23,
-    neutral: 31,
-    negative: 46
-  }
-];
-
+let perspectives = [];
 let articles = [];
 let rollingTimers = [];
+
+async function fetchPerspectiveData() {
+  const params = new URLSearchParams(window.location.search);
+  const keyword = params.get("keyword") || "금리";
+
+  try {
+    const res = await axios.get(`/api/keywords/${encodeURIComponent(keyword)}`);
+    const data = res.data;
+
+    articles = data.articles || [];
+
+    perspectives = [
+      {
+        type: "긍정 관점",
+        className: "positive",
+        articles: articles
+          .filter(item => item.sentiment === "positive")
+          .slice(0, 4)
+          .map(item => ({
+            code: "P",
+            press: item.source,
+            title: item.title,
+            article_id: item.article_id
+          })),
+        positive: data.sentiment?.positive || 0,
+        neutral: data.sentiment?.neutral || 0,
+        negative: data.sentiment?.negative || 0
+      },
+      {
+        type: "중립 관점",
+        className: "neutral",
+        articles: articles
+          .filter(item => item.sentiment === "neutral")
+          .slice(0, 4)
+          .map(item => ({
+            code: "N",
+            press: item.source,
+            title: item.title,
+            article_id: item.article_id
+          })),
+        positive: data.sentiment?.positive || 0,
+        neutral: data.sentiment?.neutral || 0,
+        negative: data.sentiment?.negative || 0
+      },
+      {
+        type: "부정 관점",
+        className: "negative",
+        articles: articles
+          .filter(item => item.sentiment === "negative")
+          .slice(0, 4)
+          .map(item => ({
+            code: "D",
+            press: item.source,
+            title: item.title,
+            article_id: item.article_id
+          })),
+        positive: data.sentiment?.positive || 0,
+        neutral: data.sentiment?.neutral || 0,
+        negative: data.sentiment?.negative || 0
+      }
+    ];
+
+    renderPerspectives();
+
+  } catch (error) {
+    console.error("관점 데이터 불러오기 실패:", error);
+  }
+}
 
 // ==============================
 // Toast
@@ -2700,12 +2740,11 @@ function updateActivePress(cardIndex, articleIndex) {
       pill.classList.add("active", `${cardType}-active`);
 
       if (list) {
-        const pillLeft = pill.offsetLeft;
-        const pillWidth = pill.offsetWidth;
-        const listWidth = list.clientWidth;
+        const targetLeft =
+          pill.offsetLeft - list.offsetLeft - (list.clientWidth / 2) + (pill.clientWidth / 2);
 
         list.scrollTo({
-          left: pillLeft - listWidth / 2 + pillWidth / 2,
+          left: targetLeft,
           behavior: "smooth"
         });
       }
@@ -2833,7 +2872,7 @@ function startRolling() {
       track.style.transform = `translateY(-${46 * current}px)`;
 
       if (current === realCount) {
-        updateActivePress(cardIndex, 0);
+        updateActivePress(cardIndex, 0);  
 
         setTimeout(() => {
           track.style.transition = "none";
@@ -2861,7 +2900,7 @@ window.selectPerspectiveArticle = selectPerspectiveArticle;
 // 최초 실행
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
-  renderPerspectives();
+  fetchPerspectiveData();
   readKeywordFromUrl();
 
   window.addEventListener("resize", checkPressArrow);
