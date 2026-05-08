@@ -9,6 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 import pandas as pd
 from util.db import get_engine
 from util.es import get_es, NEWS_ECONOMY_INDEX
+from crawling.crawler import run_crawling_job
 
 from model.model_main import app as pipeline_app
 from datacleaning.cleaning import get_preprocessed_data
@@ -491,3 +492,7 @@ def get_article_detail(article_id: str):
         "likeCount": 0,
         "dislikeCount": 0
     }
+
+@app.get("/crawl")
+async def crawl():
+    return await run_crawling_job()

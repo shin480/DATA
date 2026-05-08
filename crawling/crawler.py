@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 import httpx
 import asyncio
 import feedparser
-import pymysql
 from bs4 import BeautifulSoup
-from elasticsearch import Elasticsearch, helpers
+from elasticsearch import helpers
+from sqlalchemy import text
 
 from util.logger import Logger
 from util.db import get_engine
@@ -35,54 +35,60 @@ def to_iso(dt):
     return dt.isoformat()
 
 def save_log(code_id):
-    conn = get_engine() # 예나가 만든 db 모듈로 수정
-    cursor = conn.cursor()
+    db = get_engine()
 
-    sql = """
-    INSERT INTO batch_jobs (code_id, start_at)
-    VALUES (%s, NOW())
-    """
+    sql = text("""
+        INSERT INTO batch_jobs (code_id, start_at)
+        VALUES (:code_id, NOW())
+    """)
 
-    cursor.execute(sql, (code_id,))
-    conn.commit()
+    result = db.execute(sql, {"code_id": code_id})
+    db.commit()
 
-    job_id = cursor.lastrowid
-    conn.close()
+    job_id = result.lastrowid
+    db.close()
 
     return job_id
 
 
 def finish_log(job_id, total_count, fail_count):
-    conn = get_engine()
-    cursor = conn.cursor()
+    db = get_engine()
 
-    sql = """
-    UPDATE batch_jobs
-    SET end_at = NOW(),
-        total_count = %s,
-        fail_count = %s
-    WHERE job_id = %s
-    """
+    sql = text("""
+        UPDATE batch_jobs
+        SET end_at = NOW(),
+            total_count = :total_count,
+            fail_count = :fail_count
+        WHERE job_id = :job_id
+    """)
 
-    cursor.execute(sql, (total_count, fail_count, job_id))
-    conn.commit()
-    conn.close()
+    db.execute(sql, {
+        "total_count": total_count,
+        "fail_count": fail_count,
+        "job_id": job_id
+    })
+
+    db.commit()
+    db.close()
 
 
 def save_error(job_id, error_code, message, url):
-    conn = get_engine()
-    cursor = conn.cursor()
+    db = get_engine()
 
     error_message = f"{message} | url={url}" if url else message
 
-    sql = """
-    INSERT INTO article_error_logs (error_code, error_message)
-    VALUES (%s, %s)
-    """
+    sql = text("""
+        INSERT INTO article_error_logs (error_code, error_message)
+        VALUES (:error_code, :error_message)
+    """)
 
-    cursor.execute(sql, (error_code, error_message))
-    conn.commit()
-    conn.close()
+    db.execute(sql, {
+        "error_code": error_code,
+        "error_message": error_message
+    })
+
+    db.commit()
+    db.close()
 
 
 def get_error_code(e):
@@ -375,7 +381,7 @@ async def crawl_hankyung(job_id):
 
 async def crawl_naver(job_id, pages=50):
     if DEBUG_MODE:
-        pages = 100
+        pages = 1
 
     results = []
     empty_page_count = 0
