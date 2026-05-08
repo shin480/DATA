@@ -601,6 +601,10 @@ body {
   background: #202d42;
   border: 1px solid rgba(148, 163, 184, 0.16);
   padding: 14px;
+
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
 }
 
 .compare-card.active {
@@ -1534,41 +1538,258 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-const viewTitle = localStorage.getItem("viewpoint_title") || "정부 관점";
-const viewPercent = localStorage.getItem("viewpoint_percent") || "24";
+let viewTitle = localStorage.getItem("viewpoint_title") || "정부 관점";
 
-const viewTitleEl = document.getElementById("viewTitle");
-const viewPercentEl = document.getElementById("viewPercent");
-
-if (viewTitleEl) {
-  viewTitleEl.innerText = viewTitle;
+function getSentimentText(sentiment) {
+  if (sentiment === "positive") return "긍정";
+  if (sentiment === "neutral") return "중립";
+  if (sentiment === "negative") return "부정";
+  return sentiment;
 }
 
-if (viewPercentEl) {
-  viewPercentEl.innerText = `${viewPercent}%`;
+function getSentimentTagClass(sentiment) {
+  if (sentiment === "positive") return "positive-tag";
+  if (sentiment === "neutral") return "neutral-tag";
+  if (sentiment === "negative") return "negative-tag";
+  return "neutral-tag";
 }
 
-const compareData = [
-  { title: "정부 관점", percent: 24 },
-  { title: "개인 관점", percent: 18 },
-  { title: "복합 관점", percent: 14 },
-  { title: "기업 관점", percent: 11 },
-  { title: "외부 관점", percent: 9 }
-];
+function formatDate(dateText) {
+  if (!dateText) return "";
 
-const compareGrid = document.getElementById("compareGrid");
+  // 2026-05-08 형태면 05.08로 표시
+  if (dateText.length >= 10) {
+    return dateText.slice(5, 10).replace("-", ".");
+  }
 
-if (compareGrid) {
-  compareGrid.innerHTML = compareData.map(item => `
-    <div class="compare-card ${item.title === viewTitle ? "active" : ""}">
-      <div class="compare-title">${item.title}</div>
-      <div class="compare-percent">${item.percent}%</div>
-      <div class="compare-bar">
-        <div class="compare-fill" style="width:${item.percent * 3}%"></div>
+  return dateText;
+}
+
+async function loadViewpointDetail(selectedTitle) {
+  try {
+    const res = await axios.get("/api/viewpoints/detail", {
+      params: {
+        viewpoint: selectedTitle
+      }
+    });
+
+    const data = res.data;
+
+    if (!data) {
+      alert("관점 상세 데이터를 불러오지 못했습니다.");
+      return;
+    }
+
+    viewTitle = data.title || selectedTitle;
+
+    localStorage.setItem("viewpoint_title", viewTitle);
+
+    if (data.percent !== undefined && data.percent !== null) {
+      localStorage.setItem("viewpoint_percent", data.percent);
+    }
+
+    renderViewpointDetail(data);
+
+  } catch (error) {
+    console.error("관점 상세 조회 실패:", error);
+    alert("관점 상세 데이터를 불러오는 중 오류가 발생했습니다.");
+  }
+}
+
+function renderViewpointDetail(data) {
+  const mainIcon = document.querySelector(".main-icon");
+  const viewTitleEl = document.getElementById("viewTitle");
+  const viewPercentEl = document.getElementById("viewPercent");
+  const dateEl = document.querySelector(".date");
+
+  const analysisTitleEl = document.querySelector(".analysis-box h3");
+  const analysisDescEl = document.querySelector(".analysis-box p");
+
+  if (mainIcon) {
+    mainIcon.innerText = data.icon || "📌";
+  }
+
+  if (viewTitleEl) {
+    viewTitleEl.innerText = data.title || "";
+  }
+
+  if (viewPercentEl) {
+    viewPercentEl.innerText = `${data.percent || 0}%`;
+  }
+
+  if (dateEl) {
+    dateEl.innerText = data.date || "기준일";
+  }
+
+  if (analysisTitleEl) {
+    analysisTitleEl.innerText = data.analysis_title || "";
+  }
+
+  if (analysisDescEl) {
+    analysisDescEl.innerText = data.analysis_desc || "";
+  }
+
+  renderSentiment(data.sentiment);
+  renderKeywords(data.keywords);
+  renderArticles(data.articles);
+  renderCompareCards(data.compare);
+}
+
+function renderSentiment(sentiment) {
+  if (!sentiment) return;
+
+  const positive = sentiment.positive || { percent: 0, count: 0 };
+  const neutral = sentiment.neutral || { percent: 0, count: 0 };
+  const negative = sentiment.negative || { percent: 0, count: 0 };
+
+  const positiveBar = document.querySelector(".sentiment-bar .positive");
+  const neutralBar = document.querySelector(".sentiment-bar .neutral");
+  const negativeBar = document.querySelector(".sentiment-bar .negative");
+
+  if (positiveBar) positiveBar.style.width = `${positive.percent}%`;
+  if (neutralBar) neutralBar.style.width = `${neutral.percent}%`;
+  if (negativeBar) negativeBar.style.width = `${negative.percent}%`;
+
+  const sentimentItems = document.querySelectorAll(".sentiment-labels > div");
+
+  const sentimentData = [
+    { key: "positive", data: positive },
+    { key: "neutral", data: neutral },
+    { key: "negative", data: negative }
+  ];
+
+  sentimentItems.forEach(function (item, index) {
+    const current = sentimentData[index];
+
+    if (!current) return;
+
+    const strong = item.querySelector("strong");
+    const button = item.querySelector(".count-link");
+
+    if (strong) {
+      strong.innerText = `${current.data.percent}%`;
+    }
+
+    if (button) {
+      button.innerText = `(${current.data.count}건)`;
+      button.onclick = function () {
+        goArticleList(current.key);
+      };
+    }
+  });
+}
+
+function renderKeywords(keywords) {
+  const keywordBox = document.querySelector(".keywords");
+
+  if (!keywordBox) return;
+
+  if (!keywords || keywords.length === 0) {
+    keywordBox.innerHTML = `<span>키워드 없음</span>`;
+    return;
+  }
+
+  keywordBox.innerHTML = keywords.map(function (keyword) {
+    return `<span>${keyword}</span>`;
+  }).join("");
+}
+
+function renderArticles(articles) {
+  const articleList = document.querySelector(".article_list");
+
+  if (!articleList) return;
+
+  if (!articles || articles.length === 0) {
+    articleList.innerHTML = `
+      <div class="article-row">
+        <div></div>
+        <div class="press">-</div>
+        <div class="article-title">관련 기사가 없습니다.</div>
+        <span class="article-tag neutral-tag">-</span>
+        <div class="article-date">-</div>
       </div>
-    </div>
-  `).join("");
+    `;
+    return;
+  }
+
+  const logoClasses = ["blue", "sky", "white", "red", "green"];
+
+  articleList.innerHTML = articles.slice(0, 5).map(function (article, index) {
+    return `
+      <div class="article-row" onclick="goArticleDetail('${article.article_id || ""}')">
+        <div class="press-logo ${logoClasses[index] || "blue"}">
+          ${(article.press || "").slice(0, 2)}
+        </div>
+
+        <div class="press">
+          ${article.press || "-"}
+        </div>
+
+        <div class="article-title">
+          ${article.title || "제목 없음"}
+        </div>
+
+        <span class="article-tag ${getSentimentTagClass(article.sentiment)}">
+          ${getSentimentText(article.sentiment)}
+        </span>
+
+        <div class="article-date">
+          ${formatDate(article.published_at || article.date)}
+        </div>
+      </div>
+    `;
+  }).join("");
 }
+
+function renderCompareCards(compare) {
+  const compareGrid = document.getElementById("compareGrid");
+
+  if (!compareGrid) return;
+
+  if (!compare || compare.length === 0) {
+    compareGrid.innerHTML = "";
+    return;
+  }
+
+  compareGrid.innerHTML = compare.map(function (item) {
+    const isActive = item.title === viewTitle;
+
+    return `
+      <button
+        class="compare-card ${isActive ? "active" : ""}"
+        type="button"
+        data-title="${item.title}"
+      >
+        <div class="compare-title">${item.title}</div>
+
+        <div class="compare-percent">${item.percent}%</div>
+
+        <div class="compare-bar">
+          <div class="compare-fill" style="width:${Math.min(item.percent * 3, 100)}%"></div>
+        </div>
+      </button>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".compare-card").forEach(function (card) {
+    card.addEventListener("click", function () {
+      const selectedTitle = card.dataset.title;
+
+      if (!selectedTitle || selectedTitle === viewTitle) return;
+
+      loadViewpointDetail(selectedTitle);
+    });
+  });
+}
+
+function goArticleDetail(articleId) {
+  if (!articleId) return;
+
+  localStorage.setItem("selected_article_id", articleId);
+  location.href = "/view/article_detail.html";
+}
+
+loadViewpointDetail(viewTitle);
 </script>
 </body>
 </html>
