@@ -542,12 +542,12 @@ body {
   height: 34px;
   background-color: #ffffff;
 
-  -webkit-mask-image: url("/view/img/data_favicon.png");
+  -webkit-mask-image: url("/view/img/favicon.png");
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   -webkit-mask-size: contain;
 
-  mask-image: url("/view/img/data_favicon.png");
+  mask-image: url("/view/img/favicon.png");
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;
@@ -1564,6 +1564,7 @@ async function fetchArticleDetail() {
     );
 
     newsDetail = res.data;
+    loadDeepNews();
 
     loadNewsDetail();
 
@@ -1699,8 +1700,20 @@ function loadDeepNews() {
 
   if (!grid) return;
 
-  grid.innerHTML = deepNews.map(item => `
-    <div class="deep-card" onclick="location.href='${item.url}'">
+  const list = newsDetail.deepNews || [];
+
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="deep-card">
+        <div class="deep-tag neutral">관련 뉴스</div>
+        <div class="deep-text">추천할 관련 뉴스가 없습니다.</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = list.map(item => `
+    <div class="deep-card" onclick="location.href='/view/article_detail.html?article_id=${item.article_id}'">
       <div class="deep-tag ${item.type}">
         ${item.tag}
       </div>
@@ -1723,7 +1736,6 @@ window.selectVote = selectVote;
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
   fetchArticleDetail();
-  loadDeepNews();
 });
 </script>
 </body>
