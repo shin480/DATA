@@ -33,7 +33,6 @@ body {
 .app {
   min-height: 100vh;
   background: #030817;
-
   display: flex;
   flex-direction: column;
 }
@@ -48,14 +47,11 @@ body {
   left: 0;
   transform: none;
   z-index: 10000;
-
   width: 100%;
   height: 72px;
   padding: 0 56px;
-
   display: flex;
   align-items: center;
-
   background: #070b1a;
   border-bottom: 1px solid #111827;
 }
@@ -204,7 +200,7 @@ body {
 }
 
 /* ==============================
-   Search Suggest
+   SEARCH SUGGEST
 ============================== */
 
 .search-suggest-box {
@@ -292,7 +288,6 @@ body {
   margin: 0 auto;
   padding-top: 120px;
   padding-bottom: 120px;
-
   flex: 1;
 }
 
@@ -328,6 +323,36 @@ body {
   font-size: 56px;
 }
 
+.main-icon.theme-teal {
+  border-color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+  color: #2dd4bf;
+}
+
+.main-icon.theme-purple {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.12);
+  color: #a855f7;
+}
+
+.main-icon.theme-blue {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.main-icon.theme-orange {
+  border-color: #fb923c;
+  background: rgba(251, 146, 60, 0.12);
+  color: #fb923c;
+}
+
+.main-icon.theme-yellow {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+  color: #facc15;
+}
+
 .title-section h1 {
   font-size: 34px;
   font-weight: 900;
@@ -336,6 +361,26 @@ body {
 .title-section h1 strong {
   color: #2dd4bf;
   margin-left: 20px;
+}
+
+#viewPercent.theme-teal {
+  color: #2dd4bf;
+}
+
+#viewPercent.theme-purple {
+  color: #a855f7;
+}
+
+#viewPercent.theme-blue {
+  color: #3b82f6;
+}
+
+#viewPercent.theme-orange {
+  color: #fb923c;
+}
+
+#viewPercent.theme-yellow {
+  color: #facc15;
 }
 
 .title-section p {
@@ -378,7 +423,7 @@ body {
 ============================== */
 
 .analysis-box {
-  height: 142px;
+  min-height: 142px;
   border-radius: 12px;
   border: 1px solid #2dd4bf;
   background: rgba(45, 212, 191, 0.12);
@@ -398,6 +443,7 @@ body {
   color: #0f172a;
   font-size: 30px;
   font-weight: 900;
+  flex-shrink: 0;
 }
 
 .analysis-box h3 {
@@ -409,6 +455,71 @@ body {
 .analysis-box p {
   color: #e2e8f0;
   line-height: 1.5;
+}
+
+.analysis-box.theme-teal {
+  border-color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+}
+
+.analysis-box.theme-teal .check-icon {
+  background: #2dd4bf;
+}
+
+.analysis-box.theme-teal h3 {
+  color: #2dd4bf;
+}
+
+.analysis-box.theme-purple {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.analysis-box.theme-purple .check-icon {
+  background: #a855f7;
+}
+
+.analysis-box.theme-purple h3 {
+  color: #a855f7;
+}
+
+.analysis-box.theme-blue {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.analysis-box.theme-blue .check-icon {
+  background: #3b82f6;
+}
+
+.analysis-box.theme-blue h3 {
+  color: #3b82f6;
+}
+
+.analysis-box.theme-orange {
+  border-color: #fb923c;
+  background: rgba(251, 146, 60, 0.12);
+}
+
+.analysis-box.theme-orange .check-icon {
+  background: #fb923c;
+}
+
+.analysis-box.theme-orange h3 {
+  color: #fb923c;
+}
+
+.analysis-box.theme-yellow {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+}
+
+.analysis-box.theme-yellow .check-icon {
+  background: #facc15;
+}
+
+.analysis-box.theme-yellow h3 {
+  color: #facc15;
 }
 
 /* ==============================
@@ -532,6 +643,11 @@ body {
   padding: 17px 0;
   border-bottom: 1px solid #24314a;
   font-size: 13px;
+  cursor: pointer;
+}
+
+.article-row:hover .article-title {
+  color: #38bdf8;
 }
 
 .press-logo {
@@ -589,58 +705,6 @@ body {
   margin-top: 24px;
 }
 
-.compare-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 14px;
-}
-
-.compare-card {
-  min-height: 130px;
-  height: auto;
-  border-radius: 12px;
-  background: #202d42;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  padding: 14px;
-
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-}
-
-.compare-card.active {
-  border-color: #2dd4bf;
-  background: rgba(45, 212, 191, 0.12);
-}
-
-.compare-title {
-  font-size: 12px;
-  font-weight: 900;
-  color: #e2e8f0;
-}
-
-.compare-percent {
-  margin-top: 20px;
-  font-size: 28px;
-  font-weight: 900;
-  color: #2dd4bf;
-}
-
-.compare-bar {
-  height: 7px;
-  margin-top: 22px;
-  border-radius: 999px;
-  overflow: hidden;
-  display: flex;
-  background: #334155;
-}
-
-.compare-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: #2dd4bf;
-}
-
 .compare-groups {
   display: block;
 }
@@ -660,6 +724,159 @@ body {
   font-weight: 900;
 }
 
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.compare-grid.compare-count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.compare-grid.compare-count-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.compare-grid.compare-count-4plus {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.compare-card {
+  min-height: 170px;
+  height: auto;
+  border-radius: 12px;
+  background: #202d42;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  padding: 14px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.compare-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #e2e8f0;
+}
+
+.compare-percent {
+  margin-top: 18px;
+  font-size: 28px;
+  font-weight: 900;
+  color: #2dd4bf;
+}
+
+.compare-core {
+  margin-top: 12px;
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.compare-mini-sentiment {
+  margin-top: 14px;
+}
+
+.compare-mini-bar {
+  width: 100%;
+  height: 6px;
+  display: flex;F
+  overflow: hidden;
+  border-radius: 999px;
+  background: #334155;
+}
+
+.compare-mini-positive {
+  background: #2dd4bf;
+}
+
+.compare-mini-neutral {
+  background: #64748b;
+}
+
+.compare-mini-negative {
+  background: #fb7185;
+}
+
+.compare-mini-labels {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.compare-card.theme-teal.active {
+  border-color: #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
+}
+
+.compare-card.theme-teal .compare-percent,
+.compare-card.theme-teal .compare-title {
+  color: #2dd4bf;
+}
+
+.compare-card.theme-teal .compare-fill {
+  background: #2dd4bf;
+}
+
+.compare-card.theme-purple.active {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.compare-card.theme-purple .compare-percent,
+.compare-card.theme-purple .compare-title {
+  color: #a855f7;
+}
+
+.compare-card.theme-purple .compare-fill {
+  background: #a855f7;
+}
+
+.compare-card.theme-blue.active {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.compare-card.theme-blue .compare-percent,
+.compare-card.theme-blue .compare-title {
+  color: #3b82f6;
+}
+
+.compare-card.theme-blue .compare-fill {
+  background: #3b82f6;
+}
+
+.compare-card.theme-orange.active {
+  border-color: #fb923c;
+  background: rgba(251, 146, 60, 0.12);
+}
+
+.compare-card.theme-orange .compare-percent,
+.compare-card.theme-orange .compare-title {
+  color: #fb923c;
+}
+
+.compare-card.theme-orange .compare-fill {
+  background: #fb923c;
+}
+
+.compare-card.theme-yellow.active {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+}
+
+.compare-card.theme-yellow .compare-percent,
+.compare-card.theme-yellow .compare-title {
+  color: #facc15;
+}
+
+.compare-card.theme-yellow .compare-fill {
+  background: #facc15;
+}
+
 /* ==============================
    FOOTER
 ============================== */
@@ -669,7 +886,6 @@ body {
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   overflow: visible;
-
   flex-shrink: 0;
 }
 
@@ -685,7 +901,6 @@ body {
   min-height: 88px;
   padding: 0 70px;
   box-sizing: border-box;
-
   display: flex;
   align-items: center;
   gap: 22px;
@@ -695,17 +910,14 @@ body {
   width: 34px;
   height: 34px;
   background-color: #ffffff;
-
   -webkit-mask-image: url("/view/img/favicon.png");
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   -webkit-mask-size: contain;
-
   mask-image: url("/view/img/favicon.png");
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: contain;
-
   flex-shrink: 0;
 }
 
@@ -736,11 +948,9 @@ body {
   position: fixed;
   inset: 0;
   z-index: 30000;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: rgba(2, 8, 23, 0.75);
 }
 
@@ -855,12 +1065,6 @@ body.light-mode .compare-card {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
-body.light-mode .compare-card.active,
-body.light-mode .analysis-box {
-  background: #ecfeff;
-  border-color: #5eead4;
-}
-
 body.light-mode .title-section h1,
 body.light-mode .article-title,
 body.light-mode .compare-title,
@@ -872,7 +1076,8 @@ body.light-mode .analysis-box p,
 body.light-mode .title-section p,
 body.light-mode .date,
 body.light-mode .article-date,
-body.light-mode .count-link {
+body.light-mode .count-link,
+body.light-mode .compare-core {
   color: #64748b;
 }
 
@@ -957,7 +1162,10 @@ body.light-mode .footer-modal-content h3 {
 
   .title-section,
   .top-grid,
-  .compare-grid {
+  .compare-grid,
+  .compare-grid.compare-count-2,
+  .compare-grid.compare-count-3,
+  .compare-grid.compare-count-4plus {
     grid-template-columns: 1fr;
   }
 
@@ -999,7 +1207,7 @@ body.light-mode .footer-modal-content h3 {
         <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
         <section class="title-section">
-          <div class="main-icon">🏛</div>
+          <div class="main-icon">📌</div>
 
           <div>
             <h1>
@@ -1009,7 +1217,7 @@ body.light-mode .footer-modal-content h3 {
             <p>전체 기사 중 비율</p>
           </div>
 
-          <div class="date">기준일 </div>
+          <div class="date">기준일</div>
         </section>
 
         <section class="top-grid">
@@ -1037,20 +1245,20 @@ body.light-mode .footer-modal-content h3 {
             <div class="sentiment-labels">
               <div>
                 <span class="tag positive-tag">긍정</span>
-                <strong>%</strong>
-                <button class="count-link" onclick="goArticleList('positive')">(건)</button>
+                <strong>0%</strong>
+                <button class="count-link" onclick="goArticleList('positive')">(0건)</button>
               </div>
 
               <div>
                 <span class="tag neutral-tag">중립</span>
-                <strong>%</strong>
-                <button class="count-link" onclick="goArticleList('neutral')">(건)</button>
+                <strong>0%</strong>
+                <button class="count-link" onclick="goArticleList('neutral')">(0건)</button>
               </div>
 
               <div>
                 <span class="tag negative-tag">부정</span>
-                <strong>%</strong>
-                <button class="count-link" onclick="goArticleList('negative')">(건)</button>
+                <strong>0%</strong>
+                <button class="count-link" onclick="goArticleList('negative')">(0건)</button>
               </div>
             </div>
           </div>
@@ -1058,63 +1266,12 @@ body.light-mode .footer-modal-content h3 {
 
         <section class="panel keyword-panel">
           <h2>주요 키워드</h2>
-
-          <div class="keywords">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+          <div class="keywords"></div>
         </section>
 
         <section class="panel article-panel">
           <h2>관련 기사 TOP 5</h2>
-
-          <div class="article_list">
-            <div class="article-row">
-              <div class="press-logo blue"></div>
-              <div class="press"></div>
-              <div class="article-title"></div>
-              <span class="article-tag positive-tag"></span>
-              <div class="article-date"></div>
-            </div>
-
-            <div class="article-row">
-              <div class="press-logo sky"></div>
-              <div class="press"></div>
-              <div class="article-title"></div>
-              <span class="article-tag neutral-tag"></span>
-              <div class="article-date"></div>
-            </div>
-
-            <div class="article-row">
-              <div class="press-logo white"></div>
-              <div class="press"></div>
-              <div class="article-title"></div>
-              <span class="article-tag positive-tag"></span>
-              <div class="article-date"></div>
-            </div>
-
-            <div class="article-row">
-              <div class="press-logo red"></div>
-              <div class="press"></div>
-              <div class="article-title"></div>
-              <span class="article-tag negative-tag"></span>
-              <div class="article-date"></div>
-            </div>
-
-            <div class="article-row">
-              <div class="press-logo green"></div>
-              <div class="press"></div>
-              <div class="article-title"></div>
-              <span class="article-tag neutral-tag"></span>
-              <div class="article-date"></div>
-            </div>
-          </div>
+          <div class="article_list"></div>
         </section>
 
         <section class="panel compare-panel">
@@ -1465,13 +1622,6 @@ function moveSearch(keyword) {
   location.href = `/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`;
 }
 
-function goArticleList(sentiment) {
-  localStorage.setItem("article_list_sentiment", sentiment);
-  localStorage.setItem("article_list_viewpoint", viewTitle);
-
-  location.href = "/view/article_list.html";
-}
-
 document.addEventListener("click", function (e) {
   const loginBtn = e.target.closest("#loginBtn");
   const joinBtn = e.target.closest("#joinBtn");
@@ -1530,6 +1680,8 @@ document.addEventListener("click", function (e) {
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("userName");
 
+    axios.post("/logout");
+
     location.href = "/view/main.html";
     return;
   }
@@ -1569,7 +1721,7 @@ function getSentimentText(sentiment) {
   if (sentiment === "positive") return "긍정";
   if (sentiment === "neutral") return "중립";
   if (sentiment === "negative") return "부정";
-  return sentiment;
+  return sentiment || "중립";
 }
 
 function getSentimentTagClass(sentiment) {
@@ -1582,12 +1734,27 @@ function getSentimentTagClass(sentiment) {
 function formatDate(dateText) {
   if (!dateText) return "";
 
-  // 2026-05-08 형태면 05.08로 표시
   if (dateText.length >= 10) {
     return dateText.slice(5, 10).replace("-", ".");
   }
 
   return dateText;
+}
+
+function getCleanPercent(value) {
+  const numberValue = Number(value);
+
+  if (Number.isNaN(numberValue)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(100, numberValue));
+}
+
+function getCompareGridClass(count) {
+  if (count === 2) return "compare-count-2";
+  if (count === 3) return "compare-count-3";
+  return "compare-count-4plus";
 }
 
 async function loadViewpointDetail(selectedTitle) {
@@ -1631,11 +1798,24 @@ function renderViewpointDetail(data) {
   const viewPercentEl = document.getElementById("viewPercent");
   const dateEl = document.querySelector(".date");
 
+  const analysisBox = document.querySelector(".analysis-box");
   const analysisTitleEl = document.querySelector(".analysis-box h3");
   const analysisDescEl = document.querySelector(".analysis-box p");
 
+  const colorKey = data.color_key || "teal";
+
   if (mainIcon) {
     mainIcon.innerText = data.icon || "📌";
+
+    mainIcon.classList.remove(
+      "theme-teal",
+      "theme-purple",
+      "theme-blue",
+      "theme-orange",
+      "theme-yellow"
+    );
+
+    mainIcon.classList.add(`theme-${colorKey}`);
   }
 
   if (viewTitleEl) {
@@ -1644,6 +1824,16 @@ function renderViewpointDetail(data) {
 
   if (viewPercentEl) {
     viewPercentEl.innerText = `${data.percent || 0}%`;
+
+    viewPercentEl.classList.remove(
+      "theme-teal",
+      "theme-purple",
+      "theme-blue",
+      "theme-orange",
+      "theme-yellow"
+    );
+
+    viewPercentEl.classList.add(`theme-${colorKey}`);
   }
 
   if (dateEl) {
@@ -1658,10 +1848,22 @@ function renderViewpointDetail(data) {
     analysisDescEl.innerText = data.analysis_desc || "";
   }
 
+  if (analysisBox) {
+    analysisBox.classList.remove(
+      "theme-teal",
+      "theme-purple",
+      "theme-blue",
+      "theme-orange",
+      "theme-yellow"
+    );
+
+    analysisBox.classList.add(`theme-${colorKey}`);
+  }
+
   renderSentiment(data.sentiment);
   renderKeywords(data.keywords);
   renderArticles(data.articles);
-  renderCompareCards(data.compare_groups);
+  renderCompareCards(data.compare_groups || data.compare);
 }
 
 function renderSentiment(sentiment) {
@@ -1675,9 +1877,9 @@ function renderSentiment(sentiment) {
   const neutralBar = document.querySelector(".sentiment-bar .neutral");
   const negativeBar = document.querySelector(".sentiment-bar .negative");
 
-  if (positiveBar) positiveBar.style.width = `${positive.percent}%`;
-  if (neutralBar) neutralBar.style.width = `${neutral.percent}%`;
-  if (negativeBar) negativeBar.style.width = `${negative.percent}%`;
+  if (positiveBar) positiveBar.style.width = `${getCleanPercent(positive.percent)}%`;
+  if (neutralBar) neutralBar.style.width = `${getCleanPercent(neutral.percent)}%`;
+  if (negativeBar) negativeBar.style.width = `${getCleanPercent(negative.percent)}%`;
 
   const sentimentItems = document.querySelectorAll(".sentiment-labels > div");
 
@@ -1696,11 +1898,11 @@ function renderSentiment(sentiment) {
     const button = item.querySelector(".count-link");
 
     if (strong) {
-      strong.innerText = `${current.data.percent}%`;
+      strong.innerText = `${current.data.percent || 0}%`;
     }
 
     if (button) {
-      button.innerText = `(${current.data.count}건)`;
+      button.innerText = `(${current.data.count || 0}건)`;
       button.onclick = function () {
         goArticleList(current.key);
       };
@@ -1780,22 +1982,55 @@ function renderCompareCards(compareGroups) {
     return;
   }
 
+  if (!compareGroups[0].items) {
+    compareGroups = [
+      {
+        group: "관점 비교",
+        items: compareGroups
+      }
+    ];
+  }
+
   compareGrid.innerHTML = compareGroups.map(function (group) {
-    const itemsHtml = group.items.map(function (item) {
+    const items = group.items || [];
+    const gridClass = getCompareGridClass(items.length);
+
+    const itemsHtml = items.map(function (item) {
       const isActive = item.title === viewTitle;
+      const positive = item.sentiment?.positive?.percent || item.positive || 0;
+      const neutral = item.sentiment?.neutral?.percent || item.neutral || 0;
+      const negative = item.sentiment?.negative?.percent || item.negative || 0;
 
       return `
         <button
-          class="compare-card ${isActive ? "active" : ""}"
+          class="compare-card theme-${item.color_key || "teal"} ${isActive ? "active" : ""}"
           type="button"
           data-title="${item.title}"
         >
           <div class="compare-title">${item.title}</div>
 
-          <div class="compare-percent">${item.percent}%</div>
+          <div class="compare-percent">${item.percent || 0}%</div>
+
+          <div class="compare-core">
+            ${item.core || item.analysis_title || item.analysis_desc || "해당 관점의 기사 흐름을 확인합니다."}
+          </div>
 
           <div class="compare-bar">
-            <div class="compare-fill" style="width:${Math.min(item.percent * 3, 100)}%"></div>
+            <div class="compare-fill" style="width:${getCleanPercent(item.percent || 0)}%"></div>
+          </div>
+
+          <div class="compare-mini-sentiment">
+            <div class="compare-mini-bar">
+              <div class="compare-mini-positive" style="width:${getCleanPercent(positive)}%"></div>
+              <div class="compare-mini-neutral" style="width:${getCleanPercent(neutral)}%"></div>
+              <div class="compare-mini-negative" style="width:${getCleanPercent(negative)}%"></div>
+            </div>
+
+            <div class="compare-mini-labels">
+              <span>긍 ${positive}%</span>
+              <span>중 ${neutral}%</span>
+              <span>부 ${negative}%</span>
+            </div>
           </div>
         </button>
       `;
@@ -1803,8 +2038,8 @@ function renderCompareCards(compareGroups) {
 
     return `
       <div class="compare-group">
-        <div class="compare-group-title">${group.group}</div>
-        <div class="compare-grid">
+        <div class="compare-group-title">${group.group || "관점 비교"}</div>
+        <div class="compare-grid ${gridClass}">
           ${itemsHtml}
         </div>
       </div>
@@ -1829,11 +2064,18 @@ function renderCompareCards(compareGroups) {
   });
 }
 
+function goArticleList(sentiment) {
+  localStorage.setItem("article_list_sentiment", sentiment);
+  localStorage.setItem("article_list_viewpoint", viewTitle);
+
+  location.href = "/view/article_list.html";
+}
+
 function goArticleDetail(articleId) {
   if (!articleId) return;
 
   localStorage.setItem("selected_article_id", articleId);
-  location.href = "/view/article_detail.html";
+  location.href = `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
 }
 
 loadViewpointDetail(viewTitle);
