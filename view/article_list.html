@@ -994,15 +994,8 @@ async function fetchArticles() {
 
     const urlParams = new URLSearchParams(location.search);
 
-    const sentiment =
-      urlParams.get("sentiment") ||
-      localStorage.getItem("article_list_sentiment") ||
-      "";
-
-    const viewpoint =
-      urlParams.get("viewpoint") ||
-      localStorage.getItem("article_list_viewpoint") ||
-      "";
+    const sentiment = urlParams.get("sentiment") || "";
+    const viewpoint = urlParams.get("viewpoint") || "";
 
     const res = await axios.get("/api/articles", {
       params: {
