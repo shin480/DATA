@@ -102,7 +102,7 @@ body {
 .nav a {
   text-decoration: none;
   color: inherit;
-  transition: color 0.2s;
+  transition: color 0.18s;
 }
 
 .nav a:hover {
@@ -618,12 +618,13 @@ body {
   padding: 16px;
   margin-bottom: 12px;
   cursor: pointer;
-  transition: .2s;
+  transition: 0.18s;
   position: relative;
   overflow: hidden;
 
-  display: block;
-  min-height: auto;
+  height: 195px;
+  display: flex;
+  flex-direction: column;
 }
 
 .news-card:hover {
@@ -714,6 +715,8 @@ body {
   border-radius: 5px;
   padding: 5px 7px;
   font-size: 11px;
+  transition: all 0.18s ease;
+
 }
 
 .empty-state {
@@ -966,6 +969,7 @@ body.light-mode .meta-line,
 body.light-mode .viewpoint,
 body.light-mode .card-tag {
   color: #64748b;
+  transition: all 0.18s ease;
 }
 
 body.light-mode .stat-title {
@@ -1041,8 +1045,18 @@ body.light-mode .meta-info {
   }
 
   .news-columns {
-    grid-template-columns: 1fr;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+
+  align-items: stretch;
   }
+
+  .news-columns > div {
+  display: flex;
+  flex-direction: column;
+}
+
 }
 
 @media (max-width: 640px) {
@@ -1057,6 +1071,56 @@ body.light-mode .meta-info {
     padding: 0 18px;
   }
 }
+
+  .more-btn {
+  width: 100%;
+  height: 46px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+
+  border-radius: 16px;
+
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.more-btn:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+  .card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* 2줄 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* 2줄 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+  body.light-mode .more-btn {
+  background: #f7faf7;
+  border: 1px solid #d8e0d9;
+  color: #3f4c45;
+}
+
+body.light-mode .more-btn:hover {
+  background: #ebf8fb;
+  border-color: #00cfe8;
+  color: #00cfe8;
+}
+
 </style>
 </head>
 
@@ -1097,30 +1161,46 @@ body.light-mode .meta-info {
     </div>
 
     <section class="news-columns">
-      <div>
-        <div class="column-head positive">
-          <span><span class="dot positive-dot"></span>긍정</span>
-          <span id="positiveCount"></span>
-        </div>
-        <div id="positiveList"></div>
-      </div>
 
-      <div>
-        <div class="column-head neutral">
-          <span><span class="dot neutral-dot"></span>중립</span>
-          <span id="neutralCount"></span>
-        </div>
-        <div id="neutralList"></div>
-      </div>
+  <div>
+    <div class="column-head positive">
+      <span><span class="dot positive-dot"></span>긍정</span>
+      <span id="positiveCount"></span>
+    </div>
 
-      <div>
-        <div class="column-head negative">
-          <span><span class="dot negative-dot"></span>부정</span>
-          <span id="negativeCount"></span>
-        </div>
-        <div id="negativeList"></div>
-      </div>
-    </section>
+    <div id="positiveList"></div>
+
+    <!-- 추가 -->
+    <div id="positiveMoreWrap"></div>
+  </div>
+
+
+  <div>
+    <div class="column-head neutral">
+      <span><span class="dot neutral-dot"></span>중립</span>
+      <span id="neutralCount"></span>
+    </div>
+
+    <div id="neutralList"></div>
+
+    <!-- 추가 -->
+    <div id="neutralMoreWrap"></div>
+  </div>
+
+
+  <div>
+    <div class="column-head negative">
+      <span><span class="dot negative-dot"></span>부정</span>
+      <span id="negativeCount"></span>
+    </div>
+
+    <div id="negativeList"></div>
+
+    <!-- 추가 -->
+    <div id="negativeMoreWrap"></div>
+  </div>
+
+</section>
   </div>
 
   <div id="footer"></div>
@@ -1142,6 +1222,8 @@ document.addEventListener("DOMContentLoaded", function () {
   bindGlobalClickEvents();
 
   fetchScopeData();
+
+  window.addEventListener("scroll", handleColumnInfiniteScroll);
 });
 
 function applyThemeMode() {
@@ -1604,6 +1686,25 @@ window.closeFooterModal = function () {
 ============================== */
 let scopeData = null;
 
+const ARTICLE_BATCH_SIZE = 5;
+
+const articleState = {
+  positive: {
+    visible: 5,
+    infiniteEnabled: false
+  },
+
+  neutral: {
+    visible: 5,
+    infiniteEnabled: false
+  },
+
+  negative: {
+    visible: 5,
+    infiniteEnabled: false
+  }
+};
+
 async function fetchScopeData() {
   const params = new URLSearchParams(location.search);
   const scopeID = params.get("scopeID");
@@ -1722,27 +1823,48 @@ function loadArticleColumns() {
   document.getElementById("neutralCount").innerText = neutral.length + "건";
   document.getElementById("negativeCount").innerText = negative.length + "건";
 
-  renderArticleList("positiveList", positive, "positive");
-  renderArticleList("neutralList", neutral, "neutral");
-  renderArticleList("negativeList", negative, "negative");
+renderArticleList("positiveList", positive, "positive");
+renderArticleList("neutralList", neutral, "neutral");
+renderArticleList("negativeList", negative, "negative");
+
+renderMoreButton("positive", positive.length);
+renderMoreButton("neutral", neutral.length);
+renderMoreButton("negative", negative.length);
 }
 
 function renderArticleList(targetId, articles, sentiment) {
+
   const target = document.getElementById(targetId);
+
   target.innerHTML = "";
 
   if (articles.length === 0) {
+
     target.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon"></div>
-        <div class="empty-title">${sentimentNames[sentiment]} 기사가 없습니다</div>
-        <div>현재 분석 기준상 ${sentimentNames[sentiment]} 감성 기사가 없습니다</div>
+
+        <div class="empty-title">
+          ${sentimentNames[sentiment]} 기사가 없습니다
+        </div>
+
+        <div>
+          현재 분석 기준상
+          ${sentimentNames[sentiment]} 감성 기사가 없습니다
+        </div>
       </div>
     `;
+
     return;
   }
 
-  articles.forEach(function(article) {
+  const visibleArticles = articles.slice(
+    0,
+    articleState[sentiment].visible
+  );
+
+  visibleArticles.forEach(function(article) {
+
     const tags = (article.keywords || [])
       .map(function(tag) {
         return `<span class="card-tag">${tag}</span>`;
@@ -1760,18 +1882,117 @@ function renderArticleList(targetId, articles, sentiment) {
             <span class="dot ${article.sentiment}-dot"></span>
             ${article.press}
           </span>
+
           <span>${article.time}</span>
         </div>
 
-        <div class="card-title">${article.title}</div>
+        <div class="card-title">
+          ${article.title}
+        </div>
 
-        <div class="card-summary">${article.summary}</div>
+        <div class="card-summary">
+          ${article.summary}
+        </div>
 
         <div class="tag-list">
           ${tags}
         </div>
+
       </article>
     `;
+  });
+}
+
+
+/* =========================
+   더보기 버튼
+========================= */
+
+function renderMoreButton(sentiment, totalCount) {
+  const target = document.getElementById(`${sentiment}MoreWrap`);
+  if (!target) return;
+
+  const visible = articleState[sentiment].visible;
+
+  // 👉 핵심: "아직 더 보여줄 게 있을 때만 버튼"
+  if (totalCount <= visible) {
+    target.innerHTML = "";
+    return;
+  }
+
+  target.innerHTML = `
+    <button
+      class="more-btn"
+      type="button"
+      onclick="enableInfiniteScroll('${sentiment}')"
+    >
+      더보기
+    </button>
+  `;
+}
+
+
+/* =========================
+   인피니트 스크롤 시작
+========================= */
+
+function enableInfiniteScroll(sentiment) {
+
+  articleState[sentiment].infiniteEnabled = true;
+
+  const wrap =
+    document.getElementById(`${sentiment}MoreWrap`);
+
+  if (wrap) {
+    wrap.innerHTML = "";
+  }
+  loadMoreArticles(sentiment);
+}
+
+
+/* =========================
+   기사 추가 로딩
+========================= */
+
+function loadMoreArticles(sentiment) {
+
+  const state = articleState[sentiment];
+
+  if (!state.infiniteEnabled) return;
+
+  state.visible += ARTICLE_BATCH_SIZE;
+
+  loadArticleColumns();
+}
+
+
+  function handleColumnInfiniteScroll() {
+  const scrollBottom =
+    window.innerHeight + window.scrollY;
+
+  const documentHeight =
+    document.documentElement.offsetHeight;
+
+  if (scrollBottom < documentHeight - 200) {
+    return;
+  }
+
+  ["positive", "neutral", "negative"].forEach(function(sentiment) {
+
+    const state = articleState[sentiment];
+
+    if (!state.infiniteEnabled) return;
+
+    const total =
+      scopeData.articles.filter(function(article) {
+        return article.sentiment === sentiment;
+      }).length;
+
+    if (state.visible >= total) return;
+
+    state.visible += ARTICLE_BATCH_SIZE;
+
+    loadArticleColumns();
   });
 }
 </script>
