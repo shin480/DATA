@@ -459,10 +459,13 @@ def search_suggest(q: str):
 
 # 기사 목록
 @app.get("/api/articles")
-def get_article_list(size: int = 50):
+def get_article_list(page: int = 1, size: int = 50):
     es = get_es()
 
+    from_value = (page - 1) * size
+
     body = {
+        "from": from_value,
         "size": size,
         "query": {
             "match_all": {}
@@ -481,14 +484,18 @@ def get_article_list(size: int = 50):
         body=body
     )
 
+    hits = result["hits"]["hits"]
+    total = result["hits"]["total"]["value"]
+
     articles = []
 
-    for hit in result["hits"]["hits"]:
+    for hit in hits:
         source = hit["_source"]
 
         articles.append({
-            "article_id": source.get("article_id", ""),
+            "article_id": source.get("article_id") or hit["_id"],
             "source": source.get("press", "언론사 없음"),
+            "press": source.get("press", "언론사 없음"),
             "title": source.get("title", "제목 없음"),
             "summary": source.get("summary") or source.get("content", "")[:120],
             "published_at": source.get("published_at", ""),
@@ -496,8 +503,11 @@ def get_article_list(size: int = 50):
         })
 
     return {
-        "count": len(articles),
-        "articles": articles
+        "page": page,
+        "size": size,
+        "total": total,
+        "articles": articles,
+        "hasMore": from_value + len(articles) < total
     }
 
 # 좋아요/싫어요
