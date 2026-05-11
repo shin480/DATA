@@ -30,12 +30,17 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from collections import Counter
+from model.model_main import startup as pipeline_startup
 
 
 app = FastAPI()
 app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
 app.mount("/pipeline", pipeline_app)
+
+@app.on_event("startup")
+async def startup_event():
+    pipeline_startup()
 
 app.add_middleware(SessionMiddleware, secret_key="motmachugetjyo")
 
