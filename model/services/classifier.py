@@ -26,7 +26,7 @@ from model.services.scope_title import trigger_scope_title
 logger = logging.getLogger(__name__)
 
 SIMILARITY_THRESHOLD = 0.65
-BATCH_SIZE           = 1000
+BATCH_SIZE           = 10000
 SCOPE_ID_PREFIX_FMT  = "%Y%m%d"
 TFIDF_MAX_FEATURES   = 768
 

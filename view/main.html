@@ -1974,7 +1974,30 @@ async function loadTopKeyword() {
     }
 }
 
+async function loadHeroTop5Keywords() {
+    try {
+        const res = await axios.get("/api/main/top5-keywords");
 
+        const keywords = res.data.keywords || [];
+
+        const heroTags = document.querySelectorAll(".hero-tags .h-tag");
+
+        heroTags.forEach(function (tag, index) {
+            const keyword = keywords[index] || "";
+
+            if (keyword) {
+                tag.innerText = `#${keyword}`;
+                tag.classList.remove("hidden");
+            } else {
+                tag.innerText = "";
+                tag.classList.add("hidden");
+            }
+        });
+
+    } catch (err) {
+        console.error("메인 배너 Top5 키워드 로딩 실패:", err);
+    }
+}
 
 /*
    [확실] 기준 데이터 (마스터 템플릿)
@@ -2280,13 +2303,11 @@ function toggleView() {
 
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 먼저 '로딩 중' 상태의 화면을 한 번 그립니다.
     renderViewGrid(groups);
-    // 2. 그 다음 실제 데이터를 서버에서 가져옵니다.
     loadAnalysisData();
     loadTopKeyword();
+    loadHeroTop5Keywords();
     loadHotNews();
-
 });
 
     function updateGauge(selector, percent) {

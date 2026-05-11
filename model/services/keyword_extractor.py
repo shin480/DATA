@@ -23,7 +23,7 @@ from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE   = 1000
+BATCH_SIZE   = 10000
 MAX_KEYWORDS = 5
 TITLE_WEIGHT = 2.0
 MIN_WORD_LEN = 2

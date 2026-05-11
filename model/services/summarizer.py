@@ -27,7 +27,7 @@ from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE          = 1000
+BATCH_SIZE          = 10000
 TOP_N               = 3
 MIN_SENTENCES       = 2
 FALLBACK_LENGTH     = 70
