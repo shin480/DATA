@@ -6,6 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>DATA 다타 - AI 뉴스 인사이트</title>
     <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+    <link rel="preload" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2" as="font" type="font/woff2" crossorigin />
 <style>
 /* ===== common.css ===== */
 /* ==============================
@@ -269,7 +270,14 @@ body {
 /* ===== main.css ===== */
 /* [확실] 기본 스타일 */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sans-serif; }
+body {
+  background: #050816;
+  color: #e5e7eb;
+  font-family: 'Pretendard', Arial, sans-serif;
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
 .page {
   width: 1300px;
   min-height: 100vh;
@@ -451,15 +459,28 @@ body { background: #050816; color: #e5e7eb; font-family: 'Pretendard', Arial, sa
 .hero h1 span { color: #00E5FF; }
 .hero p { color: #94a3b8; font-size: 16px; margin-bottom: 32px; }
 .hero-tags { display: flex; gap: 12px; }
-.h-tag { padding: 8px 18px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 14px; text-decoration: none; }
+.h-tag { padding: 8px 18px;
+   cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+    border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 14px; text-decoration: none; }
+
+.h-tag:hover {
+  color: #00E5FF;
+  background: rgba(0, 229, 255, 0.14);
+  border-color: rgba(0, 229, 255, 0.2);
+}
 
 /* [확실] 감성 분석 & 지배적 여론 그리드 */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
 .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; position: relative; }
 .section-title-wrap span { color: #38bdf8; font-size: 13px; font-weight: 700; text-transform: uppercase; }
 .section-title-wrap h2 { margin-top: 10px; font-size: 32px; color: #fff; font-weight: 800; }
+.top-keyword-title { width: fit-content; cursor: pointer; transition: color 0.2s ease; }
+.top-keyword-title:hover { color: #00E5FF; }
 .section-desc { font-size: 14px; color: #64748b; margin-top: 8px; }
-
 .status-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; border-radius: 8px; background: rgba(244, 114, 114, 0.15); color: #f47272; font-size: 12px; font-weight: 700; }
 
 .gauge-container { display: flex; justify-content: space-between; margin: 40px 0; }
@@ -486,7 +507,8 @@ transition: background 1s ease; }
 .keyword-box { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 24px; margin-top: 20px; }
 .keyword-box-title { font-size: 13px; color: #64748b; margin-bottom: 16px; }
 .chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
-.chip { padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 13px; }
+.chip { padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 13px; cursor: pointer; transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
+.chip:hover { color: #00E5FF; background: rgba(0, 229, 255, 0.14); }
 
 .opinion-card { background: rgba(255,255,255,0.03); border-radius: 24px; padding: 32px; margin-top: 25px; position: relative; min-height: 280px; }
 .quote-icon { font-size: 32px; color: #38bdf8; margin-bottom: 20px; opacity: 0.5; }
@@ -526,8 +548,35 @@ transition: background 1s ease; }
 .view-bar-fill { height: 100%; border-radius: 999px; transition: width 1s ease; }
 .reason-label { font-size: 11px; color: #38bdf8; font-weight: 700; margin-bottom: 8px; }
 .view-reason { color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
-.detail-btn { width: fit-content; padding: 0 12px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; font-size: 12px; cursor: pointer; }
+.detail-btn { width: fit-content;
+ padding: 0 12px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; font-size: 12px; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease; }
+ .detail-btn,
+.action-btn,
+.news-footer-btn,
+.toggle-btn,
+.nav-btn {
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;}
+.nav-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
+
+.detail-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
 .toggle-btn { width: 100%; height: 52px; margin-top: 28px; border-radius: 14px; border: 1px solid #1e293b; background: #111827; color: #38bdf8; font-weight: 600; font-size: 15px; cursor: pointer; }
+
+.toggle-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
 
 /* 지금 뜨는 뉴스 */
 .news-section { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-top: 40px; }
@@ -558,6 +607,12 @@ transition: background 1s ease; }
 .react-item.down { color: #ef4444; }
 
 .news-footer-btn { width: 100%; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #94a3b8; font-size: 13px; cursor: pointer; text-align: left; padding-left: 16px; }
+
+.news-footer-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
 
 /* 컬러 유틸리티 */
 .c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
@@ -767,6 +822,28 @@ body.light-mode .view-reason {
    태그 / 칩
 ============================== */
 
+
+body.light-mode .o-tag {
+  background: rgba(0, 207, 232, 0.08);
+  color: #00bcd4;
+}
+
+body.light-mode .nav-btn {
+  background: #f8fbf8;
+  border: 1px solid #d6ded7;
+  color: #607066;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+body.light-mode .nav-btn:hover {
+  border-color: #00cfe8;
+  color: #00cfe8;
+  background: #ffffff;
+}
+
 body.light-mode .h-tag {
   background: #edf3ee;
   border: 1px solid #d8e0d9;
@@ -782,6 +859,11 @@ body.light-mode .h-tag:hover {
 body.light-mode .chip {
   background: rgba(0, 207, 232, 0.08);
   color: #00bcd4;
+}
+
+body.light-mode .chip:hover {
+  color: #00cfe8;
+  background: rgba(0, 207, 232, 0.14);
 }
 
 /* ==============================
@@ -960,10 +1042,25 @@ body.light-mode .news-header h2 {
   color: #1e293b !important;
 }
 
+    body.light-mode .top-keyword-title:hover {
+  color: #00cfe8 !important;
+}
+
 
 
 </style>
 </head>
+
+.header,
+.card,
+.news-card,
+.view-card,
+.news-item-card,
+.hero {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 <body>
 <div class="page">
 <div id="header"></div>
@@ -988,7 +1085,7 @@ body.light-mode .news-header h2 {
 <div class="card">
 <div class="section-title-wrap">
 <span>1위 키워드</span>
-<h2></h2>
+<h2 class="top-keyword-title"></h2>
 </div>
 <div class="status-badge"></div>
 <div class="gauge-container">
@@ -1336,6 +1433,7 @@ function bindGlobalClickEvents() {
 
     const heroTag = e.target.closest(".h-tag");
     const chip = e.target.closest(".chip");
+    const topKeywordTitle = e.target.closest(".top-keyword-title");
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
@@ -1410,6 +1508,21 @@ function bindGlobalClickEvents() {
       goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
       return;
     }
+
+    if (topKeywordTitle) {
+  e.preventDefault();
+
+  const keyword = topKeywordTitle.innerText.trim();
+
+  if (!keyword) return;
+
+  goLoginRequiredPage(
+    `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+  );
+
+  return;
+}
+
 
     if (actionBtn) {
       e.preventDefault();
@@ -1821,6 +1934,8 @@ async function loadTopKeyword() {
 
     }
 }
+
+
 
 /*
    [확실] 기준 데이터 (마스터 템플릿)

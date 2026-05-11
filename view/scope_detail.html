@@ -1141,10 +1141,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loadFooter();
   bindGlobalClickEvents();
 
-  loadScopeInfo();
-  loadSentimentDist();
-  loadViewpoints();
-  loadArticleColumns();
+  fetchScopeData();
 });
 
 function applyThemeMode() {
@@ -1605,77 +1602,31 @@ window.closeFooterModal = function () {
 /* ==============================
    scope_detail.js
 ============================== */
+let scopeData = null;
 
-const scopeData = {
-  title: "삼성전자 반도체 수출 목표 상향 조정",
-  summary:
-    "삼성전자가 2분기 반도체 수출 목표를 기존 대비 15% 상향 조정했다고 밝혔다. 글로벌 AI 수요 확대에 따른 HBM 공급 증가가 주요 원인으로 분석된다.",
-  keywords: ["삼성전자", "반도체", "HBM", "수출", "AI 수요"],
+async function fetchScopeData() {
+  const params = new URLSearchParams(location.search);
+  const scopeID = params.get("scopeID");
 
-  sentimentDist: {
-    positive: 55,
-    neutral: 30,
-    negative: 15
-  },
+  const apiUrl = scopeID
+    ? `/api/scopes/${encodeURIComponent(scopeID)}`
+    : "/api/scopes/random";
 
-  viewpoints: [
-    { name: "정책 요인", percent: 20 },
-    { name: "결과 분석", percent: 40 },
-    { name: "대응 분석", percent: 25 },
-    { name: "시장 동향", percent: 15 }
-  ],
+  try {
+    const res = await axios.get(apiUrl);
 
-  articleCount: 14,
-  lastUpdated: "12:47",
+    scopeData = res.data;
 
-  articles: [
-    {
-      sentiment: "positive",
-      press: "한국경제",
-      time: "09:30",
-      title: "삼성전자, 2분기 반도체 수출 목표 15% 상향... HBM 호조 효과",
-      summary: "AI 수요 확대로 HBM 물량이 급증하며 수출 목표 상향 조정에 나섰다.",
-      keywords: ["삼성전자", "HBM", "수출"],
-      url: "/view/article_detail.html"
-    },
-    {
-      sentiment: "positive",
-      press: "한국경제",
-      time: "09:32",
-      title: "삼성전자, 2분기 반도체 수출 목표 15% 상향... HBM 호조",
-      summary: "AI 서버와 데이터센터 수요가 반도체 실적 개선 기대를 키우고 있다.",
-      keywords: ["반도체", "HBM", "수출"],
-      url: "/view/article_detail.html"
-    },
-    {
-      sentiment: "neutral",
-      press: "이데일리",
-      time: "09:55",
-      title: "삼성전자 수출 목표 상향, 배경과 시장 반응 점검",
-      summary: "이번 상향 조정의 구체적 수치와 업계 반응을 중립적으로 정리했다.",
-      keywords: ["수출전망", "반도체"],
-      url: "/view/article_detail.html"
-    },
-    {
-      sentiment: "neutral",
-      press: "이데일리",
-      time: "09:56",
-      title: "삼성전자 수출 목표 상향, 글로벌 시장 반응 엇갈림",
-      summary: "주요 증권가에서는 긍정적 전망과 신중론이 함께 나오고 있다.",
-      keywords: ["시장반응", "전망"],
-      url: "/view/article_detail.html"
-    },
-    {
-      sentiment: "negative",
-      press: "뉴스1",
-      time: "12:01",
-      title: "반도체 업황 점검... HBM 중심 실적 개선 여부는",
-      summary: "수출 목표 달성 가능성을 두고 공급망과 가격 변동성 우려가 제기된다.",
-      keywords: ["업황", "실적전망"],
-      url: "/view/article_detail.html"
-    }
-  ]
-};
+    loadScopeInfo();
+    loadSentimentDist();
+    loadViewpoints();
+    loadArticleColumns();
+
+  } catch (error) {
+    console.error("AI 뉴스 분석 데이터 불러오기 실패:", error);
+    alert("AI 뉴스 분석 데이터를 불러오지 못했습니다.");
+  }
+}
 
 const sentimentNames = {
   positive: "긍정",
@@ -1792,7 +1743,7 @@ function renderArticleList(targetId, articles, sentiment) {
   }
 
   articles.forEach(function(article) {
-    const tags = article.keywords
+    const tags = (article.keywords || [])
       .map(function(tag) {
         return `<span class="card-tag">${tag}</span>`;
       })
