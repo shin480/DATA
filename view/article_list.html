@@ -89,8 +89,23 @@
     .nav a {
       text-decoration: none;
       color: inherit;
-      transition: color 0.2s;
+      text-decoration: none;
+      color: inherit;
     }
+
+    .article-card,
+.origin-btn,
+.theme-btn,
+.header-btn,
+.footer-link,
+.search-suggest-item {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
 
     .nav a:hover {
       color: #00e5ff;
@@ -748,6 +763,32 @@ body.light-mode .origin-btn:hover {
   background: #f0fdff;
 }
 
+/* ==============================
+   전체 전환 효과
+============================== */
+
+body,
+.page,
+.article-page,
+.header,
+.footer,
+.footer-modal-box,
+.article-card,
+.main-search-wrap,
+.search-suggest-box,
+.theme-btn,
+.header-btn,
+.origin-btn,
+.footer-link,
+.search-icon-btn,
+.nav a,
+.back-link {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
 
   </style>
 
@@ -980,7 +1021,7 @@ function goLoginRequiredPage(targetUrl) {
 
 let articles = [];
 let currentPage = 1;
-const pageSize = 50;
+const pageSize = 15;
 let hasMoreArticles = true;
 let isAutoLoading = false;
 let totalArticleCount = 0;
@@ -1014,7 +1055,7 @@ async function fetchArticles() {
     hasMoreArticles = res.data.hasMore === true;
     currentPage += 1;
 
-    renderArticles();
+    appendArticles(newArticles);
 
     setTimeout(function () {
       isAutoLoading = false;
@@ -1028,7 +1069,7 @@ async function fetchArticles() {
   }
 }
 
-function renderArticles() {
+function appendArticles(newArticles) {
   const articleList = document.getElementById("articleList");
   const articleCount = document.getElementById("articleCount");
 
@@ -1036,13 +1077,21 @@ function renderArticles() {
 
   articleCount.innerText = `(${totalArticleCount}건)`;
 
-  articleList.innerHTML = articles.map(function (item) {
+  const html = newArticles.map(function (item) {
     return `
       <article class="article-card">
         <div>
-          <div class="article-source">${item.source || item.press || ""}</div>
-          <h2 class="article-title">${item.title || ""}</h2>
-          <p class="article-summary">${item.summary || ""}</p>
+          <div class="article-source">
+            ${item.source || item.press || ""}
+          </div>
+
+          <h2 class="article-title">
+            ${item.title || ""}
+          </h2>
+
+          <p class="article-summary">
+            ${item.summary || ""}
+          </p>
         </div>
 
         <button
@@ -1055,6 +1104,8 @@ function renderArticles() {
       </article>
     `;
   }).join("");
+
+  articleList.insertAdjacentHTML("beforeend", html);
 }
 
 function checkAutoLoad() {
