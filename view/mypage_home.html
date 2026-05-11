@@ -332,6 +332,7 @@
       padding: 16px;
       text-align: center;
       overflow: hidden;
+      position: relative;
     }
 
     .ad-box.active {
@@ -363,6 +364,41 @@
 
     .notice-arrow {
       font-size: 20px;
+    }
+
+    .notice-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .notice-page {
+      font-size: 12px;
+      opacity: 0.82;
+    }
+
+    .notice-title {
+      display: inline-block;
+      max-width: 680px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .notice-slide {
+      animation: noticeSlideIn 0.45s ease;
+    }
+
+    @keyframes noticeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(34px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     /* ===== HEADER ===== */
@@ -1555,26 +1591,89 @@ function renderViewedPagination(totalCount, currentPage) {
   dots.innerHTML = html;
 }
 
-  function loadNotice() {
+let noticeBanners = [];
+let currentNoticeIndex = 0;
+let noticeTimer = null;
+
+async function loadNotice() {
+  const box = document.getElementById("noticeBox");
+
+  if (!box) return;
+
+  try {
+    const { data } = await axios.get("/api/banner/active-list");
+
+    noticeBanners = data.banners || [];
+    currentNoticeIndex = 0;
+
+    if (noticeTimer) {
+      clearInterval(noticeTimer);
+      noticeTimer = null;
+    }
+
+    if (noticeBanners.length === 0) {
+      box.classList.remove("active");
+      box.innerHTML = "현재 등록된 배너가 없습니다.";
+      box.onclick = null;
+      return;
+    }
+
+    renderNoticeBanner();
+
+    if (noticeBanners.length > 1) {
+      noticeTimer = setInterval(function () {
+        currentNoticeIndex++;
+
+        if (currentNoticeIndex >= noticeBanners.length) {
+          currentNoticeIndex = 0;
+        }
+
+        renderNoticeBanner();
+      }, 4000);
+    }
+
+  } catch (err) {
+    console.error("배너 로드 실패:", err);
+
+    box.classList.remove("active");
+    box.innerHTML = "배너를 불러오지 못했습니다.";
+    box.onclick = null;
+  }
+}
+
+  function renderNoticeBanner() {
     const box = document.getElementById("noticeBox");
 
-    const notice = {
-      title: "신규 기능 업데이트 및 서버 점검 안내",
-      link: "#"
-    };
+    if (!box) return;
+
+    const banner = noticeBanners[currentNoticeIndex];
+
+    if (!banner) return;
 
     box.classList.add("active");
+    box.classList.remove("notice-slide");
 
     box.innerHTML = `
       <div class="notice-left">
         <span class="notice-badge">공지사항</span>
-        <span class="notice-title">${notice.title}</span>
+        <span class="notice-title">${banner.title || "공지사항"}</span>
       </div>
-      <span class="notice-arrow">→</span>
+
+      <div class="notice-right">
+        <span class="notice-page">
+          ${currentNoticeIndex + 1} / ${noticeBanners.length}
+        </span>
+        <span class="notice-arrow">→</span>
+      </div>
     `;
 
-    box.onclick = () => {
-      window.location.href = notice.link;
+    void box.offsetWidth;
+    box.classList.add("notice-slide");
+
+    box.onclick = function () {
+      if (banner.landing_url) {
+        window.location.href = banner.landing_url;
+      }
     };
   }
 
@@ -1587,7 +1686,6 @@ function renderViewedPagination(totalCount, currentPage) {
         user_id: user_id,
         password: password
       });
-
       if (data.success) {
         alert("본인 인증에 성공하였습니다.");
         location.href = "/view/mypage_account.html";

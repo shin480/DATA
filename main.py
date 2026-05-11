@@ -1,6 +1,8 @@
 from typing import Dict, List, Any
+import os
+import uuid
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, UploadFile, File
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -1261,6 +1263,38 @@ def create_admin_banner(info: Dict[str, Any]):
     finally:
         db.close()
 
+
+# =========================================
+# 배너 이미지 업로드 API
+# =========================================
+
+@app.post("/api/admin/banners/upload-image")
+async def upload_banner_image(file: UploadFile = File(...)):
+    upload_dir = "view/img/banners"
+
+    os.makedirs(upload_dir, exist_ok=True)
+
+    original_name = file.filename
+    ext = os.path.splitext(original_name)[1].lower()
+
+    if ext not in [".png", ".jpg", ".jpeg", ".webp"]:
+        return {
+            "success": False,
+            "message": "PNG, JPG, JPEG, WEBP 이미지만 업로드할 수 있습니다."
+        }
+
+    saved_name = f"{uuid.uuid4().hex}{ext}"
+    saved_path = os.path.join(upload_dir, saved_name)
+
+    content = await file.read()
+
+    with open(saved_path, "wb") as f:
+        f.write(content)
+
+    return {
+        "success": True,
+        "image_url": f"/view/img/banners/{saved_name}"
+    }
 
 @app.put("/api/admin/banners/{banner_id}")
 def update_admin_banner(banner_id: int, info: Dict[str, Any]):
