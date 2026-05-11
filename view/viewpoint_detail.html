@@ -1725,6 +1725,7 @@ let viewTitle =
   viewpointParams.get("viewpoint") ||
   localStorage.getItem("viewpoint_title") ||
   "";
+  let viewEsCategory = "";
 
 function getSentimentText(sentiment) {
   if (sentiment === "positive") return "긍정";
@@ -1835,6 +1836,7 @@ async function loadViewpointDetail(selectedTitle) {
 
 function renderViewpointDetail(data) {
   const mainIcon = document.querySelector(".main-icon");
+  viewEsCategory = data.es_category || "";
   const viewTitleEl = document.getElementById("viewTitle");
   const viewPercentEl = document.getElementById("viewPercent");
   const dateEl = document.querySelector(".date");
@@ -2111,11 +2113,10 @@ function renderCompareCards(compareGroups) {
 }
 
 function goArticleList(sentiment) {
-  localStorage.setItem("article_list_sentiment", sentiment);
-  localStorage.setItem("article_list_viewpoint", viewTitle);
+  const targetViewpoint = viewEsCategory || viewTitle;
 
   location.href =
-    `/view/article_list.html?viewpoint=${encodeURIComponent(viewTitle)}&sentiment=${encodeURIComponent(sentiment)}`;
+    `/view/article_list.html?viewpoint=${encodeURIComponent(targetViewpoint)}&sentiment=${encodeURIComponent(sentiment)}`;
 }
 
 function goArticleDetail(articleId) {

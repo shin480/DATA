@@ -562,6 +562,7 @@
     <button class="tab"        data-tab="evaluate">정답 레이블 평가</button>
     <button class="tab"        data-tab="correction">감성 정정</button>
     <button class="tab"        data-tab="finetune">Fine-tuning</button>
+    <button class="tab"        data-tab="stopwords">불용어 관리</button>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
@@ -777,6 +778,49 @@
 </div><!-- /page -->
   </main>
 </div>
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- 패널 6: 불용어 관리                              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="panel-stopwords" class="panel">
+    <div class="card" style="margin-bottom:1.2rem;">
+      <div class="section-title" style="margin-bottom:10px;">불용어 등록</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <div class="modal-label">단어</div>
+          <input type="text" id="sw-word-input" placeholder="예) 습니다" style="width:180px;">
+        </div>
+        <div>
+          <div class="modal-label">등록 사유 (선택)</div>
+          <input type="text" id="sw-reason-input" placeholder="예) 형태소 분석 오류" style="width:260px;">
+        </div>
+        <button class="btn btn-primary" onclick="addStopword()" style="margin-bottom:1px;">등록</button>
+      </div>
+      <div id="sw-add-msg" style="font-size:12px;color:var(--green);margin-top:8px;min-height:18px;"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div class="section-title" style="margin:0;">등록된 불용어</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="sw-search-input" placeholder="검색" style="width:140px;" oninput="filterStopwords()">
+        <button class="btn btn-sm" onclick="loadStopwords()">새로고침</button>
+      </div>
+    </div>
+    <div id="sw-loading" class="state-msg">불러오는 중...</div>
+    <div id="sw-error"   class="error-msg" style="display:none"></div>
+    <div id="sw-content" style="display:none">
+      <div class="count-label" id="sw-count"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>단어</th><th>등록 사유</th><th>등록일시</th>
+            <th style="width:60px;text-align:center;">삭제</th>
+          </tr>
+        </thead>
+        <tbody id="sw-tbody"></tbody>
+      </table>
+      <div id="sw-empty" class="empty-msg" style="display:none;text-align:center;">등록된 불용어가 없습니다.</div>
+    </div>
+  </div>
+
 <!-- 정정 모달 -->
 <div class="modal-overlay" id="corr-modal">
   <div class="modal">
@@ -1087,6 +1131,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (tab === 'samples'    && !samplesLoaded)    loadSamples();
     if (tab === 'correction' && !correctionLoaded) loadCorrection(1);
     if (tab === 'finetune'   && !finetuneLoaded)   loadFinetune();
+    if (tab === 'stopwords') loadStopwords();
   });
 });
 
@@ -1478,6 +1523,79 @@ async function submitCorrection() {
 document.getElementById('corr-modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
+
+// ══════════════════════════════════════════════════════
+// 패널 6: 불용어 관리
+// ══════════════════════════════════════════════════════
+let swAllData = [];
+
+async function loadStopwords() {
+  show('sw-loading'); hide('sw-error'); hide('sw-content');
+  try {
+    const d = await apiFetch('/admin/stopwords');
+    swAllData = d.stopwords || [];
+    renderStopwords(swAllData);
+    show('sw-content');
+  } catch(e) {
+    html('sw-error', '오류: ' + e.message); show('sw-error');
+  } finally { hide('sw-loading'); }
+}
+
+function renderStopwords(data) {
+  text('sw-count', '총 ' + data.length + '개');
+  if (!data.length) { html('sw-tbody', ''); show('sw-empty'); return; }
+  hide('sw-empty');
+  html('sw-tbody', data.map(function(item) {
+    return '<tr>' +
+      '<td style="font-weight:500;color:var(--text)">'  + escHtml(item.word)           + '</td>' +
+      '<td style="color:var(--text2)">'                 + escHtml(item.reason || '-')  + '</td>' +
+      '<td style="color:var(--text3)">'                 + (item.added_at ? item.added_at.slice(0,19).replace('T',' ') : '-') + '</td>' +
+      '<td style="text-align:center;">' +
+        '<button class="btn btn-sm btn-danger" onclick="deleteStopword(\'' + escHtml(item.word) + '\')">삭제</button>' +
+      '</td></tr>';
+  }).join(''));
+}
+
+function filterStopwords() {
+  const q = document.getElementById('sw-search-input').value.trim().toLowerCase();
+  if (!q) { renderStopwords(swAllData); return; }
+  renderStopwords(swAllData.filter(function(item) {
+    return item.word.toLowerCase().includes(q) || (item.reason||'').toLowerCase().includes(q);
+  }));
+}
+
+async function addStopword() {
+  const word   = document.getElementById('sw-word-input').value.trim();
+  const reason = document.getElementById('sw-reason-input').value.trim();
+  if (!word) { toast('단어를 입력해주세요.'); return; }
+  try {
+    await apiFetch('/admin/stopwords', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ word: word, reason: reason || null }),
+    });
+    document.getElementById('sw-word-input').value   = '';
+    document.getElementById('sw-reason-input').value = '';
+    html('sw-add-msg', '✓ "' + escHtml(word) + '" 등록 완료');
+    setTimeout(function() { html('sw-add-msg', ''); }, 3000);
+    loadStopwords();
+  } catch(e) { toast('오류: ' + e.message); }
+}
+
+async function deleteStopword(word) {
+  if (!confirm('"' + word + '" 을(를) 불용어에서 삭제할까요?')) return;
+  try {
+    await apiFetch('/admin/stopwords/' + encodeURIComponent(word), { method: 'DELETE' });
+    toast('"' + word + '" 삭제 완료');
+    loadStopwords();
+  } catch(e) { toast('오류: ' + e.message); }
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 // ══════════════════════════════════════════════════════
 // 패널 5: Fine-tuning

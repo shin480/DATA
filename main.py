@@ -1,6 +1,8 @@
 from typing import Dict, List, Any
+import os
+import uuid
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, UploadFile, File
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -535,6 +537,14 @@ def search_suggest(q: str):
 
     return suggestions[:6]
 
+def denormalize_sentiment_for_es(sentiment):
+    if sentiment == "positive":
+        return ["positive", "긍정"]
+    if sentiment == "neutral":
+        return ["neutral", "중립"]
+    if sentiment == "negative":
+        return ["negative", "부정"]
+    return [sentiment]
 # 기사 목록
 @app.get("/api/articles")
 def get_article_list(
@@ -551,8 +561,8 @@ def get_article_list(
 
     if sentiment:
         must_conditions.append({
-            "term": {
-                "sentiment": sentiment
+            "terms": {
+                "sentiment": denormalize_sentiment_for_es(sentiment)
             }
         })
 
@@ -561,8 +571,19 @@ def get_article_list(
             "nested": {
                 "path": "perspective",
                 "query": {
-                    "term": {
-                        "perspective.category": viewpoint
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "perspective.category": viewpoint
+                                }
+                            },
+                            {
+                                "term": {
+                                    "perspective.rank": 1
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -1162,6 +1183,220 @@ def get_hot_news():
         "articles": articles
     }
 
+# =========================================
+# 배너 관리 API
+# =========================================
+
+@app.get("/api/admin/banners")
+def get_admin_banners():
+    db = get_engine()
+
+    try:
+        rows = db.execute(text("""
+            SELECT
+                banner_id,
+                title,
+                landing_url,
+                image_url,
+                DATE_FORMAT(start_at, '%Y-%m-%d') AS start_at,
+                DATE_FORMAT(end_at, '%Y-%m-%d') AS end_at,
+                is_active
+            FROM banners
+            ORDER BY created_at DESC
+        """)).mappings().all()
+
+        return {
+            "banners": [dict(row) for row in rows]
+        }
+
+    finally:
+        db.close()
+
+
+@app.post("/api/admin/banners")
+def create_admin_banner(info: Dict[str, Any]):
+    db = get_engine()
+
+    try:
+        db.execute(text("""
+            INSERT INTO banners (
+                title,
+                landing_url,
+                image_url,
+                start_at,
+                end_at,
+                is_active
+            )
+            VALUES (
+                :title,
+                :landing_url,
+                :image_url,
+                :start_at,
+                :end_at,
+                :is_active
+            )
+        """), {
+            "title": info.get("title"),
+            "landing_url": info.get("landing_url"),
+            "image_url": info.get("image_url"),
+            "start_at": info.get("start_at"),
+            "end_at": info.get("end_at"),
+            "is_active": info.get("is_active", True)
+        })
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "배너가 등록되었습니다."
+        }
+
+    except Exception as e:
+        db.rollback()
+        print("배너 등록 실패:", e)
+
+        return {
+            "success": False,
+            "message": "배너 등록 중 오류가 발생했습니다."
+        }
+
+    finally:
+        db.close()
+
+
+# =========================================
+# 배너 이미지 업로드 API
+# =========================================
+
+@app.post("/api/admin/banners/upload-image")
+async def upload_banner_image(file: UploadFile = File(...)):
+    upload_dir = "view/img/banners"
+
+    os.makedirs(upload_dir, exist_ok=True)
+
+    original_name = file.filename
+    ext = os.path.splitext(original_name)[1].lower()
+
+    if ext not in [".png", ".jpg", ".jpeg", ".webp"]:
+        return {
+            "success": False,
+            "message": "PNG, JPG, JPEG, WEBP 이미지만 업로드할 수 있습니다."
+        }
+
+    saved_name = f"{uuid.uuid4().hex}{ext}"
+    saved_path = os.path.join(upload_dir, saved_name)
+
+    content = await file.read()
+
+    with open(saved_path, "wb") as f:
+        f.write(content)
+
+    return {
+        "success": True,
+        "image_url": f"/view/img/banners/{saved_name}"
+    }
+
+@app.put("/api/admin/banners/{banner_id}")
+def update_admin_banner(banner_id: int, info: Dict[str, Any]):
+    db = get_engine()
+
+    try:
+        db.execute(text("""
+            UPDATE banners
+            SET
+                title = :title,
+                landing_url = :landing_url,
+                image_url = :image_url,
+                start_at = :start_at,
+                end_at = :end_at,
+                is_active = :is_active
+            WHERE banner_id = :banner_id
+        """), {
+            "banner_id": banner_id,
+            "title": info.get("title"),
+            "landing_url": info.get("landing_url"),
+            "image_url": info.get("image_url"),
+            "start_at": info.get("start_at"),
+            "end_at": info.get("end_at"),
+            "is_active": info.get("is_active", True)
+        })
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "배너가 수정되었습니다."
+        }
+
+    except Exception as e:
+        db.rollback()
+        print("배너 수정 실패:", e)
+
+        return {
+            "success": False,
+            "message": "배너 수정 중 오류가 발생했습니다."
+        }
+
+    finally:
+        db.close()
+
+
+@app.delete("/api/admin/banners/{banner_id}")
+def delete_admin_banner(banner_id: int):
+    db = get_engine()
+
+    try:
+        db.execute(text("""
+            DELETE FROM banners
+            WHERE banner_id = :banner_id
+        """), {
+            "banner_id": banner_id
+        })
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "배너가 삭제되었습니다."
+        }
+
+    except Exception as e:
+        db.rollback()
+        print("배너 삭제 실패:", e)
+
+        return {
+            "success": False,
+            "message": "배너 삭제 중 오류가 발생했습니다."
+        }
+
+    finally:
+        db.close()
+
+
+@app.get("/api/banner/active-list")
+def get_active_banner_list():
+    db = get_engine()
+
+    try:
+        rows = db.execute(text("""
+            SELECT
+                banner_id,
+                title,
+                landing_url,
+                image_url
+            FROM banners
+            WHERE is_active = TRUE
+              AND start_at <= NOW()
+              AND end_at >= NOW()
+            ORDER BY updated_at DESC, created_at DESC
+        """)).mappings().all()
+
+        return {
+            "banners": [dict(row) for row in rows]
+        }
+
+    finally:
+        db.close()
 
 @app.get("/crawl")
 async def crawl():
@@ -1484,7 +1719,7 @@ def get_viewpoint_detail(viewpoint: str = ""):
     selected_articles_all = get_articles_by_perspective(
         es=es,
         es_category=selected_es_category,
-        size=500,
+        size=10000,
         recent_7days=False
     )
 
