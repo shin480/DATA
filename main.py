@@ -1181,6 +1181,188 @@ def get_hot_news():
         "articles": articles
     }
 
+# =========================================
+# 배너 관리 API
+# =========================================
+
+@app.get("/api/admin/banners")
+def get_admin_banners():
+    db = get_engine()
+
+    try:
+        rows = db.execute(text("""
+            SELECT
+                banner_id,
+                title,
+                landing_url,
+                image_url,
+                DATE_FORMAT(start_at, '%Y-%m-%d') AS start_at,
+                DATE_FORMAT(end_at, '%Y-%m-%d') AS end_at,
+                is_active
+            FROM banners
+            ORDER BY created_at DESC
+        """)).mappings().all()
+
+        return {
+            "banners": [dict(row) for row in rows]
+        }
+
+    finally:
+        db.close()
+
+
+@app.post("/api/admin/banners")
+def create_admin_banner(info: Dict[str, Any]):
+    db = get_engine()
+
+    try:
+        db.execute(text("""
+            INSERT INTO banners (
+                title,
+                landing_url,
+                image_url,
+                start_at,
+                end_at,
+                is_active
+            )
+            VALUES (
+                :title,
+                :landing_url,
+                :image_url,
+                :start_at,
+                :end_at,
+                :is_active
+            )
+        """), {
+            "title": info.get("title"),
+            "landing_url": info.get("landing_url"),
+            "image_url": info.get("image_url"),
+            "start_at": info.get("start_at"),
+            "end_at": info.get("end_at"),
+            "is_active": info.get("is_active", True)
+        })
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "배너가 등록되었습니다."
+        }
+
+    except Exception as e:
+        db.rollback()
+        print("배너 등록 실패:", e)
+
+        return {
+            "success": False,
+            "message": "배너 등록 중 오류가 발생했습니다."
+        }
+
+    finally:
+        db.close()
+
+
+@app.put("/api/admin/banners/{banner_id}")
+def update_admin_banner(banner_id: int, info: Dict[str, Any]):
+    db = get_engine()
+
+    try:
+        db.execute(text("""
+            UPDATE banners
+            SET
+                title = :title,
+                landing_url = :landing_url,
+                image_url = :image_url,
+                start_at = :start_at,
+                end_at = :end_at,
+                is_active = :is_active
+            WHERE banner_id = :banner_id
+        """), {
+            "banner_id": banner_id,
+            "title": info.get("title"),
+            "landing_url": info.get("landing_url"),
+            "image_url": info.get("image_url"),
+            "start_at": info.get("start_at"),
+            "end_at": info.get("end_at"),
+            "is_active": info.get("is_active", True)
+        })
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "배너가 수정되었습니다."
+        }
+
+    except Exception as e:
+        db.rollback()
+        print("배너 수정 실패:", e)
+
+        return {
+            "success": False,
+            "message": "배너 수정 중 오류가 발생했습니다."
+        }
+
+    finally:
+        db.close()
+
+
+@app.delete("/api/admin/banners/{banner_id}")
+def delete_admin_banner(banner_id: int):
+    db = get_engine()
+
+    try:
+        db.execute(text("""
+            DELETE FROM banners
+            WHERE banner_id = :banner_id
+        """), {
+            "banner_id": banner_id
+        })
+
+        db.commit()
+
+        return {
+            "success": True,
+            "message": "배너가 삭제되었습니다."
+        }
+
+    except Exception as e:
+        db.rollback()
+        print("배너 삭제 실패:", e)
+
+        return {
+            "success": False,
+            "message": "배너 삭제 중 오류가 발생했습니다."
+        }
+
+    finally:
+        db.close()
+
+
+@app.get("/api/banner/active-list")
+def get_active_banner_list():
+    db = get_engine()
+
+    try:
+        rows = db.execute(text("""
+            SELECT
+                banner_id,
+                title,
+                landing_url,
+                image_url
+            FROM banners
+            WHERE is_active = TRUE
+              AND start_at <= NOW()
+              AND end_at >= NOW()
+            ORDER BY updated_at DESC, created_at DESC
+        """)).mappings().all()
+
+        return {
+            "banners": [dict(row) for row in rows]
+        }
+
+    finally:
+        db.close()
 
 @app.get("/crawl")
 async def crawl():
