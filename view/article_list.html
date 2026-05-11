@@ -985,7 +985,33 @@ let isAutoLoading = false;
 
 async function fetchArticles() {
   try {
-    const res = await axios.get("/api/articles");
+    const pageParams = new URLSearchParams(location.search);
+
+    const selectedViewpoint =
+      pageParams.get("viewpoint") ||
+      localStorage.getItem("article_list_viewpoint") ||
+      "";
+
+    const selectedSentiment =
+      pageParams.get("sentiment") ||
+      localStorage.getItem("article_list_sentiment") ||
+      "";
+
+    const requestParams = {};
+
+    if (selectedViewpoint) {
+      requestParams.viewpoint = selectedViewpoint;
+    }
+
+    if (selectedSentiment) {
+      requestParams.sentiment = selectedSentiment;
+    }
+
+    console.log("기사 목록 조회 조건:", requestParams);
+
+    const res = await axios.get("/api/articles", {
+      params: requestParams
+    });
 
     articles = res.data.articles || [];
     visibleArticleCount = 5;

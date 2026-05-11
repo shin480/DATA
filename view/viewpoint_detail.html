@@ -2065,12 +2065,21 @@ function renderCompareCards(compareGroups) {
 }
 
 function goArticleList(sentiment) {
-  localStorage.setItem("article_list_sentiment", sentiment);
-  localStorage.setItem("article_list_viewpoint", viewTitle);
+  const params = new URLSearchParams();
 
-  location.href = "/view/article_list.html";
+  if (viewTitle) {
+    params.set("viewpoint", viewTitle);
+  }
+
+  if (sentiment) {
+    params.set("sentiment", sentiment);
+  }
+
+  localStorage.setItem("article_list_viewpoint", viewTitle || "");
+  localStorage.setItem("article_list_sentiment", sentiment || "");
+
+  location.href = `/view/article_list.html?${params.toString()}`;
 }
-
 function goArticleDetail(articleId) {
   if (!articleId) return;
 
