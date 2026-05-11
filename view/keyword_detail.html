@@ -365,7 +365,7 @@ body {
 .nav a {
   text-decoration: none;
   color: inherit;
-  transition: color 0.2s;
+  transition: color 0.18s;
 }
 
 .nav a:hover {
@@ -812,7 +812,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s;
 }
 
 .action-btn:hover {
@@ -1544,7 +1544,7 @@ body {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  transition: 0.2s;
+  transition: 0.18s;
 }
 
 .article-card.highlight {
@@ -1616,6 +1616,7 @@ body {
 body.light-mode .keyword-detail-page {
   background: #eef3ee !important;
   color: #eef3ee !important;
+
 }
 
 body.light-mode .keyword-desc,
@@ -1640,7 +1641,6 @@ body.light-mode .article-title {
 
 body.light-mode .news-card {
   background: #eef2ec !important;
-  border-color: #dbe4dc !important;
 }
 
 body.light-mode .stat-box,
@@ -1919,7 +1919,6 @@ body.light-mode .reference-label {
 /* 뉴스 카드 */
 body.light-mode .news-card {
   background: #eef2ec !important;
-  border: 1px solid #e2e8f0;
 }
 
 /* 뉴스 타입 */
@@ -2018,6 +2017,44 @@ body.light-mode .toast {
 #loadTrigger {
   width: 100%;
   height: 20px;
+}
+
+  /* ==============================
+   전체 다크모드 전환 통일
+============================== */
+
+body,
+.page,
+header,
+.card,
+.view-card,
+.scope-box,
+.summary-box,
+.news-card,
+.keyword-card,
+button,
+a,
+.nav-btn,
+.detail-btn,
+.action-btn,
+.news-footer-btn,
+.toggle-btn,
+.chip,
+.span-chip,
+.h-tag {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+  body,
+.page,
+.keyword-detail-page {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
 </style>
@@ -2715,6 +2752,9 @@ let perspectives = [];
 let articles = [];
 let rollingTimers = [];
 
+let visibleArticleCount = 5;
+const ARTICLE_LOAD_SIZE = 5;
+
 function buildPerspectiveData(data) {
     articles = data.articles || [];
 
@@ -3001,19 +3041,25 @@ function renderArticles() {
     return;
   }
 
-  list.innerHTML = articles.map(article => `
-    <article class="article-card ${article.highlight ? "highlight" : ""}">
-      <div>
-        <div class="article-source">${article.source || "언론사 없음"}</div>
-        <h3 class="article-title">${article.title || "제목 없음"}</h3>
-        <p class="article-desc">${article.desc || "요약 정보가 없습니다."}</p>
-      </div>
+const visibleArticles = articles.slice(0, visibleArticleCount);
 
-      <button class="original-btn article-detail-btn" type="button" data-article-id="${article.article_id || ""}">
-        원문 보기
-      </button>
-    </article>
-  `).join("");
+list.innerHTML = visibleArticles.map(article => `
+  <article class="article-card ${article.highlight ? "highlight" : ""}">
+    <div>
+      <div class="article-source">${article.source || "언론사 없음"}</div>
+      <h3 class="article-title">${article.title || "제목 없음"}</h3>
+      <p class="article-desc">${article.desc || "요약 정보가 없습니다."}</p>
+    </div>
+
+    <button
+      class="original-btn article-detail-btn"
+      type="button"
+      data-article-id="${article.article_id || ""}"
+    >
+      원문 보기
+    </button>
+  </article>
+`).join("");
 }
 
 function openArticleDetail(articleId) {
@@ -3039,6 +3085,8 @@ async function fetchKeywordDetail(keyword) {
     keywordData = res.data;
     articles = res.data.articles || [];
 
+    visibleArticleCount = 5;
+
     renderKeyword();
     renderArticles();
     buildPerspectiveData(keywordData);
@@ -3046,6 +3094,24 @@ async function fetchKeywordDetail(keyword) {
   } catch (error) {
     console.error("키워드 상세 데이터 불러오기 실패:", error);
     showToast("키워드 데이터를 불러오지 못했습니다.");
+  }
+}
+
+function handleInfiniteScroll() {
+  const scrollY = window.scrollY;
+  const windowHeight = window.innerHeight;
+  const bodyHeight = document.body.offsetHeight;
+
+  // 바닥 근처 도착
+  if (scrollY + windowHeight >= bodyHeight - 200) {
+
+    // 아직 남은 기사 있으면
+    if (visibleArticleCount < articles.length) {
+
+      visibleArticleCount += ARTICLE_LOAD_SIZE;
+
+      renderArticles();
+    }
   }
 }
 
@@ -3106,6 +3172,8 @@ document.addEventListener("DOMContentLoaded", function () {
   readKeywordFromUrl();
 
   window.addEventListener("resize", checkPressArrow);
+
+  window.addEventListener("scroll", handleInfiniteScroll);
 });
 </script>
 </body>
