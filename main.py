@@ -1183,6 +1183,74 @@ def get_hot_news():
         "articles": articles
     }
 
+# =========================
+# 오늘의 지배적 여론
+# =========================
+@app.get("/api/main/dominant-opinions")
+def get_dominant_opinions():
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        # 1순위: news_count 많은 순
+        # 2순위: updated_at 최신순
+        body={
+            "size": 5,
+            "_source": [
+                "scopeID",
+                "scopeTitle",
+                "scope_summary",
+                "scope_keywords",
+                "sentiment",
+                "sentiment_score",
+                "news_count",
+                "updated_at"
+            ],
+            "query": {
+                "match_all": {}
+            },
+            "sort": [
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                },
+                {
+                    "updated_at": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    opinions = []
+
+    for hit in result["hits"]["hits"]:
+        source = hit["_source"]
+
+        keyword_text = source.get("scope_keywords") or ""
+
+        keyword_list = [
+            keyword.strip()
+            for keyword in str(keyword_text).split(",")
+            if keyword.strip()
+        ]
+
+        opinions.append({
+            "scopeID": source.get("scopeID") or hit["_id"],
+            "title": source.get("scopeTitle") or "스콥 제목 없음",
+            "summary": source.get("scope_summary") or "",
+            "keyword": keyword_list[0] if keyword_list else "키워드 없음",
+            "sentiment": source.get("sentiment") or "neutral",
+            "sentiment_score": source.get("sentiment_score", 0),
+            "news_count": source.get("news_count", 0)
+        })
+
+    return {
+        "opinions": opinions
+    }
+
 # =========================================
 # 배너 관리 API
 # =========================================
@@ -1195,6 +1263,7 @@ def get_admin_banners():
         rows = db.execute(text("""
             SELECT
                 banner_id,
+                banner_type,
                 title,
                 landing_url,
                 image_url,
@@ -1220,6 +1289,7 @@ def create_admin_banner(info: Dict[str, Any]):
     try:
         db.execute(text("""
             INSERT INTO banners (
+                banner_type,
                 title,
                 landing_url,
                 image_url,
@@ -1228,6 +1298,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 is_active
             )
             VALUES (
+                :banner_type,
                 :title,
                 :landing_url,
                 :image_url,
@@ -1237,6 +1308,7 @@ def create_admin_banner(info: Dict[str, Any]):
             )
         """), {
             "title": info.get("title"),
+            "banner_type": info.get("banner_type", "notice"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
             "start_at": info.get("start_at"),
@@ -1304,6 +1376,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
         db.execute(text("""
             UPDATE banners
             SET
+                banner_type = :banner_type,
                 title = :title,
                 landing_url = :landing_url,
                 image_url = :image_url,
@@ -1313,6 +1386,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
             WHERE banner_id = :banner_id
         """), {
             "banner_id": banner_id,
+            "banner_type": info.get("banner_type", "notice"),
             "title": info.get("title"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
@@ -1381,6 +1455,7 @@ def get_active_banner_list():
         rows = db.execute(text("""
             SELECT
                 banner_id,
+                banner_type,
                 title,
                 landing_url,
                 image_url
