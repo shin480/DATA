@@ -992,7 +992,26 @@ async function fetchArticles() {
   try {
     isAutoLoading = true;
 
-    const res = await axios.get(`/api/articles?page=${currentPage}&size=${pageSize}`);
+    const urlParams = new URLSearchParams(location.search);
+
+    const sentiment =
+      urlParams.get("sentiment") ||
+      localStorage.getItem("article_list_sentiment") ||
+      "";
+
+    const viewpoint =
+      urlParams.get("viewpoint") ||
+      localStorage.getItem("article_list_viewpoint") ||
+      "";
+
+    const res = await axios.get("/api/articles", {
+      params: {
+        page: currentPage,
+        size: pageSize,
+        sentiment: sentiment,
+        viewpoint: viewpoint
+      }
+    });
 
     const newArticles = res.data.articles || [];
 

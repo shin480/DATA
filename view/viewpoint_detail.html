@@ -2114,7 +2114,8 @@ function goArticleList(sentiment) {
   localStorage.setItem("article_list_sentiment", sentiment);
   localStorage.setItem("article_list_viewpoint", viewTitle);
 
-  location.href = "/view/article_list.html";
+  location.href =
+    `/view/article_list.html?viewpoint=${encodeURIComponent(viewTitle)}&sentiment=${encodeURIComponent(sentiment)}`;
 }
 
 function goArticleDetail(articleId) {

@@ -459,17 +459,47 @@ def search_suggest(q: str):
 
 # 기사 목록
 @app.get("/api/articles")
-def get_article_list(page: int = 1, size: int = 50):
+def get_article_list(
+    page: int = 1,
+    size: int = 50,
+    sentiment: str = "",
+    viewpoint: str = ""
+):
     es = get_es()
 
     from_value = (page - 1) * size
 
+    must_conditions = []
+
+    if sentiment:
+        must_conditions.append({
+            "term": {
+                "sentiment": sentiment
+            }
+        })
+
+    if viewpoint:
+        must_conditions.append({
+            "term": {
+                "viewpoint": viewpoint
+            }
+        })
+
+    query = {
+        "match_all": {}
+    }
+
+    if must_conditions:
+        query = {
+            "bool": {
+                "must": must_conditions
+            }
+        }
+
     body = {
         "from": from_value,
         "size": size,
-        "query": {
-            "match_all": {}
-        },
+        "query": query,
         "sort": [
             {
                 "published_at": {
@@ -499,7 +529,9 @@ def get_article_list(page: int = 1, size: int = 50):
             "title": source.get("title", "제목 없음"),
             "summary": source.get("summary") or source.get("content", "")[:120],
             "published_at": source.get("published_at", ""),
-            "url": source.get("url", "#")
+            "url": source.get("url", "#"),
+            "sentiment": source.get("sentiment", ""),
+            "viewpoint": source.get("viewpoint", "")
         })
 
     return {
@@ -690,6 +722,7 @@ def vote_article(info: VoteRequest, req: Request):
 @app.post("/view")
 def view(info:Dict[str,Any], req: Request):
     view_log(info, req)
+
 # 기사 상세페이지
 @app.get("/api/articles/{article_id}")
 def get_article_detail(article_id: str, req: Request):
