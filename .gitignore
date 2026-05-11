@@ -1,0 +1,7 @@
+﻿# 관리자 업로드 배너 이미지
+view/img/banners/*
+!view/img/banners/.gitkeep
+
+# Python 캐시 파일
+__pycache__/
+*.pyc

@@ -431,19 +431,6 @@
       );
     }
 
-    .notice-image-title {
-      position: relative;
-      z-index: 2;
-      max-width: 70%;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 900;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
     .notice-right-over {
       position: relative;
       z-index: 2;
@@ -1793,18 +1780,17 @@ function renderAdBanner() {
       alt="${banner.title || "광고 배너"}"
     >
 
-    <div class="notice-image-dim"></div>
-
-    <div class="notice-image-title">
-      ${banner.title || "광고 배너"}
-    </div>
-
-    <div class="notice-right notice-right-over">
-      <span class="notice-page">
-        ${currentAdIndex + 1} / ${adBanners.length}
-      </span>
-      <span class="notice-arrow">→</span>
-    </div>
+    ${
+      adBanners.length > 1
+        ? `
+          <div class="notice-right notice-right-over">
+            <span class="notice-page">
+              ${currentAdIndex + 1} / ${adBanners.length}
+            </span>
+          </div>
+        `
+        : ""
+    }
   `;
 
   void box.offsetWidth;

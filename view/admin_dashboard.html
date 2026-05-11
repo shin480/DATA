@@ -518,13 +518,43 @@ td[title] {
 .preview {
   width: 120px;
   height: 32px;
+  padding: 0 8px;
   border-radius: 4px;
   background: #24243a;
   color: #94a3b8;
   font-size: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+  display: block;
+  line-height: 32px;
+  text-align: left;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.banner-info {
+  max-width: 320px;
+}
+
+.banner-title-text,
+.banner-url-text,
+.preview {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.banner-title-text {
+  display: block;
+  max-width: 320px;
+}
+
+.banner-url-text {
+  display: block;
+  max-width: 320px;
+  color: #38bdf8;
+  font-size: 13px;
 }
 
 
@@ -595,13 +625,22 @@ td[title] {
   line-height: 1.5;
 }
 
+.form-label strong {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
 .required-dot {
   display: inline-block;
   width: 10px;
   height: 10px;
   background: #38bdf8;
   border-radius: 50%;
-  margin-left: 8px;
+  margin-left: 0;
+  flex-shrink: 0;
 }
 
 .upload-box {
@@ -936,18 +975,26 @@ td[title] {
 </div>
 </div>
 <div class="form-row">
-<div class="form-label">
-<strong>배너 이미지 <span class="required-dot"></span></strong>
-<p>권장 비율은 10:1입니다.</p>
-</div>
-<label class="upload-box">
-<strong>이미지 업로드</strong>
-<span>PNG / JPG 파일 선택</span>
-<input accept="image/*" hidden="" id="bannerImage" type="file"/>
-</label>
+  <div class="form-label">
+    <strong>
+      배너 이미지<span class="required-dot" id="bannerImageRequiredDot"></span>
+    </strong>
+    <p id="bannerImageRequiredText">광고 이미지 배너 선택 시 필수입니다.</p>
+    <p>권장 크기: 1920 × 220px</p>
+    <p>권장 비율: 약 8.7:1</p>
+  </div>
+
+  <label class="upload-box">
+    <strong>이미지 업로드</strong>
+    <span>PNG / JPG / JPEG / WEBP 파일 선택</span>
+    <span style="margin-top:8px;font-size:13px;color:#64748b;">
+      화면에는 약 960 × 110px 비율로 표시됩니다.
+    </span>
+    <input accept="image/*" hidden="" id="bannerImage" type="file"/>
+  </label>
 </div>
 <div class="help">
-  업로드한 이미지는 배너 이미지로 저장됩니다.
+  광고 배너 권장 크기: 1920 × 220px · 화면에는 약 960 × 110px 비율로 표시됩니다.
 </div>
 <div class="modal-actions">
 <button class="cancel-btn" onclick="closeModal()" type="button">
@@ -1099,6 +1146,22 @@ function validateDateRange(start, end) {
   return true;
 }
 
+function updateBannerImageRequiredUI() {
+  const bannerType = document.getElementById("bannerType");
+  const requiredDot = document.getElementById("bannerImageRequiredDot");
+  const requiredText = document.getElementById("bannerImageRequiredText");
+
+  if (!bannerType || !requiredDot || !requiredText) return;
+
+  if (bannerType.value === "image") {
+    requiredDot.style.display = "inline-block";
+    requiredText.textContent = "광고 이미지 배너 선택 시 필수입니다.";
+  } else {
+    requiredDot.style.display = "none";
+    requiredText.textContent = "공지사항 배너는 이미지를 선택하지 않아도 됩니다.";
+  }
+}
+
 function getBannerStatus(start, end) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1219,13 +1282,30 @@ function renderBanner() {
 
     return `
       <tr>
-        <td><div class="preview">${imageText}</div></td>
         <td>
-          <strong>${item.title}</strong><br>
-          <span style="color:#38bdf8;font-size:13px;">${item.landing_url}</span>
+          <div class="preview" title="${imageText}">
+            ${imageText}
+          </div>
         </td>
+
+        <td>
+          <div class="banner-info">
+            <strong class="banner-title-text" title="${item.title}">
+              ${item.title}
+            </strong>
+
+            <span class="banner-url-text" title="${item.landing_url}">
+              ${item.landing_url}
+            </span>
+          </div>
+        </td>
+
         <td>${item.start_at} ~ ${item.end_at}</td>
-        <td><span class="status ${statusClass}">${status}</span></td>
+
+        <td>
+          <span class="status ${statusClass}">${status}</span>
+        </td>
+
         <td>
           <button class="btn-small" onclick="editBanner(${item.banner_id})">수정</button>
           <button class="btn-small btn-delete" onclick="deleteBanner(${item.banner_id})">삭제</button>
@@ -1340,6 +1420,7 @@ function openModal() {
     if (bannerEnd) bannerEnd.value = "";
     if (bannerImage) bannerImage.value = "";
     if (bannerType) bannerType.value = "notice";
+    updateBannerImageRequiredUI();
 
   if (modal) modal.classList.add("show");
 }
@@ -1445,6 +1526,7 @@ function editBanner(id) {
   if (submitBtn) submitBtn.textContent = "수정하기";
 
     document.getElementById("bannerType").value = target.banner_type || "notice";
+    updateBannerImageRequiredUI();
     document.getElementById("bannerTitle").value = target.title;
     document.getElementById("bannerUrl").value = target.landing_url;
     document.getElementById("bannerStart").value = target.start_at;
@@ -1524,6 +1606,12 @@ document.addEventListener("DOMContentLoaded", function () {
   renderScope();
   renderAnalysis();
   loadBanners();
+
+  const bannerTypeSelect = document.getElementById("bannerType");
+
+  if (bannerTypeSelect) {
+    bannerTypeSelect.addEventListener("change", updateBannerImageRequiredUI);
+  }
 
   const modal = document.getElementById("bannerModal");
 
