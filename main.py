@@ -143,6 +143,88 @@ def viewpoint_classify():
         "message": "관점 분류 Top-3 저장 완료"
     }
 
+@app.get("/api/main/top5-keywords")
+def get_main_top5_keywords():
+    es = get_es()
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 500,
+            "_source": ["keywords"],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "exists": {
+                                "field": "keywords"
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "term": {
+                                "keywords": ""
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    keyword_counter = Counter()
+
+    stopwords = {
+        "com", "co", "kr", "www", "http", "https",
+        "db", "photo", "newsis", "yna", "연합뉴스",
+        "그래픽", "사진", "기자", "제공", "금지",
+        "관련", "종합", "단독", "속보"
+    }
+
+    for hit in hits:
+        source = hit["_source"]
+
+        raw_keywords = source.get("keywords", "")
+
+        if isinstance(raw_keywords, list):
+            keyword_list = raw_keywords
+        else:
+            keyword_list = str(raw_keywords).split(",")
+
+        unique_keywords = set()
+
+        for keyword in keyword_list:
+            keyword = str(keyword).strip().lower()
+
+            if not keyword:
+                continue
+
+            if len(keyword) < 2:
+                continue
+
+            if keyword.isdigit():
+                continue
+
+            if keyword in stopwords:
+                continue
+
+            unique_keywords.add(keyword)
+
+        for keyword in unique_keywords:
+            keyword_counter[keyword] += 1
+
+    top_keywords = [
+        keyword
+        for keyword, count in keyword_counter.most_common(5)
+    ]
+
+    return {
+        "keywords": top_keywords
+    }
+
 # =========================================
 # 키워드 상세 조회 API
 # =========================================
