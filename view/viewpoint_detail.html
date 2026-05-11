@@ -323,6 +323,13 @@ body {
   font-size: 56px;
 }
 
+.main-icon img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  display: block;
+}
+
 .main-icon.theme-teal {
   border-color: #2dd4bf;
   background: rgba(45, 212, 191, 0.12);
@@ -781,7 +788,7 @@ body {
 .compare-mini-bar {
   width: 100%;
   height: 6px;
-  display: flex;F
+  display: flex;
   overflow: hidden;
   border-radius: 999px;
   background: #334155;
@@ -1207,7 +1214,9 @@ body.light-mode .footer-modal-content h3 {
         <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
         <section class="title-section">
-          <div class="main-icon">📌</div>
+          <div class="main-icon">
+            <img id="viewIconImg" src="/view/icons/news.svg" alt="관점 아이콘">
+          </div>
 
           <div>
             <h1>
@@ -1757,6 +1766,38 @@ function getCompareGridClass(count) {
   return "compare-count-4plus";
 }
 
+function getViewpointIcon(title) {
+  const iconMap = {
+    // 주체
+    "정부 관점": "/view/icons/gov.svg",
+    "개인 관점": "/view/icons/person.svg",
+    "복합 관점": "/view/icons/complex.svg",
+    "기업 관점": "/view/icons/company.svg",
+    "외부 관점": "/view/icons/global.svg",
+
+    // 감성
+    "기대": "/view/icons/star.svg",
+    "성과 예찬": "/view/icons/trophy.svg",
+    "비판적 태도": "/view/icons/chat.svg",
+    "우려": "/view/icons/warning.svg",
+
+    // 분석
+    "결과 분석": "/view/icons/chart.svg",
+    "전망 분석": "/view/icons/graph.svg",
+    "단순 전달": "/view/icons/news.svg",
+    "대응 분석": "/view/icons/gear.svg",
+    "원인 분석": "/view/icons/search.svg",
+
+    // 요인
+    "시장 자율 강조": "/view/icons/balance.svg",
+    "정부 개입 강조": "/view/icons/building.svg",
+    "정책 요인(국내)": "/view/icons/location.svg",
+    "외부 요인(글로벌)": "/view/icons/global.svg"
+  };
+
+  return iconMap[title] || "/view/icons/news.svg";
+}
+
 async function loadViewpointDetail(selectedTitle) {
   try {
     const requestParams = {};
@@ -1805,7 +1846,12 @@ function renderViewpointDetail(data) {
   const colorKey = data.color_key || "teal";
 
   if (mainIcon) {
-    mainIcon.innerText = data.icon || "📌";
+    const iconImg = document.getElementById("viewIconImg");
+
+    if (iconImg) {
+      iconImg.src = data.icon_url || getViewpointIcon(data.title);
+      iconImg.alt = `${data.title || "관점"} 아이콘`;
+    }
 
     mainIcon.classList.remove(
       "theme-teal",
