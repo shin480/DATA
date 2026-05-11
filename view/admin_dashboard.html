@@ -897,6 +897,19 @@ td[title] {
         ×
       </button>
 </div>
+
+<div class="form-row">
+  <div class="form-label">
+    <strong>배너 종류 <span class="required-dot"></span></strong>
+    <p>공지사항은 텍스트, 광고는 이미지로 노출됩니다.</p>
+  </div>
+
+  <select id="bannerType">
+    <option value="notice">공지사항 배너</option>
+    <option value="image">광고 이미지 배너</option>
+  </select>
+</div>
+
 <div class="form-row">
 <div class="form-label">
 <strong>배너 제목 <span class="required-dot"></span></strong>
@@ -1314,17 +1327,19 @@ function openModal() {
   if (modalTitle) modalTitle.textContent = "새 배너 등록";
   if (submitBtn) submitBtn.textContent = "등록하기";
 
-  const bannerTitle = document.getElementById("bannerTitle");
-  const bannerUrl = document.getElementById("bannerUrl");
-  const bannerStart = document.getElementById("bannerStart");
-  const bannerEnd = document.getElementById("bannerEnd");
-  const bannerImage = document.getElementById("bannerImage");
+    const bannerTitle = document.getElementById("bannerTitle");
+    const bannerUrl = document.getElementById("bannerUrl");
+    const bannerStart = document.getElementById("bannerStart");
+    const bannerEnd = document.getElementById("bannerEnd");
+    const bannerImage = document.getElementById("bannerImage");
+    const bannerType = document.getElementById("bannerType");
 
-  if (bannerTitle) bannerTitle.value = "";
-  if (bannerUrl) bannerUrl.value = "";
-  if (bannerStart) bannerStart.value = "";
-  if (bannerEnd) bannerEnd.value = "";
-  if (bannerImage) bannerImage.value = "";
+    if (bannerTitle) bannerTitle.value = "";
+    if (bannerUrl) bannerUrl.value = "";
+    if (bannerStart) bannerStart.value = "";
+    if (bannerEnd) bannerEnd.value = "";
+    if (bannerImage) bannerImage.value = "";
+    if (bannerType) bannerType.value = "notice";
 
   if (modal) modal.classList.add("show");
 }
@@ -1343,6 +1358,7 @@ async function saveBanner() {
   const start = document.getElementById("bannerStart").value;
   const end = document.getElementById("bannerEnd").value;
   const imageInput = document.getElementById("bannerImage");
+  const bannerType = document.getElementById("bannerType").value;
 
   if (!title) {
     showToast("배너 제목을 입력해주세요.");
@@ -1358,8 +1374,8 @@ async function saveBanner() {
 
   const currentBanner = bannerData.find(item => item.banner_id === editBannerId);
 
-  if (!editBannerId && imageInput.files.length === 0) {
-    showToast("배너 이미지를 선택해주세요.");
+  if (bannerType === "image" && !editBannerId && imageInput.files.length === 0) {
+    showToast("광고 이미지 배너는 이미지를 선택해주세요.");
     return;
   }
 
@@ -1389,9 +1405,10 @@ async function saveBanner() {
     }
 
     const payload = {
+      banner_type: bannerType,
       title: title,
       landing_url: url,
-      image_url: imageUrl,
+      image_url: imageUrl || null,
       start_at: start,
       end_at: end,
       is_active: true
@@ -1427,11 +1444,12 @@ function editBanner(id) {
   if (modalTitle) modalTitle.textContent = "배너 수정";
   if (submitBtn) submitBtn.textContent = "수정하기";
 
-  document.getElementById("bannerTitle").value = target.title;
-  document.getElementById("bannerUrl").value = target.landing_url;
-  document.getElementById("bannerStart").value = target.start_at;
-  document.getElementById("bannerEnd").value = target.end_at;
-  document.getElementById("bannerImage").value = "";
+    document.getElementById("bannerType").value = target.banner_type || "notice";
+    document.getElementById("bannerTitle").value = target.title;
+    document.getElementById("bannerUrl").value = target.landing_url;
+    document.getElementById("bannerStart").value = target.start_at;
+    document.getElementById("bannerEnd").value = target.end_at;
+    document.getElementById("bannerImage").value = "";
 
   document.getElementById("bannerModal").classList.add("show");
 }

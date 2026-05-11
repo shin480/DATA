@@ -1195,6 +1195,7 @@ def get_admin_banners():
         rows = db.execute(text("""
             SELECT
                 banner_id,
+                banner_type,
                 title,
                 landing_url,
                 image_url,
@@ -1220,6 +1221,7 @@ def create_admin_banner(info: Dict[str, Any]):
     try:
         db.execute(text("""
             INSERT INTO banners (
+                banner_type,
                 title,
                 landing_url,
                 image_url,
@@ -1228,6 +1230,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 is_active
             )
             VALUES (
+                :banner_type,
                 :title,
                 :landing_url,
                 :image_url,
@@ -1237,6 +1240,7 @@ def create_admin_banner(info: Dict[str, Any]):
             )
         """), {
             "title": info.get("title"),
+            "banner_type": info.get("banner_type", "notice"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
             "start_at": info.get("start_at"),
@@ -1304,6 +1308,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
         db.execute(text("""
             UPDATE banners
             SET
+                banner_type = :banner_type,
                 title = :title,
                 landing_url = :landing_url,
                 image_url = :image_url,
@@ -1313,6 +1318,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
             WHERE banner_id = :banner_id
         """), {
             "banner_id": banner_id,
+            "banner_type": info.get("banner_type", "notice"),
             "title": info.get("title"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
@@ -1381,6 +1387,7 @@ def get_active_banner_list():
         rows = db.execute(text("""
             SELECT
                 banner_id,
+                banner_type,
                 title,
                 landing_url,
                 image_url
