@@ -23,17 +23,55 @@ def close_es():
 
 # 앞서 만든 tokenizer도 여기에 포함하면 관리가 편합니다.
 def tokenizer(es, text):
-    if not text: return []
+    if not text:
+        return []
+
     body = {
         "tokenizer": {
             "type": "nori_tokenizer",
             "decompound_mode": "discard"
         },
-        "filter": ["nori_readingform"],
+        "filter": [
+            {
+                "type": "nori_part_of_speech",
+                "stoptags": [
+                    "E",
+                    "IC",
+                    "J",
+                    "MAG",
+                    "MAJ",
+                    "MM",
+                    "SP",
+                    "SSC",
+                    "SSO",
+                    "SC",
+                    "SE",
+                    "XPN",
+                    "XSA",
+                    "XSN",
+                    "XSV",
+                    "UNA",
+                    "NA",
+                    "VSV"
+                ]
+            }
+        ],
         "text": text
     }
+
     res = es.indices.analyze(body=body)
-    return [token['token'] for token in res['tokens']]
+
+    tokens = []
+
+    for token in res["tokens"]:
+        word = token["token"].strip()
+
+        if len(word) <= 1:
+            continue
+
+        tokens.append(word)
+
+    return tokens
 
 def bulk(es, actions, *args, **kwargs):
     """
