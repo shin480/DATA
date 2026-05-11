@@ -775,9 +775,6 @@
     </div>
   </div>
 
-</div><!-- /page -->
-  </main>
-</div>
   <!-- ══════════════════════════════════════════════ -->
   <!-- 패널 6: 불용어 관리                              -->
   <!-- ══════════════════════════════════════════════ -->
@@ -804,7 +801,7 @@
         <button class="btn btn-sm" onclick="loadStopwords()">새로고침</button>
       </div>
     </div>
-    <div id="sw-loading" class="state-msg">불러오는 중...</div>
+    <div id="sw-loading" class="state-msg" style="display:block">불러오는 중...</div>
     <div id="sw-error"   class="error-msg" style="display:none"></div>
     <div id="sw-content" style="display:none">
       <div class="count-label" id="sw-count"></div>
@@ -820,6 +817,10 @@
       <div id="sw-empty" class="empty-msg" style="display:none;text-align:center;">등록된 불용어가 없습니다.</div>
     </div>
   </div>
+
+</div><!-- /page -->
+  </main>
+</div>
 
 <!-- 정정 모달 -->
 <div class="modal-overlay" id="corr-modal">
@@ -1537,7 +1538,12 @@ async function loadStopwords() {
     renderStopwords(swAllData);
     show('sw-content');
   } catch(e) {
-    html('sw-error', '오류: ' + e.message); show('sw-error');
+    html('sw-error', '오류: ' + e.message + ' — API 엔드포인트를 확인해주세요.');
+    show('sw-error');
+    // API 없어도 빈 목록 UI는 표시
+    swAllData = [];
+    renderStopwords([]);
+    show('sw-content');
   } finally { hide('sw-loading'); }
 }
 
