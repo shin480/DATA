@@ -613,6 +613,14 @@ transition: background 18s ease; }
   background: rgba(255,255,255,0.06);
   color: #ffffff;
 }
+/* 접전 배지 */
+.badge-battle {
+    background: rgba(203, 213, 225, 0.18);
+    color: #CBD5E1;
+    font-weight: 700;
+    border:rgba(203, 213, 225, 0.35);
+    backdrop-filter: blur(4px);
+}
 
 /* 컬러 유틸리티 */
 .c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
@@ -1788,22 +1796,29 @@ async function loadHotNews() {
                 const likeCount = Number(item.like_count) || 0;
                 const hateCount = Number(item.hate_count) || 0;
 
-                const isLike = likeCount >= hateCount;
+                // 👍 👎 비교
+                const isTie = likeCount === hateCount;
+
+                const isLike = likeCount > hateCount;
 
                 return `
 
                     <div class="news-item-card">
 
                         <div class="news-badge ${
-                            isLike
-                                ? "badge-like"
-                                : "badge-dislike"
+                            isTie
+                                ? "badge-battle"
+                                : isLike
+                                    ? "badge-like"
+                                    : "badge-dislike"
                         }">
 
                             ${
-                                isLike
-                                    ? "👍 긍정 반응 우세"
-                                    : "👎 부정 반응 우세"
+                                isTie
+                                    ? `<span class="battle-icon">🤜 접전 🤛</span>`
+                                    : isLike
+                                        ? "👍 긍정 반응 우세"
+                                        : "👎 부정 반응 우세"
                             }
 
                         </div>
