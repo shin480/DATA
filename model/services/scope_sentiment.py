@@ -17,7 +17,7 @@ from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE     = 50
+BATCH_SIZE     = 500
 MIN_NEWS_COUNT = 3
 INDEX_NEWS     = "news_economy"
 INDEX_SCOPES   = "news_scopes"

@@ -28,7 +28,7 @@ from model.services.error_logger import log_pipeline_error
 logger = logging.getLogger(__name__)
 
 MODEL_NAME   = "snunlp/KR-FinBert-SC"
-BATCH_SIZE   = 1000
+BATCH_SIZE   = 10000
 MAX_LENGTH   = 512
 
 # neutral 판정 임계값: negative/positive 확률 차이 < 이 값이면 neutral

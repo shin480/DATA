@@ -39,7 +39,7 @@ from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE        = 50
+BATCH_SIZE        = 500
 NEWS_COUNT_GEMINI = 10      # 이 이상일 때만 Gemini 호출
 MAX_RETRY         = 3       # 큐 재시도 최대 횟수 초과 시 failed 처리
 INDEX_NEWS        = "news_economy"
