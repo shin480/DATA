@@ -147,82 +147,73 @@ def viewpoint_classify():
 def get_main_top5_keywords():
     es = get_es()
 
-    result = es.search(
-        index=NEWS_ECONOMY_INDEX,
+    # 1. daily_keyword_metrics에서 가장 최신 날짜 찾기
+    latest_result = es.search(
+        index="daily_keyword_metrics",
         body={
-            "size": 500,
-            "_source": ["keywords"],
+            "size": 1,
+            "_source": ["date"],
             "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "exists": {
-                                "field": "keywords"
-                            }
-                        }
-                    ],
-                    "must_not": [
-                        {
-                            "term": {
-                                "keywords": ""
-                            }
-                        }
-                    ]
+                "match_all": {}
+            },
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
                 }
-            }
+            ]
         }
     )
 
-    hits = result["hits"]["hits"]
+    latest_hits = latest_result["hits"]["hits"]
 
-    keyword_counter = Counter()
+    if not latest_hits:
+        return {
+            "date": "",
+            "keywords": []
+        }
 
-    stopwords = {
-        "com", "co", "kr", "www", "http", "https",
-        "db", "photo", "newsis", "yna", "연합뉴스",
-        "그래픽", "사진", "기자", "제공", "금지",
-        "관련", "종합", "단독", "속보"
-    }
+    latest_date = latest_hits[0]["_source"]["date"]
 
-    for hit in hits:
+    # 2. 최신 날짜 기준 기사 수 Top5 키워드 조회
+    result = es.search(
+        index="daily_keyword_metrics",
+        body={
+            "size": 5,
+            "_source": [
+                "date",
+                "keyword",
+                "article_count"
+            ],
+            "query": {
+                "term": {
+                    "date": latest_date
+                }
+            },
+            "sort": [
+                {
+                    "article_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    keywords = []
+
+    for hit in result["hits"]["hits"]:
         source = hit["_source"]
 
-        raw_keywords = source.get("keywords", "")
-
-        if isinstance(raw_keywords, list):
-            keyword_list = raw_keywords
-        else:
-            keyword_list = str(raw_keywords).split(",")
-
-        unique_keywords = set()
-
-        for keyword in keyword_list:
-            keyword = str(keyword).strip().lower()
-
-            if not keyword:
-                continue
-
-            if len(keyword) < 2:
-                continue
-
-            if keyword.isdigit():
-                continue
-
-            if keyword in stopwords:
-                continue
-
-            unique_keywords.add(keyword)
-
-        for keyword in unique_keywords:
-            keyword_counter[keyword] += 1
-
-    top_keywords = [
-        keyword
-        for keyword, count in keyword_counter.most_common(5)
-    ]
+        keywords.append({
+            "keyword": source.get("keyword", ""),
+            "article_count": source.get("article_count", 0)
+        })
 
     return {
-        "keywords": top_keywords
+        "date": latest_date,
+        "keywords": keywords
     }
 
 # =========================================
@@ -1810,4 +1801,243 @@ def get_scope_detail(scope_id: str):
         "articleCount": scope_source.get("news_count") or total,
         "lastUpdated": updated_at[11:16] if len(updated_at) >= 16 else "-",
         "articles": articles
+    }
+
+@app.post("/api/batch/daily-keyword-metrics")
+def create_daily_keyword_metrics(target_date: str = None):
+    es = get_es()
+
+    # target_date를 안 넣으면 keywords가 있는 최신 기사 날짜 기준으로 집계
+    if target_date is None:
+        latest_result = es.search(
+            index=NEWS_ECONOMY_INDEX,
+            body={
+                "size": 1,
+                "_source": ["published_at"],
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "exists": {
+                                    "field": "keywords"
+                                }
+                            }
+                        ],
+                        "must_not": [
+                            {
+                                "term": {
+                                    "keywords": ""
+                                }
+                            }
+                        ]
+                    }
+                },
+                "sort": [
+                    {
+                        "published_at": {
+                            "order": "desc"
+                        }
+                    }
+                ]
+            }
+        )
+
+        latest_hits = latest_result["hits"]["hits"]
+
+        if not latest_hits:
+            return {
+                "success": False,
+                "message": "keywords가 있는 기사가 없습니다."
+            }
+
+        target_date = latest_hits[0]["_source"]["published_at"][:10]
+
+    start_at = f"{target_date}T00:00:00"
+    end_at = f"{target_date}T23:59:59"
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 10000,
+            "_source": [
+                "article_id",
+                "published_at",
+                "keywords"
+            ],
+            "query": {
+                "bool": {
+                    "filter": [
+                        {
+                            "range": {
+                                "published_at": {
+                                    "gte": start_at,
+                                    "lte": end_at
+                                }
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "keywords"
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "term": {
+                                "keywords": ""
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    keyword_counter = Counter()
+
+    stopwords = {
+        "com", "co", "kr", "www", "http", "https",
+        "db", "photo", "newsis", "yna", "yonhap",
+        "graphics", "graphic",
+        "그래픽", "사진", "기자", "제공", "금지",
+        "관련", "종합", "단독", "속보", "뉴스",
+        "보도", "기사", "무단", "전재", "재배포",
+        "습니다", "합니다", "했습니다", "있습니다", "없습니다",
+        "됩니다", "됐습니다"
+    }
+
+    bad_endings = (
+        "습니다",
+        "합니다",
+        "했습니다",
+        "됩니다",
+        "됐습니다",
+        "있습니다",
+        "없습니다",
+        "한다고",
+        "했다고",
+        "된다",
+        "됐다",
+        "한다",
+        "했다",
+        "있다",
+        "없다",
+        "하다",
+        "되다"
+    )
+
+    for hit in hits:
+        source = hit["_source"]
+
+        raw_keywords = source.get("keywords", "")
+
+        if isinstance(raw_keywords, list):
+            keyword_list = raw_keywords
+        else:
+            keyword_list = str(raw_keywords).split(",")
+
+        # 동일 기사 안의 동일 키워드는 1번만 카운트
+        unique_keywords = set()
+
+        for keyword in keyword_list:
+            keyword = str(keyword).strip().lower()
+
+            keyword = (
+                keyword.replace("#", "")
+                       .replace('"', "")
+                       .replace("'", "")
+                       .replace("“", "")
+                       .replace("”", "")
+                       .replace("‘", "")
+                       .replace("’", "")
+                       .replace("…", "")
+                       .replace("·", "")
+                       .replace(".", "")
+                       .replace(",", "")
+                       .replace("?", "")
+                       .replace("!", "")
+                       .strip()
+            )
+
+            if not keyword:
+                continue
+
+            if len(keyword) < 2:
+                continue
+
+            if keyword.isdigit():
+                continue
+
+            if keyword in stopwords:
+                continue
+
+            if keyword.endswith(bad_endings):
+                continue
+
+            if "@" in keyword:
+                continue
+
+            unique_keywords.add(keyword)
+
+        for keyword in unique_keywords:
+            keyword_counter[keyword] += 1
+
+    if not keyword_counter:
+        return {
+            "success": False,
+            "date": target_date,
+            "source_article_count": len(hits),
+            "message": "집계할 키워드가 없습니다."
+        }
+
+    # 같은 날짜 데이터가 이미 있으면 지우고 다시 저장
+    es.delete_by_query(
+        index="daily_keyword_metrics",
+        body={
+            "query": {
+                "term": {
+                    "date": target_date
+                }
+            }
+        },
+        conflicts="proceed",
+        refresh=True
+    )
+
+    saved_count = 0
+
+    for keyword, count in keyword_counter.items():
+        doc_id = f"{target_date}_{keyword}"
+
+        es.index(
+            index="daily_keyword_metrics",
+            id=doc_id,
+            body={
+                "date": target_date,
+                "keyword": keyword,
+                "article_count": count
+            },
+            refresh=False
+        )
+
+        saved_count += 1
+
+    es.indices.refresh(index="daily_keyword_metrics")
+
+    top5 = [
+        {
+            "keyword": keyword,
+            "article_count": count
+        }
+        for keyword, count in keyword_counter.most_common(5)
+    ]
+
+    return {
+        "success": True,
+        "date": target_date,
+        "source_article_count": len(hits),
+        "saved_keyword_count": saved_count,
+        "top5": top5
     }

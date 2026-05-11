@@ -1978,12 +1978,13 @@ async function loadHeroTop5Keywords() {
     try {
         const res = await axios.get("/api/main/top5-keywords");
 
-        const keywords = res.data.keywords || [];
+        const items = res.data.keywords || [];
 
         const heroTags = document.querySelectorAll(".hero-tags .h-tag");
 
         heroTags.forEach(function (tag, index) {
-            const keyword = keywords[index] || "";
+            const item = items[index];
+            const keyword = item ? item.keyword : "";
 
             if (keyword) {
                 tag.innerText = `#${keyword}`;
