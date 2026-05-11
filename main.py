@@ -535,6 +535,14 @@ def search_suggest(q: str):
 
     return suggestions[:6]
 
+def denormalize_sentiment_for_es(sentiment):
+    if sentiment == "positive":
+        return ["positive", "긍정"]
+    if sentiment == "neutral":
+        return ["neutral", "중립"]
+    if sentiment == "negative":
+        return ["negative", "부정"]
+    return [sentiment]
 # 기사 목록
 @app.get("/api/articles")
 def get_article_list(
@@ -551,8 +559,8 @@ def get_article_list(
 
     if sentiment:
         must_conditions.append({
-            "term": {
-                "sentiment": sentiment
+            "terms": {
+                "sentiment": denormalize_sentiment_for_es(sentiment)
             }
         })
 
@@ -561,8 +569,19 @@ def get_article_list(
             "nested": {
                 "path": "perspective",
                 "query": {
-                    "term": {
-                        "perspective.category": viewpoint
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "perspective.category": viewpoint
+                                }
+                            },
+                            {
+                                "term": {
+                                    "perspective.rank": 1
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -1484,7 +1503,7 @@ def get_viewpoint_detail(viewpoint: str = ""):
     selected_articles_all = get_articles_by_perspective(
         es=es,
         es_category=selected_es_category,
-        size=500,
+        size=10000,
         recent_7days=False
     )
 
