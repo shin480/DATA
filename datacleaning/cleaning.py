@@ -75,7 +75,7 @@ def get_preprocessed_data():
                 "must_not": [{"term": {"status": "preprocessed"}}]
             }
         },
-        "size": 3000
+        "size": 5000
     }
     res = es.search(index="article_raw", body=query)
     hits = res["hits"]["hits"]
@@ -169,11 +169,20 @@ def get_preprocessed_data():
         })
 
     if actions:
-        # es에 저장
-        bulk(es, actions)
-        print(f"[저장완료] news_economy에 {len(actions)}건 저장.")
+        batch_size = 500
 
-        # db에 저장
+        # ES에 500건씩 중간 저장
+        for i in range(0, len(actions), batch_size):
+            batch = actions[i:i + batch_size]
+
+            bulk(es, batch)
+            es.indices.refresh(index=target_index)
+
+            print(f"[ES중간저장] news_economy {i + len(batch)}/{len(actions)}건 저장 완료")
+
+        print(f"[ES저장완료] news_economy에 총 {len(actions)}건 저장.")
+
+        # DB에도 500건씩 중간 저장
         db_insert_data = [
             {"article_id": row.get('article_id')}
             for row in final_data if row.get('article_id')
@@ -183,17 +192,25 @@ def get_preprocessed_data():
             conn = None
             try:
                 conn = get_engine()
-                # INSERT IGNORE를 사용하여 이미 존재하는 ID일 경우 무시 (중복 방어)
-                # created_at은 DB의 NOW() 함수를 사용하거나 생략(Default 설정 시) 가능합니다.
+
                 sql = text("""
-                            INSERT IGNORE INTO article_meta (article_id, created_at) 
-                            VALUES (:article_id, NOW())
-                        """)
-                conn.execute(sql, db_insert_data)
-                conn.commit()
-                print(f"[DB저장완료] article_meta 테이블에 {len(db_insert_data)}건 반영.")
+                    INSERT IGNORE INTO article_meta (article_id, created_at)
+                    VALUES (:article_id, NOW())
+                """)
+
+                for i in range(0, len(db_insert_data), batch_size):
+                    batch = db_insert_data[i:i + batch_size]
+
+                    conn.execute(sql, batch)
+                    conn.commit()
+
+                    print(f"[DB중간저장] article_meta {i + len(batch)}/{len(db_insert_data)}건 반영 완료")
+
+                print(f"[DB저장완료] article_meta 테이블에 총 {len(db_insert_data)}건 반영.")
+
             except Exception as e:
                 print(f"[DB에러] article_meta 저장 중 오류 발생: {e}")
+
             finally:
                 if conn:
                     conn.close()
@@ -203,26 +220,37 @@ def get_preprocessed_data():
             {
                 "_op_type": "update",
                 "_index": "article_raw",
-                "_id": hit["_id"],
+                "_id": row["_id"],
                 "doc": {"status": "preprocessed"}  # 쿼리 조건과 일치하도록 설정
-            } for hit in hits
+            } for row in final_data
         ]
 
         if update_actions:
-            # 성공 건수와 실패 상세 내역을 받아 에러 모니터링 강화
-            success, failed = bulk(es, update_actions, raise_on_error=False)
+            batch_size = 500
+            total_success = 0
+            total_failed = []
 
-            # 즉시 반영을 위해 리프레시 실행
-            es.indices.refresh(index="article_raw")
+            for i in range(0, len(update_actions), batch_size):
+                batch = update_actions[i:i + batch_size]
 
-            print(f"[업데이트완료] article_raw 총 {len(hits)}건 중 {success}건 'preprocessed' 상태로 변경.")
+                success, failed = bulk(es, batch, raise_on_error=False)
+                total_success += success
 
-            if failed:
-                print(f"[경고] 업데이트 실패 건수: {len(failed)}건")
-                print(f"[에러샘플] {failed[0]}")
+                if failed:
+                    total_failed.extend(failed)
+
+                es.indices.refresh(index="article_raw")
+
+                print(f"[상태중간업데이트] article_raw {i + len(batch)}/{len(update_actions)}건 preprocessed 변경 완료")
+
+            print(f"[업데이트완료] article_raw 총 {len(final_data)}건 중 {total_success}건 'preprocessed' 상태로 변경.")
+
+            if total_failed:
+                print(f"[경고] 업데이트 실패 건수: {len(total_failed)}건")
+                print(f"[에러샘플] {total_failed[0]}")
     else:
         # 디버그 모드일 때는 출력만 수행
-        print(f"[디버그모드] 실제 article_raw 업데이트는 건너뜁니다. (대상: {len(hits)}건)")
+        print(f"[디버그모드] 실제 article_raw 업데이트는 건너뜁니다. (대상: {len(final_data)}건)")
 
     es.indices.refresh(index=target_index)
 
@@ -258,8 +286,16 @@ def get_preprocessed_data():
 
     # 6. 최종 토큰 데이터 업데이트
     if token_update_actions:
-        bulk(es, token_update_actions)
-        es.indices.refresh(index=target_index)
+        batch_size = 500
+
+        for i in range(0, len(token_update_actions), batch_size):
+            batch = token_update_actions[i:i + batch_size]
+
+            bulk(es, batch)
+            es.indices.refresh(index=target_index)
+
+            print(f"[토큰중간저장] tokens {i + len(batch)}/{len(token_update_actions)}건 업데이트 완료")
+
         print(f"[토큰화완료] tokens 필드 업데이트 및 리프레시 완료.")
 
     return {
