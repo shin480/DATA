@@ -1421,3 +1421,191 @@ def get_viewpoint_detail(viewpoint: str = ""):
         "articles": top_articles,
         "compare_groups": compare_groups
     }
+
+# 스콥 상세
+@app.get("/api/scopes/random")
+def get_random_scope_detail():
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        body={
+            "size": 1,
+            "query": {
+                "function_score": {
+                    "query": {
+                        "match_all": {}
+                    },
+                    "random_score": {}
+                }
+            }
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    if not hits:
+        return {
+            "title": "분석 데이터 없음",
+            "summary": "표시할 AI 뉴스 분석 데이터가 없습니다.",
+            "keywords": [],
+            "sentimentDist": {
+                "positive": 0,
+                "neutral": 0,
+                "negative": 0
+            },
+            "viewpoints": [],
+            "articleCount": 0,
+            "lastUpdated": "-",
+            "articles": []
+        }
+
+    scope_id = hits[0]["_source"].get("scopeID") or hits[0]["_id"]
+
+    return get_scope_detail(scope_id)
+
+@app.get("/api/scopes/{scope_id}")
+def get_scope_detail(scope_id: str):
+    es = get_es()
+
+    # 1. news_scopes에서 스콥 기본 정보 조회
+    try:
+        scope_result = es.get(
+            index="news_scopes",
+            id=scope_id
+        )
+
+        scope_source = scope_result["_source"]
+
+    except Exception as e:
+        print("스콥 조회 실패:", e)
+
+        scope_source = {
+            "scopeID": scope_id,
+            "scopeTitle": "분석 데이터 없음",
+            "scope_keywords": "",
+            "updated_at": ""
+        }
+
+    # 2. news_economy에서 같은 scopeID 기사 조회
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 100,
+            "query": {
+                "term": {
+                    "scopeID": scope_id
+                }
+            },
+            "sort": [
+                {
+                    "published_at": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    articles = []
+
+    sentiment_count = {
+        "positive": 0,
+        "neutral": 0,
+        "negative": 0
+    }
+
+    viewpoint_count = {}
+
+    for hit in hits:
+        source = hit["_source"]
+
+        sentiment = source.get("sentiment", "neutral")
+
+        if sentiment not in sentiment_count:
+            sentiment = "neutral"
+
+        sentiment_count[sentiment] += 1
+
+        keyword_text = source.get("keywords") or ""
+
+        keyword_list = [
+            keyword.strip()
+            for keyword in keyword_text.split(",")
+            if keyword.strip()
+        ]
+
+        perspectives = source.get("perspective", [])
+
+        for item in perspectives:
+            category = item.get("category")
+
+            if category:
+                viewpoint_count[category] = viewpoint_count.get(category, 0) + 1
+
+        article_id = source.get("article_id") or hit["_id"]
+
+        articles.append({
+            "article_id": article_id,
+            "sentiment": sentiment,
+            "press": source.get("press", "언론사 없음"),
+            "time": source.get("published_at", "")[11:16],
+            "title": source.get("title", "제목 없음"),
+            "summary": source.get("summary") or source.get("content", "")[:120],
+            "keywords": keyword_list[:3],
+            "url": f"/view/article_detail.html?article_id={article_id}"
+        })
+
+    total = len(articles)
+
+    if total > 0:
+        positive_percent = round((sentiment_count["positive"] / total) * 100)
+        neutral_percent = round((sentiment_count["neutral"] / total) * 100)
+        negative_percent = 100 - positive_percent - neutral_percent
+    else:
+        positive_percent = 0
+        neutral_percent = 0
+        negative_percent = 0
+
+    top_viewpoints = sorted(
+        viewpoint_count.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:4]
+
+    scope_keyword_text = scope_source.get("scope_keywords") or ""
+
+    scope_keywords = [
+        keyword.strip()
+        for keyword in scope_keyword_text.split(",")
+        if keyword.strip()
+    ]
+
+    updated_at = str(scope_source.get("updated_at") or "")
+
+    return {
+        "scopeID": scope_source.get("scopeID", scope_id),
+        "title": scope_source.get("scopeTitle", "AI 뉴스 분석"),
+        "summary": scope_source.get("scope_summary")
+           or f"{scope_source.get('scopeTitle', '해당 이슈')} 관련 기사 {total}건을 분석한 결과입니다.",
+        "keywords": scope_keywords[:5],
+        "scopeSentiment": scope_source.get("sentiment", ""),
+        "scopeSentimentScore": scope_source.get("sentiment_score", 0),
+        "sentimentDist": {
+            "positive": positive_percent,
+            "neutral": neutral_percent,
+            "negative": negative_percent
+        },
+        "viewpoints": [
+            {
+                "name": item[0],
+                "percent": round((item[1] / total) * 100) if total else 0
+            }
+            for item in top_viewpoints
+        ],
+        "articleCount": scope_source.get("news_count") or total,
+        "lastUpdated": updated_at[11:16] if len(updated_at) >= 16 else "-",
+        "articles": articles
+    }
