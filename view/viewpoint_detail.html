@@ -1680,6 +1680,8 @@ document.addEventListener("click", function (e) {
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("userName");
 
+    axios.post("/logout");
+
     location.href = "/view/main.html";
     return;
   }
