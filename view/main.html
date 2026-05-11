@@ -523,8 +523,21 @@ transition: background 18s ease; }
 .opinion-text { font-size: 20px; line-height: 1.6; color: #e2e8f0; font-weight: 500; }
 .opinion-tags { position: absolute; bottom: 32px; left: 32px; display: flex; gap: 8px; }
 .o-tag { padding: 6px 12px; border-radius: 6px; background: #1e293b; color: #94a3b8; font-size: 11px; }
-.nav-btns { position: absolute; bottom: 32px; right: 32px; display: flex; gap: 12px; }
+.nav-btns { position: absolute; bottom: 32px; right: 32px; display: flex; align-items: center; gap: 12px; }
 .nav-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; }
+.opinion-page {
+    min-width: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+
+    color: #f1f5f9;
+}
 
 /* [확실] 감성 비교 섹션 */
 .sentiment-compare { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
@@ -1190,9 +1203,20 @@ will-change: background-color;
 <span class="o-tag"></span>
 </div>
 <div class="nav-btns">
-                    <div class="nav-btn" onclick="prevOpinion()">&lt;</div>
-                    <div class="nav-btn" onclick="nextOpinion()">&gt;</div>
-                </div>
+
+    <div class="nav-btn" onclick="prevOpinion()">
+        &lt;
+    </div>
+
+    <div class="opinion-page">
+        - / -
+    </div>
+
+    <div class="nav-btn" onclick="nextOpinion()">
+        &gt;
+    </div>
+
+</div>
 
 </div>
 </div>
@@ -2023,6 +2047,106 @@ async function loadHeroTop5Keywords() {
     }
 }
 
+// ==============================
+// 오늘의 지배적 여론
+// ==============================
+let opinionList = [];
+let opinionIndex = 0;
+
+async function loadDominantOpinion() {
+    try {
+        const res = await axios.get("/api/main/dominant-opinions");
+
+        opinionList = res.data.opinions || [];
+
+        if (opinionList.length === 0) {
+            opinionList = [
+                {
+                    title: "분석할 여론 데이터가 아직 없습니다.",
+                    keyword: "데이터 없음",
+                    sentiment: "대기"
+                }
+            ];
+        }
+
+        opinionIndex = 0;
+        renderOpinion();
+
+    } catch (err) {
+        console.error("오늘의 지배적 여론 로딩 실패:", err);
+
+        opinionList = [
+            {
+                title: "여론 데이터를 불러오지 못했습니다.",
+                keyword: "오류",
+                sentiment: "대기"
+            }
+        ];
+
+        renderOpinion();
+    }
+}
+
+function renderOpinion() {
+    const opinionText = document.querySelector(".opinion-text");
+    const tags = document.querySelectorAll(".opinion-tags .o-tag");
+    const pageText = document.querySelector(".opinion-page");
+
+    if (!opinionText) return;
+
+    const item = opinionList[opinionIndex];
+
+    opinionText.innerText = item.title || "";
+
+    if (tags[0]) {
+        tags[0].innerText = item.keyword || "";
+    }
+
+    if (tags[1]) {
+        tags[1].innerText = convertSentimentText(item.sentiment);
+    }
+    if (pageText) {
+        pageText.innerText = `${opinionIndex + 1} / ${opinionList.length}`;
+    }
+}
+
+function convertSentimentText(sentiment) {
+    if (sentiment === "positive") return "긍정";
+    if (sentiment === "negative") return "부정";
+    if (sentiment === "neutral") return "중립";
+
+    return sentiment || "중립";
+}
+
+function prevOpinion() {
+    if (opinionList.length === 0) return;
+
+    opinionIndex--;
+
+    if (opinionIndex < 0) {
+        opinionIndex = opinionList.length - 1;
+    }
+
+    renderOpinion();
+}
+
+function nextOpinion() {
+    if (opinionList.length === 0) return;
+
+    opinionIndex++;
+
+    if (opinionIndex >= opinionList.length) {
+        opinionIndex = 0;
+    }
+
+    renderOpinion();
+}
+
+// 일정 시간마다 자동 변경
+setInterval(function () {
+    nextOpinion();
+}, 5000);
+
 /*
    [확실] 기준 데이터 (마스터 템플릿)
    - 타이틀, 아이콘, 색상, 순서는 여기서 관리합니다.
@@ -2332,6 +2456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTopKeyword();
     loadHeroTop5Keywords();
     loadHotNews();
+    loadDominantOpinion();
 });
 
     function updateGauge(selector, percent) {

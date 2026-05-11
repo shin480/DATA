@@ -1183,6 +1183,74 @@ def get_hot_news():
         "articles": articles
     }
 
+# =========================
+# 오늘의 지배적 여론
+# =========================
+@app.get("/api/main/dominant-opinions")
+def get_dominant_opinions():
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        # 1순위: news_count 많은 순
+        # 2순위: updated_at 최신순
+        body={
+            "size": 5,
+            "_source": [
+                "scopeID",
+                "scopeTitle",
+                "scope_summary",
+                "scope_keywords",
+                "sentiment",
+                "sentiment_score",
+                "news_count",
+                "updated_at"
+            ],
+            "query": {
+                "match_all": {}
+            },
+            "sort": [
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                },
+                {
+                    "updated_at": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    opinions = []
+
+    for hit in result["hits"]["hits"]:
+        source = hit["_source"]
+
+        keyword_text = source.get("scope_keywords") or ""
+
+        keyword_list = [
+            keyword.strip()
+            for keyword in str(keyword_text).split(",")
+            if keyword.strip()
+        ]
+
+        opinions.append({
+            "scopeID": source.get("scopeID") or hit["_id"],
+            "title": source.get("scopeTitle") or "스콥 제목 없음",
+            "summary": source.get("scope_summary") or "",
+            "keyword": keyword_list[0] if keyword_list else "키워드 없음",
+            "sentiment": source.get("sentiment") or "neutral",
+            "sentiment_score": source.get("sentiment_score", 0),
+            "news_count": source.get("news_count", 0)
+        })
+
+    return {
+        "opinions": opinions
+    }
+
 # =========================================
 # 배너 관리 API
 # =========================================
