@@ -558,8 +558,13 @@ def get_article_list(
 
     if viewpoint:
         must_conditions.append({
-            "term": {
-                "viewpoint": viewpoint
+            "nested": {
+                "path": "perspective",
+                "query": {
+                    "term": {
+                        "perspective.category": viewpoint
+                    }
+                }
             }
         })
 
@@ -609,7 +614,6 @@ def get_article_list(
             "published_at": source.get("published_at", ""),
             "url": source.get("url", "#"),
             "sentiment": source.get("sentiment", ""),
-            "viewpoint": source.get("viewpoint", "")
         })
 
     return {
