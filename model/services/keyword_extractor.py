@@ -13,6 +13,7 @@
 - [2026-05] 불용어 확장: 뉴스 어미 활용형 / URL 도메인 조각 / 언론 메타어 추가
 - [2026-05] 전처리 강화: URL/이메일/도메인/숫자/특수문자 패턴 제거 (title + tokens 양쪽 적용)
 - [2026-05] 동적 불용어: ES keyword_stopwords 인덱스에서 배치 시작 시 로드해 STOPWORDS에 병합
+- [2026-05] 명사 필터: 동사 어간 패턴으로 끝나는 토큰 제거 (_is_noun_like)
 """
 
 import logging
@@ -188,8 +189,30 @@ def _clean_token(token: str) -> str | None:
     return cleaned if cleaned else None
 
 
-def _is_valid_keyword(word: str) -> bool:
-    """키워드 유효성 검사"""
+# 동사/형용사 어간 말음 패턴
+# Nori 분석 후 단독 토큰으로 남는 동사 어간은 대부분 이 글자로 끝남
+_VERB_ENDING_RE = re.compile(
+    r"[하되이아어고며서지않받줄쓸올갈올낼쓸줄살볼]$"
+)
+
+def _is_noun_like(word: str) -> bool:
+    """
+    명사성 토큰 근사 판별.
+    - 영문은 무조건 허용 (AI, ESG, GDP 등)
+    - 한글은 동사 어간 말음 패턴으로 끝나면 제외
+    """
+    # 영문 단독 토큰은 허용
+    if re.fullmatch(r"[a-zA-Z]+", word):
+        return True
+    # 동사 어간 패턴으로 끝나는 한글 토큰 제외
+    if _VERB_ENDING_RE.search(word):
+        return False
+    return True
+
+
+def _is_valid_keyword(word: str, stopwords: set | None = None) -> bool:
+    """키워드 유효성 검사. stopwords 미전달 시 모듈 기본 STOPWORDS 사용."""
+    sw = stopwords if stopwords is not None else STOPWORDS
     # 길이 체크
     if len(word) < MIN_WORD_LEN:
         return False
@@ -200,10 +223,13 @@ def _is_valid_keyword(word: str) -> bool:
     if not any(c.isalpha() for c in word):
         return False
     # 불용어 체크 (소문자 변환 후 비교 — 영문 대소문자 대응)
-    if word in STOPWORDS or word.lower() in STOPWORDS:
+    if word in sw or word.lower() in sw:
         return False
     # 2자 한글 단어: 허용 예외가 아니면 차단
     if re.fullmatch(r"[가-힣]{1,2}", word) and word not in _ALLOWED_SHORT_WORDS:
+        return False
+    # 명사성 토큰 필터
+    if not _is_noun_like(word):
         return False
     return True
 
@@ -218,10 +244,11 @@ def _remove_josa(word: str) -> str:
 # 키워드 추출
 # ─────────────────────────────────────────────────────────────
 
-def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS) -> list[str]:
+def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS, stopwords: set | None = None) -> list[str]:
     """
     tokens: ES에 저장된 형태소 분석 결과 리스트
     title: 뉴스 제목 (가중치 적용)
+    stopwords: 배치 단위 동적 불용어 합산 set (미전달 시 기본 STOPWORDS)
     """
     # tokens 필터링: URL/이메일/숫자/특수문자 정제 후 유효 단어만 추출
     valid_tokens = []
@@ -229,7 +256,7 @@ def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS)
         if not isinstance(t, str):
             continue
         cleaned = _clean_token(t)
-        if cleaned and re.fullmatch(r"[가-힣a-zA-Z]+", cleaned) and _is_valid_keyword(cleaned):
+        if cleaned and re.fullmatch(r"[가-힣a-zA-Z]+", cleaned) and _is_valid_keyword(cleaned, stopwords):
             valid_tokens.append(cleaned)
 
     if not valid_tokens:
@@ -241,7 +268,7 @@ def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS)
         for t in _preprocess(title).split()
         if re.fullmatch(r"[가-힣a-zA-Z0-9]+", t)
     ]
-    title_tokens = [t for t in title_tokens if _is_valid_keyword(t)]
+    title_tokens = [t for t in title_tokens if _is_valid_keyword(t, stopwords)]
     title_repeated = title_tokens * int(TITLE_WEIGHT)
 
     full_tokens = title_repeated + valid_tokens
@@ -267,7 +294,7 @@ def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS)
     word_scores   = [
         (word, score)
         for word, score in zip(feature_names, scores)
-        if score > 0 and _is_valid_keyword(word)
+        if score > 0 and _is_valid_keyword(word, stopwords)
     ]
     word_scores.sort(key=lambda x: x[1], reverse=True)
     return [word for word, _ in word_scores[:max_keywords]]
@@ -300,10 +327,10 @@ def run_keyword_pipeline():
 
         logger.info(f"키워드 추출 시작: {len(hits)}건")
 
-        # 동적 불용어 로드 — 배치 내 전체 공유
-        dynamic_sw = _load_dynamic_stopwords(es)
-        if dynamic_sw:
-            STOPWORDS.update(dynamic_sw)
+        # 동적 불용어 로드 — 배치 실행마다 새로 로드해 기본 STOPWORDS와 합산
+        # 전역 STOPWORDS를 직접 수정하지 않고 배치 범위 내 local set 사용
+        dynamic_sw      = _load_dynamic_stopwords(es)
+        batch_stopwords = STOPWORDS | dynamic_sw
 
         for hit in hits:
             src        = hit["_source"]
@@ -312,6 +339,7 @@ def run_keyword_pipeline():
                 keywords     = extract_keywords(
                     src.get("title", ""),
                     src.get("tokens", []),
+                    stopwords=batch_stopwords,
                 )
                 keywords_str = ",".join(keywords)
                 es.update(
