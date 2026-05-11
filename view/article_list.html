@@ -983,6 +983,7 @@ let currentPage = 1;
 const pageSize = 50;
 let hasMoreArticles = true;
 let isAutoLoading = false;
+let totalArticleCount = 0;
 
 async function fetchArticles() {
   if (isAutoLoading) return;
@@ -996,6 +997,7 @@ async function fetchArticles() {
     const newArticles = res.data.articles || [];
 
     articles = articles.concat(newArticles);
+    totalArticleCount = res.data.total || articles.length;
 
     hasMoreArticles = res.data.hasMore === true;
     currentPage += 1;
@@ -1020,7 +1022,7 @@ function renderArticles() {
 
   if (!articleList || !articleCount) return;
 
-  articleCount.innerText = `(${articles.length}건)`;
+  articleCount.innerText = `(${totalArticleCount}건)`;
 
   articleList.innerHTML = articles.map(function (item) {
     return `
