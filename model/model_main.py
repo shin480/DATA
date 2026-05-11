@@ -33,6 +33,7 @@ from model.routers.admin import router as admin_router
 from model.routers.classify import router as classify_router
 from model.routers.sentiment_eval import router as eval_router
 from model.routers.correction import router as correction_router
+from model.routers.stopwords import router as stopwords_router
 from model.services.classifier import run_classification_pipeline
 from model.services.scope_title import run_scope_title_batch
 from model.services.scope_summarizer import run_scope_summary_batch
@@ -94,6 +95,7 @@ app.include_router(classify_router)
 app.include_router(admin_router)
 app.include_router(eval_router)
 app.include_router(correction_router)
+app.include_router(stopwords_router)
 
 
 # ── APScheduler ────────────────────────────────────────
