@@ -2019,34 +2019,33 @@ body.light-mode .toast {
   height: 20px;
 }
 
-  /* ==============================
-   전체 다크모드 전환 통일
+/* ==============================
+   Dark/Light Mode Transition
 ============================== */
 
-body,
-.page,
-header,
-.card,
-.view-card,
-.scope-box,
-.summary-box,
-.news-card,
-.keyword-card,
-button,
-a,
-.nav-btn,
-.detail-btn,
-.action-btn,
-.news-footer-btn,
-.toggle-btn,
-.chip,
-.span-chip,
-.h-tag {
+html.dark-transition *,
+html.dark-transition *::before,
+html.dark-transition *::after {
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
     color 0.18s ease,
-    box-shadow 0.18s ease;
+    box-shadow 0.18s ease !important;
+}
+
+/* Header / Footer 안정화 */
+
+.header,
+.footer,
+.footer-modal,
+.footer-modal-box,
+.main-search-wrap {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    backdrop-filter 0.18s ease;
 }
 
   body,

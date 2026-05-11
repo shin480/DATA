@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 # ── 타임아웃 설정 ──────────────────────────────────────
 # 각 job의 최대 허용 실행 시간 (초). 초과 시 TimeoutError → 체인 중단.
 # 운영: 1800 (30분) / 테스트: 300 (5분) 등으로 조정
-JOB_TIMEOUT_SEC = 300
+JOB_TIMEOUT_SEC = 1800
 
 
 def _run_with_timeout(fn, job_id: str, timeout_sec: int = JOB_TIMEOUT_SEC):
@@ -215,7 +215,7 @@ def startup():
     #   운영: trigger="cron", hour=2, minute=0  (day_of_week 제거)
     scheduler.add_job(
         classification_job,
-        trigger="cron", day_of_week="mon", hour=15, minute=0,  # 테스트: 월요일 15:00
+        trigger="cron", day_of_week="tue", hour=11, minute=0,  # 테스트: 화요일 11:00
         id="classification",
         replace_existing=True,
     )
