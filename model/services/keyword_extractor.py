@@ -12,6 +12,7 @@
 - _is_valid_keyword: 한글 단어 최소 2자, 단순 어간 제거 강화
 - [2026-05] 불용어 확장: 뉴스 어미 활용형 / URL 도메인 조각 / 언론 메타어 추가
 - [2026-05] 전처리 강화: URL/이메일/도메인/숫자/특수문자 패턴 제거 (title + tokens 양쪽 적용)
+- [2026-05] 동적 불용어: ES keyword_stopwords 인덱스에서 배치 시작 시 로드해 STOPWORDS에 병합
 """
 
 import logging
@@ -29,7 +30,8 @@ BATCH_SIZE   = 10000
 MAX_KEYWORDS = 5
 TITLE_WEIGHT = 2.0
 MIN_WORD_LEN = 2
-INDEX_NEWS   = "news_economy"
+INDEX_NEWS       = "news_economy"
+INDEX_STOPWORDS  = "keyword_stopwords"
 
 # ─────────────────────────────────────────────────────────────
 # 불용어 정의
@@ -123,6 +125,30 @@ _ALLOWED_SHORT_WORDS = {
     "세금", "세율", "적자", "흑자", "성장", "침체", "경기",
     "물가", "임금", "고용", "실업", "소비", "생산", "무역",
 }
+
+
+# ─────────────────────────────────────────────────────────────
+# 동적 불용어 로드
+# ─────────────────────────────────────────────────────────────
+
+def _load_dynamic_stopwords(es) -> set[str]:
+    """
+    ES keyword_stopwords 인덱스에서 불용어 목록을 로드.
+    배치 시작 시 1회만 호출해 메모리에 올린다.
+    인덱스가 없거나 오류 시 빈 set 반환 (파이프라인 중단 없음).
+    """
+    try:
+        res = es.search(
+            index=INDEX_STOPWORDS,
+            body={"query": {"match_all": {}}, "size": 10000},
+        )
+        words = {hit["_source"]["word"] for hit in res["hits"]["hits"]}
+        if words:
+            logger.info(f"동적 불용어 로드: {len(words)}개")
+        return words
+    except Exception as e:
+        logger.warning(f"동적 불용어 로드 실패 (기본 불용어로 진행): {e}")
+        return set()
 
 
 # ─────────────────────────────────────────────────────────────
@@ -273,6 +299,11 @@ def run_keyword_pipeline():
             return
 
         logger.info(f"키워드 추출 시작: {len(hits)}건")
+
+        # 동적 불용어 로드 — 배치 내 전체 공유
+        dynamic_sw = _load_dynamic_stopwords(es)
+        if dynamic_sw:
+            STOPWORDS.update(dynamic_sw)
 
         for hit in hits:
             src        = hit["_source"]

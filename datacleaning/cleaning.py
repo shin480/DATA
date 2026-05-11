@@ -72,7 +72,7 @@ def get_preprocessed_data():
     query = {
         "query": {
             "bool": {
-                "must_not": [{"term": {"status": "preprocessed"}}]
+                "must": [{"term": {"status": "collected"}}]
             }
         },
         "size": 5000
@@ -91,6 +91,7 @@ def get_preprocessed_data():
 
     logs = {"missing_fields": [], "url_duplicate": [], "meta_duplicate": [],
             "content_duplicate": [], "high_similarity": [], "es_duplicate": []}
+    skipped_updates = []
 
     required_fields = ['collected_at', 'title', 'raw_text', 'url', 'press', 'published_at']
 
@@ -100,6 +101,12 @@ def get_preprocessed_data():
             val = row.get(field)
             if pd.isna(val) or str(val).strip() == "" or str(val).lower() == "nan":
                 logs["missing_fields"].append(row.get('title', '제목없음'))
+                skipped_updates.append({
+                    "_op_type": "update",
+                    "_index": "article_raw",
+                    "_id": row["_id"],
+                    "doc": {"status": "skipped_missing"}
+                })
                 return False
         return True
 
@@ -116,11 +123,23 @@ def get_preprocessed_data():
         # url 중복 체크
         if url in seen_urls:
             logs["url_duplicate"].append(title);
+            skipped_updates.append({
+                "_op_type": "update",
+                "_index": "article_raw",
+                "_id": row["_id"],
+                "doc": {"status": "skipped_duplicate_url"}
+            })
             continue
 
         # 메타데이터 중복 체크
         if any(p['title'] == title and p['press'] == row['press'] for p in final_data):
             logs["meta_duplicate"].append(title);
+            skipped_updates.append({
+                "_op_type": "update",
+                "_index": "article_raw",
+                "_id": row["_id"],
+                "doc": {"status": "skipped_duplicate_meta"}
+            })
             continue
 
         article_id = row.get("article_id", "")
@@ -128,6 +147,12 @@ def get_preprocessed_data():
         # 과거 es 중복 체크
         if exists_in_news_economy(article_id, url, title, row["press"]):
             logs["es_duplicate"].append(title)
+            skipped_updates.append({
+                "_op_type": "update",
+                "_index": "article_raw",
+                "_id": row["_id"],
+                "doc": {"status": "skipped_es_duplicate"}
+            })
             continue
 
         if passed_texts:
@@ -137,6 +162,12 @@ def get_preprocessed_data():
                 cosine_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
                 if (cosine_sim >= 0.9).any():
                     logs["high_similarity"].append(title)
+                    skipped_updates.append({
+                        "_op_type": "update",
+                        "_index": "article_raw",
+                        "_id": row["_id"],
+                        "doc": {"status": "skipped_similarity"}
+                    })
                     continue
             except:
                 pass
@@ -148,6 +179,27 @@ def get_preprocessed_data():
         final_data.append(row.to_dict())
         seen_urls.add(url)
         passed_texts.append(content)
+
+    if skipped_updates and not DEBUG_MODE:
+        batch_size = 500
+
+        for i in range(0, len(skipped_updates), batch_size):
+            batch = skipped_updates[i:i + batch_size]
+
+            bulk(es, batch, raise_on_error=False)
+
+            print(f"[스킵상태업데이트] article_raw {i + len(batch)}/{len(skipped_updates)}건 skipped 처리 완료")
+        es.indices.refresh(index="article_raw")
+
+    if len(final_data) == 0:
+        es.indices.refresh(index="article_raw")
+
+        return {
+            "message": "저장할 신규 전처리 데이터가 없습니다. 중복/결측치 데이터는 skipped 처리했습니다.",
+            "count": 0,
+            "skip_count": len(skipped_updates),
+            "logs": logs
+        }
 
     # 4. news_economy 인덱스에 Bulk 저장
     actions = []
@@ -176,7 +228,6 @@ def get_preprocessed_data():
             batch = actions[i:i + batch_size]
 
             bulk(es, batch)
-            es.indices.refresh(index=target_index)
 
             print(f"[ES중간저장] news_economy {i + len(batch)}/{len(actions)}건 저장 완료")
 
@@ -239,8 +290,6 @@ def get_preprocessed_data():
                 if failed:
                     total_failed.extend(failed)
 
-                es.indices.refresh(index="article_raw")
-
                 print(f"[상태중간업데이트] article_raw {i + len(batch)}/{len(update_actions)}건 preprocessed 변경 완료")
 
             print(f"[업데이트완료] article_raw 총 {len(final_data)}건 중 {total_success}건 'preprocessed' 상태로 변경.")
@@ -251,8 +300,6 @@ def get_preprocessed_data():
     else:
         # 디버그 모드일 때는 출력만 수행
         print(f"[디버그모드] 실제 article_raw 업데이트는 건너뜁니다. (대상: {len(final_data)}건)")
-
-    es.indices.refresh(index=target_index)
 
     token_update_actions = []
     token_model_inputs = []
@@ -292,11 +339,13 @@ def get_preprocessed_data():
             batch = token_update_actions[i:i + batch_size]
 
             bulk(es, batch)
-            es.indices.refresh(index=target_index)
 
             print(f"[토큰중간저장] tokens {i + len(batch)}/{len(token_update_actions)}건 업데이트 완료")
 
-        print(f"[토큰화완료] tokens 필드 업데이트 및 리프레시 완료.")
+        print(f"[토큰화완료] tokens 필드 업데이트")
+
+    es.indices.refresh(index=target_index)
+    es.indices.refresh(index="article_raw")
 
     return {
         "message": "전처리 및 Nori 토큰화 통합 프로세스 완료",
