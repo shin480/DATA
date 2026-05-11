@@ -5,3 +5,6 @@ view/img/banners/*
 # Python 캐시 파일
 __pycache__/
 *.pyc
+
+# Python 가상환경
+venv/
