@@ -1314,13 +1314,6 @@ document.addEventListener("click", function (e) {
 });
 
 /* =========================
-   무한 스크롤 이벤트
-========================= */
-
-window.addEventListener("scroll", checkAutoLoad);
-window.addEventListener("resize", checkAutoLoad);
-
-/* =========================
    Init
 ========================= */
 
@@ -1328,6 +1321,10 @@ document.addEventListener("DOMContentLoaded", function () {
   applyThemeMode();
   loadHeader();
   loadFooter();
+
+  window.addEventListener("scroll", checkAutoLoad);
+  window.addEventListener("resize", checkAutoLoad);
+
   fetchArticles();
 });
 </script>
