@@ -126,7 +126,7 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
     for i in range(3):
         cat, score = sorted_res[i]
         top3.append((cat, round(score, 1)) if score > 0 else ("미분류", 0.0))
-
+    print(top3)
     return top3
 
 def update_perspective_to_es():
@@ -195,3 +195,6 @@ def update_perspective_to_es():
         es.clear_scroll(scroll_id=scroll_id)
 
     print("관점 분류 Top-3 ES 저장 완료")
+
+if __name__ == "__main__":
+    update_perspective_to_es()
