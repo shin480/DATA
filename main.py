@@ -1326,6 +1326,7 @@ def get_admin_banners():
                 title,
                 landing_url,
                 image_url,
+                content,
                 DATE_FORMAT(start_at, '%Y-%m-%d') AS start_at,
                 DATE_FORMAT(end_at, '%Y-%m-%d') AS end_at,
                 is_active
@@ -1352,6 +1353,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 title,
                 landing_url,
                 image_url,
+                content,
                 start_at,
                 end_at,
                 is_active
@@ -1361,6 +1363,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 :title,
                 :landing_url,
                 :image_url,
+                :content,
                 :start_at,
                 :end_at,
                 :is_active
@@ -1370,6 +1373,7 @@ def create_admin_banner(info: Dict[str, Any]):
             "banner_type": info.get("banner_type", "notice"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
+            "content": info.get("content"),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1439,6 +1443,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
                 title = :title,
                 landing_url = :landing_url,
                 image_url = :image_url,
+                content = :content,
                 start_at = :start_at,
                 end_at = :end_at,
                 is_active = :is_active
@@ -1449,6 +1454,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
             "title": info.get("title"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
+            "content": info.get("content"),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1518,6 +1524,7 @@ def get_active_banner_list():
                 title,
                 landing_url,
                 image_url,
+                content,
                 start_at,
                 end_at,
                 created_at,
