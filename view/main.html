@@ -501,7 +501,7 @@ body.light .logo {
 
     background:
         conic-gradient( var(--gauge-color) calc(var(--percent) * 1%), #1e293b 0 );
-transition: background 18s ease; }
+transition: background 0.18s ease; }
 
 .gauge-circle::before { content: ""; position: absolute; width: 118px; height: 118px; border-radius: 50%; background: #0f172a; }
 
@@ -561,7 +561,7 @@ transition: background 18s ease; }
 
 /* [확실] 관점 분석 섹션 */
 .viewpoint-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
-.view-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-height: 440px; overflow: hidden; transition: max-height .18s ease; margin-top: 24px; }
+.view-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-height: 440px; overflow: hidden; transition: max-height 0.18s ease; margin-top: 24px; }
 .view-grid.expanded { max-height: 2500px; }
 .view-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
 .view-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
@@ -570,7 +570,7 @@ transition: background 18s ease; }
 .view-title-group .vt { font-size: 14px; font-weight: 700; }
 .view-title-group .vp { font-size: 24px; font-weight: 900; }
 .view-bar-bg { height: 6px; background: #334155; border-radius: 999px; overflow: hidden; margin-bottom: 15px; }
-.view-bar-fill { height: 100%; border-radius: 999px; transition: width 18s ease; }
+.view-bar-fill { height: 100%; border-radius: 999px; transition: width 0.18s ease; }
 .reason-label { font-size: 11px; color: #38bdf8; font-weight: 700; margin-bottom: 8px; }
 .view-reason { color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
 .detail-btn { width: fit-content;
