@@ -477,6 +477,79 @@ def get_keyword_detail(keyword: str):
 
         "articles": articles
     }
+# =========================
+# 랜덤 키워드 조회 API
+# 최신 날짜 기준 기사 수 Top100 중 랜덤
+# =========================
+import random
+@app.get("/api/main/random-keyword")
+def get_random_keyword():
+
+    es = get_es()
+
+    latest_date_result = es.search(
+        index="daily_keyword_metrics",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ],
+            "_source": ["date"]
+        }
+    )
+
+    hits = latest_date_result["hits"]["hits"]
+
+    if not hits:
+        return {
+            "keyword": None
+        }
+
+    latest_date = hits[0]["_source"]["date"]
+
+    result = es.search(
+        index="daily_keyword_metrics",
+        body={
+            "size": 100,
+            "query": {
+                "term": {
+                    "date": latest_date
+                }
+            },
+            "sort": [
+                {
+                    "article_count": {
+                        "order": "desc"
+                    }
+                }
+            ],
+            "_source": [
+                "keyword",
+                "article_count",
+                "date"
+            ]
+        }
+    )
+
+    keyword_hits = result["hits"]["hits"]
+
+    if not keyword_hits:
+        return {
+            "keyword": None
+        }
+
+    random_hit = random.choice(keyword_hits)
+    source = random_hit["_source"]
+
+    return {
+        "keyword": source.get("keyword"),
+        "article_count": source.get("article_count", 0),
+        "date": source.get("date")
+    }
 
 @app.get("/api/search/suggest")
 def search_suggest(q: str):
@@ -1343,11 +1416,12 @@ def get_admin_banners():
                 landing_url,
                 image_url,
                 content,
+                is_pinned,
                 DATE_FORMAT(start_at, '%Y-%m-%d') AS start_at,
                 DATE_FORMAT(end_at, '%Y-%m-%d') AS end_at,
                 is_active
             FROM banners
-            ORDER BY created_at DESC
+            ORDER BY is_pinned DESC, created_at DESC
         """)).mappings().all()
 
         return {
@@ -1370,6 +1444,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 landing_url,
                 image_url,
                 content,
+                is_pinned,
                 start_at,
                 end_at,
                 is_active
@@ -1380,6 +1455,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 :landing_url,
                 :image_url,
                 :content,
+                :is_pinned,
                 :start_at,
                 :end_at,
                 :is_active
@@ -1390,6 +1466,7 @@ def create_admin_banner(info: Dict[str, Any]):
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
             "content": info.get("content"),
+            "is_pinned": info.get("is_pinned", False),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1460,6 +1537,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
                 landing_url = :landing_url,
                 image_url = :image_url,
                 content = :content,
+                is_pinned = :is_pinned,
                 start_at = :start_at,
                 end_at = :end_at,
                 is_active = :is_active
@@ -1471,6 +1549,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
             "content": info.get("content"),
+            "is_pinned": info.get("is_pinned", False),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1541,6 +1620,7 @@ def get_active_banner_list():
                 landing_url,
                 image_url,
                 content,
+                is_pinned,
                 start_at,
                 end_at,
                 created_at,
@@ -1549,7 +1629,7 @@ def get_active_banner_list():
             WHERE is_active = TRUE
               AND start_at <= NOW()
               AND end_at >= NOW()
-            ORDER BY updated_at DESC, created_at DESC
+            ORDER BY is_pinned DESC, created_at DESC
         """)).mappings().all()
 
         return {
