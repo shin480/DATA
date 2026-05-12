@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>공지사항 | DATA 다타</title>
+  <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #050916;
+      color: #d9e7ff;
+      font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
+    }
+
+    .page {
+      width: 100%;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(14, 165, 255, 0.14), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(37, 99, 255, 0.12), transparent 38%),
+        #050916;
+    }
+
+    .notice-wrap {
+      width: 980px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 64px 0 90px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 46px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+    }
+
+    .logo-text {
+      color: #f8fafc;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .back-btn {
+      border: 1px solid #1f2937;
+      background: rgba(7, 11, 26, 0.82);
+      color: #94a3b8;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      transition: 0.2s;
+    }
+
+    .back-btn:hover {
+      border-color: #00e5ff;
+      color: #00e5ff;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .notice-head {
+      margin-bottom: 34px;
+    }
+
+    .notice-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.24);
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .notice-head h1 {
+      color: #f8fafc;
+      font-size: 34px;
+      line-height: 1.25;
+      letter-spacing: -0.04em;
+      margin-bottom: 12px;
+    }
+
+    .notice-head p {
+      color: #7c8aa5;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .notice-panel {
+      border: 1px solid #17223a;
+      border-radius: 18px;
+      background: rgba(5, 11, 28, 0.78);
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.22);
+      overflow: hidden;
+    }
+
+    .notice-table-head {
+      display: grid;
+      grid-template-columns: 90px 1fr 150px;
+      align-items: center;
+      min-height: 52px;
+      padding: 0 24px;
+      background: rgba(15, 23, 42, 0.78);
+      border-bottom: 1px solid #17223a;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .notice-list {
+      width: 100%;
+    }
+
+    .notice-item {
+      display: grid;
+      grid-template-columns: 90px 1fr 150px;
+      align-items: center;
+      min-height: 74px;
+      padding: 0 24px;
+      border-bottom: 1px solid #111c31;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .notice-item:last-child {
+      border-bottom: none;
+    }
+
+    .notice-item:hover {
+      background: rgba(15, 23, 42, 0.88);
+    }
+
+    .notice-no {
+      color: #38bdf8;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .notice-title {
+      min-width: 0;
+      color: #dce8ff;
+      font-size: 15px;
+      font-weight: 800;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      padding-right: 20px;
+    }
+
+    .notice-date {
+      color: #64748b;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .notice-empty {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 14px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .notice-loading {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .bottom-guide {
+      margin-top: 22px;
+      color: #52627d;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1100px) {
+      .notice-wrap {
+        width: calc(100% - 40px);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .notice-wrap {
+        width: calc(100% - 28px);
+        padding-top: 36px;
+      }
+
+      .top-bar {
+        margin-bottom: 34px;
+      }
+
+      .notice-head h1 {
+        font-size: 28px;
+      }
+
+      .notice-table-head {
+        display: none;
+      }
+
+      .notice-item {
+        grid-template-columns: 54px 1fr;
+        grid-template-areas:
+          "no title"
+          "no date";
+        gap: 4px 10px;
+        min-height: 82px;
+        padding: 16px 18px;
+      }
+
+      .notice-no {
+        grid-area: no;
+      }
+
+      .notice-title {
+        grid-area: title;
+        padding-right: 0;
+      }
+
+      .notice-date {
+        grid-area: date;
+        text-align: left;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="page">
+  <main class="notice-wrap">
+    <div class="top-bar">
+      <a href="/view/main.html" class="logo-area">
+        <img src="/view/img/favicon.png" alt="DATA 다타 로고" class="logo-img">
+        <span class="logo-text">DATA 다타</span>
+      </a>
+
+      <button class="back-btn" type="button" onclick="history.back()">
+        ← 이전 페이지로
+      </button>
+    </div>
+
+    <section class="notice-head">
+      <span class="notice-label">NOTICE</span>
+      <h1>공지사항</h1>
+      <p>
+        DATA 다타의 주요 안내사항을 확인할 수 있습니다.
+      </p>
+    </section>
+
+    <section class="notice-panel">
+      <div class="notice-table-head">
+        <div>번호</div>
+        <div>제목</div>
+        <div style="text-align: right;">등록일</div>
+      </div>
+
+      <div id="noticeListArea">
+        <div class="notice-loading">공지사항을 불러오는 중입니다.</div>
+      </div>
+    </section>
+
+    <p class="bottom-guide">
+      공지사항을 클릭하면 연결된 안내 페이지로 이동합니다.
+    </p>
+  </main>
+</div>
+
+<script>
+  async function loadNoticeList() {
+    const area = document.getElementById("noticeListArea");
+
+    if (!area) return;
+
+    try {
+      const { data } = await axios.get("/api/banner/active-list");
+
+      const banners = data.banners || [];
+
+      const notices = banners.filter(function (item) {
+        return item.banner_type === "notice";
+      });
+
+      if (notices.length === 0) {
+        area.innerHTML = `
+          <div class="notice-empty">
+            등록된 공지사항이 없습니다.
+          </div>
+        `;
+        return;
+      }
+
+      area.innerHTML = `
+        <div class="notice-list">
+          ${notices.map(function (item, index) {
+            return `
+              <div
+                class="notice-item"
+                onclick="moveNotice('${escapeAttr(item.landing_url || "")}')"
+              >
+                <div class="notice-no">
+                  ${String(index + 1).padStart(2, "0")}
+                </div>
+
+                <div class="notice-title">
+                  ${escapeHtml(item.title || "제목 없음")}
+                </div>
+
+                <div class="notice-date">
+                  ${formatDate(item.start_at || item.created_at || item.updated_at)}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+    } catch (err) {
+      console.error("공지사항 목록 로드 실패:", err);
+
+      area.innerHTML = `
+        <div class="notice-empty">
+          공지사항을 불러오지 못했습니다.<br>
+          잠시 후 다시 시도해주세요.
+        </div>
+      `;
+    }
+  }
+
+  function moveNotice(url) {
+    if (!url) return;
+
+    let targetUrl = url;
+
+    if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+      targetUrl = "https://" + targetUrl;
+    }
+
+    window.open(targetUrl, "_blank");
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return "-";
+
+    const date = new Date(dateStr);
+
+    if (isNaN(date.getTime())) return "-";
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+
+    return `${yyyy}.${mm}.${dd}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(value) {
+    return String(value)
+      .replaceAll("\\", "\\\\")
+      .replaceAll("'", "\\'")
+      .replaceAll('"', "&quot;");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    loadNoticeList();
+  });
+</script>
+</body>
+</html>
