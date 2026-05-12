@@ -6,6 +6,10 @@
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
   <style>
+
+    html {
+  overflow-y: scroll;
+}
     * {
       box-sizing: border-box;
       margin: 0;
@@ -39,13 +43,14 @@
       min-height: 100vh;
     }
 
-    .layout {
-      width: 1240px;
-      margin: 0 auto;
-      display: flex;
-
-      flex: 1;
-    }
+.layout {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+}
 
     aside {
       width: 230px;
@@ -95,6 +100,7 @@
     }
 
     main {
+    min-width: 0;
       flex: 1;
       padding: 42px 28px 80px;
     }
@@ -252,6 +258,12 @@
       background: #070b1a;
       border-bottom: 1px solid #111827;
     }
+
+    .header-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+}
 
     .logo {
       width: 155px;
@@ -472,10 +484,10 @@
 }
 
 .footer-inner {
+  max-width: 1240px;
+  margin: 0 auto;
   width: 100%;
-  min-height: 88px;
-  padding: 0 70px;
-  box-sizing: border-box;
+}
 
   display: flex;
   align-items: center;
@@ -749,6 +761,53 @@
     body.light-mode .footer-modal-content h3 {
       color: #0f172a;
     }
+
+    .custom-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.custom-alert.hidden {
+  display: none;
+}
+
+.custom-alert-content {
+  background: #1f2330;
+  padding: 24px;
+  border-radius: 16px;
+  width: 320px;
+  text-align: center;
+  color: #fff;
+}
+
+.custom-alert-message {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.custom-alert-error {
+  color: #ff4d4d;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.custom-alert-btn {
+  background: #00cfff;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -810,6 +869,7 @@
             placeholder="새 비밀번호 (변경 시에만 입력)"
             maxlength="20"
             oninput="validatePasswordInput(this); checkPasswordMatch();"
+            onkeydown="handleEnter(event)"
           />
         </div>
 
@@ -821,6 +881,7 @@
             placeholder="비밀번호 확인"
             maxlength="20"
             oninput="validatePasswordInput(this); checkPasswordMatch();"
+            onkeydown="handleEnter(event)"
           />
           <div class="error" id="passwordError">* 비밀번호가 일치하지 않습니다.</div>
         </div>
@@ -843,7 +904,19 @@
 
 </div>
 
+<div id="customAlert" class="custom-alert hidden">
+  <div class="custom-alert-content">
+    <div id="customAlertMsg" class="custom-alert-message"></div>
+    <div id="customAlertError" class="custom-alert-error"></div>
+    <button id="customAlertBtn" class="custom-alert-btn">확인</button>
+    <button id="customAlertNo" class="custom-alert-btn" style="background:#334155; color:#fff; margin-top:8px;">취소</button>
+  </div>
+</div>
+
 <script>
+
+  let isConfirmMode = false;
+
   function loadUserInfo() {
     const name = sessionStorage.getItem("user_name");
     const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email");
@@ -1063,34 +1136,34 @@
     const pw2 = document.getElementById("passwordCheck").value;
 
     if (pw1 === "" && pw2 === "") {
-      alert("변경 사항이 없습니다.");
+      showCustomAlert("변경 사항이 없습니다.");
       return;
     }
 
     if (pw1 !== "" && pw1.length < 8) {
-      alert("비밀번호는 8자 이상이어야 합니다.");
+      showCustomAlert("비밀번호는 8자 이상이어야 합니다.");
       return;
     }
 
     if (pw1 === "" && pw2 !== "") {
-      alert("새 비밀번호를 입력해주세요.");
+      showCustomAlert("새 비밀번호를 입력해주세요.");
       return;
     }
 
     if (pw1 !== "" && pw2 === "") {
-      alert("비밀번호 확인을 입력해주세요.");
+      showCustomAlert("비밀번호 확인을 입력해주세요.");
       return;
     }
 
     if (pw1 !== pw2) {
-      alert("비밀번호가 일치하지 않습니다.");
+      showCustomAlert("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     const email = sessionStorage.getItem("user_id");
 
     if (!email) {
-      alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
+      showCustomAlert("로그인 정보가 없습니다. 다시 로그인해주세요.");
       location.href = "/view/login.html";
       return;
     }
@@ -1106,29 +1179,27 @@
         document.getElementById("passwordCheck").value = "";
         document.getElementById("passwordError").style.display = "none";
 
-        alert("회원정보 수정이 완료되었습니다.");
+        showCustomAlert("회원정보 수정이 완료되었습니다.");
       } else {
-        alert("실패: " + response.data.message);
+        showCustomAlert("실패: " + response.data.message);
       }
     } catch (err) {
       console.error("비밀번호 변경 중 에러:", err);
-      alert("서버 통신 중 오류가 발생했습니다.");
+      showCustomAlert("서버 통신 중 오류가 발생했습니다.");
     }
   }
 
-  async function deleteUser() {
-    const confirmDelete = confirm(
-      "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 회원 정보와 활동 내역이 삭제됩니다."
-    );
+async function deleteUser() {
+  const confirmDelete = await showCustomConfirm(
+    "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 정보가 삭제됩니다."
+  );
 
-    if (!confirmDelete) {
-      return;
-    }
+  if (!confirmDelete) return;
 
     const user_id = sessionStorage.getItem("user_id");
 
     if (!user_id) {
-      alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
+      showCustomAlert("로그인 정보가 없습니다. 다시 로그인해주세요.");
       location.href = "/view/login.html";
       return;
     }
@@ -1139,18 +1210,18 @@
       });
 
       if (response.data.success) {
-        alert(response.data.message);
+        showCustomAlert(response.data.message);
 
         sessionStorage.clear();
         localStorage.clear();
 
         location.href = "/view/main.html";
       } else {
-        alert("탈퇴 실패: " + response.data.message);
+        showCustomAlert("탈퇴 실패: " + response.data.message);
       }
     } catch (err) {
       console.error("탈퇴 중 에러 발생:", err);
-      alert("서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
+      showCustomAlert("서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   }
 
@@ -1383,6 +1454,73 @@
       passwordError.style.display = "none";
     }
   });
+
+  function handleEnter(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    updateUserInfo();
+  }
+}
+
+function showCustomAlert(message, error = "") {
+  const modal = document.getElementById("customAlert");
+  const msg = document.getElementById("customAlertMsg");
+  const err = document.getElementById("customAlertError");
+  const btn = document.getElementById("customAlertBtn");
+
+  msg.innerText = message;
+  err.innerText = error;
+
+  modal.classList.remove("hidden");
+
+  btn.onclick = function () {
+    modal.classList.add("hidden");
+  };
+}
+
+document.addEventListener("click", function (e) {
+  const modal = document.getElementById("customAlert");
+
+  if (!modal || modal.classList.contains("hidden")) return;
+
+  const content = modal.querySelector(".custom-alert-content");
+
+  // 배경 클릭이면 닫기
+  if (!content.contains(e.target)) {
+    closeCustomAlert();
+  }
+});
+
+  document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    const modal = document.getElementById("customAlert");
+    if (modal) modal.classList.add("hidden");
+  }
+});
+
+function showCustomConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("customAlert");
+    const msg = document.getElementById("customAlertMsg");
+    const yesBtn = document.getElementById("customAlertBtn");
+    const noBtn = document.getElementById("customAlertNo");
+
+    msg.innerText = message;
+    modal.classList.remove("hidden");
+
+    yesBtn.onclick = () => {
+      modal.classList.add("hidden");
+      resolve(true);
+    };
+
+    noBtn.onclick = () => {
+      modal.classList.add("hidden");
+      resolve(false);
+    };
+  });
+}
+
+
 </script>
 </body>
 </html>

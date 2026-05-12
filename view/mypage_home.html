@@ -6,6 +6,11 @@
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
   <style>
+
+    html {
+  overflow-y: scroll;
+}
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -38,13 +43,14 @@
       flex-direction: column;
     }
 
-    .layout {
-      width: 1240px;
-      margin: 0 auto;
-      display: flex;
-
-      flex: 1;
-    }
+.layout {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+}
 
     aside {
       width: 230px;
@@ -103,6 +109,7 @@
     }
 
     main {
+    min-width: 0;
       flex: 1;
       padding: 42px 28px 80px;
     }
@@ -494,6 +501,12 @@
       border-bottom: 1px solid #111827;
     }
 
+    .header-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+}
+
     .logo {
       width: 155px;
       height: 52px;
@@ -705,12 +718,10 @@
   flex-shrink: 0;
 }
 
-.footer {
+.footer-inner {
+  max-width: 1240px;
+  margin: 0 auto;
   width: 100%;
-  min-height: 88px;
-  background: #020617;
-  color: #fff;
-  box-sizing: border-box;
 }
 
 .footer-inner {
@@ -1392,6 +1403,8 @@ body.light-mode .custom-alert-btn {
   </div>
 </div>
 
+<div class="custom-alert-error" id="customAlertError"></div>
+
 <script>
   /* =========================
      페이지 이탈 감지
@@ -1943,30 +1956,36 @@ box.onclick = function () {
 };
 }
 
-  async function pwconfirm() {
-    const password = document.getElementById("pwInput").value.trim();
-    const user_id = sessionStorage.getItem("user_id");
+async function pwconfirm() {
+  const password = document.getElementById("pwInput").value.trim();
+  const user_id = sessionStorage.getItem("user_id");
 
-    try {
-      const { data } = await axios.post("/pw_check", {
-        user_id: user_id,
-        password: password
-      });
-      if (data.success) {
-        showCustomAlert("본인 인증에 성공하였습니다.");
+  try {
+    const { data } = await axios.post("/pw_check", {
+      user_id,
+      password
+    });
+
+    if (data.success) {
+      showCustomAlert("본인 인증에 성공하였습니다.");
+
+      setTimeout(() => {
         location.href = "/view/mypage_account.html";
-      } else {
-        showCustomAlert("실패: " + data.message);
+      }, 300);
 
-        document.getElementById("pwInput").value = "";
-  document.getElementById("pwInput").focus();
+    } else {
+      showCustomAlert("실패: " + data.message);
 
-      }
-    } catch (err) {
-      console.error("비밀번호 확인 중 에러:", err);
-      showCustomAlert("서버 통신 중 오류가 발생했습니다.");
+      const input = document.getElementById("pwInput");
+      input.value = "";
+      input.focus();
     }
+
+  } catch (err) {
+    console.error("비밀번호 확인 중 에러:", err);
+    showCustomAlert("서버 통신 중 오류가 발생했습니다.");
   }
+}
 
   function loadHeader() {
     const headerArea = document.getElementById("header");
@@ -2139,31 +2158,31 @@ box.onclick = function () {
       return;
     }
 
-    if (accountPageBtn) {
-      (async () => {
-        try {
-          const { data } = await axios.post("/pw_check_time");
+if (accountPageBtn) {
+  (async () => {
+    try {
+      const { data } = await axios.post("/pw_check_time");
 
-          if (data.is_authenticated) {
-            location.href = "/view/mypage_account.html";
-          } else {
-            const modal = document.getElementById("pwModal");
-            const input = document.getElementById("pwInput");
+      if (data.is_authenticated) {
+        location.href = "/view/mypage_account.html";
+      } else {
+        const modal = document.getElementById("pwModal");
+        const input = document.getElementById("pwInput");
 
-            modal.classList.remove("hidden");
+        modal.classList.remove("hidden");
 
-            setTimeout(() => {
-              input.focus();
-            }, 50);
-          }
-        } catch (err) {
-          console.error("인증 상태 확인 에러:", err);
-          showCustomAlert("서버 통신 중 오류가 발생했습니다.");
-        }
-      })();
-
-      return;
+        setTimeout(() => {
+          input.focus();
+        }, 50);
+      }
+    } catch (err) {
+      console.error("인증 상태 확인 에러:", err);
+      showCustomAlert("서버 통신 중 오류가 발생했습니다.");
     }
+  })();
+
+  return;
+}
 
     if (pwCancelBtn) {
       document.getElementById("pwModal").classList.add("hidden");
@@ -2236,18 +2255,16 @@ box.onclick = function () {
   }
 });
 
-document.getElementById("pwModal").addEventListener("click", function (e) {
-  if (e.target === this) {
-    this.classList.add("hidden");
-    document.getElementById("pwInput").value = "";
-  }
-});
+const pwModal = document.getElementById("pwModal");
 
-  document.getElementById("pwInput").addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    pwconfirm();
-  }
-});
+if (pwModal) {
+  pwModal.addEventListener("click", function (e) {
+    if (e.target === this) {
+      this.classList.add("hidden");
+      document.getElementById("pwInput").value = "";
+    }
+  });
+}
 
   function showCustomAlert(message, errorText = "") {
   const modal = document.getElementById("customAlert");
