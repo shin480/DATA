@@ -14,7 +14,6 @@
 - [2026-05] 전처리 강화: URL/이메일/도메인/숫자/특수문자 패턴 제거 (title + tokens 양쪽 적용)
 - [2026-05] 동적 불용어: ES keyword_stopwords 인덱스에서 배치 시작 시 로드해 STOPWORDS에 병합
 - [2026-05] 명사 필터: 동사 어간 패턴으로 끝나는 토큰 제거 (_is_noun_like)
-- [2026-05] extract_keywords_single 추가: 단건 재처리용 래퍼
 """
 
 import logging
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE   = 10000
 MAX_KEYWORDS = 5
-TITLE_WEIGHT = 2.0
+TITLE_WEIGHT = 3.0
 MIN_WORD_LEN = 2
 INDEX_NEWS       = "news_economy"
 INDEX_STOPWORDS  = "keyword_stopwords"
@@ -301,44 +300,9 @@ def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS,
     return [word for word, _ in word_scores[:max_keywords]]
 
 
-# ── 단건 재처리 래퍼 ───────────────────────────────────────────
-
-def extract_keywords_single(article_id: str, src: dict) -> None:
-    """
-    단건 아티클 키워드 추출 후 ES 업데이트.
-    classify.py의 reprocess_article 엔드포인트에서 호출됩니다.
-
-    동적 불용어는 단건 실행 시에도 ES에서 로드합니다.
-
-    Args:
-        article_id: news_economy 문서 ID
-        src: ES _source dict (title, tokens 필드 포함)
-
-    Raises:
-        Exception: 추출 실패 또는 ES 업데이트 실패 시
-    """
-    es = get_es()
-    try:
-        dynamic_sw      = _load_dynamic_stopwords(es)
-        batch_stopwords = STOPWORDS | dynamic_sw
-
-        keywords = extract_keywords(
-            src.get("title", ""),
-            src.get("tokens", []),
-            stopwords=batch_stopwords,
-        )
-        keywords_str = ",".join(keywords)
-        es.update(
-            index=INDEX_NEWS,
-            id=article_id,
-            body={"doc": {"keywords": keywords_str}},
-        )
-        logger.info(f"[단건] 키워드 추출 완료 article_id={article_id} → {keywords}")
-    finally:
-        es.close()
-
-
-# ── 배치 파이프라인 진입점 ─────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
+# 파이프라인 진입점
+# ─────────────────────────────────────────────────────────────
 
 def run_keyword_pipeline():
     """keywords=NULL 뉴스를 배치로 가져와 키워드를 추출합니다."""
