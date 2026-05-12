@@ -1371,25 +1371,23 @@ def get_dominant_opinions():
     es = get_es()
 
     result = es.search(
-        index="news_scopes",
+        index=NEWS_ECONOMY_INDEX,
         body={
             "size": 5,
             "_source": [
-                "scope_summary",
-                "scope_keywords",
-                "sentiment"
+                "title",
+                "summary",
+                "keywords",
+                "sentiment",
+                "perspective",
+                "published_at"
             ],
             "query": {
                 "match_all": {}
             },
             "sort": [
                 {
-                    "news_count": {
-                        "order": "desc"
-                    }
-                },
-                {
-                    "updated_at": {
+                    "published_at": {
                         "order": "desc"
                     }
                 }
@@ -1402,17 +1400,26 @@ def get_dominant_opinions():
     for hit in result["hits"]["hits"]:
         source = hit["_source"]
 
-        keyword_text = source.get("scope_keywords") or ""
+        keyword_text = source.get("keywords") or ""
 
-        keyword_list = [
-            keyword.strip()
-            for keyword in str(keyword_text).split(",")
-            if keyword.strip()
-        ]
+        if isinstance(keyword_text, list):
+            keyword_list = keyword_text
+        else:
+            keyword_list = [
+                keyword.strip()
+                for keyword in str(keyword_text).split(",")
+                if keyword.strip()
+            ]
+
+        perspectives = source.get("perspective", [])
+
+        top_perspective = ""
+        if perspectives:
+            top_perspective = perspectives[0].get("category", "")
 
         opinions.append({
-            "title": source.get("scope_summary") or "요약 없음",
-            "keyword": keyword_list[0] if keyword_list else "키워드 없음",
+            "title": source.get("summary") or source.get("title") or "요약 없음",
+            "keyword": keyword_list[0] if keyword_list else top_perspective or "키워드 없음",
             "sentiment": source.get("sentiment") or "neutral"
         })
 
@@ -1886,7 +1893,6 @@ def get_main_viewpoint_analysis():
         items = []
 
         for category in categories:
-
             count = perspective_count.get(category, 0)
 
             percent = (
@@ -1911,8 +1917,57 @@ def get_main_viewpoint_analysis():
             "items": items
         })
 
+    # =========================
+    # 프론트용 평탄화(items)
+    # =========================
+    id_map = {
+        "정부 책임": "gov",
+        "개인 책임": "ind",
+        "복합 책임": "complex",
+        "기업 책임": "corp",
+        "외부 책임": "ext",
+
+        "기대": "exp",
+        "성과 예찬": "praise",
+        "비판적 태도": "crit",
+        "우려": "worry",
+
+        "결과 분석": "res",
+        "전망 분석": "fore",
+        "단순 전달": "simp",
+        "대응 분석": "resp",
+        "원인 분석": "cause",
+
+        "시장 자율 강조": "mkt",
+        "정부 개입 강조": "intr",
+        "정책 요인(국내)": "pol",
+        "외부 요인(글로벌)": "global"
+    }
+
+    items_flat = []
+
+    for group in groups:
+        for item in group["items"]:
+
+            category = item["title"]
+
+            if category not in id_map:
+                continue
+
+            items_flat.append({
+                "id": id_map[category],
+                "title": category,
+                "percent": item["percent"],
+                "count": item["count"],
+                "reason": item["reason"]
+            })
+
+    # =========================
+    # 최종 반환
+    # =========================
     return {
         "keyword": top_keyword,
+        "items": items_flat,
         "groups": groups
     }
 
