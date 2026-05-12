@@ -1517,7 +1517,11 @@ def get_active_banner_list():
                 banner_type,
                 title,
                 landing_url,
-                image_url
+                image_url,
+                start_at,
+                end_at,
+                created_at,
+                updated_at
             FROM banners
             WHERE is_active = TRUE
               AND start_at <= NOW()
