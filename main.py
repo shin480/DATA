@@ -36,6 +36,7 @@ from admin.user_admin import get_user_search, get_user_usage_stats
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
+from crawling.scheduler import get_scheduler
 
 
 app = FastAPI()
@@ -48,6 +49,13 @@ async def startup_event():
     pipeline_startup()
 
 app.add_middleware(SessionMiddleware, secret_key="motmachugetjyo")
+
+scheduler = get_scheduler()
+
+@app.on_event("startup")
+async def start_scheduler():
+    scheduler.start()
+    print("스케줄러 시작됨")
 
 @app.get("/")
 def main():

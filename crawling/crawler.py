@@ -15,12 +15,12 @@ from util.es import get_es, bulk
 logger = Logger().get_logger(__name__)
 es = get_es()
 
-INDEX_NAME = "test_article_raw"
-# INDEX_NAME = "article_raw"
+# INDEX_NAME = "test_article_raw"
+INDEX_NAME = "article_raw"
 CODE_ID = "C101"
 
 # 운영 모드 : False 테스트 모드 : True
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
@@ -318,7 +318,7 @@ def save_bulk_to_es(news_list):
     success, errors = bulk(
         es,
         actions,
-        chunk_size=200,
+        chunk_size=50,
         raise_on_error=False
     )
 
@@ -359,8 +359,8 @@ async def parse_rss_feed(rss_url: str, media_name: str, job_id):
 
                 pub_date = parsedate_to_datetime(entry.published)
 
-                # if not is_valid_date(pub_date):
-                #     continue
+                if not is_valid_date(pub_date):
+                    continue
 
                 detail = await get_article_details(client, link)
 
@@ -487,8 +487,8 @@ async def crawl_naver(job_id, pages=50):
                     if not detail["published_at"]:
                         continue
 
-                    # if not is_valid_date(detail["published_at"]):
-                    #     continue
+                    if not is_valid_date(detail["published_at"]):
+                        continue
 
                     has_valid_article = True
 
