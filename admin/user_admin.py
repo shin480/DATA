@@ -1,7 +1,7 @@
+from datetime import datetime
 from util.db import get_engine
 from sqlalchemy import text
-
-from sqlalchemy import text
+from zoneinfo import ZoneInfo
 
 def get_user_search(user_id: str = "", role: str = ""):
     conn = None
@@ -118,3 +118,129 @@ def get_user_search(user_id: str = "", role: str = ""):
     finally:
         if conn:
             conn.close()
+
+def get_user_usage_stats():
+    target_date = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d")
+
+    db = get_engine()
+
+    try:
+        # =========================
+        # 1. 로그인/로그아웃 로그 조회
+        # =========================
+        login_query = text("""
+            SELECT
+                user_id,
+                event_type,
+                created_at
+            FROM login_logs
+            WHERE DATE(created_at) = :target_date
+              AND user_id IS NOT NULL
+              AND result = 'success'
+            ORDER BY user_id, created_at ASC
+        """)
+
+        rows = db.execute(
+            login_query,
+            {"target_date": target_date}
+        ).fetchall()
+
+        unique_users = set()
+        total_stay_seconds = 0
+        active_logins = {}
+
+        for row in rows:
+            user_id = row.user_id
+            event_type = row.event_type
+            event_time = row.created_at
+
+            if event_type == "login":
+                unique_users.add(user_id)
+
+                # logout 없이 다시 login한 경우 이전 세션은 5분 처리
+                if user_id in active_logins:
+                    total_stay_seconds += 300
+
+                active_logins[user_id] = event_time
+
+            elif event_type == "logout":
+                if user_id in active_logins:
+                    login_time = active_logins[user_id]
+
+                    stay_seconds = max(
+                        int((event_time - login_time).total_seconds()),
+                        0
+                    )
+
+                    total_stay_seconds += stay_seconds
+                    del active_logins[user_id]
+
+        # logout 없는 로그인 세션은 5분 처리
+        for user_id in active_logins:
+            total_stay_seconds += 300
+
+        daily_users = len(unique_users)
+
+        avg_stay_seconds = (
+            total_stay_seconds / daily_users
+            if daily_users > 0 else 0
+        )
+
+        # =========================
+        # 2. 일일 누적 기사 조회수
+        # 로그인 사용자 기준
+        # =========================
+        view_query = text("""
+            SELECT COUNT(*) AS total_views
+            FROM article_views
+            WHERE DATE(created_at) = :target_date
+              AND user_id IS NOT NULL
+              AND is_valid_view = 1
+        """)
+
+        view_result = db.execute(
+            view_query,
+            {"target_date": target_date}
+        ).fetchone()
+
+        total_article_views = (
+            view_result.total_views
+            if view_result and view_result.total_views is not None
+            else 0
+        )
+
+        # =========================
+        # 3. 시간 포맷
+        # =========================
+        def format_seconds(seconds):
+            seconds = int(seconds)
+            hours = seconds // 3600
+            minutes = (seconds % 3600) // 60
+
+            return f"{hours}시간 {minutes}분"
+
+        return {
+            "success": True,
+            "date": target_date,
+
+            "avg_stay_seconds": round(avg_stay_seconds, 2),
+            "avg_stay_text": format_seconds(avg_stay_seconds),
+
+            "daily_users": daily_users,
+
+            "total_stay_seconds": total_stay_seconds,
+            "total_stay_text": format_seconds(total_stay_seconds),
+
+            "daily_article_views": total_article_views
+        }
+
+    except Exception as e:
+        print(f"[USER_USAGE_STATS_ERROR] {e}")
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+    finally:
+        db.close()

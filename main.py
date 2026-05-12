@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search
+from admin.user_admin import get_user_search, get_user_usage_stats
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -2786,3 +2786,7 @@ def search_summary(start_date: str, end_date: str):
 @app.get("/search-users")
 def search_users(user_id:str, role:str):
     return get_user_search(user_id, role)
+
+@app.post("/user_usage")
+def user_usage():
+    return get_user_usage_stats()

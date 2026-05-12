@@ -1,4 +1,9 @@
 from util.es import get_es
+from datetime import date
+from util.db import get_engine
+from sqlalchemy import text
+
+
 
 def get_search_summary(start_date: str, end_date: str):
     es = get_es()

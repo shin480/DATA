@@ -1304,7 +1304,7 @@ let pressLogoMap = {};
 
 async function loadPressLogoMap() {
   try {
-    const response = await fetch("/view/data/press_logo_map.json");
+    const response = await fetch("/view/press_logo_map.json");
 
     if (!response.ok) {
       throw new Error("press_logo_map.json 불러오기 실패");
@@ -1316,7 +1316,6 @@ async function loadPressLogoMap() {
     pressLogoMap = {};
   }
 }
-
 
 // =========================================================
 // 언론사 로고 HTML 생성
@@ -1999,6 +1998,21 @@ function renderSentiment(sentiment) {
       };
     }
   });
+}
+
+function renderKeywords(keywords) {
+  const keywordBox = document.querySelector(".keywords");
+
+  if (!keywordBox) return;
+
+  if (!keywords || keywords.length === 0) {
+    keywordBox.innerHTML = `<span>키워드 없음</span>`;
+    return;
+  }
+
+  keywordBox.innerHTML = keywords.map(function (keyword) {
+    return `<span>${keyword}</span>`;
+  }).join("");
 }
 
 function renderArticles(articles) {
