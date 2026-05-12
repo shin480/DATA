@@ -3072,7 +3072,25 @@ function openArticleDetail(articleId) {
 
 async function readKeywordFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const keyword = params.get("keyword") || "금리";
+  let keyword = params.get("keyword");
+
+  if (!keyword) {
+    try {
+      const randomRes = await axios.get("/api/main/random-keyword");
+
+      keyword = randomRes.data.keyword;
+
+      if (!keyword) {
+        showToast("키워드 데이터가 없습니다.");
+        return;
+      }
+
+    } catch (error) {
+      console.error("랜덤 키워드 불러오기 실패:", error);
+      showToast("랜덤 키워드를 불러오지 못했습니다.");
+      return;
+    }
+  }
 
   await fetchKeywordDetail(keyword);
 }

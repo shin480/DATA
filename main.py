@@ -477,6 +477,79 @@ def get_keyword_detail(keyword: str):
 
         "articles": articles
     }
+# =========================
+# 랜덤 키워드 조회 API
+# 최신 날짜 기준 기사 수 Top100 중 랜덤
+# =========================
+import random
+@app.get("/api/main/random-keyword")
+def get_random_keyword():
+
+    es = get_es()
+
+    latest_date_result = es.search(
+        index="daily_keyword_metrics",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ],
+            "_source": ["date"]
+        }
+    )
+
+    hits = latest_date_result["hits"]["hits"]
+
+    if not hits:
+        return {
+            "keyword": None
+        }
+
+    latest_date = hits[0]["_source"]["date"]
+
+    result = es.search(
+        index="daily_keyword_metrics",
+        body={
+            "size": 100,
+            "query": {
+                "term": {
+                    "date": latest_date
+                }
+            },
+            "sort": [
+                {
+                    "article_count": {
+                        "order": "desc"
+                    }
+                }
+            ],
+            "_source": [
+                "keyword",
+                "article_count",
+                "date"
+            ]
+        }
+    )
+
+    keyword_hits = result["hits"]["hits"]
+
+    if not keyword_hits:
+        return {
+            "keyword": None
+        }
+
+    random_hit = random.choice(keyword_hits)
+    source = random_hit["_source"]
+
+    return {
+        "keyword": source.get("keyword"),
+        "article_count": source.get("article_count", 0),
+        "date": source.get("date")
+    }
 
 @app.get("/api/search/suggest")
 def search_suggest(q: str):
