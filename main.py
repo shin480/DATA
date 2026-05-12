@@ -1545,98 +1545,183 @@ async def crawl():
 # =========================
 @app.get("/api/main/viewpoint-analysis")
 def get_main_viewpoint_analysis():
+
     es = get_es()
 
-    # 프론트 id와 ES perspective.category 매핑
-    viewpoint_map = {
-        "gov": "정부 책임",
-        "ind": "개인 책임",
-        "complex": "복합 책임",
-        "corp": "기업 책임",
-        "ext": "외부 책임",
+    # =========================
+    # 1위 키워드 조회
+    # =========================
+    top_result = es.search(
+        index="daily_top_issue_report",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
 
-        "exp": "기대",
-        "praise": "성과 예찬",
-        "crit": "비판적 태도",
-        "worry": "우려",
+    top_hits = top_result["hits"]["hits"]
 
-        "res": "결과 분석",
-        "fore": "전망 분석",
-        "simp": "단순 전달",
-        "resp": "대응 분석",
-        "cause": "원인 분석",
+    if not top_hits:
+        return {
+            "keyword": "데이터 없음",
+            "groups": []
+        }
 
-        "mkt": "시장 자율 강조",
-        "intr": "정부 개입 강조",
-        "pol": "정책 요인(국내)",
-        "global": "외부 요인(글로벌)"
-    }
+    top_keyword = (
+        top_hits[0]["_source"]
+        .get("top_keyword", "")
+    )
 
-    # rank 1 관점별 기사 수 집계
+    if not top_keyword:
+        return {
+            "keyword": "키워드 없음",
+            "groups": []
+        }
+
+    # =========================
+    # 1위 키워드 기사 조회
+    # =========================
     result = es.search(
         index=NEWS_ECONOMY_INDEX,
         body={
-            "size": 0,
-            "aggs": {
-                "perspective_nested": {
-                    "nested": {
-                        "path": "perspective"
-                    },
-                    "aggs": {
-                        "rank_1_only": {
-                            "filter": {
-                                "term": {
-                                    "perspective.rank": 1
-                                }
-                            },
-                            "aggs": {
-                                "categories": {
-                                    "terms": {
-                                        "field": "perspective.category",
-                                        "size": 100
-                                    }
-                                }
+            "size": 1000,
+            "_source": [
+                "perspective"
+            ],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": top_keyword,
+                                "fields": [
+                                    "title^3",
+                                    "summary",
+                                    "keywords",
+                                    "clean_text"
+                                ]
                             }
                         }
-                    }
+                    ]
                 }
             }
         }
     )
 
-    buckets = (
-        result
-        .get("aggregations", {})
-        .get("perspective_nested", {})
-        .get("rank_1_only", {})
-        .get("categories", {})
-        .get("buckets", [])
-    )
+    hits = result["hits"]["hits"]
 
-    count_map = {
-        bucket["key"]: bucket["doc_count"]
-        for bucket in buckets
+    # =========================
+    # 그룹 정의
+    # =========================
+    group_map = {
+        "책임 소재": [
+            "정부 책임",
+            "기업 책임",
+            "개인 책임",
+            "외부 책임",
+            "복합 책임"
+        ],
+
+        "태도 및 감성": [
+            "비판적 태도",
+            "우려",
+            "기대",
+            "성과 예찬"
+        ],
+
+        "정보 전달 및 분석": [
+            "단순 전달",
+            "원인 분석",
+            "결과 분석",
+            "대응 분석",
+            "전망 분석"
+        ],
+
+        "정책 개입": [
+            "정부 개입 강조",
+            "시장 자율 강조"
+        ],
+
+        "환경 요인": [
+            "외부 요인(글로벌)",
+            "정책 요인(국내)"
+        ]
     }
 
-    total_count = sum(count_map.values())
+    # =========================
+    # 관점 집계
+    # =========================
+    perspective_count = {}
 
-    items = []
+    total = 0
 
-    for front_id, es_category in viewpoint_map.items():
-        count = count_map.get(es_category, 0)
+    for hit in hits:
 
-        percent = round((count / total_count) * 100) if total_count else 0
+        perspectives = (
+            hit["_source"]
+            .get("perspective", [])
+        )
 
-        items.append({
-            "id": front_id,
-            "category": es_category,
-            "percent": percent,
-            "reason": f"{es_category} 관점으로 분류된 기사가 {count}건입니다."
+        for item in perspectives:
+
+            if item.get("rank") != 1:
+                continue
+
+            category = item.get("category")
+
+            if not category:
+                continue
+
+            perspective_count[category] = (
+                perspective_count.get(category, 0) + 1
+            )
+
+            total += 1
+
+    # =========================
+    # 그룹별 반환
+    # =========================
+    groups = []
+
+    for group_name, categories in group_map.items():
+
+        items = []
+
+        for category in categories:
+
+            count = perspective_count.get(category, 0)
+
+            percent = (
+                round((count / total) * 100)
+                if total else 0
+            )
+
+            items.append({
+                "title": category,
+                "percent": percent,
+                "count": count,
+                "reason": f"{category} 관점으로 분류된 기사 {count}건."
+            })
+
+        items.sort(
+            key=lambda x: x["percent"],
+            reverse=True
+        )
+
+        groups.append({
+            "group": group_name,
+            "items": items
         })
 
     return {
-        "total_count": total_count,
-        "items": items
+        "keyword": top_keyword,
+        "groups": groups
     }
 
 # =========================================
