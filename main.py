@@ -31,6 +31,8 @@ from mypage.deleteaccount import delete_user_account
 from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
+from admin.data_admin import get_search_summary
+
 from collections import Counter
 from model.model_main import startup as pipeline_startup
 
@@ -2344,3 +2346,7 @@ def create_daily_keyword_metrics(target_date: str = None):
         "saved_keyword_count": saved_count,
         "top5": top5
     }
+
+@app.get("/search-summary")
+def search_summary(start_date: str, end_date: str):
+    get_search_summary(start_date, end_date)
