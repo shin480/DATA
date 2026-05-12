@@ -1,24 +1,31 @@
 import re
+import asyncio
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timedelta
 
 import httpx
-import asyncio
 import feedparser
 from bs4 import BeautifulSoup
-from elasticsearch import helpers
 from sqlalchemy import text
 
 from util.logger import Logger
 from util.db import get_engine
-from util.es import get_es
+from util.es import get_es, bulk
 
 logger = Logger().get_logger(__name__)
-es = get_es() # 예나가 만든 es 모듈로 수정
+es = get_es()
 
-INDEX_NAME = "article_raw"
-# True = 테스트 모드 / False = 운영 모드
+INDEX_NAME = "test_article_raw"
+# INDEX_NAME = "article_raw"
+CODE_ID = "C101"
+
+# 운영 모드 : False 테스트 모드 : True
 DEBUG_MODE = True
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
+    "Accept": "application/rss+xml, application/xml, text/xml, text/html;q=0.9,*/*;q=0.8"
+}
 
 
 def now_iso():
@@ -34,70 +41,146 @@ def to_iso(dt):
 
     return dt.isoformat()
 
-def save_log(code_id):
+
+def is_valid_date(pub_date):
+    if pub_date is None:
+        return False
+
+    if pub_date.tzinfo is not None:
+        pub_date = pub_date.replace(tzinfo=None)
+
+    now = datetime.now()
+
+    start = (now - timedelta(days=1)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    end = now.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+    return start <= pub_date < end
+
+
+def save_batch_start():
     db = get_engine()
 
-    sql = text("""
-        INSERT INTO batch_jobs (code_id, start_at)
-        VALUES (:code_id, NOW())
-    """)
+    try:
+        sql = text("""
+            INSERT INTO batch_jobs (code_id, start_at)
+            VALUES (:code_id, NOW())
+        """)
 
-    result = db.execute(sql, {"code_id": code_id})
-    db.commit()
+        result = db.execute(sql, {"code_id": CODE_ID})
+        db.commit()
 
-    job_id = result.lastrowid
-    db.close()
+        return result.lastrowid
 
-    return job_id
+    finally:
+        db.close()
 
 
-def finish_log(job_id, total_count, fail_count):
+def finish_batch(job_id, total_count, fail_count):
     db = get_engine()
 
-    sql = text("""
-        UPDATE batch_jobs
-        SET end_at = NOW(),
-            total_count = :total_count,
-            fail_count = :fail_count
-        WHERE job_id = :job_id
-    """)
+    try:
+        sql = text("""
+            UPDATE batch_jobs
+            SET end_at = NOW(),
+                total_count = :total_count,
+                fail_count = :fail_count
+            WHERE job_id = :job_id
+        """)
 
-    db.execute(sql, {
-        "total_count": total_count,
-        "fail_count": fail_count,
-        "job_id": job_id
-    })
+        db.execute(sql, {
+            "job_id": job_id,
+            "total_count": total_count,
+            "fail_count": fail_count
+        })
 
-    db.commit()
-    db.close()
+        db.commit()
+
+    finally:
+        db.close()
 
 
-def save_error(job_id, error_code, message, url):
+def save_process_log(job_id, status, article_id=None):
+    """
+    article_process_logs.article_id는 article_meta FK라서
+    원시 수집 단계에서는 None으로 저장하는 게 안전함.
+    """
     db = get_engine()
 
+    try:
+        sql = text("""
+            INSERT INTO article_process_logs
+                (job_id, code_id, article_id, status)
+            VALUES
+                (:job_id, :code_id, :article_id, :status)
+        """)
+
+        result = db.execute(sql, {
+            "job_id": job_id,
+            "code_id": CODE_ID,
+            "article_id": article_id,
+            "status": status
+        })
+
+        db.commit()
+
+        return result.lastrowid
+
+    finally:
+        db.close()
+
+
+def save_error(history_id, error_code, message):
+    db = get_engine()
+
+    try:
+        sql = text("""
+            INSERT INTO article_error_logs
+                (history_id, error_code, error_message)
+            VALUES
+                (:history_id, :error_code, :error_message)
+        """)
+
+        db.execute(sql, {
+            "history_id": history_id,
+            "error_code": error_code,
+            "error_message": message
+        })
+
+        db.commit()
+
+    finally:
+        db.close()
+
+
+def save_fail_log(job_id, error_code, message, url=None):
     error_message = f"{message} | url={url}" if url else message
 
-    sql = text("""
-        INSERT INTO article_error_logs (error_code, error_message)
-        VALUES (:error_code, :error_message)
-    """)
+    history_id = save_process_log(
+        job_id=job_id,
+        status="fail",
+        article_id=None
+    )
 
-    db.execute(sql, {
-        "error_code": error_code,
-        "error_message": error_message
-    })
-
-    db.commit()
-    db.close()
+    save_error(
+        history_id=history_id,
+        error_code=error_code,
+        message=error_message
+    )
 
 
 def get_error_code(e):
     if isinstance(e, httpx.TimeoutException):
         return "E001"
-    elif isinstance(e, httpx.RequestError):
+
+    if isinstance(e, httpx.RequestError):
         return "E002"
-    else:
-        return "E999"
+
+    return "E999"
 
 
 def make_naver_id(url):
@@ -136,231 +219,200 @@ def get_rss_author(entry):
     return ""
 
 
-def init_es_index():
-    if not es.indices.exists(index=INDEX_NAME):
-        es.indices.create(
-            index=INDEX_NAME,
-            body={
-                "settings": {
-                    "number_of_shards": 1,
-                    "number_of_replicas": 1
-                },
-                "mappings": {
-                    "properties": {
-                        "raw_id": {"type": "keyword"},
-                        "article_id": {"type": "keyword"},
-                        "source": {"type": "keyword"},
-                        "press": {"type": "keyword"},
-                        "author": {"type": "keyword"},
-                        "url": {"type": "keyword"},
-                        "title": {"type": "text"},
-                        "raw_text": {
-                            "type": "text",
-                            "index": False
-                        },
-                        "published_at": {"type": "date"},
-                        "collected_at": {"type": "date"},
-                        "status": {"type": "keyword"},
-                        "error_message": {
-                            "type": "text",
-                            "index": False
-                        }
-                    }
-                }
-            }
-        )
+def is_missing_article(news):
+    required_fields = [
+        "raw_id",
+        "article_id",
+        "source",
+        "press",
+        "url",
+        "title",
+        "raw_text",
+        "published_at"
+    ]
+
+    for field in required_fields:
+        if not news.get(field):
+            return True
+
+    return False
 
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Accept": "application/rss+xml, application/xml, text/xml, text/html;q=0.9,*/*;q=0.8"
-}
-
-
-async def get_article_details(url: str):
+def is_duplicate(raw_id):
     try:
-        async with httpx.AsyncClient(
-            headers=HEADERS,
-            timeout=10,
-            follow_redirects=True
-        ) as client:
-            res = await client.get(url)
-
-        raw_html = res.text
-        soup = BeautifulSoup(raw_html, "html.parser")
-
-        content_area = (
-            soup.select_one("#dic_area")
-            or soup.select_one("#articleBodyContents")
-            or soup.select_one(".story-news.article")
-            or soup.select_one("#articletxt")
-            or soup.select_one(".article-body")
-        )
-        content = content_area.get_text(" ", strip=True) if content_area else ""
-
-        media = "Unknown"
-
-        el = soup.select_one("span.media_end_head_top_press")
-        if el:
-            media = el.get_text(strip=True)
-
-        if media == "Unknown":
-            img = soup.select_one(".media_end_head_top_logo img")
-            if img and img.has_attr("alt"):
-                media = img["alt"]
-
-        author = ""
-        author_el = (
-            soup.select_one(".media_end_head_journalist_name")
-            or soup.select_one(".byline_s")
-        )
-
-        if author_el:
-            author = author_el.get_text(strip=True)
-            author = re.sub(r"\(.*?\)", "", author).strip()
-
-        date_el = soup.select_one("span.media_end_head_info_datestamp_time")
-        published_at = None
-
-        if date_el and date_el.has_attr("data-date-time"):
-            published_at = datetime.strptime(
-                date_el["data-date-time"],
-                "%Y-%m-%d %H:%M:%S"
-            )
-
-        return {
-            "content": content,
-            "media": media,
-            "author": author,
-            "published_at": published_at
-        }
-
+        return es.exists(index=INDEX_NAME, id=raw_id)
     except Exception:
-        return {
-            "content": "",
-            "media": "error",
-            "author": "",
-            "published_at": None
-        }
+        return False
+
+
+async def get_article_details(client, url: str):
+    res = await client.get(url)
+    res.raise_for_status()
+
+    raw_html = res.text
+    soup = BeautifulSoup(raw_html, "html.parser")
+
+    content_area = (
+        soup.select_one("#dic_area")
+        or soup.select_one("#articleBodyContents")
+        or soup.select_one(".story-news.article")
+        or soup.select_one("#articletxt")
+        or soup.select_one(".article-body")
+    )
+
+    content = content_area.get_text(" ", strip=True) if content_area else ""
+
+    media = "Unknown"
+
+    el = soup.select_one("span.media_end_head_top_press")
+    if el:
+        media = el.get_text(strip=True)
+
+    if media == "Unknown":
+        img = soup.select_one(".media_end_head_top_logo img")
+        if img and img.has_attr("alt"):
+            media = img["alt"]
+
+    author = ""
+    author_el = (
+        soup.select_one(".media_end_head_journalist_name")
+        or soup.select_one(".byline_s")
+    )
+
+    if author_el:
+        author = author_el.get_text(strip=True)
+        author = re.sub(r"\(.*?\)", "", author).strip()
+
+    date_el = soup.select_one("span.media_end_head_info_datestamp_time")
+    published_at = None
+
+    if date_el and date_el.has_attr("data-date-time"):
+        published_at = datetime.strptime(
+            date_el["data-date-time"],
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+    return {
+        "content": content,
+        "raw_html": raw_html,
+        "media": media,
+        "author": author,
+        "published_at": published_at
+    }
 
 
 def save_bulk_to_es(news_list):
+    if not news_list:
+        logger.warning("ES 저장할 데이터 없음")
+        return 0, 0
+
     actions = []
 
     for news in news_list:
         actions.append({
             "_index": INDEX_NAME,
             "_id": news["raw_id"],
-            "_source": {
-                "raw_id": news["raw_id"],
-                "article_id": news["article_id"],
-                "source": news["source"],
-                "press": news["press"],
-                "author": news["author"],
-                "url": news["url"],
-                "title": news["title"],
-                "raw_text": news["raw_text"],
-                "published_at": news["published_at"],
-                "collected_at": news["collected_at"],
-                "status": news["status"],
-                "error_message": news["error_message"]
-            }
+            "_source": news
         })
 
-    success, errors = helpers.bulk(
+    success, errors = bulk(
         es,
         actions,
+        chunk_size=200,
         raise_on_error=False
     )
 
-    logger.info(f"ES 저장 완료: {success}건")
+    fail_count = len(errors) if errors else 0
+
+    logger.info(f"ES 저장 성공: {success}건")
 
     if errors:
         logger.error(f"ES 저장 실패 예시: {errors[:3]}")
 
-
-def is_valid_date(pub_date):
-    if pub_date.tzinfo is not None:
-        pub_date = pub_date.replace(tzinfo=None)
-
-    now = datetime.now()
-
-    start = (now - timedelta(days=1)).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-
-    end = now.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-
-    return start <= pub_date < end
+    return success, fail_count
 
 
 async def parse_rss_feed(rss_url: str, media_name: str, job_id):
     results = []
+    fail_count = 0
 
     async with httpx.AsyncClient(
         headers=HEADERS,
         timeout=10,
         follow_redirects=True
     ) as client:
-        res = await client.get(rss_url)
-
-    if res.status_code != 200:
-        logger.error(f"{media_name} RSS 요청 실패: status={res.status_code}")
-        return results
-
-    feed = feedparser.parse(res.text)
-
-    for entry in feed.entries:
-        link = ""
-
         try:
-            link = entry.link.strip()
-            title = entry.title.strip()
+            res = await client.get(rss_url)
+            res.raise_for_status()
+        except Exception as e:
+            save_fail_log(job_id, get_error_code(e), str(e), rss_url)
+            return results, 1
 
-            pub_date = parsedate_to_datetime(entry.published)
+        feed = feedparser.parse(res.text)
 
-            if not DEBUG_MODE:
-                if not is_valid_date(pub_date):
+        for entry in feed.entries:
+            link = ""
+
+            try:
+                link = entry.link.strip()
+                title = entry.title.strip()
+
+                pub_date = parsedate_to_datetime(entry.published)
+
+                # if not is_valid_date(pub_date):
+                #     continue
+
+                detail = await get_article_details(client, link)
+
+                if media_name == "연합뉴스":
+                    article_id = make_yonhap_id(entry.id)
+                    source = "yonhap"
+                else:
+                    article_id = make_hankyung_id(link)
+                    source = "hankyung"
+
+                if not article_id:
+                    raise ValueError("article_id 생성 실패")
+
+                if is_duplicate(article_id):
                     continue
 
-            detail = await get_article_details(link)
+                author = get_rss_author(entry)
 
-            if media_name == "연합뉴스":
-                article_id = make_yonhap_id(entry.id)
-                source = "yonhap"
-            else:
-                article_id = make_hankyung_id(link)
-                source = "hankyung"
+                news = {
+                    "raw_id": article_id,
+                    "article_id": article_id,
+                    "source": source,
+                    "press": detail["media"] if detail["media"] != "Unknown" else media_name,
+                    "author": author,
+                    "url": link,
+                    "title": title,
+                    "raw_text": detail["content"],
+                    "raw_html": detail["raw_html"],
+                    "published_at": to_iso(pub_date),
+                    "collected_at": now_iso(),
+                    "status": "collected",
+                    "error_message": ""
+                }
 
-            if not article_id:
-                logger.warning(f"{media_name} article_id 생성 실패: {link}")
+                if is_missing_article(news):
+                    raise ValueError("필수값 누락 기사")
+
+                results.append(news)
+
+                save_process_log(
+                    job_id=job_id,
+                    status="success",
+                    article_id=None
+                )
+
+            except Exception as e:
+                fail_count += 1
+                save_fail_log(job_id, get_error_code(e), str(e), link)
                 continue
 
-            author = get_rss_author(entry)
-
-            results.append({
-                "raw_id": article_id,
-                "article_id": article_id,
-                "source": source,
-                "press": detail["media"] if detail["media"] not in ["error", "Unknown"] else media_name,
-                "author": author,
-                "url": link,
-                "title": title,
-                "raw_text": detail["content"],
-                "published_at": to_iso(pub_date),
-                "collected_at": now_iso(),
-                "status": "collected",
-                "error_message": ""
-            })
-
-        except Exception as e:
-            save_error(job_id, get_error_code(e), str(e), link)
-            continue
-
-    logger.info(f"{media_name} RSS 수집 완료: {len(results)}건")
-    return results
+    logger.info(f"{media_name} RSS 수집 완료: {len(results)}건 / 실패 {fail_count}건")
+    return results, fail_count
 
 
 async def crawl_yonhap(job_id):
@@ -380,16 +432,16 @@ async def crawl_hankyung(job_id):
 
 
 async def crawl_naver(job_id, pages=50):
-    if DEBUG_MODE:
-        pages = 1
-
     results = []
+    fail_count = 0
     empty_page_count = 0
 
     async with httpx.AsyncClient(
         headers=HEADERS,
+        timeout=10,
         follow_redirects=True
     ) as client:
+
         for page in range(1, pages + 1):
             has_valid_article = False
 
@@ -398,38 +450,49 @@ async def crawl_naver(job_id, pages=50):
                 f"?mode=LSD&mid=sec&sid1=101&page={page}"
             )
 
-            res = await client.get(url)
-            soup = BeautifulSoup(res.text, "html.parser")
+            try:
+                res = await client.get(url)
+                res.raise_for_status()
+            except Exception as e:
+                fail_count += 1
+                save_fail_log(job_id, get_error_code(e), str(e), url)
+                continue
 
+            soup = BeautifulSoup(res.text, "html.parser")
             articles = soup.select(".type06_headline li, .type06 li")
 
             for ar in articles:
                 link = ""
 
                 try:
-                    anchor = ar.select("dt a")[-1]
+                    anchor_list = ar.select("dt a")
+
+                    if not anchor_list:
+                        continue
+
+                    anchor = anchor_list[-1]
                     title = anchor.get_text(strip=True)
                     link = anchor["href"].split("?")[0]
-
-                    detail = await get_article_details(link)
-
-                    if not DEBUG_MODE:
-                        if not detail["published_at"]:
-                            continue
-
-                        if not is_valid_date(detail["published_at"]):
-                            continue
-
-                        has_valid_article = True
-                    else:
-                        has_valid_article = True
 
                     article_id = make_naver_id(link)
 
                     if not article_id:
+                        raise ValueError("article_id 생성 실패")
+
+                    if is_duplicate(article_id):
                         continue
 
-                    results.append({
+                    detail = await get_article_details(client, link)
+
+                    if not detail["published_at"]:
+                        continue
+
+                    # if not is_valid_date(detail["published_at"]):
+                    #     continue
+
+                    has_valid_article = True
+
+                    news = {
                         "raw_id": article_id,
                         "article_id": article_id,
                         "source": "naver",
@@ -438,38 +501,50 @@ async def crawl_naver(job_id, pages=50):
                         "url": link,
                         "title": title,
                         "raw_text": detail["content"],
+                        "raw_html": detail["raw_html"],
                         "published_at": to_iso(detail["published_at"]),
                         "collected_at": now_iso(),
                         "status": "collected",
                         "error_message": ""
-                    })
+                    }
+
+                    if is_missing_article(news):
+                        raise ValueError("필수값 누락 기사")
+
+                    results.append(news)
+
+                    save_process_log(
+                        job_id=job_id,
+                        status="success",
+                        article_id=None
+                    )
 
                 except Exception as e:
-                    save_error(job_id, get_error_code(e), str(e), link)
+                    fail_count += 1
+                    save_fail_log(job_id, get_error_code(e), str(e), link)
                     continue
 
-            if not DEBUG_MODE:
-                if has_valid_article:
-                    empty_page_count = 0
-                else:
-                    empty_page_count += 1
-                    logger.info(f"네이버 {page}페이지에 유효 기사 없음 ({empty_page_count}/3)")
+            if has_valid_article:
+                empty_page_count = 0
+            else:
+                empty_page_count += 1
+                logger.info(f"네이버 {page}페이지 유효 기사 없음 ({empty_page_count}/3)")
 
-                if empty_page_count >= 3:
-                    logger.info(f"네이버 유효 기사 없는 페이지 3회 연속 → 종료")
-                    break
+            if empty_page_count >= 3:
+                logger.info("네이버 유효 기사 없는 페이지 3회 연속 → 종료")
+                break
 
-    logger.info(f"네이버 수집 완료: {len(results)}건")
-    return results
+    logger.info(f"네이버 수집 완료: {len(results)}건 / 실패 {fail_count}건")
+    return results, fail_count
 
 
 async def run_crawling_job():
-    fail_count = 0
+    job_id = save_batch_start()
 
-    job_id = save_log("C101")
+    logger.info("운영 크롤링 시작")
+    logger.info(f"job_id={job_id}")
 
-    logger.info("크롤링 시작")
-    logger.info(f"DEBUG_MODE = {DEBUG_MODE}")
+    total_fail_count = 0
 
     results = await asyncio.gather(
         crawl_naver(job_id),
@@ -479,18 +554,34 @@ async def run_crawling_job():
 
     all_data = []
 
-    for r in results:
-        all_data.extend(r)
+    for data, fail_count in results:
+        all_data.extend(data)
+        total_fail_count += fail_count
 
-    logger.info(f"총 수집: {len(all_data)}건")
+    logger.info(f"총 수집 대상: {len(all_data)}건")
 
-    save_bulk_to_es(all_data)
+    success_count, es_fail_count = save_bulk_to_es(all_data)
 
-    finish_log(job_id, len(all_data), fail_count)
+    total_fail_count += es_fail_count
+
+    finish_batch(
+        job_id=job_id,
+        total_count=len(all_data),
+        fail_count=total_fail_count
+    )
+
+    logger.info(
+        f"운영 크롤링 종료: 수집 {len(all_data)}건 / ES 성공 {success_count}건 / 실패 {total_fail_count}건"
+    )
 
     return {
         "status": "success",
         "job_id": job_id,
         "total": len(all_data),
-        "data": all_data[:10]
+        "es_success": success_count,
+        "fail_count": total_fail_count
     }
+
+
+if __name__ == "__main__":
+    asyncio.run(run_crawling_job())

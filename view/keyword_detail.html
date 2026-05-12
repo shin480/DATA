@@ -1544,17 +1544,49 @@ body {
 }
 
 .score-bar {
-  height: 4px;
+  width: 100%;
+  height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #34d6cc 0 63%, #94a3b8 63% 87%, #ff6578 87% 100%);
-  margin-bottom: 8px;
+  background: #334155;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.score-fill.positive {
+  background: #34d6cc;
+}
+
+.score-fill.neutral {
+  background: #94a3b8;
+}
+
+.score-fill.negative {
+  background: #ff6578;
 }
 
 .score-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   font-size: 11px;
-  color: #9fb2d4;
+  font-weight: 800;
+}
+
+.score-row.positive {
+  color: #34d6cc;
+}
+
+.score-row.neutral {
+  color: #94a3b8;
+}
+
+.score-row.negative {
+  color: #ff6578;
 }
 
 /* ==============================
@@ -2795,60 +2827,57 @@ let visibleArticleCount = 5;
 const ARTICLE_LOAD_SIZE = 5;
 
 function buildPerspectiveData(data) {
-    articles = data.articles || [];
+  articles = data.articles || [];
 
-    perspectives = [
-      {
-        type: "긍정 관점",
-        className: "positive",
-        articles: articles
-          .filter(item => item.sentiment === "positive")
-          .slice(0, 4)
-          .map(item => ({
-            code: "P",
-            press: item.press,
-            title: item.title,
-            article_id: item.article_id
-          })),
-        positive: data.sentiment?.positive || 0,
-        neutral: data.sentiment?.neutral || 0,
-        negative: data.sentiment?.negative || 0
-      },
-      {
-        type: "중립 관점",
-        className: "neutral",
-        articles: articles
-          .filter(item => item.sentiment === "neutral")
-          .slice(0, 4)
-          .map(item => ({
-            code: "N",
-            press: item.press,
-            title: item.title,
-            article_id: item.article_id
-          })),
-        positive: data.sentiment?.positive || 0,
-        neutral: data.sentiment?.neutral || 0,
-        negative: data.sentiment?.negative || 0
-      },
-      {
-        type: "부정 관점",
-        className: "negative",
-        articles: articles
-          .filter(item => item.sentiment === "negative")
-          .slice(0, 4)
-          .map(item => ({
-            code: "D",
-            press: item.press,
-            title: item.title,
-            article_id: item.article_id
-          })),
-        positive: data.sentiment?.positive || 0,
-        neutral: data.sentiment?.neutral || 0,
-        negative: data.sentiment?.negative || 0
-      }
-    ];
+  perspectives = [
+    {
+      type: "긍정 관점",
+      className: "positive",
+      sentimentLabel: "긍정",
+      sentimentPercent: data.sentiment?.positive || 0,
+      articles: articles
+        .filter(item => item.sentiment === "positive")
+        .slice(0, 4)
+        .map(item => ({
+          code: "P",
+          press: item.press,
+          title: item.title,
+          article_id: item.article_id
+        }))
+    },
+    {
+      type: "중립 관점",
+      className: "neutral",
+      sentimentLabel: "중립",
+      sentimentPercent: data.sentiment?.neutral || 0,
+      articles: articles
+        .filter(item => item.sentiment === "neutral")
+        .slice(0, 4)
+        .map(item => ({
+          code: "N",
+          press: item.press,
+          title: item.title,
+          article_id: item.article_id
+        }))
+    },
+    {
+      type: "부정 관점",
+      className: "negative",
+      sentimentLabel: "부정",
+      sentimentPercent: data.sentiment?.negative || 0,
+      articles: articles
+        .filter(item => item.sentiment === "negative")
+        .slice(0, 4)
+        .map(item => ({
+          code: "D",
+          press: item.press,
+          title: item.title,
+          article_id: item.article_id
+        }))
+    }
+  ];
 
-    renderPerspectives();
+  renderPerspectives();
 }
 
 // ==============================
@@ -2969,19 +2998,15 @@ function renderPerspectives() {
           </div>
         </div>
 
-        <div class="score-bar" style="
-          background:linear-gradient(
-            90deg,
-            #34d6cc 0 ${item.positive}%,
-            #94a3b8 ${item.positive}% ${item.positive + item.neutral}%,
-            #ff6578 ${item.positive + item.neutral}% 100%
-          );
-        "></div>
+        <div class="score-bar">
+          <div
+            class="score-fill ${item.className}"
+            style="width: ${item.sentimentPercent}%;"
+          ></div>
+        </div>
 
-        <div class="score-row">
-          <span>긍정 ${item.positive}%</span>
-          <span>중립 ${item.neutral}%</span>
-          <span>부정 ${item.negative}%</span>
+        <div class="score-row ${item.className}">
+          <span>${item.sentimentLabel} ${item.sentimentPercent}%</span>
         </div>
       </div>
     `;
