@@ -1304,7 +1304,7 @@ let pressLogoMap = {};
 
 async function loadPressLogoMap() {
   try {
-    const response = await fetch("/view/data/press_logo_map.json");
+    const response = await fetch("/view/press_logo_map.json");
 
     if (!response.ok) {
       throw new Error("press_logo_map.json 불러오기 실패");

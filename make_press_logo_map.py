@@ -9,7 +9,7 @@ from util.es import get_es, NEWS_ECONOMY_INDEX
 # =========================================================
 # 설정
 # =========================================================
-OUTPUT_FILE = "view/ data/press_logo_map.json"
+OUTPUT_FILE = "view/press_logo_map.json"
 
 HEADERS = {
     "User-Agent": (
