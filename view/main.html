@@ -1605,7 +1605,15 @@ function bindGlobalClickEvents() {
 
     if (actionBtn) {
       e.preventDefault();
-      goLoginRequiredPage("/view/article_detail.html");
+
+      const articleId = actionBtn.dataset.articleId;
+
+      if (articleId) {
+        goLoginRequiredPage(`/view/article_detail.html?article_id=${articleId}`);
+      } else {
+        goLoginRequiredPage("/view/article_detail.html");
+      }
+
       return;
     }
 
@@ -2013,10 +2021,12 @@ async function loadTopKeyword() {
         chips.forEach((chip, index) => {
             chip.innerText = data.chips[index] || "";
         });
+        return data.keyword;
 
     } catch (err) {
 
         console.error("1위 키워드 로딩 실패:", err);
+        return null;
 
     }
 }
@@ -2033,7 +2043,7 @@ async function loadHeroTop5Keywords() {
             const item = items[index];
             const keyword = item ? item.keyword : "";
 
-            if (keyword) {
+            if (keyword && keyword !== "데이터 없음" && keyword !== "키워드 없음") {
                 tag.innerText = `#${keyword}`;
                 tag.classList.remove("hidden");
             } else {
@@ -2146,6 +2156,66 @@ function nextOpinion() {
 setInterval(function () {
     nextOpinion();
 }, 5000);
+
+// ==============================
+// 같은 이슈, 다른 해석
+// ==============================
+async function loadSentimentCompare(keyword) {
+    try {
+        if (!keyword) {
+            console.warn("1위 키워드가 없어 감성 비교를 불러오지 않습니다.");
+            return;
+        }
+
+        const res = await axios.get(
+            `/api/main/sentiment-compare?keyword=${encodeURIComponent(keyword)}`
+        );
+
+        const articles = res.data.articles || [];
+        const cards = document.querySelectorAll(".sentiment-grid .news-card");
+
+        cards.forEach(function (card, index) {
+            const item = articles[index];
+
+            if (!item) {
+                card.style.display = "none";
+                return;
+            }
+
+            card.style.display = "block";
+
+            const mediaName = card.querySelector(".media-name");
+            const title = card.querySelector("h3");
+            const summary = card.querySelector("p");
+            const badge = card.querySelector(".s-badge");
+            const button = card.querySelector(".action-btn");
+
+            if (mediaName) {
+                mediaName.innerText = item.press || "언론사 없음";
+            }
+
+            if (title) {
+                title.innerText = item.title || "기사 제목 없음";
+            }
+
+            if (summary) {
+                summary.innerText = item.summary || "";
+            }
+
+            if (badge) {
+                badge.innerText = convertSentimentText(item.sentiment);
+                badge.className = "s-badge " + getSentimentClass(item.sentiment);
+            }
+
+            if (button) {
+                button.dataset.articleId = item.article_id || "";
+            }
+        });
+
+    } catch (err) {
+        console.error("감성 비교 로딩 실패:", err);
+    }
+}
 
 /*
    [확실] 기준 데이터 (마스터 템플릿)
@@ -2450,10 +2520,21 @@ function toggleView() {
 }
 
 // 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderViewGrid(groups);
     loadAnalysisData();
-    loadTopKeyword();
+
+    const keyword = await loadTopKeyword();
+
+    if (
+        keyword &&
+        keyword !== "데이터 없음" &&
+        keyword !== "키워드 없음" &&
+        keyword !== "분석 데이터 없음"
+    ) {
+        loadSentimentCompare(keyword);
+    }
+
     loadHeroTop5Keywords();
     loadHotNews();
     loadDominantOpinion();

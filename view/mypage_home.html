@@ -2212,6 +2212,17 @@ box.onclick = function () {
     loadDislikePage(1);
     loadNotice();
     loadFooter();
+
+    const pwInput = document.getElementById("pwInput");
+
+    if (pwInput) {
+      pwInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          pwconfirm();
+        }
+      });
+    }
   });
 
   document.addEventListener("keydown", function (e) {

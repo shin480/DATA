@@ -3,6 +3,7 @@
 """
 
 import logging
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
@@ -11,9 +12,9 @@ from model.database import get_es
 from model.services.classifier import run_classification_pipeline
 from model.services.scope_title import run_scope_title_batch, enqueue_missing_scope_titles
 from model.services.scope_summarizer import run_scope_summary_batch
-from model.services.sentiment import run_sentiment_pipeline
-from model.services.summarizer import run_summary_pipeline
-from model.services.keyword_extractor import run_keyword_pipeline
+from model.services.sentiment import run_sentiment_pipeline, classify_single_article
+from model.services.summarizer import run_summary_pipeline, summarize_single_article
+from model.services.keyword_extractor import run_keyword_pipeline, extract_keywords_single
 from model.services.scope_keywords import run_scope_keywords_batch
 from model.services.scope_sentiment import run_scope_sentiment_batch
 
@@ -39,9 +40,36 @@ class ScopeOut(BaseModel):
     created_at:      str | None = None
     updated_at:      str | None = None
 
+# ── 단건 재처리 Models ─────────────────────────────────
+class ArticleOut(BaseModel):
+    article_id:      str
+    title:           str | None = None
+    sentiment:       str | None = None
+    sentiment_score: float | None = None
+    keywords:        list[str] | None = None
+    summary:         str | None = None
+    scopeID:         str | None = None
+    processed_status: str | None = None
+    published_at:    str | None = None
+    press:           str | None = None
+
+class ReprocessRequest(BaseModel):
+    targets: list[str]  # 예: ["sentiment", "keywords", "summary"] 또는 부분 선택
+
+class ReprocessResult(BaseModel):
+    article_id: str
+    targets:    list[str]
+    results:    dict        # 각 target별 성공/실패 여부
+    after:      ArticleOut  # 재처리 후 갱신된 doc
+
+
 INDEX_NEWS   = "news_economy"
 INDEX_SCOPES = "news_scopes"
 
+VALID_TARGETS = {"sentiment", "keywords", "summary"}
+
+
+# ── 기존 배치 트리거 엔드포인트 ────────────────────────
 
 @router.post("/run")
 def trigger_classification(background_tasks: BackgroundTasks):
@@ -102,6 +130,153 @@ def trigger_scope_summary(background_tasks: BackgroundTasks):
     background_tasks.add_task(run_scope_summary_batch)
     return {"message": "scope 요약 생성 시작됨 (백그라운드)"}
 
+
+# ── 단건 아티클 조회 ───────────────────────────────────
+
+@router.get("/article/search", response_model=ArticleOut, summary="아티클 단건 조회")
+def search_article(article_id: str):
+    """
+    article_id로 뉴스 단건을 조회합니다.
+    재처리 전 현재 상태 확인용입니다.
+    """
+    try:
+        es  = get_es()
+        res = es.get(index=INDEX_NEWS, id=article_id, ignore=[404])
+        es.close()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not res.get("found"):
+        raise HTTPException(status_code=404, detail=f"article_id '{article_id}' 를 찾을 수 없습니다.")
+
+    src = res["_source"]
+    return _to_article_out(article_id, src)
+
+
+# ── 단건 재처리 ────────────────────────────────────────
+
+@router.post("/article/{article_id}/reprocess", response_model=ReprocessResult, summary="아티클 단건 재처리")
+def reprocess_article(article_id: str, body: ReprocessRequest):
+    """
+    지정한 article_id의 선택 필드(sentiment / keywords / summary)를
+    초기화 후 즉시 재처리합니다.
+
+    - targets에 포함된 항목만 처리됩니다.
+    - 재처리는 스케줄러 체인과 무관하게 즉시 동기 실행됩니다.
+    - 완료 후 갱신된 doc을 반환합니다.
+    """
+    targets = [t for t in body.targets if t in VALID_TARGETS]
+    if not targets:
+        raise HTTPException(
+            status_code=400,
+            detail=f"유효한 target이 없습니다. 가능한 값: {sorted(VALID_TARGETS)}"
+        )
+
+    # ── 1. 아티클 존재 확인 ────────────────────────────
+    try:
+        es  = get_es()
+        res = es.get(index=INDEX_NEWS, id=article_id, ignore=[404])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not res.get("found"):
+        es.close()
+        raise HTTPException(status_code=404, detail=f"article_id '{article_id}' 를 찾을 수 없습니다.")
+
+    src = res["_source"]
+
+    # ── 2. 대상 필드 null 초기화 ──────────────────────
+    clear_doc: dict = {}
+    if "sentiment" in targets:
+        clear_doc["sentiment"]       = None
+        clear_doc["sentiment_score"] = None
+    if "keywords" in targets:
+        clear_doc["keywords"] = None
+    if "summary" in targets:
+        clear_doc["summary"] = None
+
+    try:
+        es.update(
+            index=INDEX_NEWS,
+            id=article_id,
+            body={"doc": clear_doc},
+        )
+    except Exception as e:
+        es.close()
+        raise HTTPException(status_code=500, detail=f"필드 초기화 실패: {e}")
+
+    # ── 3. 단건 재처리 실행 ───────────────────────────
+    results: dict = {}
+
+    if "sentiment" in targets:
+        try:
+            classify_single_article(article_id=article_id, src=src)
+            results["sentiment"] = "success"
+        except Exception as e:
+            logger.error(f"[단건재처리] sentiment 실패 article_id={article_id}: {e}")
+            results["sentiment"] = f"error: {e}"
+
+    if "keywords" in targets:
+        try:
+            extract_keywords_single(article_id=article_id, src=src)
+            results["keywords"] = "success"
+        except Exception as e:
+            logger.error(f"[단건재처리] keywords 실패 article_id={article_id}: {e}")
+            results["keywords"] = f"error: {e}"
+
+    if "summary" in targets:
+        try:
+            summarize_single_article(article_id=article_id, src=src)
+            results["summary"] = "success"
+        except Exception as e:
+            logger.error(f"[단건재처리] summary 실패 article_id={article_id}: {e}")
+            results["summary"] = f"error: {e}"
+
+    # ── 4. 재처리 후 최신 doc 조회 ────────────────────
+    try:
+        updated = es.get(index=INDEX_NEWS, id=article_id)
+        after_src = updated["_source"]
+    except Exception as e:
+        after_src = src  # 조회 실패 시 이전 값으로 대체
+        logger.warning(f"[단건재처리] 갱신 doc 조회 실패: {e}")
+    finally:
+        es.close()
+
+    return ReprocessResult(
+        article_id = article_id,
+        targets    = targets,
+        results    = results,
+        after      = _to_article_out(article_id, after_src),
+    )
+
+
+# ── 내부 헬퍼 ──────────────────────────────────────────
+
+def _to_article_out(article_id: str, src: dict) -> ArticleOut:
+    # keywords: ES에 "word1,word2,word3" 문자열로 저장되므로 list로 변환
+    raw_kw = src.get("keywords")
+    if isinstance(raw_kw, str):
+        keywords = [k.strip() for k in raw_kw.split(",") if k.strip()]
+    elif isinstance(raw_kw, list):
+        keywords = raw_kw
+    else:
+        keywords = None
+
+    return ArticleOut(
+        article_id       = src.get("article_id", article_id),
+        title            = src.get("title"),
+        sentiment        = src.get("sentiment"),
+        sentiment_score  = src.get("sentiment_score"),
+        keywords         = keywords,
+        summary          = src.get("summary"),
+        scopeID          = src.get("scopeID"),
+        processed_status = src.get("processed_status"),
+        published_at     = src.get("published_at"),
+        press            = src.get("press"),
+    )
+
+
+# ── scope 조회 ─────────────────────────────────────────
 
 @router.get("/scopes/{scope_id}", response_model=ScopeOut, summary="scope 상세 조회")
 def get_scope(scope_id: str):
