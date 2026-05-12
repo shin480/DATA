@@ -74,12 +74,12 @@
       height: 46px;
       display: flex;
       align-items: center;
-      padding: 0px;
+      padding-left: 28px;
       color: #6f7d98;
       font-size: 14px;
       border-left: 4px solid transparent;
       cursor: pointer;
-      transition: 0.2s;
+
     }
 
     .menu-link {
@@ -154,6 +154,12 @@
       transition: background 0.2s ease, transform 0.1s ease;
       border-radius: 8px;
     }
+
+    .news-item .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
     .news-item:hover {
       background: #111a33;
@@ -231,8 +237,11 @@
       border: 1px solid #1a2540;
       border-radius: 12px;
       padding: 18px 18px 12px;
-      min-height: 500px;
-      max-height: 500px;
+      min-height: 530px;
+      max-height: 530px;
+      width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
     }
 
     .card-head {
@@ -256,17 +265,19 @@
       font-size: 12px;
     }
 
-    .mini-news {
-      display: flex;
-      justify-content: space-between;
-      padding: 9px 10px;
-      border-bottom: 1px solid #121c31;
-      font-size: 13px;
-      color: #b8c8e6;
-      cursor: pointer;
-      transition: background 0.2s ease;
-      border-radius: 6px;
-    }
+.mini-news {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 10px;
+  border-bottom: 1px solid #121c31;
+  font-size: 13px;
+  color: #b8c8e6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-radius: 6px;
+  overflow: hidden;
+}
 
     .mini-news:hover {
       background: #131d36;
@@ -279,6 +290,8 @@
 
     .mini-news span:first-child {
       width: 82%;
+      flex: 1;
+  min-width: 0;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -310,7 +323,6 @@
       border-radius: 6px;
       cursor: pointer;
       user-select: none;
-      transition: 0.2s;
       font-size: 13px;
       color: #5c6b89;
       text-decoration: none;
@@ -882,6 +894,20 @@
        Light Mode
     ============================== */
 
+    body.light-mode .pagination span {
+  color: #64748b;
+}
+
+body.light-mode .pagination span:hover {
+  background: #e0f7ff;
+  color: #0284c7;
+}
+
+body.light-mode .pagination b {
+  background: #dbeafe;
+  color: #0284c7;
+}
+
     body.light-mode {
       background: #f8fafc;
       color: #0f172a;
@@ -893,7 +919,7 @@
 
     body.light-mode .header {
       background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid #f8fafc;
     }
 
     body.light-mode .nav {
@@ -941,7 +967,7 @@
 
     body.light-mode aside {
       background: #ffffff;
-      border-right: 1px solid #e2e8f0;
+      border-right: 1px solid #f8fafc;
     }
 
     body.light-mode .side-title {
@@ -949,7 +975,7 @@
     }
 
     body.light-mode .side-title-wrap {
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid #f8fafc;
     }
 
     body.light-mode .side-menu li {
@@ -966,6 +992,8 @@
       border-left-color: #00cfe8;
     }
 
+
+
     body.light-mode h2,
     body.light-mode .title,
     body.light-mode .card-head,
@@ -981,7 +1009,7 @@
     }
 
     body.light-mode .news-list {
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid #f8fafc;
       border-bottom: 1px solid #e2e8f0;
     }
 
@@ -1008,6 +1036,18 @@
       background: #f1f5f9;
       color: #0284c7;
     }
+
+    body.light-mode .category {
+  background: #f8fafc;
+  color: #0284c7;
+  border: 1px solid #7dd3fc;
+}
+
+body.light-mode .badge {
+  background: #f8fafc;
+  color: #0284c7;
+  border: 1px solid #7dd3fc;
+}
 
     body.light-mode .search-suggest-box {
       background: #ffffff;
@@ -1063,6 +1103,69 @@
       background: #f8fafc;
       color: #0f172a;
     }
+
+    .custom-alert {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.custom-alert-box {
+  width: 420px;
+  padding: 26px;
+  border-radius: 18px;
+  background: #1b2133;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.custom-alert-msg {
+  font-size: 15px;
+  color: #d9e7ff;
+  margin-bottom: 12px;
+}
+
+.custom-alert-error {
+  font-size: 14px;
+  color: #ff4e5f;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.custom-alert-btn {
+  width: 140px;
+  height: 42px;
+  border-radius: 999px;
+  border: none;
+  background: #2dd4ff;
+  color: #001018;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+    body.light-mode .custom-alert-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+body.light-mode .custom-alert-msg {
+  color: #0f172a;
+}
+
+body.light-mode .custom-alert-error {
+  color: #ef4444;
+}
+
+body.light-mode .custom-alert-btn {
+  background: #00cfe8;
+  color: #020617;
+}
+
+
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -1080,15 +1183,8 @@
 
       <ul class="side-menu">
 
-<li class="active">
-  <a
-    href="mypage_home.html"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="menu-link"
-  >
-    마이페이지 홈
-  </a>
+<li class="active" id="homeMenu">
+  마이페이지 홈
 </li>
 
         <li id="accountPageBtn">회원정보 관리 & 탈퇴</li>
@@ -1281,6 +1377,18 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="custom-alert hidden" id="customAlert">
+  <div class="custom-alert-box">
+    <div class="custom-alert-msg" id="customAlertMsg">
+      메시지
+    </div>
+
+    <button class="custom-alert-btn" id="customAlertBtn">
+      확인
+    </button>
   </div>
 </div>
 
@@ -1769,17 +1877,9 @@ function renderNoticeBanner() {
   void box.offsetWidth;
   box.classList.add("notice-slide");
 
-box.onclick = function () {
-  if (!banner.landing_url) return;
-
-  let url = banner.landing_url;
-
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
-  }
-
-  window.open(url, "_blank");
-};
+  box.onclick = function () {
+    location.href = "/view/notice.html";
+  };
 }
 
 function renderAdBanner() {
@@ -1845,14 +1945,18 @@ box.onclick = function () {
         password: password
       });
       if (data.success) {
-        alert("본인 인증에 성공하였습니다.");
+        showCustomAlert("본인 인증에 성공하였습니다.");
         location.href = "/view/mypage_account.html";
       } else {
-        alert("실패: " + data.message);
+        showCustomAlert("실패: " + data.message);
+
+        document.getElementById("pwInput").value = "";
+  document.getElementById("pwInput").focus();
+
       }
     } catch (err) {
       console.error("비밀번호 확인 중 에러:", err);
-      alert("서버 통신 중 오류가 발생했습니다.");
+      showCustomAlert("서버 통신 중 오류가 발생했습니다.");
     }
   }
 
@@ -2046,7 +2150,7 @@ box.onclick = function () {
           }
         } catch (err) {
           console.error("인증 상태 확인 에러:", err);
-          alert("서버 통신 중 오류가 발생했습니다.");
+          showCustomAlert("서버 통신 중 오류가 발생했습니다.");
         }
       })();
 
@@ -2099,7 +2203,66 @@ box.onclick = function () {
     loadDislikePage(1);
     loadNotice();
     loadFooter();
+
+    const pwInput = document.getElementById("pwInput");
+
+    if (pwInput) {
+      pwInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          pwconfirm();
+        }
+      });
+    }
   });
+
+  document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    const modal = document.getElementById("pwModal");
+    const input = document.getElementById("pwInput");
+
+    if (!modal.classList.contains("hidden")) {
+      modal.classList.add("hidden");
+      input.value = "";
+    }
+  }
+});
+
+document.getElementById("pwModal").addEventListener("click", function (e) {
+  if (e.target === this) {
+    this.classList.add("hidden");
+    document.getElementById("pwInput").value = "";
+  }
+});
+
+  document.getElementById("pwInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    pwconfirm();
+  }
+});
+
+  function showCustomAlert(message, errorText = "") {
+  const modal = document.getElementById("customAlert");
+  const msg = document.getElementById("customAlertMsg");
+  const error = document.getElementById("customAlertError");
+  const btn = document.getElementById("customAlertBtn");
+
+  msg.textContent = message;
+
+  if (errorText) {
+    error.textContent = errorText;
+    error.style.display = "block";
+  } else {
+    error.style.display = "none";
+  }
+
+  modal.classList.remove("hidden");
+
+  btn.onclick = function () {
+    modal.classList.add("hidden");
+  };
+}
+
 </script>
 </body>
 </html>

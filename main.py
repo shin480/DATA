@@ -1242,6 +1242,74 @@ def get_dominant_opinions():
         "opinions": opinions
     }
 
+# =========================
+# 같은 이슈, 다른 해석
+# =========================
+@app.get("/api/main/sentiment-compare")
+def get_sentiment_compare(keyword: str):
+    es = get_es()
+
+    sentiments = ["positive", "negative", "neutral"]
+    articles = []
+
+    for sentiment in sentiments:
+        result = es.search(
+            index="news_economy",
+            body={
+                "size": 1,
+                "_source": [
+                    "article_id",
+                    "title",
+                    "summary",
+                    "press",
+                    "sentiment",
+                    "published_at"
+                ],
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "title": keyword
+                                }
+                            },
+                            {
+                                "term": {
+                                    "sentiment": sentiment
+                                }
+                            }
+                        ]
+                    }
+                },
+                "sort": [
+                    {
+                        "published_at": {
+                            "order": "desc"
+                        }
+                    }
+                ]
+            }
+        )
+
+        hits = result["hits"]["hits"]
+
+        if not hits:
+            continue
+
+        source = hits[0]["_source"]
+
+        articles.append({
+            "article_id": source.get("article_id") or hits[0]["_id"],
+            "title": source.get("title") or "기사 제목 없음",
+            "summary": source.get("summary") or "",
+            "press": source.get("press") or "언론사 없음",
+            "sentiment": source.get("sentiment") or sentiment
+        })
+
+    return {
+        "articles": articles
+    }
+
 # =========================================
 # 배너 관리 API
 # =========================================
@@ -1449,7 +1517,11 @@ def get_active_banner_list():
                 banner_type,
                 title,
                 landing_url,
-                image_url
+                image_url,
+                start_at,
+                end_at,
+                created_at,
+                updated_at
             FROM banners
             WHERE is_active = TRUE
               AND start_at <= NOW()
@@ -1467,6 +1539,190 @@ def get_active_banner_list():
 @app.get("/crawl")
 async def crawl():
     return await run_crawling_job()
+
+# =========================
+# 메인 2차 관점 분석
+# =========================
+@app.get("/api/main/viewpoint-analysis")
+def get_main_viewpoint_analysis():
+
+    es = get_es()
+
+    # =========================
+    # 1위 키워드 조회
+    # =========================
+    top_result = es.search(
+        index="daily_top_issue_report",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    top_hits = top_result["hits"]["hits"]
+
+    if not top_hits:
+        return {
+            "keyword": "데이터 없음",
+            "groups": []
+        }
+
+    top_keyword = (
+        top_hits[0]["_source"]
+        .get("top_keyword", "")
+    )
+
+    if not top_keyword:
+        return {
+            "keyword": "키워드 없음",
+            "groups": []
+        }
+
+    # =========================
+    # 1위 키워드 기사 조회
+    # =========================
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 1000,
+            "_source": [
+                "perspective"
+            ],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": top_keyword,
+                                "fields": [
+                                    "title^3",
+                                    "summary",
+                                    "keywords",
+                                    "clean_text"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    # =========================
+    # 그룹 정의
+    # =========================
+    group_map = {
+        "책임 소재": [
+            "정부 책임",
+            "기업 책임",
+            "개인 책임",
+            "외부 책임",
+            "복합 책임"
+        ],
+
+        "태도 및 감성": [
+            "비판적 태도",
+            "우려",
+            "기대",
+            "성과 예찬"
+        ],
+
+        "정보 전달 및 분석": [
+            "단순 전달",
+            "원인 분석",
+            "결과 분석",
+            "대응 분석",
+            "전망 분석"
+        ],
+
+        "정책 개입": [
+            "정부 개입 강조",
+            "시장 자율 강조"
+        ],
+
+        "환경 요인": [
+            "외부 요인(글로벌)",
+            "정책 요인(국내)"
+        ]
+    }
+
+    # =========================
+    # 관점 집계
+    # =========================
+    perspective_count = {}
+
+    total = 0
+
+    for hit in hits:
+
+        perspectives = (
+            hit["_source"]
+            .get("perspective", [])
+        )
+
+        for item in perspectives:
+
+            if item.get("rank") != 1:
+                continue
+
+            category = item.get("category")
+
+            if not category:
+                continue
+
+            perspective_count[category] = (
+                perspective_count.get(category, 0) + 1
+            )
+
+            total += 1
+
+    # =========================
+    # 그룹별 반환
+    # =========================
+    groups = []
+
+    for group_name, categories in group_map.items():
+
+        items = []
+
+        for category in categories:
+
+            count = perspective_count.get(category, 0)
+
+            percent = (
+                round((count / total) * 100)
+                if total else 0
+            )
+
+            items.append({
+                "title": category,
+                "percent": percent,
+                "count": count,
+                "reason": f"{category} 관점으로 분류된 기사 {count}건."
+            })
+
+        items.sort(
+            key=lambda x: x["percent"],
+            reverse=True
+        )
+
+        groups.append({
+            "group": group_name,
+            "items": items
+        })
+
+    return {
+        "keyword": top_keyword,
+        "groups": groups
+    }
 
 # =========================================
 # 관점 상세 조회 API
