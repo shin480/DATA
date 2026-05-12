@@ -4,39 +4,110 @@ def get_search_summary(start_date: str, end_date: str):
     es = get_es()
 
     try:
-        # 공유해주신 매핑에 맞춰 날짜 필드를 'collected_at'으로 지정
-        # ES 날짜 인식 오류를 방지하기 위해 공백 대신 'T'를 삽입 (ISO 8601 형식)
-        query = {
-            "query": {
-                "range": {
-                    "collected_at": {
-                        "gte": f"{start_date}T00:00:00",
-                        "lte": f"{end_date}T23:59:59"
+        # =========================
+        # 공통 날짜 범위 쿼리
+        # =========================
+        base_query = {
+            "range": {
+                "collected_at": {
+                    "gte": f"{start_date}T00:00:00",
+                    "lte": f"{end_date}T23:59:59"
+                }
+            }
+        }
+
+        # =========================
+        # 1. article_raw 원본 수집 수
+        # =========================
+        raw_count_res = es.count(
+            index="article_raw",
+            body={"query": base_query}
+        )
+
+        collected_count = raw_count_res.get("count", 0)
+
+        # =========================
+        # 2. news_economy 최종 등록 수
+        # ========================
+        economy_count_res = es.count(
+            index="news_economy",
+            body={"query": base_query}
+        )
+
+        processed_count = economy_count_res.get("count", 0)
+
+        removed_count = collected_count - processed_count
+
+        # =========================
+        # 3. 언론사별 기사 수
+        # =========================
+        press_query = {
+            "size": 0,
+            "query": base_query,
+            "aggs": {
+                "press_stats": {
+                    "terms": {
+                        "field": "press",
+                        "size": 100
                     }
                 }
             }
         }
 
-        # 1. 수집된 전체 원본 기사 수 (article_raw)
-        raw_count_res = es.count(index="article_raw", body=query)
-        collected_count = raw_count_res.get("count", 0)
+        press_res = es.search(index="news_economy", body=press_query)
 
-        # 2. 전처리 및 중복 제거 후 최종 등록된 기사 수 (news_economy)
-        economy_count_res = es.count(index="news_economy", body=query)
-        processed_count = economy_count_res.get("count", 0)
+        press_stats = [
+            {
+                "name": bucket["key"],
+                "count": bucket["doc_count"]
+            }
+            for bucket in press_res["aggregations"]["press_stats"]["buckets"]
+        ]
 
-        # 3. 제거된 기사 수 계산 (원본 수 - 최종 등록 수)
-        removed_count = collected_count - processed_count
+        # =========================
+        # 4. 스코프별 기사 수
+        # =========================
+        scope_query = {
+            "size": 0,
+            "query": base_query,
+            "aggs": {
+                "scope_stats": {
+                    "terms": {
+                        "field": "scopeID",
+                        "size": 100
+                    }
+                }
+            }
+        }
 
+        scope_res = es.search(index="news_economy", body=scope_query)
+
+        scope_stats = [
+            {
+                "title": bucket["key"],
+                "count": bucket["doc_count"]
+            }
+            for bucket in scope_res["aggregations"]["scope_stats"]["buckets"]
+        ]
+
+        # =========================
+        # 반환
+        # =========================
         return {
             "success": True,
             "summary": {
                 "collected": collected_count,
-                "processed": processed_count, # 최종 등록 건수도 대시보드에 보여주면 좋습니다.
-                "removed": removed_count if removed_count > 0 else 0
+                "processed": processed_count,
+                "removed": removed_count if removed_count > 0 else 0,
+                "press_stats": press_stats,
+                "scope_stats": scope_stats
             }
         }
 
     except Exception as e:
         print(f"ES 통계 조회 실패: {e}")
-        return {"success": False, "message": str(e)}
+
+        return {
+            "success": False,
+            "message": str(e)
+        }
