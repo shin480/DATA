@@ -999,6 +999,18 @@ td[title] {
   ></textarea>
 </div>
 
+<div class="form-row hidden" id="bannerPinnedRow">
+  <div class="form-label">
+    <strong>상단 고정</strong>
+    <p>공지사항 목록의 가장 위에 고정합니다.</p>
+  </div>
+
+  <label style="display:flex;align-items:center;gap:10px;color:#cbd5e1;font-weight:800;">
+    <input id="bannerPinned" type="checkbox" style="width:18px;height:18px;">
+    공지사항 상단 고정
+  </label>
+</div>
+
 <div class="form-row">
   <div class="form-label">
 <strong>노출 기간 <span class="required-dot"></span></strong>
@@ -1189,6 +1201,7 @@ function updateBannerImageRequiredUI() {
   const imageRow = document.getElementById("bannerImageRow");
   const imageHelp = document.getElementById("bannerImageHelp");
   const contentRow = document.getElementById("noticeContentRow");
+  const pinnedRow = document.getElementById("bannerPinnedRow");
 
   const requiredDot = document.getElementById("bannerImageRequiredDot");
   const requiredText = document.getElementById("bannerImageRequiredText");
@@ -1200,6 +1213,7 @@ function updateBannerImageRequiredUI() {
     if (imageRow) imageRow.classList.remove("hidden");
     if (imageHelp) imageHelp.classList.remove("hidden");
     if (contentRow) contentRow.classList.add("hidden");
+    if (pinnedRow) pinnedRow.classList.add("hidden");
 
     if (requiredDot) requiredDot.style.display = "inline-block";
     if (requiredText) requiredText.textContent = "광고 이미지 배너 선택 시 필수입니다.";
@@ -1208,6 +1222,7 @@ function updateBannerImageRequiredUI() {
     if (imageRow) imageRow.classList.add("hidden");
     if (imageHelp) imageHelp.classList.add("hidden");
     if (contentRow) contentRow.classList.remove("hidden");
+    if (pinnedRow) pinnedRow.classList.remove("hidden");
 
     if (requiredDot) requiredDot.style.display = "none";
     if (requiredText) requiredText.textContent = "공지사항 배너는 이미지를 선택하지 않아도 됩니다.";
@@ -1487,6 +1502,7 @@ function openModal() {
     const bannerImage = document.getElementById("bannerImage");
     const bannerType = document.getElementById("bannerType");
     const noticeContent = document.getElementById("noticeContent");
+    const bannerPinned = document.getElementById("bannerPinned");
 
     if (bannerTitle) bannerTitle.value = "";
     if (bannerUrl) bannerUrl.value = "";
@@ -1495,6 +1511,7 @@ function openModal() {
     if (bannerImage) bannerImage.value = "";
     if (bannerType) bannerType.value = "notice";
     if (noticeContent) noticeContent.value = "";
+    if (bannerPinned) bannerPinned.checked = false;
 
     updateBannerImageRequiredUI();
 
@@ -1517,6 +1534,7 @@ async function saveBanner() {
   const end = document.getElementById("bannerEnd").value;
   const imageInput = document.getElementById("bannerImage");
   const bannerType = document.getElementById("bannerType").value;
+  const isPinned = document.getElementById("bannerPinned")?.checked || false;
 
   if (!title) {
     showToast("배너 제목을 입력해주세요.");
@@ -1573,6 +1591,7 @@ async function saveBanner() {
       landing_url: bannerType === "image" ? url : null,
       image_url: bannerType === "image" ? (imageUrl || null) : null,
       content: bannerType === "notice" ? content : null,
+      is_pinned: bannerType === "notice" ? isPinned : false,
       start_at: start,
       end_at: end,
       is_active: true
@@ -1615,6 +1634,7 @@ function editBanner(id) {
   document.getElementById("bannerUrl").value = target.landing_url || "";
   document.getElementById("noticeContent").value = target.content || "";
   document.getElementById("bannerStart").value = target.start_at || "";
+  document.getElementById("bannerPinned").checked = Boolean(target.is_pinned);
   document.getElementById("bannerEnd").value = target.end_at || "";
   document.getElementById("bannerImage").value = "";
 
