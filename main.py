@@ -1536,6 +1536,105 @@ def get_active_banner_list():
 async def crawl():
     return await run_crawling_job()
 
+# =========================
+# 메인 2차 관점 분석
+# =========================
+@app.get("/api/main/viewpoint-analysis")
+def get_main_viewpoint_analysis():
+    es = get_es()
+
+    # 프론트 id와 ES perspective.category 매핑
+    viewpoint_map = {
+        "gov": "정부 책임",
+        "ind": "개인 책임",
+        "complex": "복합 책임",
+        "corp": "기업 책임",
+        "ext": "외부 책임",
+
+        "exp": "기대",
+        "praise": "성과 예찬",
+        "crit": "비판적 태도",
+        "worry": "우려",
+
+        "res": "결과 분석",
+        "fore": "전망 분석",
+        "simp": "단순 전달",
+        "resp": "대응 분석",
+        "cause": "원인 분석",
+
+        "mkt": "시장 자율 강조",
+        "intr": "정부 개입 강조",
+        "pol": "정책 요인(국내)",
+        "global": "외부 요인(글로벌)"
+    }
+
+    # rank 1 관점별 기사 수 집계
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 0,
+            "aggs": {
+                "perspective_nested": {
+                    "nested": {
+                        "path": "perspective"
+                    },
+                    "aggs": {
+                        "rank_1_only": {
+                            "filter": {
+                                "term": {
+                                    "perspective.rank": 1
+                                }
+                            },
+                            "aggs": {
+                                "categories": {
+                                    "terms": {
+                                        "field": "perspective.category",
+                                        "size": 100
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    buckets = (
+        result
+        .get("aggregations", {})
+        .get("perspective_nested", {})
+        .get("rank_1_only", {})
+        .get("categories", {})
+        .get("buckets", [])
+    )
+
+    count_map = {
+        bucket["key"]: bucket["doc_count"]
+        for bucket in buckets
+    }
+
+    total_count = sum(count_map.values())
+
+    items = []
+
+    for front_id, es_category in viewpoint_map.items():
+        count = count_map.get(es_category, 0)
+
+        percent = round((count / total_count) * 100) if total_count else 0
+
+        items.append({
+            "id": front_id,
+            "category": es_category,
+            "percent": percent,
+            "reason": f"{es_category} 관점으로 분류된 기사가 {count}건입니다."
+        })
+
+    return {
+        "total_count": total_count,
+        "items": items
+    }
+
 # =========================================
 # 관점 상세 조회 API
 # viewpoint_master 기반

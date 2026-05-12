@@ -2472,36 +2472,32 @@ function renderViewGrid(data) {
 /* [확실] 백엔드 데이터를 가져와서 groups와 병합하는 함수 */
 async function loadAnalysisData() {
     try {
-        // 백엔드 API 호출 (실제 FastAPI 주소로 변경할 것)========================================================================================
-        // const { data: mlResults } = await axios.get("/api/v1/analysis");
+        const { data } = await axios.get("/api/main/viewpoint-analysis");
 
-        // 예시용 가짜 데이터 (서버에서 올 데이터 구조)
-        const mockServerData = {
-            "gov": { "percent": 0, "reason": "데이터를 불러오는 중입니다..." },
-            "ind": { "percent": 0, "reason": "데이터를 불러오는 중입니다..." }
-            // ... 나머지 id들도 서버에서 온다고 가정
-        };
+        const serverMap = {};
 
-        // 기준 데이터(groups)를 깊은 복사하여 수치 업데이트
+        data.items.forEach(item => {
+            serverMap[item.id] = {
+                percent: item.percent,
+                reason: item.reason
+            };
+        });
+
         const updatedData = JSON.parse(JSON.stringify(groups));
 
         updatedData.forEach(group => {
             group.items.forEach(item => {
-                if (mockServerData[item.id]) {
-                    item.percent = mockServerData[item.id].percent;
-                    item.reason = mockServerData[item.id].reason;
+                if (serverMap[item.id]) {
+                    item.percent = serverMap[item.id].percent;
+                    item.reason = serverMap[item.id].reason;
                 }
             });
         });
 
-
-        // 화면 갱신
         renderViewGrid(updatedData);
-        console.log("분석 데이터 로드 및 렌더링 완료 [확실]");
 
     } catch (err) {
-        console.error("데이터 로드 에러:", err);
-        // 에러 시 초기 템플릿(로딩중 표시)이라도 출력
+        console.error("2차 관점 분석 로딩 실패:", err);
         renderViewGrid(groups);
     }
 }
