@@ -1270,9 +1270,9 @@ def get_top_keyword():
 
     sentiment = source.get("sentiment_distribution", {})
 
-    positive = sentiment.get("positive", 0)
-    neutral = sentiment.get("neutral", 0)
-    negative = sentiment.get("negative", 0)
+    positive = round(sentiment.get("positive_ratio", 0) * 100)
+    neutral = round(sentiment.get("neutral_ratio", 0) * 100)
+    negative = round(sentiment.get("negative_ratio", 0) * 100)
 
     # 여론 흐름 계산
     if positive >= neutral and positive >= negative:
