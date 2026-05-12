@@ -12,6 +12,10 @@ html {
   overflow-y: scroll; /* 항상 스크롤바 공간 고정 */
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 /* ===== common.css ===== */
 /* ==============================
    Common Utility Only
@@ -656,6 +660,10 @@ transition: background 18s ease; }
    (포인트 민트색 유지)
 ============================== */
 
+body.light-mode section.hero h1 span {
+  color: #41BFE0;
+}
+
 body.light-mode {
   background: #edf2ee;
   color: #1f2937;
@@ -681,7 +689,7 @@ body.light-mode .nav {
 }
 
 body.light-mode .nav a:hover {
-  color: #00cfe8;
+  color: #4CB7D3;
 }
 
 body.light-mode .main-search-wrap {
@@ -710,7 +718,7 @@ body.light-mode .search-icon-btn {
 }
 
 body.light-mode .search-icon-btn:hover {
-  color: #00cfe8;
+  color: #4CB7D3;
 }
 
 body.light-mode .theme-btn {
@@ -720,7 +728,7 @@ body.light-mode .theme-btn {
 }
 
 body.light-mode .theme-btn:hover {
-  border-color: #00cfe8;
+  border-color: #4CB7D3;
   background: #ffffff;
 }
 
@@ -731,14 +739,14 @@ body.light-mode .header-btn.join {
 }
 
 body.light-mode .header-btn.join:hover {
-  border-color: #00cfe8;
-  color: #00cfe8;
+  border-color: #4CB7D3;
+  color: #4CB7D3;
   background: #ffffff;
 }
 
 body.light-mode .header-btn.login {
-  background: #00cfe8;
-  border-color: #00cfe8;
+  background: #00e5ff;
+  border-color: #00e5ff;
   color: #06262b;
   box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
 }
@@ -763,7 +771,7 @@ body.light-mode .search-suggest-item {
 
 body.light-mode .search-suggest-item:hover {
   background: #ebf8fb;
-  color: #00cfe8;
+  color: #4CB7D3;
 }
 
 body.light-mode .search-suggest-icon {
@@ -819,7 +827,7 @@ body.light-mode .hero {
 body.light-mode .hero-badge {
   background: rgba(0, 207, 232, 0.08);
   border: 1px solid rgba(0, 207, 232, 0.18);
-  color: #00cfe8;
+  color: #4CB7D3;
 }
 
 body.light-mode .hero h1 {
@@ -851,6 +859,16 @@ body.light-mode .view-reason {
    태그 / 칩
 ============================== */
 
+a.h-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  padding: 8px 18px;
+
+  font-family: "Pretendard", sans-serif;
+}
 
 body.light-mode .o-tag {
   background: rgba(0, 207, 232, 0.08);
@@ -867,9 +885,14 @@ body.light-mode .nav-btn {
     0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
+body.light-mode .s-badge.pos { background: rgba(0, 229, 255, 0.1); color: #4CB7D3; }
+
+body.light-mode .news-rank-circle { border: 1.5px solid #4CB7D3;color: #4CB7D3; }
+
+
 body.light-mode .nav-btn:hover {
-  border-color: #00cfe8;
-  color: #00cfe8;
+  border-color: #4CB7D3;
+  color: #4CB7D3;
   background: #ffffff;
 }
 
@@ -880,8 +903,8 @@ body.light-mode .h-tag {
 }
 
 body.light-mode .h-tag:hover {
-  border-color: #00cfe8;
-  color: #00cfe8;
+  border-color: #4CB7D3;
+  color: #4CB7D3;
   background: #ffffff;
 }
 
@@ -891,7 +914,7 @@ body.light-mode .chip {
 }
 
 body.light-mode .chip:hover {
-  color: #00cfe8;
+  color: #4CB7D3;
   background: rgba(0, 207, 232, 0.14);
 }
 
@@ -994,8 +1017,8 @@ body.light-mode .detail-btn:hover,
 body.light-mode .action-btn:hover,
 body.light-mode .news-footer-btn:hover,
 body.light-mode .toggle-btn:hover {
-  border-color: #00cfe8;
-  color: #00cfe8;
+  border-color: #4CB7D3;
+  color: #4CB7D3;
   background: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 207, 232, 0.08);
 }
@@ -1023,7 +1046,7 @@ body.light-mode .footer-link {
 }
 
 body.light-mode .footer-link:hover {
-  color: #00cfe8;
+  color: #4CB7D3;
 }
 
 body.light-mode .footer-copy {
@@ -1062,7 +1085,7 @@ body.light-mode .footer-modal-content h3 {
 }
 
 body.light-mode .footer-modal-btn {
-  background: #00cfe8;
+  background: #4CB7D3;
   color: #06262b;
 }
 
@@ -1072,7 +1095,7 @@ body.light-mode .news-header h2 {
 }
 
     body.light-mode .top-keyword-title:hover {
-  color: #00cfe8 !important;
+  color: #4CB7D3 !important;
 }
 
     .small-text {
