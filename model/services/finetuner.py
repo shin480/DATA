@@ -39,21 +39,34 @@ IDX_TO_LABEL = {v: k for k, v in LABEL_TO_IDX.items()}
 
 
 class CorrectionDataset(Dataset):
+    """
+    Lazy 토크나이징 방식 — __getitem__ 호출 시 건별 처리.
+    기존 방식(전체 일괄 토크나이징)은 2000건 이상에서 메모리 초과로
+    프로세스가 죽는 문제가 있어 수정.
+    """
     def __init__(self, texts, labels, tokenizer, max_length):
-        self.encodings = tokenizer(texts, truncation=True, padding=True,
-                                   max_length=max_length, return_tensors="pt")
-        self.labels = torch.tensor(labels, dtype=torch.long)
+        self.texts      = texts
+        self.labels     = labels
+        self.tokenizer  = tokenizer
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.labels)
 
     def __getitem__(self, idx):
+        enc = self.tokenizer(
+            self.texts[idx],
+            truncation=True,
+            padding="max_length",
+            max_length=self.max_length,
+            return_tensors="pt",
+        )
         return {
-            "input_ids":      self.encodings["input_ids"][idx],
-            "attention_mask": self.encodings["attention_mask"][idx],
-            "token_type_ids": self.encodings.get("token_type_ids",
-                              torch.zeros_like(self.encodings["input_ids"]))[idx],
-            "labels":         self.labels[idx],
+            "input_ids":      enc["input_ids"].squeeze(0),
+            "attention_mask": enc["attention_mask"].squeeze(0),
+            "token_type_ids": enc.get("token_type_ids",
+                              torch.zeros(self.max_length, dtype=torch.long)).squeeze(0),
+            "labels":         torch.tensor(self.labels[idx], dtype=torch.long),
         }
 
 

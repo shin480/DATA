@@ -270,6 +270,28 @@ select {
   outline: none;
 }
 
+textarea {
+  width: 100%;
+  min-height: 160px;
+  background: #0b1426;
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 9px;
+  padding: 13px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+textarea::placeholder {
+  color: #64748b;
+}
+
+.hidden {
+  display: none !important;
+}
+
 input[type="date"] {
   color: #ffffff;
 }
@@ -956,15 +978,29 @@ td[title] {
 </div>
 <input id="bannerTitle" placeholder="배너 제목" type="text"/>
 </div>
-<div class="form-row">
-<div class="form-label">
-<strong>연결 URL <span class="required-dot"></span></strong>
-<p>배너 클릭 시 이동할 주소입니다.</p>
+<div class="form-row" id="bannerUrlRow">
+  <div class="form-label">
+    <strong>연결 URL <span class="required-dot"></span></strong>
+    <p>광고 배너 클릭 시 이동할 주소입니다.</p>
+  </div>
+
+  <input id="bannerUrl" placeholder="https://example.com" type="text"/>
 </div>
-<input id="bannerUrl" placeholder="https://example.com" type="text"/>
+
+<div class="form-row hidden" id="noticeContentRow">
+  <div class="form-label">
+    <strong>공지 상세내용 <span class="required-dot"></span></strong>
+    <p>공지사항 상세 페이지에 표시될 내용입니다.</p>
+  </div>
+
+  <textarea
+    id="noticeContent"
+    placeholder="공지사항 상세 내용을 입력하세요."
+  ></textarea>
 </div>
+
 <div class="form-row">
-<div class="form-label">
+  <div class="form-label">
 <strong>노출 기간 <span class="required-dot"></span></strong>
 <p>배너가 노출될 시작일과 종료일입니다.</p>
 </div>
@@ -974,7 +1010,7 @@ td[title] {
 <input id="bannerEnd" type="date"/>
 </div>
 </div>
-<div class="form-row">
+<div class="form-row" id="bannerImageRow">
   <div class="form-label">
     <strong>
       배너 이미지<span class="required-dot" id="bannerImageRequiredDot"></span>
@@ -993,7 +1029,7 @@ td[title] {
     <input accept="image/*" hidden="" id="bannerImage" type="file"/>
   </label>
 </div>
-<div class="help">
+<div class="help" id="bannerImageHelp">
   광고 배너 권장 크기: 1920 × 220px · 화면에는 약 960 × 110px 비율로 표시됩니다.
 </div>
 <div class="modal-actions">
@@ -1148,17 +1184,33 @@ function validateDateRange(start, end) {
 
 function updateBannerImageRequiredUI() {
   const bannerType = document.getElementById("bannerType");
+
+  const urlRow = document.getElementById("bannerUrlRow");
+  const imageRow = document.getElementById("bannerImageRow");
+  const imageHelp = document.getElementById("bannerImageHelp");
+  const contentRow = document.getElementById("noticeContentRow");
+
   const requiredDot = document.getElementById("bannerImageRequiredDot");
   const requiredText = document.getElementById("bannerImageRequiredText");
 
-  if (!bannerType || !requiredDot || !requiredText) return;
+  if (!bannerType) return;
 
   if (bannerType.value === "image") {
-    requiredDot.style.display = "inline-block";
-    requiredText.textContent = "광고 이미지 배너 선택 시 필수입니다.";
+    if (urlRow) urlRow.classList.remove("hidden");
+    if (imageRow) imageRow.classList.remove("hidden");
+    if (imageHelp) imageHelp.classList.remove("hidden");
+    if (contentRow) contentRow.classList.add("hidden");
+
+    if (requiredDot) requiredDot.style.display = "inline-block";
+    if (requiredText) requiredText.textContent = "광고 이미지 배너 선택 시 필수입니다.";
   } else {
-    requiredDot.style.display = "none";
-    requiredText.textContent = "공지사항 배너는 이미지를 선택하지 않아도 됩니다.";
+    if (urlRow) urlRow.classList.add("hidden");
+    if (imageRow) imageRow.classList.add("hidden");
+    if (imageHelp) imageHelp.classList.add("hidden");
+    if (contentRow) contentRow.classList.remove("hidden");
+
+    if (requiredDot) requiredDot.style.display = "none";
+    if (requiredText) requiredText.textContent = "공지사항 배너는 이미지를 선택하지 않아도 됩니다.";
   }
 }
 
@@ -1276,9 +1328,11 @@ function renderBanner() {
       status === "게시중" ? "live" :
       status === "대기중" ? "wait" : "error";
 
-    const imageText = item.image_url
-      ? item.image_url.split("/").pop()
-      : "IMG";
+    const imageText = item.banner_type === "notice"
+      ? "NOTICE"
+      : item.image_url
+        ? item.image_url.split("/").pop()
+        : "IMG";
 
     return `
       <tr>
@@ -1294,8 +1348,8 @@ function renderBanner() {
               ${item.title}
             </strong>
 
-            <span class="banner-url-text" title="${item.landing_url}">
-              ${item.landing_url}
+            <span class="banner-url-text" title="${item.banner_type === "notice" ? "공지사항 상세내용" : item.landing_url}">
+              ${item.banner_type === "notice" ? "공지사항 상세내용" : item.landing_url}
             </span>
           </div>
         </td>
@@ -1432,6 +1486,7 @@ function openModal() {
     const bannerEnd = document.getElementById("bannerEnd");
     const bannerImage = document.getElementById("bannerImage");
     const bannerType = document.getElementById("bannerType");
+    const noticeContent = document.getElementById("noticeContent");
 
     if (bannerTitle) bannerTitle.value = "";
     if (bannerUrl) bannerUrl.value = "";
@@ -1439,6 +1494,8 @@ function openModal() {
     if (bannerEnd) bannerEnd.value = "";
     if (bannerImage) bannerImage.value = "";
     if (bannerType) bannerType.value = "notice";
+    if (noticeContent) noticeContent.value = "";
+
     updateBannerImageRequiredUI();
 
   if (modal) modal.classList.add("show");
@@ -1455,6 +1512,7 @@ function closeModal() {
 async function saveBanner() {
   const title = document.getElementById("bannerTitle").value.trim();
   const url = document.getElementById("bannerUrl").value.trim();
+  const content = document.getElementById("noticeContent").value.trim();
   const start = document.getElementById("bannerStart").value;
   const end = document.getElementById("bannerEnd").value;
   const imageInput = document.getElementById("bannerImage");
@@ -1465,8 +1523,13 @@ async function saveBanner() {
     return;
   }
 
-  if (!url) {
-    showToast("연결 URL을 입력해주세요.");
+  if (bannerType === "image" && !url) {
+    showToast("광고 배너 연결 URL을 입력해주세요.");
+    return;
+  }
+
+  if (bannerType === "notice" && !content) {
+    showToast("공지사항 상세내용을 입력해주세요.");
     return;
   }
 
@@ -1482,7 +1545,7 @@ async function saveBanner() {
   let imageUrl = currentBanner ? currentBanner.image_url : "";
 
   try {
-    if (imageInput.files.length > 0) {
+    if (bannerType === "image" && imageInput.files.length > 0) {
       const formData = new FormData();
       formData.append("file", imageInput.files[0]);
 
@@ -1507,8 +1570,9 @@ async function saveBanner() {
     const payload = {
       banner_type: bannerType,
       title: title,
-      landing_url: url,
-      image_url: imageUrl || null,
+      landing_url: bannerType === "image" ? url : null,
+      image_url: bannerType === "image" ? (imageUrl || null) : null,
+      content: bannerType === "notice" ? content : null,
       start_at: start,
       end_at: end,
       is_active: true
@@ -1544,13 +1608,15 @@ function editBanner(id) {
   if (modalTitle) modalTitle.textContent = "배너 수정";
   if (submitBtn) submitBtn.textContent = "수정하기";
 
-    document.getElementById("bannerType").value = target.banner_type || "notice";
-    updateBannerImageRequiredUI();
-    document.getElementById("bannerTitle").value = target.title;
-    document.getElementById("bannerUrl").value = target.landing_url;
-    document.getElementById("bannerStart").value = target.start_at;
-    document.getElementById("bannerEnd").value = target.end_at;
-    document.getElementById("bannerImage").value = "";
+  document.getElementById("bannerType").value = target.banner_type || "notice";
+  updateBannerImageRequiredUI();
+
+  document.getElementById("bannerTitle").value = target.title || "";
+  document.getElementById("bannerUrl").value = target.landing_url || "";
+  document.getElementById("noticeContent").value = target.content || "";
+  document.getElementById("bannerStart").value = target.start_at || "";
+  document.getElementById("bannerEnd").value = target.end_at || "";
+  document.getElementById("bannerImage").value = "";
 
   document.getElementById("bannerModal").classList.add("show");
 }

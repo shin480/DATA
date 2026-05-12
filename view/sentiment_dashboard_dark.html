@@ -563,6 +563,7 @@
     <button class="tab"        data-tab="correction">감성 정정</button>
     <button class="tab"        data-tab="finetune">Fine-tuning</button>
     <button class="tab"        data-tab="stopwords">불용어 관리</button>
+    <button class="tab"        data-tab="reprocess">아티클 재처리</button>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
@@ -816,6 +817,78 @@
       </table>
       <div id="sw-empty" class="empty-msg" style="display:none;text-align:center;">등록된 불용어가 없습니다.</div>
     </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- 패널 7: 아티클 재처리                            -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div id="panel-reprocess" class="panel">
+
+    <!-- 검색 카드 -->
+    <div class="card" style="margin-bottom:1.2rem;">
+      <div class="section-title" style="margin-bottom:10px;">아티클 조회</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <div class="modal-label">Article ID</div>
+          <input type="text" id="rp-article-id" placeholder="예) 2024-0412-001" style="width:260px;"
+                 onkeydown="if(event.key==='Enter') searchArticle()">
+        </div>
+        <button class="btn btn-primary" id="rp-search-btn" onclick="searchArticle()">조회</button>
+        <button class="btn" onclick="clearReprocess()">초기화</button>
+      </div>
+      <div id="rp-search-error" class="error-msg" style="display:none;margin-top:8px;"></div>
+    </div>
+
+    <!-- 조회 결과 -->
+    <div id="rp-result" style="display:none;">
+
+      <!-- 현재 상태 카드 -->
+      <div class="card" style="margin-bottom:1.2rem;">
+        <div class="section-title" style="margin-bottom:12px;">현재 데이터 상태</div>
+        <div id="rp-article-info"></div>
+      </div>
+
+      <!-- 재처리 선택 카드 -->
+      <div class="card" style="margin-bottom:1.2rem;">
+        <div class="section-title" style="margin-bottom:12px;">재처리 항목 선택</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:1rem;">
+          <label class="check-label">
+            <input type="checkbox" id="rp-chk-sentiment" checked>
+            감성 분류 <span style="font-size:11px;color:var(--text3)">(sentiment, sentiment_score)</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" id="rp-chk-keywords" checked>
+            키워드 <span style="font-size:11px;color:var(--text3)">(keywords)</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" id="rp-chk-summary" checked>
+            요약 <span style="font-size:11px;color:var(--text3)">(summary)</span>
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="rp-run-btn" onclick="runReprocess()">재처리 실행</button>
+          <span id="rp-run-msg" style="font-size:12px;color:var(--text3);"></span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6;">
+          ⚠ 선택된 필드를 초기화한 뒤 즉시 재처리합니다. 배치 스케줄과 무관하게 동기 실행됩니다.
+        </div>
+      </div>
+
+      <!-- 재처리 결과 -->
+      <div id="rp-after" style="display:none;">
+        <div class="card">
+          <div class="section-title" style="margin-bottom:12px;">재처리 결과</div>
+          <div id="rp-process-result" style="margin-bottom:12px;"></div>
+          <div class="section-title" style="margin-bottom:8px;">갱신된 데이터</div>
+          <div id="rp-after-info"></div>
+        </div>
+      </div>
+
+    </div><!-- /rp-result -->
+
+    <!-- 빈 상태 -->
+    <div id="rp-empty" class="state-msg">Article ID를 입력하고 조회하세요.</div>
+
   </div>
 
 </div><!-- /page -->
@@ -1133,6 +1206,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     if (tab === 'correction' && !correctionLoaded) loadCorrection(1);
     if (tab === 'finetune'   && !finetuneLoaded)   loadFinetune();
     if (tab === 'stopwords') loadStopwords();
+    if (tab === 'reprocess' && !rpCurrentArticle) { hide('rp-result'); show('rp-empty'); }
   });
 });
 
@@ -1584,7 +1658,12 @@ async function addStopword() {
     document.getElementById('sw-reason-input').value = '';
     html('sw-add-msg', '✓ "' + escHtml(word) + '" 등록 완료');
     setTimeout(function() { html('sw-add-msg', ''); }, 3000);
-    loadStopwords();
+
+    // 목록 깜빡임 없이 즉시 반영: swAllData 앞에 추가 후 바로 렌더링
+    const now = new Date().toISOString();
+    swAllData.unshift({ word: word, reason: reason || null, added_at: now });
+    renderStopwords(swAllData);
+    show('sw-content');
   } catch(e) { toast('오류: ' + e.message); }
 }
 
@@ -1688,6 +1767,166 @@ async function triggerFinetune() {
     btn.disabled = false;
     text('ft-run-msg', '');
   }
+}
+
+// ══════════════════════════════════════════════════════
+// 패널 7: 아티클 재처리
+// ══════════════════════════════════════════════════════
+
+let rpCurrentArticle = null;  // 조회된 article 원본 저장
+
+function rpSentimentBadge(s) {
+  if (!s) return '<span style="color:var(--text3)">—</span>';
+  return badge(s);
+}
+
+function rpKeywordsHtml(kw) {
+  if (!kw || (Array.isArray(kw) && kw.length === 0) || kw === '') {
+    return '<span style="color:var(--text3)">—</span>';
+  }
+  const list = Array.isArray(kw) ? kw : String(kw).split(',').map(s => s.trim()).filter(Boolean);
+  return list.map(k =>
+    `<span class="badge badge-blue" style="margin-right:4px;">${escHtml(k)}</span>`
+  ).join('');
+}
+
+function rpArticleInfoHtml(a) {
+  return `
+    <table style="width:100%;font-size:13px;">
+      <colgroup><col style="width:120px"><col></colgroup>
+      <tbody>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;white-space:nowrap;">Article ID</td>
+          <td style="padding:5px 8px;font-weight:500;color:var(--text)">${escHtml(a.article_id || '—')}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;">제목</td>
+          <td style="padding:5px 8px;color:var(--text);line-height:1.5;">${escHtml(a.title || '—')}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;">언론사</td>
+          <td style="padding:5px 8px;color:var(--text2)">${escHtml(a.press || '—')}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;">발행일</td>
+          <td style="padding:5px 8px;color:var(--text2)">${a.published_at ? String(a.published_at).slice(0,10) : '—'}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;">scopeID</td>
+          <td style="padding:5px 8px;color:var(--text2)">${escHtml(a.scopeID || '—')}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;border-top:1px solid var(--border);">감성 분류</td>
+          <td style="padding:5px 8px;border-top:1px solid var(--border);">
+            ${rpSentimentBadge(a.sentiment)}
+            ${a.sentiment_score != null
+              ? `<span style="font-size:12px;color:var(--text3);margin-left:6px;">${Number(a.sentiment_score).toFixed(4)}</span>`
+              : ''}
+          </td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;">키워드</td>
+          <td style="padding:5px 8px;">${rpKeywordsHtml(a.keywords)}</td>
+        </tr>
+        <tr>
+          <td style="color:var(--text3);padding:5px 8px;">요약</td>
+          <td style="padding:5px 8px;color:var(--text2);line-height:1.6;">${escHtml(a.summary || '—')}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+async function searchArticle() {
+  const articleId = $('rp-article-id').value.trim();
+  if (!articleId) { toast('Article ID를 입력해주세요.'); return; }
+
+  hide('rp-search-error');
+  hide('rp-result');
+  hide('rp-after');
+  hide('rp-empty');
+  rpCurrentArticle = null;
+
+  const btn = $('rp-search-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '조회 중...'; }
+
+  try {
+    const data = await apiFetch(`/classify/article/search?article_id=${encodeURIComponent(articleId)}`);
+    rpCurrentArticle = data;
+
+    html('rp-article-info', rpArticleInfoHtml(data));
+    hide('rp-after');
+    text('rp-run-msg', '');
+    show('rp-result');
+  } catch(e) {
+    html('rp-search-error', '조회 실패: ' + e.message);
+    show('rp-search-error');
+    show('rp-empty');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '조회'; }
+  }
+}
+
+async function runReprocess() {
+  if (!rpCurrentArticle) { toast('먼저 아티클을 조회해주세요.'); return; }
+
+  const targets = [];
+  if ($('rp-chk-sentiment').checked) targets.push('sentiment');
+  if ($('rp-chk-keywords').checked)  targets.push('keywords');
+  if ($('rp-chk-summary').checked)   targets.push('summary');
+
+  if (targets.length === 0) { toast('재처리할 항목을 하나 이상 선택해주세요.'); return; }
+
+  const runBtn = $('rp-run-btn');
+  runBtn.disabled = true;
+  text('rp-run-msg', '재처리 중... (모델 추론 포함, 다소 시간이 걸릴 수 있습니다)');
+  hide('rp-after');
+
+  try {
+    const articleId = rpCurrentArticle.article_id;
+    const data = await apiFetch(`/classify/article/${encodeURIComponent(articleId)}/reprocess`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targets }),
+    });
+
+    // 처리 결과 배지
+    const resultHtml = Object.entries(data.results).map(([target, status]) => {
+      const ok = status === 'success';
+      const label = { sentiment: '감성 분류', keywords: '키워드', summary: '요약' }[target] || target;
+      return `<span class="badge ${ok ? 'badge-pos' : 'badge-neg'}" style="margin-right:6px;font-size:12px;">
+        ${label}: ${ok ? '✓ 완료' : '✗ 실패'}
+      </span>`;
+    }).join('');
+
+    html('rp-process-result', resultHtml);
+
+    // 갱신된 데이터
+    if (data.after) {
+      rpCurrentArticle = data.after;
+      html('rp-after-info', rpArticleInfoHtml(data.after));
+      // 상단 현재 상태도 갱신
+      html('rp-article-info', rpArticleInfoHtml(data.after));
+    }
+
+    show('rp-after');
+    toast('재처리 완료');
+  } catch(e) {
+    toast('오류: ' + e.message);
+    text('rp-run-msg', '재처리 실패: ' + e.message);
+  } finally {
+    runBtn.disabled = false;
+    text('rp-run-msg', '');
+  }
+}
+
+function clearReprocess() {
+  $('rp-article-id').value = '';
+  rpCurrentArticle = null;
+  hide('rp-result');
+  hide('rp-after');
+  hide('rp-search-error');
+  show('rp-empty');
 }
 
 // ── 초기 로드 ─────────────────────────────────────────
