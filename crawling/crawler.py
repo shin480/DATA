@@ -318,6 +318,7 @@ def save_bulk_to_es(news_list):
     success, errors = bulk(
         es,
         actions,
+        chunk_size=200,
         raise_on_error=False
     )
 

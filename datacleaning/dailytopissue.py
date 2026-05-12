@@ -1,6 +1,40 @@
 from util.es import get_es, bulk
 
+# ==============================
+# 불용어(Stopwords) 사전 정의
+# ==============================
+# 분석에 방해되는 무의미한 단어들을 여기에 계속 추가하시면 됩니다.
+STOPWORDS = {
+     # 기사/보도 일반어
+    "관계자", "관계인", "기자", "뉴스", "기사", "기사문", "보도자료",
+    "뉴시스", "연합뉴스", "뉴스1", "tv", "그래픽", "게시판",
+    "헤드라인", "리포트", "브리핑",
 
+    # 시간/흐름 일반어
+    "오늘", "내일", "어제", "올해", "내년", "지난해", "지난달",
+    "최근", "하루", "시간", "이날", "이번", "지난", "그동안",
+    "당시", "현재", "향후", "다음", "먼저",
+
+    # 의미 약한 일반어
+    "경우", "때문", "정도", "우리", "이들", "통해", "대해",
+    "위해", "관련", "가운데", "상황", "모두", "일부",
+    "수준", "부분", "가능성", "전망", "분위기",
+
+    # 경제/뉴스 범용어
+    "정부", "국회", "기업", "업계", "시장", "경제", "금융",
+    "경기", "경쟁력", "글로벌", "성장", "투자", "지원",
+    "서비스", "브랜드", "데이터", "시스템", "사업", "산업",
+    "소비", "고객", "대상자", "구성원", "임직원",
+
+    # 행정/조직 일반어
+    "공무원", "대통령", "위원장", "위원회", "감독원", "금감원",
+    "거래소", "국토부", "산업부", "중기부", "공정위",
+
+    # 흔한 동사형/상태형 키워드
+    "확대", "강화", "추진", "진행", "개최", "발표", "확인",
+    "검토", "제기", "밝히", "나오", "따르", "전하", "이어지",
+    "올리", "내리", "들어가", "가져오", "기다리"
+}
 # ==============================
 # keywords 문자열("A,B,C") → 개별 키워드 카운트
 # ==============================
@@ -8,11 +42,40 @@ def extract_keyword_list(keyword_string: str):
     if not keyword_string:
         return []
 
-    return [
-        kw.strip()
-        for kw in keyword_string.split(",")
-        if kw.strip()
-    ]
+    cleaned_keywords = []
+
+    for kw in keyword_string.split(","):
+        word = kw.strip().lower()
+
+        if not word:
+            continue
+
+        if len(word) <= 1:
+            continue
+
+        if word in STOPWORDS:
+            continue
+
+        # 관계자들, 정부관계자, 기업들 같은 파생형 제거
+        if (
+                "관계자" in word
+                or "기자" in word
+                or "정부" in word
+                or "업계" in word
+                or "기업" in word
+                or "위원" in word
+                or "감독원" in word
+        ):
+            continue
+
+        # 숫자만 있거나 숫자 비중이 큰 키워드 제거
+        digit_count = sum(ch.isdigit() for ch in word)
+        if digit_count >= len(word) / 2:
+            continue
+
+        cleaned_keywords.append(word)
+
+    return cleaned_keywords
 
 
 # ==============================
@@ -228,4 +291,4 @@ def save_daily_top_issue_report(start_date: str, end_date: str):
 
 
 if __name__ == "__main__":
-    save_daily_top_issue_report("2026-05-01", "2026-05-12")
+    save_daily_top_issue_report("2026-04-01", "2026-05-12")
