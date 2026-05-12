@@ -1192,19 +1192,12 @@ def get_dominant_opinions():
 
     result = es.search(
         index="news_scopes",
-        # 1순위: news_count 많은 순
-        # 2순위: updated_at 최신순
         body={
             "size": 5,
             "_source": [
-                "scopeID",
-                "scopeTitle",
                 "scope_summary",
                 "scope_keywords",
-                "sentiment",
-                "sentiment_score",
-                "news_count",
-                "updated_at"
+                "sentiment"
             ],
             "query": {
                 "match_all": {}
@@ -1238,13 +1231,9 @@ def get_dominant_opinions():
         ]
 
         opinions.append({
-            "scopeID": source.get("scopeID") or hit["_id"],
-            "title": source.get("scopeTitle") or "스콥 제목 없음",
-            "summary": source.get("scope_summary") or "",
+            "title": source.get("scope_summary") or "요약 없음",
             "keyword": keyword_list[0] if keyword_list else "키워드 없음",
-            "sentiment": source.get("sentiment") or "neutral",
-            "sentiment_score": source.get("sentiment_score", 0),
-            "news_count": source.get("news_count", 0)
+            "sentiment": source.get("sentiment") or "neutral"
         })
 
     return {
