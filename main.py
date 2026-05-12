@@ -1355,25 +1355,23 @@ def get_dominant_opinions():
     es = get_es()
 
     result = es.search(
-        index="news_scopes",
+        index=NEWS_ECONOMY_INDEX,
         body={
             "size": 5,
             "_source": [
-                "scope_summary",
-                "scope_keywords",
-                "sentiment"
+                "title",
+                "summary",
+                "keywords",
+                "sentiment",
+                "perspective",
+                "published_at"
             ],
             "query": {
                 "match_all": {}
             },
             "sort": [
                 {
-                    "news_count": {
-                        "order": "desc"
-                    }
-                },
-                {
-                    "updated_at": {
+                    "published_at": {
                         "order": "desc"
                     }
                 }
@@ -1386,17 +1384,26 @@ def get_dominant_opinions():
     for hit in result["hits"]["hits"]:
         source = hit["_source"]
 
-        keyword_text = source.get("scope_keywords") or ""
+        keyword_text = source.get("keywords") or ""
 
-        keyword_list = [
-            keyword.strip()
-            for keyword in str(keyword_text).split(",")
-            if keyword.strip()
-        ]
+        if isinstance(keyword_text, list):
+            keyword_list = keyword_text
+        else:
+            keyword_list = [
+                keyword.strip()
+                for keyword in str(keyword_text).split(",")
+                if keyword.strip()
+            ]
+
+        perspectives = source.get("perspective", [])
+
+        top_perspective = ""
+        if perspectives:
+            top_perspective = perspectives[0].get("category", "")
 
         opinions.append({
-            "title": source.get("scope_summary") or "요약 없음",
-            "keyword": keyword_list[0] if keyword_list else "키워드 없음",
+            "title": source.get("summary") or source.get("title") or "요약 없음",
+            "keyword": keyword_list[0] if keyword_list else top_perspective or "키워드 없음",
             "sentiment": source.get("sentiment") or "neutral"
         })
 
