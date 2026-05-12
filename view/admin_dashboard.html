@@ -1320,21 +1320,40 @@ function renderBanner() {
 // 조회 / 실행
 // ==============================
 
-function searchSummary() {
+async function searchSummary() {
   const start = document.getElementById("summaryStart").value;
   const end = document.getElementById("summaryEnd").value;
 
-  if (!validateDateRange(start, end)) return;
+  try {
+    // 1. 서버로 GET 요청 전송 (쿼리 스트링으로 날짜 전달)
+    const { data } = await axios.get("/search-summary", {
+      params: {
+        start_date: start,
+        end_date: end
+      }
+    });
 
-  const collectedCount = document.getElementById("collectedCount");
-  const removedCount = document.getElementById("removedCount");
+    if (data.success) {
+      const collectedCount = document.getElementById("collectedCount");
+      const removedCount = document.getElementById("removedCount");
 
-  if (collectedCount) {
-    collectedCount.textContent = Math.floor(Math.random() * 300) + 80;
-  }
+      // 2. 서버에서 받은 실제 데이터를 UI에 반영
+      if (collectedCount) {
+        collectedCount.textContent = data.summary.collected.toLocaleString(); // 천단위 콤마
+      }
 
-  if (removedCount) {
-    removedCount.textContent = Math.floor(Math.random() * 40) + 5;
+      if (removedCount) {
+        removedCount.textContent = data.summary.removed.toLocaleString();
+      }
+
+      showToast("데이터 조회가 완료되었습니다.");
+    } else {
+      showToast("통계 데이터를 불러오지 못했습니다.");
+    }
+
+  } catch (error) {
+    console.error("Summary 조회 실패:", error);
+    showToast("서버 통신 중 오류가 발생했습니다.");
   }
 
   showToast("임시 데이터로 조회되었습니다.");

@@ -13,6 +13,7 @@
 - 선택 로직: TextRank 상위 3개 중 첫 번째 문장과 코사인 유사도 가장 높은 문장 선택
 - Gemini 트리밍 제거: 규칙 기반 자연 절단으로 대체 (API 한도 절약)
 - 캡션 제거: [출처명] 패턴 전처리 추가
+- [2026-05] summarize_single_article 추가: 단건 재처리용 래퍼
 """
 
 import logging
@@ -106,6 +107,38 @@ def summarize(content: str) -> str:
     )
     return _natural_trim(sentences[best_idx])
 
+
+# ── 단건 재처리 래퍼 ───────────────────────────────────────────
+
+def summarize_single_article(article_id: str, src: dict) -> None:
+    """
+    단건 아티클 요약 생성 후 ES 업데이트.
+    classify.py의 reprocess_article 엔드포인트에서 호출됩니다.
+
+    배치와 달리 scopeID / keywords 존재 여부를 사전에 체크하지 않습니다.
+    (관리자가 명시적으로 재처리를 요청한 단건이므로 조건 무시)
+
+    Args:
+        article_id: news_economy 문서 ID
+        src: ES _source dict (content 필드 포함)
+
+    Raises:
+        Exception: 요약 생성 실패 또는 ES 업데이트 실패 시
+    """
+    summary = summarize(src.get("content", ""))
+    es = get_es()
+    try:
+        es.update(
+            index=INDEX_NEWS,
+            id=article_id,
+            body={"doc": {"summary": summary}},
+        )
+        logger.info(f"[단건] 요약 완료 article_id={article_id} → {summary[:30]}…")
+    finally:
+        es.close()
+
+
+# ── 배치 파이프라인 진입점 ─────────────────────────────────────
 
 def run_summary_pipeline():
     """summary=NULL / scopeID·keywords 존재 뉴스를 배치 요약합니다."""

@@ -14,6 +14,7 @@ KR-FinBert-SC 감성 분류 서비스
 - IDX_TO_LABEL: 모델 config.id2label 기준 동적 로딩으로 변경 (하드코딩 제거)
 - neutral 처리: gap 기반 후처리 유지 (NEUTRAL_GAP_THRESHOLD 기본값 0.2)
 - 토크나이저: ElectraTokenizer → BertTokenizer 변경
+- [2026-05] classify_single_article 추가: 단건 재처리용 래퍼
 """
 
 import logging
@@ -128,6 +129,43 @@ def predict_single(title: str, content: str, keyword_dict: dict) -> tuple[str, f
         probs = _apply_keyword_boost(probs, title + content[:300], keyword_dict)
     return _apply_gap_neutral(probs)
 
+
+# ── 단건 재처리 래퍼 ───────────────────────────────────────────
+
+def classify_single_article(article_id: str, src: dict) -> None:
+    """
+    단건 아티클 감성 분류 후 ES 업데이트.
+    classify.py의 reprocess_article 엔드포인트에서 호출됩니다.
+
+    Args:
+        article_id: news_economy 문서 ID
+        src: ES _source dict (title, content 필드 포함)
+
+    Raises:
+        Exception: 모델 추론 실패 또는 ES 업데이트 실패 시
+    """
+    keyword_dict = _load_keyword_dict()
+    sentiment, score = predict_single(
+        src.get("title", ""),
+        src.get("content", ""),
+        keyword_dict,
+    )
+    es = get_es()
+    try:
+        es.update(
+            index=INDEX_NEWS,
+            id=article_id,
+            body={"doc": {
+                "sentiment":       sentiment,
+                "sentiment_score": round(score, 6),
+            }},
+        )
+        logger.info(f"[단건] 감성 분류 완료 article_id={article_id} → {sentiment} ({score:.4f})")
+    finally:
+        es.close()
+
+
+# ── 배치 파이프라인 진입점 ─────────────────────────────────────
 
 def run_sentiment_pipeline():
     """sentiment=NULL / scopeID 존재 뉴스를 배치 감성 분류합니다."""
