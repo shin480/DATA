@@ -253,12 +253,21 @@ def reprocess_article(article_id: str, body: ReprocessRequest):
 # ── 내부 헬퍼 ──────────────────────────────────────────
 
 def _to_article_out(article_id: str, src: dict) -> ArticleOut:
+    # keywords: ES에 "word1,word2,word3" 문자열로 저장되므로 list로 변환
+    raw_kw = src.get("keywords")
+    if isinstance(raw_kw, str):
+        keywords = [k.strip() for k in raw_kw.split(",") if k.strip()]
+    elif isinstance(raw_kw, list):
+        keywords = raw_kw
+    else:
+        keywords = None
+
     return ArticleOut(
         article_id       = src.get("article_id", article_id),
         title            = src.get("title"),
         sentiment        = src.get("sentiment"),
         sentiment_score  = src.get("sentiment_score"),
-        keywords         = src.get("keywords"),
+        keywords         = keywords,
         summary          = src.get("summary"),
         scopeID          = src.get("scopeID"),
         processed_status = src.get("processed_status"),

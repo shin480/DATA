@@ -1658,7 +1658,12 @@ async function addStopword() {
     document.getElementById('sw-reason-input').value = '';
     html('sw-add-msg', '✓ "' + escHtml(word) + '" 등록 완료');
     setTimeout(function() { html('sw-add-msg', ''); }, 3000);
-    loadStopwords();
+
+    // 목록 깜빡임 없이 즉시 반영: swAllData 앞에 추가 후 바로 렌더링
+    const now = new Date().toISOString();
+    swAllData.unshift({ word: word, reason: reason || null, added_at: now });
+    renderStopwords(swAllData);
+    show('sw-content');
   } catch(e) { toast('오류: ' + e.message); }
 }
 
