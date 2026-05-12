@@ -700,6 +700,14 @@ td select {
 // ==============================
 // 관리자 접근 체크
 // ==============================
+const currentUserRole = (
+  sessionStorage.getItem("user_role") ||
+  localStorage.getItem("user_role") ||
+  sessionStorage.getItem("role") ||
+  localStorage.getItem("role") ||
+  ""
+).toLowerCase();
+
 
 (function checkAdminUsersAuth() {
   const token =
@@ -738,16 +746,6 @@ td select {
 // 서버 연결 전 임시 데이터
 // ==============================
 
-let userData = [
-  { id: "zxcasd", name: "홍길동", join: "2024-12-12 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-12 12:12:12" },
-  { id: "zxcadd", name: "김철수", join: "2024-12-13 09:21:12", role: "관리자", like: 81, dislike: 23, login: "2024-12-15 10:31:42" },
-  { id: "user001", name: "이영희", join: "2024-12-14 17:42:22", role: "일반", like: 31, dislike: 77, login: "2024-12-16 08:11:12" },
-  { id: "admin01", name: "관리자A", join: "2024-11-01 11:00:00", role: "관리자", like: 12, dislike: 2, login: "2024-12-17 13:44:01" },
-  { id: "root01", name: "최고관리자", join: "2024-10-01 09:00:00", role: "최고관리자", like: 0, dislike: 0, login: "2024-12-17 18:01:22" },
-  { id: "zxcasd2", name: "박민수", join: "2024-12-15 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-17 12:12:12" },
-  { id: "zxcasd3", name: "정다은", join: "2024-12-16 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-18 12:12:12" },
-  { id: "zxcasd4", name: "오지훈", join: "2024-12-17 12:12:12", role: "일반", like: 111, dislike: 111, login: "2024-12-19 12:12:12" }
-];
 
 const reactionData = [
   { press: "경향신문", views: 1, likes: 111 },
@@ -817,7 +815,7 @@ function adminUsersLogout() {
 // 사용자 테이블
 // ==============================
 
-function renderUsers(data = userData) {
+function renderUsers(data = []) {
   const tbody = document.getElementById("userTable");
 
   if (!tbody) return;
@@ -831,11 +829,17 @@ function renderUsers(data = userData) {
       <td>${user.like} / ${user.dislike}</td>
       <td>${user.login}</td>
       <td>
-        <select onchange="changeRole('${user.id}', this.value)">
-          <option value="일반" ${user.role === "일반" ? "selected" : ""}>일반</option>
-          <option value="관리자" ${user.role === "관리자" ? "selected" : ""}>관리자</option>
-          <option value="최고관리자" ${user.role === "최고관리자" ? "selected" : ""}>최고관리자</option>
-        </select>
+        ${
+          currentUserRole === "superadmin"
+            ? `
+              <select onchange="changeRole('${user.id}', this.value)">
+                <option value="일반" ${user.role === "일반" ? "selected" : ""}>일반</option>
+                <option value="관리자" ${user.role === "관리자" ? "selected" : ""}>관리자</option>
+                <option value="최고관리자" ${user.role === "최고관리자" ? "selected" : ""}>최고관리자</option>
+              </select>
+            `
+            : `-`
+        }
       </td>
     </tr>
   `).join("");
@@ -860,19 +864,8 @@ async function searchUsers() {
     }
 
     console.log(data);
+    console.log(currentUserRole);
 
-    // 서버 응답 예시:
-    // users: [
-    //   {
-    //     user_id,
-    //     user_name,
-    //     created_at,
-    //     role,
-    //     like_count,
-    //     dislike_count,
-    //     last_login
-    //   }
-    // ]
 
     userData = (data.users || []).map(user => ({
       id: user.user_id,

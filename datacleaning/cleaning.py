@@ -507,3 +507,76 @@ def sync_es_to_db():
     finally:
         if session:
             session.close()  # 세션 종료 (연결 반환)
+
+def retokenize_news_economy(): # news_economy 전체 재토큰화
+    print(">>> news_economy 전체 Kiwi 재토큰화 시작")
+
+    docs = scan(
+        es,
+        index=target_index,
+        query={
+            "query": {"match_all": {}},
+            "_source": ["clean_text"]
+        },
+        size=5000,
+        scroll="10m"
+    )
+
+    actions = []
+    total = 0
+    failed = 0
+    batch_size = 1000
+
+    for doc in docs:
+        total += 1
+        doc_id = doc["_id"]
+        clean_text = doc.get("_source", {}).get("clean_text", "")
+
+        try:
+            tokens = kiwi_noun_tokenizer(clean_text)
+
+            actions.append({
+                "_op_type": "update",
+                "_index": target_index,
+                "_id": doc_id,
+                "doc": {
+                    "tokens": tokens,
+                    "tokens_status": "success",
+                    "tokenizer_type": "kiwi"
+                }
+            })
+
+        except Exception as e:
+            failed += 1
+            actions.append({
+                "_op_type": "update",
+                "_index": target_index,
+                "_id": doc_id,
+                "doc": {
+                    "tokens_status": "failed",
+                    "tokenizer_type": "kiwi",
+                    "tokenizer_error": str(e)
+                }
+            })
+
+        if len(actions) >= batch_size:
+            bulk(es, actions, raise_on_error=False)
+            print(f"[재토큰화진행] {total}건 처리 완료 / 실패 {failed}건")
+            actions.clear()
+
+    if actions:
+        bulk(es, actions, raise_on_error=False)
+
+    es.indices.refresh(index=target_index)
+
+    print(f">>> 완료: 총 {total}건 재토큰화 / 실패 {failed}건")
+
+    return {
+        "success": True,
+        "total": total,
+        "failed": failed
+    }
+
+
+if __name__ == "__main__":
+    retokenize_news_economy()
