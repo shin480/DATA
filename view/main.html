@@ -1587,14 +1587,6 @@ function bindGlobalClickEvents() {
       return;
     }
 
-    if (loginRequiredLink) {
-      e.preventDefault();
-
-      const targetUrl = loginRequiredLink.dataset.loginPage;
-      goLoginRequiredPage(targetUrl);
-      return;
-    }
-
     if (heroTag) {
       e.preventDefault();
 
@@ -1629,14 +1621,14 @@ function bindGlobalClickEvents() {
     if (actionBtn) {
       e.preventDefault();
 
-      const articleId = actionBtn.dataset.articleId;
+      const articleId = actionBtn.getAttribute("data-article-id");
+      console.log("상세보기 클릭 articleId:", articleId);
 
       if (articleId) {
         goLoginRequiredPage(`/view/article_detail.html?article_id=${articleId}`);
       } else {
         goLoginRequiredPage("/view/article_detail.html");
       }
-
       return;
     }
 
@@ -1669,6 +1661,14 @@ function bindGlobalClickEvents() {
       }
 
       goLoginRequiredPage("/view/viewpoint_detail.html");
+      return;
+    }
+    if (loginRequiredLink) {
+      e.preventDefault();
+
+      const targetUrl = loginRequiredLink.dataset.loginPage;
+      goLoginRequiredPage(targetUrl);
+      return;
     }
   });
 }
@@ -2227,11 +2227,18 @@ async function loadSentimentCompare(keyword) {
 
             if (badge) {
                 badge.innerText = convertSentimentText(item.sentiment);
-                badge.className = "s-badge " + getSentimentClass(item.sentiment);
+                const badgeClass =
+                  item.sentiment === "positive"
+                    ? "pos"
+                    : item.sentiment === "negative"
+                      ? "neg"
+                      : "neu";
+
+                badge.className = "s-badge " + badgeClass;
             }
 
             if (button) {
-                button.dataset.articleId = item.article_id || "";
+                button.setAttribute("data-article-id", item.article_id || "");
             }
         });
 
