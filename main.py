@@ -932,6 +932,18 @@ def get_article_detail(article_id: str, req: Request):
     current_scope_id = source.get("scopeID", "")
     current_sentiment = source.get("sentiment", "neutral")
 
+    # =========================
+    # 기사 대표 관점(rank 1) 추출
+    # =========================
+    perspectives = source.get("perspective", [])
+
+    article_viewpoint = "관점 정보 없음"
+
+    for item in perspectives:
+        if item.get("rank") == 1:
+            article_viewpoint = item.get("category", "관점 정보 없음")
+            break
+
     deep_news = []
 
     if current_scope_id:
@@ -1037,6 +1049,10 @@ def get_article_detail(article_id: str, req: Request):
         "summary": source.get("summary", ""),
         "sourceUrl": source.get("url", ""),
         "sentiment": source.get("sentiment", ""),
+
+        # 대표 분석 관점
+        "viewpoint": article_viewpoint,
+
         "likeCount": source.get("like_count", 0),
         "dislikeCount": source.get("hate_count", 0),
         "currentVote": current_vote,
