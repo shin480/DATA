@@ -290,7 +290,22 @@ def get_keyword_detail(keyword: str):
 
     hits = result["hits"]["hits"]
 
-    total_count = len(hits)
+    total_count = result["hits"]["total"]["value"]
+    # =========================
+    # scope 개수 계산
+    # =========================
+    scope_set = set()
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scope_id = source.get("scopeID")
+
+        if scope_id:
+            scope_set.add(scope_id)
+
+    ai_count = len(scope_set)
 
     # =========================
     # 검색 결과 없을 때
@@ -444,7 +459,7 @@ def get_keyword_detail(keyword: str):
             first_article.get("summary")
             or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
 
-        "aiCount": total_count,
+        "aiCount": ai_count,
 
         "newsCount": total_count,
 
