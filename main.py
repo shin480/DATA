@@ -2627,4 +2627,4 @@ def create_daily_keyword_metrics(target_date: str = None):
 
 @app.get("/search-summary")
 def search_summary(start_date: str, end_date: str):
-    get_search_summary(start_date, end_date)
+    return get_search_summary(start_date, end_date)

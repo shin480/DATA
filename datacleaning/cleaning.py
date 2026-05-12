@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-from util.es import get_es, tokenizer, bulk
+from util.es import get_es, bulk
 from elasticsearch.helpers import scan
 from sqlalchemy import text
 from util.db import get_engine
@@ -9,13 +9,46 @@ from util.db import get_engine
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from kiwipiepy import Kiwi
+
 es = get_es()
+kiwi = Kiwi()
 
 # 불용어 리스트 정의
 STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "와", "과", "도", "만", "기자", "뉴스"]
 
 DEBUG_MODE = False
 target_index = "news_economy"
+
+def kiwi_noun_tokenizer(text: str) -> list[str]:  # 키위 토크나이저 (명사 + 용언 명사화)
+    if not text:
+        return []
+
+    tokens = kiwi.tokenize(text)
+
+    results = []
+
+    for token in tokens:
+        word = token.form.strip()
+
+        # 한 글자 제거 / 불용어 제거
+        if len(word) <= 1 or word in STOPWORDS:
+            continue
+
+        # 명사
+        if token.tag.startswith("N"):
+            results.append(word)
+
+        # 동사 / 형용사 → 어근 저장 (명사화 효과)
+        elif token.tag in ["VV", "VA"]:
+            results.append(word)
+
+        # 어근 / 명사파생
+        elif token.tag in ["XR", "XSN"]:
+            results.append(word)
+
+    # 중복 제거 (순서 유지)
+    return list(dict.fromkeys(results))
 
 def advanced_clean_text(text: str) -> str:
     """[1-03] 요구사항: 태그/이모지 제거 및 불용어 처리"""
@@ -30,6 +63,7 @@ def advanced_clean_text(text: str) -> str:
 
 # news_economy에 저장된 데이터 중복 검사
 def exists_in_news_economy(article_id, url, title, press):
+    print(f"[ES중복검사] article_id={article_id} | title={title[:40]}")
     should = []
 
     if article_id:
@@ -75,7 +109,7 @@ def get_preprocessed_data():
                 "must": [{"term": {"status": "collected"}}]
             }
         },
-        "size": 5000
+        "size": 1000
     }
     res = es.search(index="article_raw", body=query)
     hits = res["hits"]["hits"]
@@ -115,14 +149,62 @@ def get_preprocessed_data():
     # 3. 중복 및 유사도 제거
     final_data = []
     seen_urls = set()
+    seen_title_press = set()
     passed_texts = []
 
-    for _, row in df_step1.iterrows():
-        title, url, content = str(row['title']), str(row['url']), str(row['raw_text'])
+    # =========================
+    # 기존 news_economy 전체 중복 데이터 선로드
+    # =========================
+    print(">>> 기존 news_economy 중복검사용 데이터 로딩 시작...")
 
-        # url 중복 체크
+    existing_article_ids = set()
+    existing_urls = set()
+    existing_title_press = set()
+
+    for doc in scan(
+            es,
+            index=target_index,
+            query={
+                "query": {"match_all": {}},
+                "_source": ["article_id", "url", "title", "press"]
+            },
+            size=5000,
+            scroll="10m"
+    ):
+        src = doc["_source"]
+
+        if src.get("article_id"):
+            existing_article_ids.add(src["article_id"])
+
+        if src.get("url"):
+            existing_urls.add(src["url"])
+
+        if src.get("title") and src.get("press"):
+            existing_title_press.add((src["title"], src["press"]))
+
+    print(
+        f">>> 중복검사 데이터 로딩 완료 | "
+        f"article_id: {len(existing_article_ids)}건 | "
+        f"url: {len(existing_urls)}건 | "
+        f"title+press: {len(existing_title_press)}건"
+    )
+
+    # =========================
+    # 신규 데이터 검사 시작
+    # =========================
+    for idx, (_, row) in enumerate(df_step1.iterrows(), start=1):
+        title = str(row['title'])
+        url = str(row['url'])
+        content = str(row['raw_text'])
+        press = str(row['press'])
+        article_id = row.get("article_id", "")
+
+        # 진행률 출력
+        print(f"[진행률] {idx}/{len(df_step1)} | article_id={article_id} | title={title[:50]}")
+
+        # 1. 현재 배치 내 URL 중복
         if url in seen_urls:
-            logs["url_duplicate"].append(title);
+            logs["url_duplicate"].append(title)
             skipped_updates.append({
                 "_op_type": "update",
                 "_index": "article_raw",
@@ -131,21 +213,24 @@ def get_preprocessed_data():
             })
             continue
 
-        # 메타데이터 중복 체크
-        if any(p['title'] == title and p['press'] == row['press'] for p in final_data):
-            logs["meta_duplicate"].append(title);
+        # 2. 현재 배치 내 title + press 중복
+        if (title, press) in seen_title_press:
+            logs["meta_duplicate"].append(title)
             skipped_updates.append({
                 "_op_type": "update",
                 "_index": "article_raw",
                 "_id": row["_id"],
                 "doc": {"status": "skipped_duplicate_meta"}
             })
+
             continue
 
-        article_id = row.get("article_id", "")
-
-        # 과거 es 중복 체크
-        if exists_in_news_economy(article_id, url, title, row["press"]):
+        # 3. 기존 news_economy 중복 체크 (메모리 set 방식)
+        if (
+                (article_id and article_id in existing_article_ids)
+                or (url and url in existing_urls)
+                or ((title, press) in existing_title_press)
+        ):
             logs["es_duplicate"].append(title)
             skipped_updates.append({
                 "_op_type": "update",
@@ -155,11 +240,13 @@ def get_preprocessed_data():
             })
             continue
 
+        # 4. 본문 유사도 검사
         if passed_texts:
             try:
                 vectorizer = TfidfVectorizer()
                 tfidf_matrix = vectorizer.fit_transform([content] + passed_texts)
                 cosine_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
+
                 if (cosine_sim >= 0.9).any():
                     logs["high_similarity"].append(title)
                     skipped_updates.append({
@@ -169,16 +256,29 @@ def get_preprocessed_data():
                         "doc": {"status": "skipped_similarity"}
                     })
                     continue
-            except:
-                pass
+
+            except Exception as e:
+                print(f"[유사도검사오류] {title[:30]} | {e}")
 
         # [1-03] 통합 텍스트 생성 및 정제
         combined_text = f"{title} {content}"
         row['clean_text'] = advanced_clean_text(combined_text)
 
         final_data.append(row.to_dict())
+
+        # 현재 배치 중복 방지
         seen_urls.add(url)
+        seen_title_press.add((title, press))
         passed_texts.append(content)
+
+        # 기존 ES 기준 set에도 즉시 추가
+        if article_id:
+            existing_article_ids.add(article_id)
+
+        if url:
+            existing_urls.add(url)
+
+        existing_title_press.add((title, press))
 
     if skipped_updates and not DEBUG_MODE:
         batch_size = 500
@@ -273,7 +373,7 @@ def get_preprocessed_data():
                 "_index": "article_raw",
                 "_id": row["_id"],
                 "doc": {"status": "preprocessed"}  # 쿼리 조건과 일치하도록 설정
-            } for row in final_data
+            } for _, row in df_step1.iterrows()
         ]
 
         if update_actions:
@@ -304,12 +404,12 @@ def get_preprocessed_data():
     token_update_actions = []
     token_model_inputs = []
 
-    print(">>> Nori 토큰화 및 tokens 필드 업데이트 시작...")
+    print(">>> 토큰화 및 tokens 필드 업데이트 시작...")
     for row in final_data:
         doc_id = row['_id']
         try:
             # 사용자 정의 tokenizer 함수 호출
-            tokenized_str = tokenizer(es, row['clean_text'])
+            tokenized_str = kiwi_noun_tokenizer(row['clean_text'])
 
             token_model_inputs.append([doc_id, tokenized_str])
 
@@ -348,7 +448,7 @@ def get_preprocessed_data():
     es.indices.refresh(index="article_raw")
 
     return {
-        "message": "전처리 및 Nori 토큰화 통합 프로세스 완료",
+        "message": "전처리 및 토큰화 통합 프로세스 완료",
         "count": len(token_model_inputs),
         "data": token_model_inputs  # [id, token] 리스트 반환
     }
