@@ -212,6 +212,14 @@
       background: rgba(5, 11, 28, 0.78);
     }
 
+    .notice-content-text {
+      color: #cbd5e1;
+      font-size: 15px;
+      line-height: 1.9;
+      white-space: normal;
+      word-break: keep-all;
+    }
+
     /* ===== FOOTER ===== */
 
     #footer {
@@ -466,7 +474,7 @@
 
     const dateText = formatDate(notice.created_at || notice.start_at);
     const title = notice.title || "제목 없음";
-    const url = notice.landing_url || "";
+    const content = notice.content || "등록된 상세 내용이 없습니다.";
 
     area.innerHTML = `
       <article class="detail-panel">
@@ -482,40 +490,9 @@
         </div>
 
         <div class="detail-body">
-          <p>
-            ${escapeHtml(title)}
-          </p>
-
-          <p>
-            해당 공지사항의 자세한 내용은 연결된 안내 페이지에서 확인할 수 있습니다.
-          </p>
-
-          ${
-            url
-              ? `
-                <div class="notice-link-box">
-                  <div class="notice-link-text">
-                    연결된 안내 페이지가 있습니다.<br>
-                    버튼을 클릭하면 새 창으로 이동합니다.
-                  </div>
-
-                  <button
-                    class="notice-link-btn"
-                    type="button"
-                    onclick="openNoticeLink('${escapeAttr(url)}')"
-                  >
-                    안내 페이지 열기
-                  </button>
-                </div>
-              `
-              : `
-                <div class="notice-link-box">
-                  <div class="notice-link-text">
-                    연결된 안내 페이지가 없습니다.
-                  </div>
-                </div>
-              `
-          }
+          <div class="notice-content-text">
+            ${escapeHtml(content).replaceAll("\n", "<br>")}
+          </div>
         </div>
 
         <div class="detail-actions">
