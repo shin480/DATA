@@ -290,7 +290,22 @@ def get_keyword_detail(keyword: str):
 
     hits = result["hits"]["hits"]
 
-    total_count = len(hits)
+    total_count = result["hits"]["total"]["value"]
+    # =========================
+    # scope 개수 계산
+    # =========================
+    scope_set = set()
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scope_id = source.get("scopeID")
+
+        if scope_id:
+            scope_set.add(scope_id)
+
+    ai_count = len(scope_set)
 
     # =========================
     # 검색 결과 없을 때
@@ -444,7 +459,7 @@ def get_keyword_detail(keyword: str):
             first_article.get("summary")
             or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
 
-        "aiCount": total_count,
+        "aiCount": ai_count,
 
         "newsCount": total_count,
 
@@ -1326,6 +1341,7 @@ def get_admin_banners():
                 title,
                 landing_url,
                 image_url,
+                content,
                 DATE_FORMAT(start_at, '%Y-%m-%d') AS start_at,
                 DATE_FORMAT(end_at, '%Y-%m-%d') AS end_at,
                 is_active
@@ -1352,6 +1368,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 title,
                 landing_url,
                 image_url,
+                content,
                 start_at,
                 end_at,
                 is_active
@@ -1361,6 +1378,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 :title,
                 :landing_url,
                 :image_url,
+                :content,
                 :start_at,
                 :end_at,
                 :is_active
@@ -1370,6 +1388,7 @@ def create_admin_banner(info: Dict[str, Any]):
             "banner_type": info.get("banner_type", "notice"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
+            "content": info.get("content"),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1439,6 +1458,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
                 title = :title,
                 landing_url = :landing_url,
                 image_url = :image_url,
+                content = :content,
                 start_at = :start_at,
                 end_at = :end_at,
                 is_active = :is_active
@@ -1449,6 +1469,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
             "title": info.get("title"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
+            "content": info.get("content"),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1518,6 +1539,7 @@ def get_active_banner_list():
                 title,
                 landing_url,
                 image_url,
+                content,
                 start_at,
                 end_at,
                 created_at,
@@ -2605,4 +2627,4 @@ def create_daily_keyword_metrics(target_date: str = None):
 
 @app.get("/search-summary")
 def search_summary(start_date: str, end_date: str):
-    get_search_summary(start_date, end_date)
+    return get_search_summary(start_date, end_date)
