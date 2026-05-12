@@ -1627,8 +1627,8 @@ def get_active_banner_list():
                 updated_at
             FROM banners
             WHERE is_active = TRUE
-              AND start_at <= NOW()
-              AND end_at >= NOW()
+              AND DATE(start_at) <= CURDATE()
+              AND DATE(end_at) >= CURDATE()
             ORDER BY is_pinned DESC, created_at DESC
         """)).mappings().all()
 
