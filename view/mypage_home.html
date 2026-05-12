@@ -709,21 +709,27 @@
       font-weight: 700;
     }
 
-/* ===== FOOTER ===== */
+/* ==============================
+   Footer
+============================== */
 
-/* .page는 1440px 그대로 두고, footer만 화면 전체 폭으로 빼기 */
+/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
 #footer {
   width: 100vw;
-  margin-left: calc((1440px - 100vw) / 2);
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   flex-shrink: 0;
 }
 
-.footer-inner {
-  max-width: 1240px;
-  margin: 0 auto;
+/* 실제 footer */
+.footer {
   width: 100%;
+  background: #020617;
+  color: #fff;
+  box-sizing: border-box;
 }
 
+/* footer 안쪽 내용 */
 .footer-inner {
   width: 100%;
   min-height: 88px;
@@ -733,104 +739,134 @@
   display: flex;
   align-items: center;
   gap: 22px;
+}
 
-  color: #64748b;
+html,
+body {
+  overflow-x: hidden;
+}
+
+.footer-logo-white {
+  width: 34px;
+  height: 34px;
+  background-color: #ffffff;
+
+  -webkit-mask-image: url("/view/img/favicon.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/view/img/favicon.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  flex-shrink: 0;
+}
+
+.footer-link {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
   font-size: 12px;
 }
 
-    .footer-logo-white {
-      width: 34px;
-      height: 34px;
-      background-color: #ffffff;
+.footer-link:hover {
+  color: #00e5ff;
+}
 
-      -webkit-mask-image: url("/view/img/favicon.png");
-      -webkit-mask-repeat: no-repeat;
-      -webkit-mask-position: center;
-      -webkit-mask-size: contain;
+.footer-divider {
+  width: 1px;
+  height: 12px;
+  background: #334155;
+}
 
-      mask-image: url("/view/img/favicon.png");
-      mask-repeat: no-repeat;
-      mask-position: center;
-      mask-size: contain;
+.footer-copy {
+  margin: 0;
+  color: #64748b;
+}
 
-      flex-shrink: 0;
-    }
 
-    .footer-link {
-      border: 0;
-      background: transparent;
-      color: #94a3b8;
-      cursor: pointer;
-      font-size: 12px;
-    }
+/* ==============================
+   Footer Modal
+============================== */
 
-    .footer-link:hover {
-      color: #00e5ff;
-    }
+/* 모달은 화면 중앙 고정 */
+.footer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
 
-    .footer-divider {
-      width: 1px;
-      height: 12px;
-      background: #334155;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    .footer-copy {
-      margin: 0;
-      color: #64748b;
-    }
+  background: rgba(2, 8, 23, 0.75);
+}
 
-    /* ==============================
-       Footer Modal
-    ============================== */
+.footer-modal.hidden {
+  display: none !important;
+}
 
-    .footer-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 8, 23, 0.75);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 30000;
-    }
+.footer-modal-box {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 28px;
+}
 
-    .footer-modal.hidden {
-      display: none !important;
-    }
+.footer-modal-content {
+  color: #cbd5e1;
+  line-height: 1.8;
+  font-size: 14px;
+  white-space: pre-line;
+}
 
-    .footer-modal-box {
-      width: 520px;
-      max-width: calc(100% - 32px);
-      max-height: 70vh;
-      overflow-y: auto;
-      background: #111827;
-      border: 1px solid #334155;
-      border-radius: 18px;
-      padding: 28px;
-    }
+.footer-modal-content h3 {
+  margin: 0 0 16px;
+  color: #f8fafc;
+}
 
-    .footer-modal-content {
-      color: #cbd5e1;
-      line-height: 1.8;
-      font-size: 14px;
-      white-space: pre-line;
-    }
+.footer-modal-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #00e5ff;
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+}
 
-    .footer-modal-content h3 {
-      margin: 0 0 16px;
-      color: #f8fafc;
-    }
+/* ==============================
+   Responsive
+============================== */
 
-    .footer-modal-btn {
-      width: 100%;
-      margin-top: 24px;
-      padding: 13px;
-      border: 0;
-      border-radius: 10px;
-      background: #00e5ff;
-      color: #020617;
-      font-weight: 900;
-      cursor: pointer;
-    }
+@media (max-width: 980px) {
+  .footer-inner {
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-suggest-box {
+    left: 18px !important;
+    right: 18px !important;
+    width: auto !important;
+    max-width: none;
+  }
+
+  .footer-inner {
+    padding: 0 18px;
+  }
+}
 
     /* ===== PW MODAL ===== */
 

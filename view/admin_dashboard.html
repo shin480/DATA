@@ -1233,8 +1233,11 @@ function getBannerStatus(start, end) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const s = new Date(start);
-  const e = new Date(end);
+  const [startYear, startMonth, startDay] = start.split("-").map(Number);
+  const [endYear, endMonth, endDay] = end.split("-").map(Number);
+
+  const s = new Date(startYear, startMonth - 1, startDay);
+  const e = new Date(endYear, endMonth - 1, endDay);
 
   if (today < s) return "대기중";
   if (today > e) return "종료";

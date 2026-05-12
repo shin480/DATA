@@ -929,6 +929,78 @@ def get_article_detail(article_id: str, req: Request):
 
     source = result["_source"]
 
+    current_scope_id = source.get("scopeID", "")
+    current_sentiment = source.get("sentiment", "neutral")
+
+    deep_news = []
+
+    if current_scope_id:
+        related_result = es.search(
+            index=NEWS_ECONOMY_INDEX,
+            body={
+                "size": 20,
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "term": {
+                                    "scopeID": current_scope_id
+                                }
+                            }
+                        ],
+                        "must_not": [
+                            {
+                                "term": {
+                                    "article_id": article_id
+                                }
+                            }
+                        ]
+                    }
+                },
+                "sort": [
+                    {
+                        "published_at": {
+                            "order": "desc"
+                        }
+                    }
+                ]
+            }
+        )
+
+        same_news = None
+        diff_news = None
+
+        for hit in related_result["hits"]["hits"]:
+            item = hit["_source"]
+
+            sentiment = item.get("sentiment", "neutral")
+
+            news_item = {
+                "article_id": item.get("article_id", ""),
+                "title": item.get("title", ""),
+                "press": item.get("press", ""),
+                "sentiment": sentiment,
+                "type": sentiment,
+                "tag": "관련 뉴스" if sentiment == current_sentiment else "다른 시각추천"
+            }
+
+            if sentiment == current_sentiment and same_news is None:
+                same_news = news_item
+
+            if sentiment != current_sentiment and diff_news is None:
+                diff_news = news_item
+
+            if same_news and diff_news:
+                break
+
+        deep_news = []
+
+        if same_news:
+            deep_news.append(same_news)
+
+        if diff_news:
+            deep_news.append(diff_news)
+
     login_user = req.session.get("user")
     user_id = login_user.get("user_id") if login_user else None
 
@@ -967,7 +1039,8 @@ def get_article_detail(article_id: str, req: Request):
         "sentiment": source.get("sentiment", ""),
         "likeCount": source.get("like_count", 0),
         "dislikeCount": source.get("hate_count", 0),
-        "currentVote": current_vote
+        "currentVote": current_vote,
+        "deepNews": deep_news
     }
 
 @app.get("/api/mypage/viewed-news")
@@ -1627,8 +1700,8 @@ def get_active_banner_list():
                 updated_at
             FROM banners
             WHERE is_active = TRUE
-              AND start_at <= NOW()
-              AND end_at >= NOW()
+              AND DATE(start_at) <= CURDATE()
+              AND DATE(end_at) >= CURDATE()
             ORDER BY is_pinned DESC, created_at DESC
         """)).mappings().all()
 
