@@ -1415,6 +1415,24 @@ async function searchSummary() {
         removedCount.textContent = data.summary.removed.toLocaleString();
       }
 
+      // =========================
+      // 언론사별 기사 수
+      // backend 예시:
+      // press_stats: [{name:"연합뉴스", count:123}]
+      // =========================
+      if (Array.isArray(data.summary.press_stats)) {
+        pressData.length = 0;
+
+        data.summary.press_stats.forEach(item => {
+          pressData.push({
+            name: item.name,
+            count: Number(item.count || 0)
+          });
+        });
+
+        renderPress();
+      }
+
       showToast("데이터 조회가 완료되었습니다.");
     } else {
       showToast("통계 데이터를 불러오지 못했습니다.");
