@@ -1242,6 +1242,74 @@ def get_dominant_opinions():
         "opinions": opinions
     }
 
+# =========================
+# 같은 이슈, 다른 해석
+# =========================
+@app.get("/api/main/sentiment-compare")
+def get_sentiment_compare(keyword: str):
+    es = get_es()
+
+    sentiments = ["positive", "negative", "neutral"]
+    articles = []
+
+    for sentiment in sentiments:
+        result = es.search(
+            index="news_economy",
+            body={
+                "size": 1,
+                "_source": [
+                    "article_id",
+                    "title",
+                    "summary",
+                    "press",
+                    "sentiment",
+                    "published_at"
+                ],
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "match": {
+                                    "title": keyword
+                                }
+                            },
+                            {
+                                "term": {
+                                    "sentiment": sentiment
+                                }
+                            }
+                        ]
+                    }
+                },
+                "sort": [
+                    {
+                        "published_at": {
+                            "order": "desc"
+                        }
+                    }
+                ]
+            }
+        )
+
+        hits = result["hits"]["hits"]
+
+        if not hits:
+            continue
+
+        source = hits[0]["_source"]
+
+        articles.append({
+            "article_id": source.get("article_id") or hits[0]["_id"],
+            "title": source.get("title") or "기사 제목 없음",
+            "summary": source.get("summary") or "",
+            "press": source.get("press") or "언론사 없음",
+            "sentiment": source.get("sentiment") or sentiment
+        })
+
+    return {
+        "articles": articles
+    }
+
 # =========================================
 # 배너 관리 API
 # =========================================
