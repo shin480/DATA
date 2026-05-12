@@ -467,29 +467,41 @@
       font-weight: 700;
     }
 
-/* ===== FOOTER ===== */
+/* ==============================
+   Footer
+============================== */
 
-/* 현재 페이지는 .page가 100%라서 footer를 따로 밀 필요 없음 */
+/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
 #footer {
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   flex-shrink: 0;
 }
 
+/* 실제 footer */
 .footer {
   width: 100%;
-  min-height: 88px;
   background: #020617;
   color: #fff;
   box-sizing: border-box;
 }
 
+/* footer 안쪽 내용 */
+.footer-inner {
+  width: 100%;
+  min-height: 88px;
+  padding: 0 70px;
+  box-sizing: border-box;
 
   display: flex;
   align-items: center;
   gap: 22px;
+}
 
-  color: #64748b;
-  font-size: 12px;
+html,
+body {
+  overflow-x: hidden;
 }
 
 .footer-logo-white {
@@ -533,58 +545,86 @@
   color: #64748b;
 }
 
-    /* ==============================
-       Footer Modal
-    ============================== */
 
-    .footer-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 8, 23, 0.75);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 30000;
-    }
+/* ==============================
+   Footer Modal
+============================== */
 
-    .footer-modal.hidden {
-      display: none !important;
-    }
+/* 모달은 화면 중앙 고정 */
+.footer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
 
-    .footer-modal-box {
-      width: 520px;
-      max-width: calc(100% - 32px);
-      max-height: 70vh;
-      overflow-y: auto;
-      background: #111827;
-      border: 1px solid #334155;
-      border-radius: 18px;
-      padding: 28px;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    .footer-modal-content {
-      color: #cbd5e1;
-      line-height: 1.8;
-      font-size: 14px;
-      white-space: pre-line;
-    }
+  background: rgba(2, 8, 23, 0.75);
+}
 
-    .footer-modal-content h3 {
-      margin: 0 0 16px;
-      color: #f8fafc;
-    }
+.footer-modal.hidden {
+  display: none !important;
+}
 
-    .footer-modal-btn {
-      width: 100%;
-      margin-top: 24px;
-      padding: 13px;
-      border: 0;
-      border-radius: 10px;
-      background: #00e5ff;
-      color: #020617;
-      font-weight: 900;
-      cursor: pointer;
-    }
+.footer-modal-box {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.footer-modal-content {
+  color: #cbd5e1;
+  line-height: 1.8;
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.footer-modal-content h3 {
+  margin: 0 0 16px;
+  color: #f8fafc;
+}
+
+.footer-modal-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: #00e5ff;
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ==============================
+   Responsive
+============================== */
+
+@media (max-width: 980px) {
+  .footer-inner {
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-suggest-box {
+    left: 18px !important;
+    right: 18px !important;
+    width: auto !important;
+    max-width: none;
+  }
+
+  .footer-inner {
+    padding: 0 18px;
+  }
+
 
     /* ==============================
        Light Mode
