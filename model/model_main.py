@@ -4,12 +4,10 @@
 스케줄 (체이닝 방식 — 선행 작업 완료 후 다음 작업 즉시 실행):
   [일 1회 체인, 새벽 2시 시작]
     classification → sentiment → keywords → summary
-      → scope_sentiment → scope_summary → scope_keywords
+      → scope_title → scope_sentiment → scope_summary → scope_keywords
 
   [독립 배치]
-  - 30분 간격: scope 키워드 집계
-  - 30분 간격: scopeTitle 큐 배치 처리
-  - 1시간 간격: fine-tuning 자동 트리거 확인
+  - 없음 (모든 배치는 일배치 체인으로 실행, 수동 트리거 가능)
 
 ※ 각 작업은 선행 작업이 정상 완료된 경우에만 다음 작업을 예약합니다.
    실패 또는 타임아웃 시 체인이 중단되고 pipeline_error_log에 기록됩니다.
@@ -127,10 +125,10 @@ def _on_job_missed(event):
 # 타임아웃 또는 예외 발생 시 체인 중단, _on_job_error + pipeline_error_log 기록.
 
 def classification_job():
-    """[1/6] 분류 파이프라인 → 완료 시 sentiment_job 예약"""
-    logger.info("[체인 1/6] classification 시작")
+    """[1/8] 분류 파이프라인 → 완료 시 sentiment_job 예약"""
+    logger.info("[체인 1/8] classification 시작")
     _run_with_timeout(run_classification_pipeline, "classification")
-    logger.info("[체인 1/6] classification 완료 → sentiment 예약")
+    logger.info("[체인 1/8] classification 완료 → sentiment 예약")
     scheduler.add_job(
         sentiment_job,
         trigger="date",
@@ -140,10 +138,10 @@ def classification_job():
 
 
 def sentiment_job():
-    """[2/6] 감성 분류 → 완료 시 keyword_job 예약"""
-    logger.info("[체인 2/6] sentiment 시작")
+    """[2/8] 감성 분류 → 완료 시 keyword_job 예약"""
+    logger.info("[체인 2/8] sentiment 시작")
     _run_with_timeout(run_sentiment_pipeline, "sentiment")
-    logger.info("[체인 2/6] sentiment 완료 → keywords 예약")
+    logger.info("[체인 2/8] sentiment 완료 → keywords 예약")
     scheduler.add_job(
         keyword_job,
         trigger="date",
@@ -153,10 +151,10 @@ def sentiment_job():
 
 
 def keyword_job():
-    """[3/6] 키워드 추출 → 완료 시 summary_job 예약"""
-    logger.info("[체인 3/6] keywords 시작")
+    """[3/8] 키워드 추출 → 완료 시 summary_job 예약"""
+    logger.info("[체인 3/8] keywords 시작")
     _run_with_timeout(run_keyword_pipeline, "keywords")
-    logger.info("[체인 3/6] keywords 완료 → summary 예약")
+    logger.info("[체인 3/8] keywords 완료 → summary 예약")
     scheduler.add_job(
         summary_job,
         trigger="date",
@@ -166,10 +164,23 @@ def keyword_job():
 
 
 def summary_job():
-    """[4/6] 뉴스 요약 → 완료 시 scope_sentiment_job 예약"""
-    logger.info("[체인 4/6] summary 시작")
+    """[4/8] 뉴스 요약 → 완료 시 scope_title_job 예약"""
+    logger.info("[체인 4/8] summary 시작")
     _run_with_timeout(run_summary_pipeline, "summary")
-    logger.info("[체인 4/6] summary 완료 → scope_sentiment 예약")
+    logger.info("[체인 4/8] summary 완료 → scope_title 예약")
+    scheduler.add_job(
+        scope_title_job,
+        trigger="date",
+        id="scope_title_chain",
+        replace_existing=True,
+    )
+
+
+def scope_title_job():
+    """[5/8] scope 대표 제목 생성 → 완료 시 scope_sentiment_job 예약"""
+    logger.info("[체인 5/8] scope_title 시작")
+    _run_with_timeout(run_scope_title_batch, "scope_title_chain")
+    logger.info("[체인 5/8] scope_title 완료 → scope_sentiment 예약")
     scheduler.add_job(
         scope_sentiment_job,
         trigger="date",
@@ -179,10 +190,10 @@ def summary_job():
 
 
 def scope_sentiment_job():
-    """[5/6] scope 감성 집계 → 완료 시 scope_summary_job 예약"""
-    logger.info("[체인 5/6] scope_sentiment 시작")
+    """[6/8] scope 감성 집계 → 완료 시 scope_summary_job 예약"""
+    logger.info("[체인 6/8] scope_sentiment 시작")
     _run_with_timeout(run_scope_sentiment_batch, "scope_sentiment")
-    logger.info("[체인 5/6] scope_sentiment 완료 → scope_summary 예약")
+    logger.info("[체인 6/8] scope_sentiment 완료 → scope_summary 예약")
     scheduler.add_job(
         scope_summary_job,
         trigger="date",
@@ -192,10 +203,10 @@ def scope_sentiment_job():
 
 
 def scope_summary_job():
-    """[6/7] scope 대표 요약 생성/갱신 → 완료 시 scope_keywords_job 예약"""
-    logger.info("[체인 6/7] scope_summary 시작")
+    """[7/8] scope 대표 요약 생성/갱신 → 완료 시 scope_keywords_job 예약"""
+    logger.info("[체인 7/8] scope_summary 시작")
     _run_with_timeout(run_scope_summary_batch, "scope_summary_batch")
-    logger.info("[체인 6/7] scope_summary 완료 → scope_keywords 예약")
+    logger.info("[체인 7/8] scope_summary 완료 → scope_keywords 예약")
     scheduler.add_job(
         scope_keywords_job,
         trigger="date",
@@ -205,10 +216,10 @@ def scope_summary_job():
 
 
 def scope_keywords_job():
-    """[7/7] scope 키워드 집계 (체인 종료)"""
-    logger.info("[체인 7/7] scope_keywords 시작")
+    """[8/8] scope 키워드 집계 (체인 종료)"""
+    logger.info("[체인 8/8] scope_keywords 시작")
     _run_with_timeout(run_scope_keywords_batch, "scope_keywords_chain")
-    logger.info("[체인 7/7] scope_keywords 완료 — 일배치 체인 종료")
+    logger.info("[체인 8/8] scope_keywords 완료 — 일배치 체인 종료")
 
 
 # ── 앱 생명주기 ────────────────────────────────────────
@@ -230,24 +241,11 @@ def startup():
     #   운영: trigger="cron", hour=2, minute=0  (day_of_week 제거)
     scheduler.add_job(
         classification_job,
-        trigger="cron", day_of_week="tue", hour=15, minute=0,  # 테스트: 화요일 15:00
+        trigger="cron", day_of_week="wed", hour=11, minute=30,  # 테스트: 수요일 11:30
         id="classification",
         replace_existing=True,
     )
 
-    # ── 독립 배치 (체인과 무관하게 별도 실행) ──────────
-    scheduler.add_job(
-        run_scope_title_batch,
-        trigger="interval", minutes=30,
-        id="scope_title_batch",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        check_and_trigger_finetune,
-        trigger="interval", hours=1,
-        id="finetune_checker",
-        replace_existing=True,
-    )
 
     scheduler.add_listener(_on_job_error,  EVENT_JOB_ERROR)
     scheduler.add_listener(_on_job_missed, EVENT_JOB_MISSED)

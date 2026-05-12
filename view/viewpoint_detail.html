@@ -657,39 +657,35 @@ body {
   color: #38bdf8;
 }
 
-.press-logo {
+.press-logo-box {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 9px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.press-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  display: block;
+}
+
+.press-logo-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  font-size: 10px;
   font-weight: 900;
-}
-
-.press-logo.blue {
-  background: #1e3a8a;
-}
-
-.press-logo.sky {
-  background: #0284c7;
-}
-
-.press-logo.white {
-  background: #ffffff;
-  color: #111827;
-}
-
-.press-logo.red {
-  background: #ffffff;
-  color: #dc2626;
-  font-size: 18px;
-}
-
-.press-logo.green {
-  background: #ffffff;
-  color: #0f766e;
-  font-size: 18px;
 }
 
 .press {
@@ -1300,6 +1296,51 @@ body.light-mode .footer-modal-content h3 {
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
+
+// =========================================================
+// 언론사 로고 맵
+// =========================================================
+let pressLogoMap = {};
+
+async function loadPressLogoMap() {
+  try {
+    const response = await fetch("/view/press_logo_map.json");
+
+    if (!response.ok) {
+      throw new Error("press_logo_map.json 불러오기 실패");
+    }
+
+    pressLogoMap = await response.json();
+  } catch (error) {
+    console.error("언론사 로고 맵 로드 실패:", error);
+    pressLogoMap = {};
+  }
+}
+
+// =========================================================
+// 언론사 로고 HTML 생성
+// =========================================================
+function getPressLogoHtml(pressName) {
+  const logoUrl = pressLogoMap[pressName];
+
+  if (!logoUrl) {
+    return `
+      <div class="press-logo-fallback">
+        ${(pressName || "?").slice(0, 1)}
+      </div>
+    `;
+  }
+
+  return `
+    <img
+      class="press-logo-img"
+      src="${logoUrl}"
+      alt="${pressName || "언론사"}"
+      onerror="this.outerHTML='<div class=&quot;press-logo-fallback&quot;>${(pressName || "?").slice(0, 1)}</div>'"
+    >
+  `;
+}
+
 function getLoginInfo() {
   return {
     token:
@@ -1992,13 +2033,11 @@ function renderArticles(articles) {
     return;
   }
 
-  const logoClasses = ["blue", "sky", "white", "red", "green"];
-
-  articleList.innerHTML = articles.slice(0, 5).map(function (article, index) {
+  articleList.innerHTML = articles.slice(0, 5).map(function (article) {
     return `
       <div class="article-row" onclick="goArticleDetail('${article.article_id || ""}')">
-        <div class="press-logo ${logoClasses[index] || "blue"}">
-          ${(article.press || "").slice(0, 2)}
+        <div class="press-logo-box">
+          ${getPressLogoHtml(article.press)}
         </div>
 
         <div class="press">
@@ -2127,7 +2166,10 @@ function goArticleDetail(articleId) {
   location.href = `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
 }
 
-loadViewpointDetail(viewTitle);
+document.addEventListener("DOMContentLoaded", async function () {
+  await loadPressLogoMap();
+  loadViewpointDetail(viewTitle);
+});
 </script>
 </body>
 </html>
