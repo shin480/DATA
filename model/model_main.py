@@ -4,7 +4,7 @@
 스케줄 (체이닝 방식 — 선행 작업 완료 후 다음 작업 즉시 실행):
   [일 1회 체인, 새벽 2시 시작]
     classification → sentiment → keywords → summary
-      → scope_sentiment → scope_summary
+      → scope_sentiment → scope_summary → scope_keywords
 
   [독립 배치]
   - 30분 간격: scope 키워드 집계
@@ -192,10 +192,23 @@ def scope_sentiment_job():
 
 
 def scope_summary_job():
-    """[6/6] scope 대표 요약 생성/갱신 (체인 종료)"""
-    logger.info("[체인 6/6] scope_summary 시작")
+    """[6/7] scope 대표 요약 생성/갱신 → 완료 시 scope_keywords_job 예약"""
+    logger.info("[체인 6/7] scope_summary 시작")
     _run_with_timeout(run_scope_summary_batch, "scope_summary_batch")
-    logger.info("[체인 6/6] scope_summary 완료 — 일배치 체인 종료")
+    logger.info("[체인 6/7] scope_summary 완료 → scope_keywords 예약")
+    scheduler.add_job(
+        scope_keywords_job,
+        trigger="date",
+        id="scope_keywords_chain",
+        replace_existing=True,
+    )
+
+
+def scope_keywords_job():
+    """[7/7] scope 키워드 집계 (체인 종료)"""
+    logger.info("[체인 7/7] scope_keywords 시작")
+    _run_with_timeout(run_scope_keywords_batch, "scope_keywords_chain")
+    logger.info("[체인 7/7] scope_keywords 완료 — 일배치 체인 종료")
 
 
 # ── 앱 생명주기 ────────────────────────────────────────
@@ -223,12 +236,6 @@ def startup():
     )
 
     # ── 독립 배치 (체인과 무관하게 별도 실행) ──────────
-    scheduler.add_job(
-        run_scope_keywords_batch,
-        trigger="interval", minutes=30,
-        id="scope_keywords",
-        replace_existing=True,
-    )
     scheduler.add_job(
         run_scope_title_batch,
         trigger="interval", minutes=30,
