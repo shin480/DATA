@@ -741,6 +741,57 @@ const currentUserRole = (
   }
 })();
 
+// ==============================
+// 오늘 사용자 이용 통계 조회
+// 평균 체류시간 / 접속자 수 / 누적 체류시간 / 누적 조회수
+// ==============================
+async function loadUserUsageStats() {
+  try {
+    const { data } = await axios.post(
+      "/user_usage",
+      {},
+      {
+        withCredentials: true
+      }
+    );
+
+    if (!data || !data.success) {
+      showToast("사용자 이용 통계를 불러오지 못했습니다.");
+      return;
+    }
+
+    const avgStayEl = document.getElementById("avgStay");
+    const dailyUsersEl = document.getElementById("dailyUser");
+    const totalStayEl = document.getElementById("totalStay");
+    const dailyViewsEl = document.getElementById("articleView");
+
+    if (avgStayEl) {
+      avgStayEl.textContent = data.avg_stay_text || "0시간 0분";
+    }
+
+    if (dailyUsersEl) {
+      dailyUsersEl.textContent =
+        Number(data.daily_users || 0).toLocaleString();
+    }
+
+    if (totalStayEl) {
+      totalStayEl.textContent =
+        data.total_stay_text || "0시간 0분";
+    }
+
+    if (dailyViewsEl) {
+      dailyViewsEl.textContent =
+        Number(data.daily_article_views || 0).toLocaleString();
+    }
+
+    console.log("[USER_USAGE_STATS]", data);
+
+  } catch (error) {
+    console.error("사용자 이용 통계 로딩 실패:", error);
+    showToast("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
 
 // ==============================
 // 서버 연결 전 임시 데이터
@@ -1006,6 +1057,7 @@ document.addEventListener("DOMContentLoaded", function () {
   renderUsers();
   renderReaction();
   renderLogs();
+  loadUserUsageStats();
 });
 </script>
 </body>
