@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>감성 분류 어드민</title>
+<title>모델 보정 어드민</title>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -541,7 +541,7 @@
     <div style="display:flex; align-items:center; gap:10px;">
       <div>
         <div class="header-title">감성 분류 어드민</div>
-        <div class="header-sub">KoELECTRA · 품질 평가 · 감성 정정 · Fine-tuning</div>
+        <div class="header-sub">KR-FinBert-SC · 품질 평가 · 감성 정정 · Fine-tuning</div>
       </div>
       <span id="dev-badge" style="display:none; font-size:11px; font-weight:500; padding:3px 10px; border-radius:10px; background:#2b2010; color:#f0a020; border:1px solid #4a3010;">DEV MODE</span>
     </div>
@@ -991,7 +991,7 @@ const DEV_MODE = false;
 // ── API BASE URL ───────────────────────────────────────
 // 실서버 주소를 여기에 입력하세요. 빈 문자열이면 현재 도메인 기준 상대경로로 요청합니다.
 // 예) 'http://localhost:8000' 또는 'https://api.your-domain.com'
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://100.99.254.68:8000/pipeline';
 
 const DUMMY = {
   confidence: {
