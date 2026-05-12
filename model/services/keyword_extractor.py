@@ -301,6 +301,36 @@ def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS,
 
 
 # ─────────────────────────────────────────────────────────────
+# 단건 재처리 래퍼
+# ─────────────────────────────────────────────────────────────
+
+def extract_keywords_single(article_id: str, src: dict) -> None:
+    """
+    단건 아티클 키워드 추출 후 ES 업데이트.
+    classify.py의 reprocess_article 엔드포인트에서 호출됩니다.
+    동적 불용어는 단건 실행 시에도 ES에서 로드합니다.
+    """
+    es = get_es()
+    try:
+        dynamic_sw      = _load_dynamic_stopwords(es)
+        batch_stopwords = STOPWORDS | dynamic_sw
+        keywords     = extract_keywords(
+            src.get("title", ""),
+            src.get("tokens", []),
+            stopwords=batch_stopwords,
+        )
+        keywords_str = ",".join(keywords)
+        es.update(
+            index=INDEX_NEWS,
+            id=article_id,
+            body={"doc": {"keywords": keywords_str}},
+        )
+        logger.info(f"[단건] 키워드 추출 완료 article_id={article_id} → {keywords}")
+    finally:
+        es.close()
+
+
+# ─────────────────────────────────────────────────────────────
 # 파이프라인 진입점
 # ─────────────────────────────────────────────────────────────
 

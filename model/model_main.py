@@ -217,7 +217,7 @@ def startup():
     #   운영: trigger="cron", hour=2, minute=0  (day_of_week 제거)
     scheduler.add_job(
         classification_job,
-        trigger="cron", day_of_week="tue", hour=11, minute=0,  # 테스트: 화요일 11:00
+        trigger="cron", day_of_week="tue", hour=15, minute=0,  # 테스트: 화요일 15:00
         id="classification",
         replace_existing=True,
     )
