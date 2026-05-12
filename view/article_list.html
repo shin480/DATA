@@ -13,8 +13,7 @@ html {
   overflow-y: scroll; /* 항상 스크롤바 공간 고정 */
 }
 
-.header-inner,
-.footer-inner {
+.header-inner {
   max-width: 1240px;
   margin: 0 auto;
 }
@@ -499,6 +498,7 @@ main {
       color: #94a3b8;
       cursor: pointer;
       font-size: 12px;
+      text-decoration: none;
     }
 
     .footer-link:hover {
@@ -786,7 +786,7 @@ body.light-mode .article-summary {
 }
 
 body.light-mode .article-count {
-  color: #1f2937;
+  color: #6b7280;
 }
 
 body.light-mode .back-link {
@@ -830,6 +830,11 @@ body,
     border-color 0.18s ease,
     color 0.18s ease,
     box-shadow 0.18s ease;
+}
+
+    .article-count {
+  overflow: visible;
+  white-space: nowrap;
 }
 
   </style>
@@ -1115,9 +1120,13 @@ function appendArticles(newArticles) {
   const articleList = document.getElementById("articleList");
   const articleCount = document.getElementById("articleCount");
 
-  if (!articleList || !articleCount) return;
+if (!articleList || !articleCount) return;
 
+if (totalArticleCount >= 1000) {
+  articleCount.innerText = "1000+건";
+} else {
   articleCount.innerText = `(${totalArticleCount}건)`;
+}
 
   const html = newArticles.map(function (item) {
     return `
