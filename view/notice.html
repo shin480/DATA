@@ -256,6 +256,54 @@
       }
     }
 
+.notice-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 0 28px;
+  border-top: 1px solid #111c31;
+}
+
+.notice-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #1f2a44;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.notice-page-btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.notice-page-btn.active {
+  background: #00e5ff;
+  border-color: #00e5ff;
+  color: #020617;
+}
+
+.notice-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.notice-page-btn:disabled:hover {
+  border-color: #1f2a44;
+  color: #94a3b8;
+}
+
+.notice-page-move {
+  min-width: 58px;
+}
+
 /* ===== FOOTER ===== */
 
 #footer {
@@ -437,6 +485,10 @@
 </div>
 
 <script>
+  let noticeList = [];
+  let currentNoticePage = 1;
+  const noticePageSize = 10;
+
   async function loadNoticeList() {
     const area = document.getElementById("noticeListArea");
 
@@ -460,30 +512,10 @@
         return;
       }
 
-      area.innerHTML = `
-        <div class="notice-list">
-          ${notices.map(function (item, index) {
-            return `
-              <div
-                class="notice-item"
-                onclick="moveNoticeDetail('${item.banner_id}')"
-              >
-                <div class="notice-no">
-                  ${String(index + 1).padStart(2, "0")}
-                </div>
+        noticeList = notices;
+        currentNoticePage = 1;
 
-                <div class="notice-title">
-                  ${escapeHtml(item.title || "제목 없음")}
-                </div>
-
-                <div class="notice-date">
-                  ${formatDate(item.created_at || item.start_at)}
-                </div>
-              </div>
-            `;
-          }).join("")}
-        </div>
-      `;
+        renderNoticePage();
 
     } catch (err) {
       console.error("공지사항 목록 로드 실패:", err);
@@ -495,6 +527,103 @@
         </div>
       `;
     }
+  }
+
+  function renderNoticePage() {
+    const area = document.getElementById("noticeListArea");
+
+    if (!area) return;
+
+    const totalPage = Math.ceil(noticeList.length / noticePageSize);
+    const startIndex = (currentNoticePage - 1) * noticePageSize;
+    const endIndex = startIndex + noticePageSize;
+    const pageItems = noticeList.slice(startIndex, endIndex);
+
+    area.innerHTML = `
+      <div class="notice-list">
+        ${pageItems.map(function (item, index) {
+          const realIndex = startIndex + index;
+          const noticeNo = noticeList.length - realIndex;
+
+          return `
+            <div
+              class="notice-item"
+              onclick="moveNoticeDetail('${item.banner_id}')"
+            >
+              <div class="notice-no">
+                ${String(noticeNo).padStart(2, "0")}
+              </div>
+
+              <div class="notice-title">
+                ${escapeHtml(item.title || "제목 없음")}
+              </div>
+
+              <div class="notice-date">
+                ${formatDate(item.created_at || item.start_at)}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      ${renderNoticePagination(totalPage)}
+    `;
+  }
+
+  function renderNoticePagination(totalPage) {
+    if (totalPage <= 1) return "";
+
+    let pageButtons = "";
+
+    for (let i = 1; i <= totalPage; i++) {
+      pageButtons += `
+        <button
+          type="button"
+          class="notice-page-btn ${i === currentNoticePage ? "active" : ""}"
+          onclick="changeNoticePage(${i})"
+        >
+          ${i}
+        </button>
+      `;
+    }
+
+    return `
+      <div class="notice-pagination">
+        <button
+          type="button"
+          class="notice-page-btn notice-page-move"
+          onclick="changeNoticePage(${currentNoticePage - 1})"
+          ${currentNoticePage === 1 ? "disabled" : ""}
+        >
+          이전
+        </button>
+
+        ${pageButtons}
+
+        <button
+          type="button"
+          class="notice-page-btn notice-page-move"
+          onclick="changeNoticePage(${currentNoticePage + 1})"
+          ${currentNoticePage === totalPage ? "disabled" : ""}
+        >
+          다음
+        </button>
+      </div>
+    `;
+  }
+
+  function changeNoticePage(page) {
+    const totalPage = Math.ceil(noticeList.length / noticePageSize);
+
+    if (page < 1 || page > totalPage) return;
+
+    currentNoticePage = page;
+    renderNoticePage();
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   }
 
   function moveNoticeDetail(bannerId) {
