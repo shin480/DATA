@@ -1786,6 +1786,9 @@ function convertSentimentToKorean(sentiment) {
   return "감성 정보 없음";
 }
 
+// ==============================
+// 뉴스 출력
+// ==============================
 function loadNewsDetail() {
   const title = document.getElementById("newsTitle");
   const date = document.getElementById("newsDate");
@@ -1793,11 +1796,15 @@ function loadNewsDetail() {
   const reporter = document.getElementById("newsReporter");
   const content = document.getElementById("newsContent");
   const likeCount = document.getElementById("likeCount");
-  const dislikeCount = document.getElementById("hateCount") || document.getElementById("dislikeCount");
+  const dislikeCount =
+    document.getElementById("hateCount") ||
+    document.getElementById("dislikeCount");
+
   const viewpoint = document.getElementById("articleViewpoint");
   const viewpointIcon = document.getElementById("articleViewpointIcon");
   const viewpointIconWrap = document.getElementById("articleViewpointIconWrap");
   const viewpointLabel = document.querySelector(".viewpoint-label");
+
   const sentiment = document.getElementById("articleSentiment");
 
   if (title) title.innerText = newsDetail.title;
@@ -1805,35 +1812,77 @@ function loadNewsDetail() {
   if (press) press.innerText = "언론사 " + newsDetail.press;
   if (reporter) reporter.innerText = "기자 " + newsDetail.reporter;
   if (content) content.innerText = newsDetail.content;
-  if (likeCount) likeCount.innerText = Number(newsDetail.likeCount || 0).toLocaleString();
-  if (dislikeCount) dislikeCount.innerText = Number(newsDetail.dislikeCount || 0).toLocaleString();
 
-const articleViewpointText =
-  newsDetail.viewpoint ||
-  newsDetail.perspective ||
-  "관점 정보 없음";
+  if (likeCount) {
+    likeCount.innerText = Number(newsDetail.likeCount || 0).toLocaleString();
+  }
 
-if (viewpoint) {
-  viewpoint.innerText = articleViewpointText;
-}
+  if (dislikeCount) {
+    dislikeCount.innerText = Number(newsDetail.dislikeCount || 0).toLocaleString();
+  }
 
-const viewpointStyle = getViewpointStyle(articleViewpointText);
+  // ==============================
+  // 대표 관점 출력
+  // ==============================
+  const articleViewpointText =
+    newsDetail.viewpoint ||
+    newsDetail.perspective ||
+    "관점 정보 없음";
 
-if (viewpointIcon) {
-  viewpointIcon.src = viewpointStyle.icon;
-}
+  if (viewpoint) {
+    viewpoint.innerText = articleViewpointText;
+  }
 
-if (viewpointIconWrap) {
-  viewpointIconWrap.style.borderColor = viewpointStyle.color;
-  viewpointIconWrap.style.backgroundColor = viewpointStyle.bg;
-}
+  // ==============================
+  // 관점별 아이콘 + 색상 적용
+  // ==============================
+  const viewpointStyle = getViewpointStyle(articleViewpointText);
 
-if (viewpointLabel) {
-  viewpointLabel.style.color = viewpointStyle.color;
+  if (viewpointIcon) {
+    viewpointIcon.src = viewpointStyle.icon;
+  }
+
+  if (viewpointIconWrap) {
+    viewpointIconWrap.style.borderColor = viewpointStyle.color;
+    viewpointIconWrap.style.backgroundColor = viewpointStyle.bg;
+  }
+
+  if (viewpointLabel) {
+    viewpointLabel.style.color = viewpointStyle.color;
+  }
+
+  // ==============================
+  // 감성 출력
+  // ==============================
+  if (sentiment) {
+    sentiment.innerText = convertSentimentToKorean(newsDetail.sentiment);
+  }
+
+  // ==============================
+  // 기존 투표 상태 반영
+  // ==============================
+  currentVote = newsDetail.currentVote || "";
+
+  const likeBtn = document.getElementById("likeBtn");
+  const hateBtn = document.getElementById("hateBtn");
+
+  if (likeBtn && hateBtn) {
+    likeBtn.classList.remove("active");
+    hateBtn.classList.remove("active");
+
+    if (currentVote === "like") {
+      likeBtn.classList.add("active");
+    }
+
+    if (currentVote === "hate") {
+      hateBtn.classList.add("active");
+    }
+  }
 }
 
 // ==============================
 // 관점별 아이콘 + 색상 반환
+// 메인 2차 관점 분석 카드 색상과 동일
 // ==============================
 function getViewpointStyle(viewpoint) {
   const styleMap = {
@@ -1843,96 +1892,94 @@ function getViewpointStyle(viewpoint) {
       color: "#2dd4bf",
       bg: "rgba(45, 212, 191, 0.12)"
     },
-    "기업 책임": {
-      icon: "/view/icons/company.svg",
-      color: "#2dd4bf",
-      bg: "rgba(45, 212, 191, 0.12)"
-    },
     "개인 책임": {
       icon: "/view/icons/person.svg",
-      color: "#2dd4bf",
-      bg: "rgba(45, 212, 191, 0.12)"
-    },
-    "외부 책임": {
-      icon: "/view/icons/global.svg",
-      color: "#2dd4bf",
-      bg: "rgba(45, 212, 191, 0.12)"
+      color: "#a855f7",
+      bg: "rgba(168, 85, 247, 0.12)"
     },
     "복합 책임": {
       icon: "/view/icons/complex.svg",
-      color: "#2dd4bf",
-      bg: "rgba(45, 212, 191, 0.12)"
+      color: "#3b82f6",
+      bg: "rgba(59, 130, 246, 0.12)"
+    },
+    "기업 책임": {
+      icon: "/view/icons/company.svg",
+      color: "#fb923c",
+      bg: "rgba(251, 146, 60, 0.12)"
+    },
+    "외부 책임": {
+      icon: "/view/icons/global.svg",
+      color: "#facc15",
+      bg: "rgba(250, 204, 21, 0.12)"
     },
 
     // 태도 및 감성
-    "비판적 태도": {
-      icon: "/view/icons/chat.svg",
-      color: "#a855f7",
-      bg: "rgba(168, 85, 247, 0.12)"
-    },
-    "우려": {
-      icon: "/view/icons/warning.svg",
-      color: "#a855f7",
-      bg: "rgba(168, 85, 247, 0.12)"
-    },
     "기대": {
       icon: "/view/icons/star.svg",
-      color: "#a855f7",
-      bg: "rgba(168, 85, 247, 0.12)"
+      color: "#2dd4bf",
+      bg: "rgba(45, 212, 191, 0.12)"
     },
     "성과 예찬": {
       icon: "/view/icons/trophy.svg",
       color: "#a855f7",
       bg: "rgba(168, 85, 247, 0.12)"
     },
+    "비판적 태도": {
+      icon: "/view/icons/chat.svg",
+      color: "#3b82f6",
+      bg: "rgba(59, 130, 246, 0.12)"
+    },
+    "우려": {
+      icon: "/view/icons/warning.svg",
+      color: "#fb923c",
+      bg: "rgba(251, 146, 60, 0.12)"
+    },
 
     // 정보 전달 및 분석
+    "결과 분석": {
+      icon: "/view/icons/chart.svg",
+      color: "#2dd4bf",
+      bg: "rgba(45, 212, 191, 0.12)"
+    },
+    "전망 분석": {
+      icon: "/view/icons/graph.svg",
+      color: "#a855f7",
+      bg: "rgba(168, 85, 247, 0.12)"
+    },
     "단순 전달": {
       icon: "/view/icons/news.svg",
       color: "#3b82f6",
       bg: "rgba(59, 130, 246, 0.12)"
     },
-    "원인 분석": {
-      icon: "/view/icons/search.svg",
-      color: "#3b82f6",
-      bg: "rgba(59, 130, 246, 0.12)"
-    },
-    "결과 분석": {
-      icon: "/view/icons/chart.svg",
-      color: "#3b82f6",
-      bg: "rgba(59, 130, 246, 0.12)"
-    },
     "대응 분석": {
       icon: "/view/icons/gear.svg",
-      color: "#3b82f6",
-      bg: "rgba(59, 130, 246, 0.12)"
-    },
-    "전망 분석": {
-      icon: "/view/icons/graph.svg",
-      color: "#3b82f6",
-      bg: "rgba(59, 130, 246, 0.12)"
-    },
-
-    // 정책 개입
-    "정부 개입 강조": {
-      icon: "/view/icons/building.svg",
       color: "#fb923c",
       bg: "rgba(251, 146, 60, 0.12)"
     },
-    "시장 자율 강조": {
-      icon: "/view/icons/balance.svg",
-      color: "#fb923c",
-      bg: "rgba(251, 146, 60, 0.12)"
-    },
-
-    // 환경 요인
-    "외부 요인(글로벌)": {
-      icon: "/view/icons/location.svg",
+    "원인 분석": {
+      icon: "/view/icons/search.svg",
       color: "#facc15",
       bg: "rgba(250, 204, 21, 0.12)"
     },
+
+    // 정책 개입 / 환경 요인
+    "시장 자율 강조": {
+      icon: "/view/icons/balance.svg",
+      color: "#2dd4bf",
+      bg: "rgba(45, 212, 191, 0.12)"
+    },
+    "정부 개입 강조": {
+      icon: "/view/icons/building.svg",
+      color: "#a855f7",
+      bg: "rgba(168, 85, 247, 0.12)"
+    },
     "정책 요인(국내)": {
       icon: "/view/icons/location.svg",
+      color: "#3b82f6",
+      bg: "rgba(59, 130, 246, 0.12)"
+    },
+    "외부 요인(글로벌)": {
+      icon: "/view/icons/global.svg",
       color: "#facc15",
       bg: "rgba(250, 204, 21, 0.12)"
     }
