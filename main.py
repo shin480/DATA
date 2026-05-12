@@ -290,7 +290,22 @@ def get_keyword_detail(keyword: str):
 
     hits = result["hits"]["hits"]
 
-    total_count = len(hits)
+    total_count = result["hits"]["total"]["value"]
+    # =========================
+    # scope 개수 계산
+    # =========================
+    scope_set = set()
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scope_id = source.get("scopeID")
+
+        if scope_id:
+            scope_set.add(scope_id)
+
+    ai_count = len(scope_set)
 
     # =========================
     # 검색 결과 없을 때
@@ -444,7 +459,7 @@ def get_keyword_detail(keyword: str):
             first_article.get("summary")
             or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
 
-        "aiCount": total_count,
+        "aiCount": ai_count,
 
         "newsCount": total_count,
 
@@ -1326,6 +1341,7 @@ def get_admin_banners():
                 title,
                 landing_url,
                 image_url,
+                content,
                 DATE_FORMAT(start_at, '%Y-%m-%d') AS start_at,
                 DATE_FORMAT(end_at, '%Y-%m-%d') AS end_at,
                 is_active
@@ -1352,6 +1368,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 title,
                 landing_url,
                 image_url,
+                content,
                 start_at,
                 end_at,
                 is_active
@@ -1361,6 +1378,7 @@ def create_admin_banner(info: Dict[str, Any]):
                 :title,
                 :landing_url,
                 :image_url,
+                :content,
                 :start_at,
                 :end_at,
                 :is_active
@@ -1370,6 +1388,7 @@ def create_admin_banner(info: Dict[str, Any]):
             "banner_type": info.get("banner_type", "notice"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
+            "content": info.get("content"),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1439,6 +1458,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
                 title = :title,
                 landing_url = :landing_url,
                 image_url = :image_url,
+                content = :content,
                 start_at = :start_at,
                 end_at = :end_at,
                 is_active = :is_active
@@ -1449,6 +1469,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
             "title": info.get("title"),
             "landing_url": info.get("landing_url"),
             "image_url": info.get("image_url"),
+            "content": info.get("content"),
             "start_at": info.get("start_at"),
             "end_at": info.get("end_at"),
             "is_active": info.get("is_active", True)
@@ -1517,7 +1538,12 @@ def get_active_banner_list():
                 banner_type,
                 title,
                 landing_url,
-                image_url
+                image_url,
+                content,
+                start_at,
+                end_at,
+                created_at,
+                updated_at
             FROM banners
             WHERE is_active = TRUE
               AND start_at <= NOW()
@@ -1535,6 +1561,190 @@ def get_active_banner_list():
 @app.get("/crawl")
 async def crawl():
     return await run_crawling_job()
+
+# =========================
+# 메인 2차 관점 분석
+# =========================
+@app.get("/api/main/viewpoint-analysis")
+def get_main_viewpoint_analysis():
+
+    es = get_es()
+
+    # =========================
+    # 1위 키워드 조회
+    # =========================
+    top_result = es.search(
+        index="daily_top_issue_report",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    top_hits = top_result["hits"]["hits"]
+
+    if not top_hits:
+        return {
+            "keyword": "데이터 없음",
+            "groups": []
+        }
+
+    top_keyword = (
+        top_hits[0]["_source"]
+        .get("top_keyword", "")
+    )
+
+    if not top_keyword:
+        return {
+            "keyword": "키워드 없음",
+            "groups": []
+        }
+
+    # =========================
+    # 1위 키워드 기사 조회
+    # =========================
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 1000,
+            "_source": [
+                "perspective"
+            ],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": top_keyword,
+                                "fields": [
+                                    "title^3",
+                                    "summary",
+                                    "keywords",
+                                    "clean_text"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    # =========================
+    # 그룹 정의
+    # =========================
+    group_map = {
+        "책임 소재": [
+            "정부 책임",
+            "기업 책임",
+            "개인 책임",
+            "외부 책임",
+            "복합 책임"
+        ],
+
+        "태도 및 감성": [
+            "비판적 태도",
+            "우려",
+            "기대",
+            "성과 예찬"
+        ],
+
+        "정보 전달 및 분석": [
+            "단순 전달",
+            "원인 분석",
+            "결과 분석",
+            "대응 분석",
+            "전망 분석"
+        ],
+
+        "정책 개입": [
+            "정부 개입 강조",
+            "시장 자율 강조"
+        ],
+
+        "환경 요인": [
+            "외부 요인(글로벌)",
+            "정책 요인(국내)"
+        ]
+    }
+
+    # =========================
+    # 관점 집계
+    # =========================
+    perspective_count = {}
+
+    total = 0
+
+    for hit in hits:
+
+        perspectives = (
+            hit["_source"]
+            .get("perspective", [])
+        )
+
+        for item in perspectives:
+
+            if item.get("rank") != 1:
+                continue
+
+            category = item.get("category")
+
+            if not category:
+                continue
+
+            perspective_count[category] = (
+                perspective_count.get(category, 0) + 1
+            )
+
+            total += 1
+
+    # =========================
+    # 그룹별 반환
+    # =========================
+    groups = []
+
+    for group_name, categories in group_map.items():
+
+        items = []
+
+        for category in categories:
+
+            count = perspective_count.get(category, 0)
+
+            percent = (
+                round((count / total) * 100)
+                if total else 0
+            )
+
+            items.append({
+                "title": category,
+                "percent": percent,
+                "count": count,
+                "reason": f"{category} 관점으로 분류된 기사 {count}건."
+            })
+
+        items.sort(
+            key=lambda x: x["percent"],
+            reverse=True
+        )
+
+        groups.append({
+            "group": group_name,
+            "items": items
+        })
+
+    return {
+        "keyword": top_keyword,
+        "groups": groups
+    }
 
 # =========================================
 # 관점 상세 조회 API
@@ -2417,4 +2627,4 @@ def create_daily_keyword_metrics(target_date: str = None):
 
 @app.get("/search-summary")
 def search_summary(start_date: str, end_date: str):
-    get_search_summary(start_date, end_date)
+    return get_search_summary(start_date, end_date)

@@ -1890,17 +1890,9 @@ function renderNoticeBanner() {
   void box.offsetWidth;
   box.classList.add("notice-slide");
 
-box.onclick = function () {
-  if (!banner.landing_url) return;
-
-  let url = banner.landing_url;
-
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
-  }
-
-  window.open(url, "_blank");
-};
+  box.onclick = function () {
+    location.href = "/view/notice.html";
+  };
 }
 
 function renderAdBanner() {
