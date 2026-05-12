@@ -841,25 +841,62 @@ function renderUsers(data = userData) {
   `).join("");
 }
 
-function searchUsers() {
-  const keyword = document.getElementById("userKeyword").value.trim().toLowerCase();
+async function searchUsers() {
+  const keyword = document.getElementById("userKeyword").value.trim();
   const role = document.getElementById("roleFilter").value;
 
-  let result = [...userData];
+  try {
+    const { data } = await axios.get("/search-users", {
+      params: {
+        user_id: keyword || "",
+        role: role === "전체" ? "" : role
+      },
+      withCredentials: true
+    });
 
-  if (keyword) {
-    result = result.filter(user =>
-      user.id.toLowerCase().includes(keyword) ||
-      user.name.toLowerCase().includes(keyword)
-    );
+    if (!data.success) {
+      showToast("사용자 조회에 실패했습니다.");
+      return;
+    }
+
+    console.log(data);
+
+    // 서버 응답 예시:
+    // users: [
+    //   {
+    //     user_id,
+    //     user_name,
+    //     created_at,
+    //     role,
+    //     like_count,
+    //     dislike_count,
+    //     last_login
+    //   }
+    // ]
+
+    userData = (data.users || []).map(user => ({
+      id: user.user_id,
+      name: user.user_name || "-",
+      join: user.created_at || "-",
+      role:
+        user.role === "SUPERADMIN"
+          ? "최고관리자"
+          : user.role === "ADMIN"
+          ? "관리자"
+          : "일반",
+      like: Number(user.like_count || 0),
+      dislike: Number(user.dislike_count || 0),
+      login: user.last_login || "-"
+    }));
+
+    renderUsers(userData);
+
+    showToast(`사용자 ${userData.length}명 조회 완료`);
+
+  } catch (error) {
+    console.error("사용자 검색 실패:", error);
+    showToast("서버 통신 중 오류가 발생했습니다.");
   }
-
-  if (role !== "전체") {
-    result = result.filter(user => user.role === role);
-  }
-
-  renderUsers(result);
-  showToast("임시 사용자 데이터가 조회되었습니다.");
 }
 
 function changeRole(userId, newRole) {
