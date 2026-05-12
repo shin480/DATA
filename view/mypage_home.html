@@ -74,13 +74,22 @@
       height: 46px;
       display: flex;
       align-items: center;
-      padding-left: 28px;
+      padding: 0px;
       color: #6f7d98;
       font-size: 14px;
       border-left: 4px solid transparent;
       cursor: pointer;
       transition: 0.2s;
     }
+
+    .menu-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 14px 18px;
+  color: inherit;
+  text-decoration: none;
+}
 
     .side-menu li:hover {
       background: #10192b;
@@ -429,19 +438,6 @@
         rgba(2, 8, 23, 0.08),
         rgba(2, 8, 23, 0.35)
       );
-    }
-
-    .notice-image-title {
-      position: relative;
-      z-index: 2;
-      max-width: 70%;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 900;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .notice-right-over {
@@ -1083,7 +1079,18 @@
       </div>
 
       <ul class="side-menu">
-        <li class="active" onclick="location.href='mypage_home.html'">마이페이지 홈</li>
+
+<li class="active">
+  <a
+    href="mypage_home.html"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="menu-link"
+  >
+    마이페이지 홈
+  </a>
+</li>
+
         <li id="accountPageBtn">회원정보 관리 & 탈퇴</li>
       </ul>
     </aside>
@@ -1203,7 +1210,7 @@
         <div class="cards">
           <div class="card">
             <div class="card-head">
-              <span class="like">👍 좋아요</span>
+              <span class="like">👍 동의해요</span>
               <span class="count">총 0건</span>
             </div>
 
@@ -1223,7 +1230,7 @@
 
           <div class="card">
             <div class="card-head">
-              <span class="dislike">👎 싫어요</span>
+              <span class="dislike">👎 반대해요</span>
               <span class="count">총 0건</span>
             </div>
 
@@ -1762,11 +1769,17 @@ function renderNoticeBanner() {
   void box.offsetWidth;
   box.classList.add("notice-slide");
 
-  box.onclick = function () {
-    if (banner.landing_url) {
-      window.location.href = banner.landing_url;
-    }
-  };
+box.onclick = function () {
+  if (!banner.landing_url) return;
+
+  let url = banner.landing_url;
+
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = "https://" + url;
+  }
+
+  window.open(url, "_blank");
+};
 }
 
 function renderAdBanner() {
@@ -1793,28 +1806,33 @@ function renderAdBanner() {
       alt="${banner.title || "광고 배너"}"
     >
 
-    <div class="notice-image-dim"></div>
-
-    <div class="notice-image-title">
-      ${banner.title || "광고 배너"}
-    </div>
-
-    <div class="notice-right notice-right-over">
-      <span class="notice-page">
-        ${currentAdIndex + 1} / ${adBanners.length}
-      </span>
-      <span class="notice-arrow">→</span>
-    </div>
+    ${
+      adBanners.length > 1
+        ? `
+          <div class="notice-right notice-right-over">
+            <span class="notice-page">
+              ${currentAdIndex + 1} / ${adBanners.length}
+            </span>
+          </div>
+        `
+        : ""
+    }
   `;
 
   void box.offsetWidth;
   box.classList.add("notice-slide");
 
-  box.onclick = function () {
-    if (banner.landing_url) {
-      window.location.href = banner.landing_url;
-    }
-  };
+box.onclick = function () {
+  if (!banner.landing_url) return;
+
+  let url = banner.landing_url;
+
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = "https://" + url;
+  }
+
+  window.open(url, "_blank");
+};
 }
 
   async function pwconfirm() {
