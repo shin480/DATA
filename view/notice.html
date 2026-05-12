@@ -551,7 +551,7 @@
               onclick="moveNoticeDetail('${item.banner_id}')"
             >
               <div class="notice-no">
-                ${String(noticeNo).padStart(2, "0")}
+                ${item.is_pinned ? "공지" : String(noticeNo).padStart(2, "0")}
               </div>
 
               <div class="notice-title">
