@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Any
 import os
 import uuid
+import re
 
 from fastapi import FastAPI, Query, UploadFile, File
 from starlette.requests import Request
@@ -240,50 +241,27 @@ def get_keyword_detail(keyword: str):
     body = {
         "size": 50,
         "query": {
-            "bool": {
-                "should": [
-                    {
-                        "match_phrase": {
-                            "title": {
-                                "query": keyword,
-                                "boost": 5
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "summary": {
-                                "query": keyword,
-                                "boost": 3
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "keywords": {
-                                "query": keyword,
-                                "boost": 4
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "clean_text": {
-                                "query": keyword,
-                                "boost": 1
-                            }
-                        }
-                    }
-                ],
-                "minimum_should_match": 1
+            "wildcard": {
+                "keywords": {
+                    "value": f"*{keyword}*",
+                    "case_insensitive": True
+                }
+            }
+        },
+        "aggs": {
+            "sentiment_counts": {
+                "terms": {
+                    "field": "sentiment",
+                    "size": 10
+                }
+            },
+            "scope_count": {
+                "cardinality": {
+                    "field": "scopeID"
+                }
             }
         },
         "sort": [
-            {
-                "_score": {
-                    "order": "desc"
-                }
-            },
             {
                 "published_at": {
                     "order": "desc"
@@ -298,89 +276,69 @@ def get_keyword_detail(keyword: str):
     )
 
     hits = result["hits"]["hits"]
-
     total_count = result["hits"]["total"]["value"]
-    # =========================
-    # scope 개수 계산
-    # =========================
-    scope_set = set()
 
-    for hit in hits:
-
-        source = hit["_source"]
-
-        scope_id = source.get("scopeID")
-
-        if scope_id:
-            scope_set.add(scope_id)
-
-    ai_count = len(scope_set)
-
-    # =========================
-    # 검색 결과 없을 때
-    # =========================
     if total_count == 0:
-
         return {
             "category": "ECONOMY",
             "keyword": keyword,
-
             "pressCount": 0,
-
             "summary": f"{keyword} 관련 뉴스 데이터가 없습니다.",
-
             "aiCount": 0,
-
             "newsCount": 0,
-
             "flow": "데이터 없음",
-
             "sentiment": {
                 "positive": 0,
                 "neutral": 0,
                 "negative": 0
             },
-
             "articles": []
         }
 
     # =========================
-    # 감성 계산
+    # 감성 집계: 전체 검색 결과 기준
     # =========================
+    buckets = result.get("aggregations", {}) \
+        .get("sentiment_counts", {}) \
+        .get("buckets", [])
+
     positive_count = 0
     neutral_count = 0
     negative_count = 0
 
-    press_set = set()
+    for bucket in buckets:
+        key = bucket["key"]
+        count = bucket["doc_count"]
 
+        if key == "positive":
+            positive_count = count
+        elif key == "negative":
+            negative_count = count
+        elif key == "neutral":
+            neutral_count = count
+
+    # =========================
+    # scope 개수: 전체 검색 결과 기준
+    # =========================
+    ai_count = result.get("aggregations", {}) \
+        .get("scope_count", {}) \
+        .get("value", 0)
+
+    # =========================
+    # 기사 리스트 생성: 상위 50개만 표시
+    # =========================
+    press_set = set()
     articles = []
 
-    # =========================
-    # 기사 리스트 생성
-    # =========================
     for hit in hits:
-
         source = hit["_source"]
 
         press = source.get("press", "언론사 없음")
-
         sentiment = source.get("sentiment", "neutral")
 
         press_set.add(press)
 
-        # 감성 카운트
-        if sentiment == "positive":
-            positive_count += 1
-
-        elif sentiment == "negative":
-            negative_count += 1
-
-        else:
-            neutral_count += 1
-
-        # 기사 리스트
         articles.append({
-
             "article_id": source.get("article_id", ""),
 
             "source": press,
@@ -422,12 +380,11 @@ def get_keyword_detail(keyword: str):
     first_article = hits[0]["_source"]
 
     # =========================
-    # 여론 흐름 계산
+    # 여론 흐름 계산: 상위 50개 기준
     # =========================
     perspective_count = {}
 
     for hit in hits:
-
         source = hit["_source"]
 
         perspectives = source.get("perspective", [])
@@ -453,11 +410,7 @@ def get_keyword_detail(keyword: str):
     else:
         flow = "관점 분석 없음"
 
-    # =========================
-    # 최종 반환
-    # =========================
     return {
-
         "category": "ECONOMY",
 
         "keyword": keyword,
@@ -475,11 +428,8 @@ def get_keyword_detail(keyword: str):
         "flow": flow,
 
         "sentiment": {
-
             "positive": positive_percent,
-
             "neutral": neutral_percent,
-
             "negative": negative_percent
         },
 
@@ -1770,6 +1720,12 @@ def get_dominant_opinions():
             or "해당 이슈"
         )
 
+        display_scope_title = re.sub(
+            r'^\[[^\]]+\]\s*',
+            '',
+            scope_title
+        )
+
         scope_keywords = parse_scope_keyword_list(
             scope_source.get("scope_keywords")
         )
@@ -1785,7 +1741,7 @@ def get_dominant_opinions():
         dominant = sentiment_dist["dominant"]
 
         opinion_sentence = make_dominant_opinion_sentence(
-            topic=scope_title,
+            topic=display_scope_title,
             positive=positive,
             neutral=neutral,
             negative=negative
@@ -3147,13 +3103,21 @@ def get_scope_detail(scope_id: str):
         if keyword.strip()
     ]
 
+    raw_scope_title = scope_source.get("scopeTitle", "AI 뉴스 분석")
+
+    display_scope_title = re.sub(
+        r'^\[[^\]]+\]\s*',
+        '',
+        raw_scope_title
+    )
+
     updated_at = str(scope_source.get("updated_at") or "")
 
     return {
         "scopeID": scope_source.get("scopeID", scope_id),
-        "title": scope_source.get("scopeTitle", "AI 뉴스 분석"),
+        "title": display_scope_title,
         "summary": scope_source.get("scope_summary")
-           or f"{scope_source.get('scopeTitle', '해당 이슈')} 관련 기사 {total}건을 분석한 결과입니다.",
+            or f"{display_scope_title} 관련 기사 {total}건을 분석한 결과입니다.",
         "keywords": scope_keywords[:5],
         "scopeSentiment": scope_source.get("sentiment", ""),
         "scopeSentimentScore": scope_source.get("sentiment_score", 0),
@@ -3606,3 +3570,80 @@ def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = "")
 @app.get("/admin_trends") # 이용자 그래프
 def admin_trends(start_date: str = "", end_date: str = ""):
     return get_admin_trends(start_date, end_date)
+
+@app.get("/api/admin/logs")
+def get_admin_logs(
+    admin_id: str = "",
+    action_code: str = "",
+    log_date: str = ""
+):
+    db = get_engine()
+
+    where = []
+    params = {}
+
+    if admin_id:
+        where.append("al.admin_id LIKE :admin_id")
+        params["admin_id"] = f"%{admin_id}%"
+
+    if action_code:
+        where.append("al.action_code = :action_code")
+        params["action_code"] = action_code
+
+    if log_date:
+        where.append("DATE(al.created_at) = :log_date")
+        params["log_date"] = log_date
+
+    where_sql = ""
+    if where:
+        where_sql = "WHERE " + " AND ".join(where)
+
+    try:
+        rows = db.execute(
+            text(f"""
+                SELECT
+                    al.log_id,
+                    al.admin_id,
+                    al.action_code,
+                    al.action_detail,
+                    al.created_at
+                FROM admin_logs al
+                {where_sql}
+                ORDER BY al.created_at DESC
+                LIMIT 100
+            """),
+            params
+        ).mappings().all()
+
+        action_name_map = {
+            "ADMIN_LOGIN": "관리자 로그인",
+            "BANNER_CREATE": "배너 등록",
+            "BANNER_DELETE": "배너 삭제",
+            "BANNER_UPDATE": "배너 수정",
+            "BATCH_RETRY": "배치 재실행",
+            "BATCH_RUN": "배치 수동 실행",
+            "TERMS_CREATE": "약관 등록",
+            "TERMS_UPDATE": "약관 수정",
+            "USER_STATUS_UPDATE": "회원 상태 변경"
+        }
+
+        logs = []
+
+        for row in rows:
+            logs.append({
+                "date": str(row["created_at"])[:19],
+                "admin": row["admin_id"],
+                "action": action_name_map.get(
+                    row["action_code"],
+                    row["action_code"]
+                ),
+                "content": row["action_detail"] or "-"
+            })
+
+        return {
+            "success": True,
+            "logs": logs
+        }
+
+    finally:
+        db.close()
