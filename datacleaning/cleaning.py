@@ -102,6 +102,7 @@ def exists_in_news_economy(article_id, url, title, press):
     return res["hits"]["total"]["value"] > 0
 
 def get_preprocessed_data():
+    print("전처리 프로세스 시작")
     # 1. 전처리 안 된 데이터만 가져오기
     query = {
         "query": {
@@ -116,6 +117,7 @@ def get_preprocessed_data():
     initial_count = len(hits)
 
     if initial_count == 0:
+        print("새로 처리할 데이터가 없습니다.")
         return {"message": "새로 처리할 데이터가 없습니다."}
 
     # 2. DataFrame 생성 시 ES 내부 ID(_id)를 반드시 포함

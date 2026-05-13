@@ -1276,33 +1276,172 @@ def get_top_keyword():
 
     source = hits[0]["_source"]
 
+    top_keyword = source.get("top_keyword", "키워드 없음")
+
     sentiment = source.get("sentiment_distribution", {})
 
     positive = round(sentiment.get("positive_ratio", 0) * 100)
     neutral = round(sentiment.get("neutral_ratio", 0) * 100)
     negative = round(sentiment.get("negative_ratio", 0) * 100)
 
-    # 여론 흐름 계산
     if positive >= neutral and positive >= negative:
         status = "긍정 여론 우세"
-
     elif neutral >= positive and neutral >= negative:
         status = "중립 여론 우세"
-
     else:
         status = "부정 여론 우세"
 
-    return {
-        "keyword": source.get("top_keyword", "키워드 없음"),
+    # =========================
+    # 1위 키워드 관련 주요 키워드 추출
+    # =========================
 
+    scope_result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 30,
+            "_source": ["scopeID"],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": top_keyword,
+                                "fields": [
+                                    "title^3",
+                                    "summary^2",
+                                    "keywords^4",
+                                    "clean_text"
+                                ]
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "scopeID"
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "published_at": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    scope_hits = scope_result["hits"]["hits"]
+
+    keyword_counter = {}
+
+    STOPWORDS = {
+        "기자", "뉴스", "관련", "오늘",
+        "co", "kr", "니다", "습니다"
+    }
+
+    INVALID_KEYWORDS = {
+        "은", "는", "이", "가",
+        "을", "를", "에", "의",
+        "및", "등", "속", "후"
+    }
+
+    visited_scope_ids = set()
+
+    for hit in scope_hits:
+
+        scope_id = hit["_source"].get("scopeID")
+
+        if not scope_id:
+            continue
+
+        # 중복 scope 제거
+        if scope_id in visited_scope_ids:
+            continue
+
+        visited_scope_ids.add(scope_id)
+
+        try:
+            scope_doc = es.get(
+                index="news_scopes",
+                id=scope_id
+            )
+
+            scope_source = scope_doc["_source"]
+
+            raw_keywords = scope_source.get("scope_keywords") or ""
+
+            if isinstance(raw_keywords, list):
+                keyword_list = raw_keywords
+            else:
+                keyword_list = [
+                    keyword.strip()
+                    for keyword in raw_keywords.split(",")
+                    if keyword.strip()
+                ]
+
+            for keyword in keyword_list:
+
+                # 자기 자신 제거
+                if keyword == top_keyword:
+                    continue
+
+                # 불용어 제거
+                if keyword in STOPWORDS:
+                    continue
+
+                # 조사/의미 없는 단어 제거
+                if keyword in INVALID_KEYWORDS:
+                    continue
+
+                # 숫자 제거
+                if keyword.isdigit():
+                    continue
+
+                keyword_counter[keyword] = (
+                        keyword_counter.get(keyword, 0) + 1
+                )
+
+        except Exception as e:
+            print("scope 조회 실패:", e)
+
+    sorted_keywords = sorted(
+        keyword_counter.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    chips = []
+
+    total_length = 0
+    MAX_TOTAL_LENGTH = 32
+
+    for keyword, _ in sorted_keywords:
+
+        keyword_length = len(keyword)
+
+        # 총 글자 수 제한
+        if total_length + keyword_length > MAX_TOTAL_LENGTH:
+            break
+
+        chips.append(keyword)
+
+        total_length += keyword_length
+
+        # 최대 6개 제한
+        if len(chips) >= 6:
+            break
+
+    return {
+        "keyword": top_keyword,
         "positive": positive,
         "neutral": neutral,
         "negative": negative,
-
         "status": status,
-
-        "chips": source.get("top_keywords", [])
+        "chips": chips
     }
+
 # =========================
 # 지금 뜨는 뉴스 - 최근 1시간 반응순
 # =========================
@@ -2869,3 +3008,44 @@ def search_users(user_id:str, role:str):
 @app.post("/user_usage")
 def user_usage():
     return get_user_usage_stats()
+
+@app.get("/api/admin/scope-stats")
+def get_scope_stats():
+
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        body={
+            "size": 20,
+            "_source": [
+                "scopeTitle",
+                "news_count"
+            ],
+            "sort": [
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    scopes = []
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scopes.append({
+            "title": source.get("scopeTitle", "제목 없음"),
+            "count": source.get("news_count", 0)
+        })
+
+    return {
+        "success": True,
+        "scopes": scopes
+    }

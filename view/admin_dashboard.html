@@ -735,6 +735,67 @@ td[title] {
   z-index: 2000;
 }
 
+.analysis-table{
+  width:100%;
+  table-layout:fixed;
+}
+
+.analysis-table th,
+.analysis-table td{
+  vertical-align:middle;
+}
+
+.analysis-table th:nth-child(1),
+.analysis-table td:nth-child(1){
+  width:80px;
+}
+
+.analysis-table th:nth-child(2),
+.analysis-table td:nth-child(2){
+  width:240px;
+}
+
+.analysis-table th:nth-child(3),
+.analysis-table td:nth-child(3){
+  width:80px;
+  text-align:center;
+}
+
+.analysis-table th:nth-child(4),
+.analysis-table td:nth-child(4){
+  width:100px;
+  text-align:center;
+}
+
+.analysis-table th:nth-child(5),
+.analysis-table td:nth-child(5){
+  width:80px;
+  text-align:center;
+}
+
+.analysis-table th:nth-child(6),
+.analysis-table td:nth-child(6){
+  width:90px;
+  text-align:center;
+}
+
+.analysis-table th:nth-child(7),
+.analysis-table td:nth-child(7){
+  width:160px;
+}
+
+.analysis-table th:nth-child(8),
+.analysis-table td:nth-child(8){
+  width:120px;
+  text-align:center;
+}
+
+.analysis-table th:nth-child(9),
+.analysis-table td:nth-child(9){
+  width:160px;
+  text-align:center;
+  white-space:nowrap;
+}
 
 /* ==============================
    Responsive
@@ -905,7 +966,7 @@ td[title] {
           </button>
 </div>
 <div class="table-box">
-<table>
+<table class="analysis-table">
 <thead>
 <tr>
 <th>기사ID</th>
@@ -1277,6 +1338,32 @@ function renderScope() {
         <td>${formatNumber(item.count)}</td>
       </tr>
     `).join("");
+}
+
+async function loadScopeStats() {
+  try {
+    const { data } = await axios.get("/api/admin/scope-stats");
+
+    if (!data.success) {
+      showToast("스코프 데이터를 불러오지 못했습니다.");
+      return;
+    }
+
+    scopeData.length = 0;
+
+    data.scopes.forEach(item => {
+      scopeData.push({
+        title: item.title,
+        count: Number(item.count || 0)
+      });
+    });
+
+    renderScope();
+
+  } catch (err) {
+    console.error("스코프 통계 조회 실패:", err);
+    showToast("스코프 통계 조회 실패");
+  }
 }
 
 function renderAnalysis(data = analysisData) {
@@ -1729,7 +1816,7 @@ window.adminDashboardLogout = adminDashboardLogout;
 
 document.addEventListener("DOMContentLoaded", function () {
   renderPress();
-  renderScope();
+  loadScopeStats();
   renderAnalysis();
   loadBanners();
 
