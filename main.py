@@ -1512,25 +1512,211 @@ def get_hot_news():
 
 # =========================
 # 오늘의 지배적 여론
+# 최근 이슈 scope 5개 기준
+# scope별 감성 분포를 해석형 문장으로 변환
 # =========================
+
+def normalize_opinion_sentiment(sentiment: str) -> str:
+    if sentiment in ["positive", "긍정"]:
+        return "positive"
+
+    if sentiment in ["negative", "부정"]:
+        return "negative"
+
+    return "neutral"
+
+
+def parse_scope_keyword_list(raw_keywords):
+    if not raw_keywords:
+        return []
+
+    if isinstance(raw_keywords, list):
+        return [
+            str(keyword).strip()
+            for keyword in raw_keywords
+            if str(keyword).strip()
+        ]
+
+    return [
+        keyword.strip()
+        for keyword in str(raw_keywords).split(",")
+        if keyword.strip()
+    ]
+
+
+def get_scope_sentiment_distribution(es, scope_id: str):
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 0,
+            "query": {
+                "term": {
+                    "scopeID": scope_id
+                }
+            },
+            "aggs": {
+                "sentiment_group": {
+                    "terms": {
+                        "field": "sentiment",
+                        "size": 10
+                    }
+                }
+            }
+        }
+    )
+
+    buckets = (
+        result
+        .get("aggregations", {})
+        .get("sentiment_group", {})
+        .get("buckets", [])
+    )
+
+    counts = {
+        "positive": 0,
+        "neutral": 0,
+        "negative": 0
+    }
+
+    for bucket in buckets:
+        sentiment = normalize_opinion_sentiment(bucket.get("key"))
+        counts[sentiment] += bucket.get("doc_count", 0)
+
+    total = sum(counts.values())
+
+    if total == 0:
+        return {
+            "positive": 0,
+            "neutral": 0,
+            "negative": 0,
+            "dominant": "neutral"
+        }
+
+    positive = round((counts["positive"] / total) * 100)
+    neutral = round((counts["neutral"] / total) * 100)
+    negative = 100 - positive - neutral
+
+    percent_map = {
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative
+    }
+
+    dominant = max(
+        percent_map,
+        key=percent_map.get
+    )
+
+    return {
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative,
+        "dominant": dominant
+    }
+
+
+def make_dominant_opinion_sentence(
+    topic: str,
+    positive: int,
+    neutral: int,
+    negative: int
+) -> str:
+    topic = topic or "해당 이슈"
+
+    percent_map = {
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative
+    }
+
+    sorted_sentiments = sorted(
+        percent_map.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )
+
+    dominant_sentiment, dominant_percent = sorted_sentiments[0]
+    second_sentiment, second_percent = sorted_sentiments[1]
+
+    # =========================
+    # 긍정 우세
+    # =========================
+    if dominant_sentiment == "positive":
+        if second_percent >= 20:
+            if second_sentiment == "neutral":
+                return (
+                    f"{topic} 이슈는 긍정적 기대와 우호적 평가가 가장 많이 나타나며, "
+                    f"중립적 전달도 함께 확인됩니다."
+                )
+
+            return (
+                f"{topic} 이슈는 긍정적 기대와 우호적 평가가 가장 많이 나타나며, "
+                f"일부 우려의 시각도 함께 확인됩니다."
+            )
+
+        return (
+            f"{topic} 이슈는 긍정적 기대와 우호적 평가가 뚜렷하게 나타납니다."
+        )
+
+    # =========================
+    # 부정 우세
+    # =========================
+    if dominant_sentiment == "negative":
+        if second_percent >= 20:
+            if second_sentiment == "neutral":
+                return (
+                    f"{topic} 이슈는 우려와 비판적 해석이 가장 많이 나타나며, "
+                    f"중립적 전달도 함께 확인됩니다."
+                )
+
+            return (
+                f"{topic} 이슈는 우려와 비판적 해석이 가장 많이 나타나며, "
+                f"일부 긍정적 기대도 함께 확인됩니다."
+            )
+
+        return (
+            f"{topic} 이슈는 우려와 비판적 해석이 뚜렷하게 나타납니다."
+        )
+
+    # =========================
+    # 중립 우세
+    # =========================
+    if second_percent >= 20:
+        if second_sentiment == "positive":
+            return (
+                f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 가장 많이 나타나며, "
+                f"긍정적 기대를 담은 해석도 일부 확인됩니다."
+            )
+
+        return (
+            f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 가장 많이 나타나며, "
+            f"부정적 우려를 담은 해석도 일부 확인됩니다."
+        )
+
+    return (
+        f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 우세하게 나타납니다."
+    )
+
+
 @app.get("/api/main/dominant-opinions")
 def get_dominant_opinions():
     es = get_es()
 
-    result = es.search(
+    # =========================
+    # 1. 최근 기사 기준으로 중복 없는 scope 5개 추출
+    # =========================
+    recent_result = es.search(
         index=NEWS_ECONOMY_INDEX,
         body={
-            "size": 5,
+            "size": 100,
             "_source": [
-                "title",
-                "summary",
-                "keywords",
-                "sentiment",
-                "perspective",
+                "scopeID",
                 "published_at"
             ],
             "query": {
-                "match_all": {}
+                "exists": {
+                    "field": "scopeID"
+                }
             },
             "sort": [
                 {
@@ -1542,33 +1728,88 @@ def get_dominant_opinions():
         }
     )
 
+    scope_ids = []
+    visited_scope_ids = set()
+
+    for hit in recent_result["hits"]["hits"]:
+        source = hit["_source"]
+        scope_id = source.get("scopeID")
+
+        if not scope_id:
+            continue
+
+        if scope_id in visited_scope_ids:
+            continue
+
+        visited_scope_ids.add(scope_id)
+        scope_ids.append(scope_id)
+
+        if len(scope_ids) >= 5:
+            break
+
     opinions = []
 
-    for hit in result["hits"]["hits"]:
-        source = hit["_source"]
+    # =========================
+    # 2. scope별 여론 해석문 생성
+    # =========================
+    for scope_id in scope_ids:
+        try:
+            scope_result = es.get(
+                index="news_scopes",
+                id=scope_id
+            )
 
-        keyword_text = source.get("keywords") or ""
+            scope_source = scope_result["_source"]
 
-        if isinstance(keyword_text, list):
-            keyword_list = keyword_text
-        else:
-            keyword_list = [
-                keyword.strip()
-                for keyword in str(keyword_text).split(",")
-                if keyword.strip()
-            ]
+        except Exception as e:
+            print("지배적 여론 scope 조회 실패:", scope_id, e)
+            continue
 
-        perspectives = source.get("perspective", [])
+        scope_title = (
+            scope_source.get("scopeTitle")
+            or "해당 이슈"
+        )
 
-        top_perspective = ""
-        if perspectives:
-            top_perspective = perspectives[0].get("category", "")
+        scope_keywords = parse_scope_keyword_list(
+            scope_source.get("scope_keywords")
+        )
+
+        sentiment_dist = get_scope_sentiment_distribution(
+            es=es,
+            scope_id=scope_id
+        )
+
+        positive = sentiment_dist["positive"]
+        neutral = sentiment_dist["neutral"]
+        negative = sentiment_dist["negative"]
+        dominant = sentiment_dist["dominant"]
+
+        opinion_sentence = make_dominant_opinion_sentence(
+            topic=scope_title,
+            positive=positive,
+            neutral=neutral,
+            negative=negative
+        )
 
         opinions.append({
-            "title": source.get("summary") or source.get("title") or "요약 없음",
-            "keyword": keyword_list[0] if keyword_list else top_perspective or "키워드 없음",
-            "sentiment": source.get("sentiment") or "neutral"
+            "title": opinion_sentence,
+            "keyword": scope_keywords[0] if scope_keywords else "이슈 분석",
+            "sentiment": dominant
         })
+
+    # =========================
+    # 3. 데이터 없을 때 기본값
+    # =========================
+    if not opinions:
+        return {
+            "opinions": [
+                {
+                    "title": "분석 가능한 여론 데이터가 아직 없습니다.",
+                    "keyword": "데이터 없음",
+                    "sentiment": "neutral"
+                }
+            ]
+        }
 
     return {
         "opinions": opinions
