@@ -1276,32 +1276,103 @@ def get_top_keyword():
 
     source = hits[0]["_source"]
 
+    top_keyword = source.get("top_keyword", "키워드 없음")
+
     sentiment = source.get("sentiment_distribution", {})
 
     positive = round(sentiment.get("positive_ratio", 0) * 100)
     neutral = round(sentiment.get("neutral_ratio", 0) * 100)
     negative = round(sentiment.get("negative_ratio", 0) * 100)
 
-    # 여론 흐름 계산
     if positive >= neutral and positive >= negative:
         status = "긍정 여론 우세"
-
     elif neutral >= positive and neutral >= negative:
         status = "중립 여론 우세"
-
     else:
         status = "부정 여론 우세"
 
-    return {
-        "keyword": source.get("top_keyword", "키워드 없음"),
+    # =========================
+    # 1위 키워드와 관련된 scope 찾기
+    # =========================
+    scope_result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 1,
+            "_source": ["scopeID"],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": top_keyword,
+                                "fields": [
+                                    "title^3",
+                                    "summary^2",
+                                    "keywords^4",
+                                    "clean_text"
+                                ]
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "scopeID"
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "published_at": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
 
+    chips = []
+
+    scope_hits = scope_result["hits"]["hits"]
+
+    if scope_hits:
+        scope_id = scope_hits[0]["_source"].get("scopeID")
+
+        try:
+            scope_doc = es.get(
+                index="news_scopes",
+                id=scope_id
+            )
+
+            scope_source = scope_doc["_source"]
+
+            raw_keywords = scope_source.get("scope_keywords") or ""
+
+            if isinstance(raw_keywords, list):
+                keyword_list = raw_keywords
+            else:
+                keyword_list = [
+                    keyword.strip()
+                    for keyword in raw_keywords.split(",")
+                    if keyword.strip()
+                ]
+
+            chips = [
+                keyword
+                for keyword in keyword_list
+                if keyword != top_keyword
+            ][:5]
+
+        except Exception as e:
+            print("news_scopes 관련 키워드 조회 실패:", e)
+
+    return {
+        "keyword": top_keyword,
         "positive": positive,
         "neutral": neutral,
         "negative": negative,
-
         "status": status,
-
-        "chips": source.get("top_keywords", [])
+        "chips": chips
     }
 # =========================
 # 지금 뜨는 뉴스 - 최근 1시간 반응순
