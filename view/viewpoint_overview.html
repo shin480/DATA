@@ -4,11 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>전체 관점 분석 | DATA 다타</title>
+
 <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+<link
+  rel="preload"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+>
 
 <style>
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
-
 /* =========================================================
    0. 기본 설정
 ========================================================= */
@@ -16,6 +22,10 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  overflow-y: scroll;
 }
 
 html,
@@ -30,7 +40,9 @@ body {
 body {
   background: #030817;
   color: #f8fafc;
-  font-family: "Pretendard", sans-serif;
+  font-family: "Pretendard", Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .app {
@@ -41,53 +53,173 @@ body {
 }
 
 
-/* Header */
-body.light-mode .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+/* =========================================================
+   1. 헤더
+========================================================= */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: none;
+  z-index: 10000;
+
+  width: 100%;
+  height: 72px;
+  padding: 0 56px;
+
+  display: flex;
+  align-items: center;
+
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
 }
 
-body.light-mode .nav {
-  color: #64748b;
+.logo {
+  width: 155px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-body.light-mode .nav a:hover {
-  color: #0284c7;
+.header-logo-full {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
 }
 
-body.light-mode .main-search-wrap {
-  background: #ffffff;
-  border-color: #cbd5e1;
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-left: 22px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-body.light-mode .search-box {
-  color: #0f172a;
+.nav a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.18s;
 }
 
-body.light-mode .search-box::placeholder {
-  color: #94a3b8;
+.nav a:hover {
+  color: #00e5ff;
 }
 
-body.light-mode .search-icon-btn {
-  color: #64748b;
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-body.light-mode .theme-btn {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  color: #334155;
+
+/* 검색창 */
+.main-search-wrap {
+  position: relative;
+  width: 410px;
+  height: 40px;
+  border-radius: 999px;
+  background: #070b1a;
+  border: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 20px;
 }
 
-body.light-mode .header-btn.join {
-  background: #ffffff;
-  border-color: #94a3b8;
-  color: #334155;
+.main-search-wrap:focus-within {
+  border-color: #334155;
 }
 
-body.light-mode .header-btn.login {
+.search-box {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 15px;
+  padding: 0;
+}
+
+.search-box::placeholder {
+  color: #7c8493;
+}
+
+.search-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #8b95a7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.search-icon-btn:hover {
+  color: #00e5ff;
+}
+
+
+/* 테마 버튼 */
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #070b1a;
+  color: #facc15;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-btn:hover {
+  border-color: #334155;
+}
+
+
+/* 로그인 / 회원가입 버튼 */
+.header-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.header-btn.login {
+  border: 1px solid #00cfe8;
   background: #00cfe8;
-  border-color: #00cfe8;
   color: #020617;
+}
+
+.header-btn.login:hover {
+  filter: brightness(1.08);
+}
+
+.header-btn.join {
+  border: 1px solid #475569;
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.header-btn.join:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
 }
 
 
@@ -807,51 +939,81 @@ body.light-mode .app {
 
 /* Header */
 body.light-mode .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f1f6f2;
+  border-bottom: 1px solid #d5ddd6;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 body.light-mode .nav {
-  color: #64748b;
+  color: #66756d;
 }
 
 body.light-mode .nav a:hover {
-  color: #0284c7;
+  color: #4cb7d3;
 }
 
 body.light-mode .main-search-wrap {
-  background: #ffffff;
-  border-color: #cbd5e1;
+  background: #f7faf7;
+  border: 1px solid #d8e1d9;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+body.light-mode .main-search-wrap:focus-within {
+  border-color: rgba(0, 207, 232, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(0, 207, 232, 0.08),
+    inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 body.light-mode .search-box {
-  color: #0f172a;
+  color: #41bfe0;
 }
 
 body.light-mode .search-box::placeholder {
-  color: #94a3b8;
+  color: #8b9a91;
 }
 
 body.light-mode .search-icon-btn {
-  color: #64748b;
+  color: #708177;
+}
+
+body.light-mode .search-icon-btn:hover {
+  color: #4cb7d3;
 }
 
 body.light-mode .theme-btn {
+  background: #f7faf7;
+  border: 1px solid #d7dfd8;
+  color: #4b5563;
+}
+
+body.light-mode .theme-btn:hover {
+  border-color: #4cb7d3;
   background: #ffffff;
-  border-color: #cbd5e1;
-  color: #334155;
 }
 
 body.light-mode .header-btn.join {
+  background: #f7faf7;
+  border: 1px solid #cfd8d0;
+  color: #55635c;
+}
+
+body.light-mode .header-btn.join:hover {
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
-  border-color: #94a3b8;
-  color: #334155;
 }
 
 body.light-mode .header-btn.login {
-  background: #00cfe8;
-  border-color: #00cfe8;
-  color: #020617;
+  background: #00e5ff;
+  border-color: #00e5ff;
+  color: #06262b;
+  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
+}
+
+body.light-mode .header-btn.login:hover {
+  filter: brightness(1.04);
 }
 
 
@@ -1103,9 +1265,6 @@ body.light-mode .footer-modal-content h3 {
   <main class="overview-page">
     <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
-    <!-- =====================================================
-         상단 소개 영역
-    ====================================================== -->
     <section class="hero-panel">
       <div class="hero-left">
         <div class="hero-kicker">전체 뉴스 관점 비교</div>
@@ -1132,10 +1291,6 @@ body.light-mode .footer-modal-content h3 {
       </div>
     </section>
 
-
-    <!-- =====================================================
-         집계 기준 안내
-    ====================================================== -->
     <section class="info-panel">
       <div class="info-icon">i</div>
 
@@ -1146,10 +1301,6 @@ body.light-mode .footer-modal-content h3 {
       </div>
     </section>
 
-
-    <!-- =====================================================
-         관점 그룹 렌더링 영역
-    ====================================================== -->
     <div id="overviewContent">
       <div class="loading-box">
         전체 기사 관점 분포를 불러오는 중입니다.
@@ -1164,9 +1315,6 @@ body.light-mode .footer-modal-content h3 {
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-/* =========================================================
-   1. 공통 초기 실행
-========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
   applyThemeMode();
   loadHeader();
@@ -1176,9 +1324,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-/* =========================================================
-   2. 로그인 정보
-========================================================= */
 function getLoginInfo() {
   return {
     token:
@@ -1208,9 +1353,6 @@ window.goLoginRequiredPage = function (targetUrl) {
 };
 
 
-/* =========================================================
-   3. Header / Footer 로드
-========================================================= */
 function loadHeader() {
   const headerArea = document.getElementById("header");
 
@@ -1265,9 +1407,6 @@ function loadFooter() {
 }
 
 
-/* =========================================================
-   4. 헤더 로그인 상태 처리
-========================================================= */
 function setHeaderLoginState() {
   const loginBtn = document.getElementById("loginBtn");
   const joinBtn = document.getElementById("joinBtn");
@@ -1304,9 +1443,6 @@ function setHeaderLoginState() {
 }
 
 
-/* =========================================================
-   5. 테마 전환
-========================================================= */
 function applyThemeMode() {
   const savedTheme = localStorage.getItem("theme_mode");
   const themeBtn = document.getElementById("themeToggleBtn");
@@ -1348,9 +1484,6 @@ function toggleThemeMode() {
 }
 
 
-/* =========================================================
-   6. 전역 클릭 이벤트
-========================================================= */
 function bindGlobalClickEvents() {
   document.addEventListener("click", function (e) {
     const loginBtn = e.target.closest("#loginBtn");
@@ -1435,7 +1568,6 @@ function bindGlobalClickEvents() {
         localStorage.setItem("viewpoint_percent", percent);
       }
 
-      // 전체 기사 기준 상세로 보내기 위해 keyword 제거
       localStorage.removeItem("viewpoint_keyword");
 
       goLoginRequiredPage("/view/viewpoint_detail.html");
@@ -1453,9 +1585,6 @@ function bindGlobalClickEvents() {
 }
 
 
-/* =========================================================
-   7. 검색 자동완성
-========================================================= */
 function bindCommonSearch() {
   const input = document.getElementById("commonSearchInput");
   const searchBtn = document.getElementById("commonSearchBtn");
@@ -1619,9 +1748,6 @@ function moveSearch(keyword) {
 }
 
 
-/* =========================================================
-   8. Footer Modal
-========================================================= */
 window.openFooterTermsModal = function () {
   const modal = document.getElementById("footerModal");
   const content = document.getElementById("footerModalContent");
@@ -1663,11 +1789,7 @@ window.closeFooterModal = function () {
 };
 
 
-/* =========================================================
-   9. 관점 카드 메타 정보
-========================================================= */
 const viewpointMetaMap = {
-  // 책임 소재
   gov: {
     icon: "/view/icons/gov.svg",
     color: "teal"
@@ -1689,7 +1811,6 @@ const viewpointMetaMap = {
     color: "blue"
   },
 
-  // 태도 및 감성
   crit: {
     icon: "/view/icons/chat.svg",
     color: "blue"
@@ -1707,7 +1828,6 @@ const viewpointMetaMap = {
     color: "purple"
   },
 
-  // 정보 전달 및 분석
   simp: {
     icon: "/view/icons/news.svg",
     color: "blue"
@@ -1729,7 +1849,6 @@ const viewpointMetaMap = {
     color: "purple"
   },
 
-  // 정책 개입
   intr: {
     icon: "/view/icons/building.svg",
     color: "purple"
@@ -1739,7 +1858,6 @@ const viewpointMetaMap = {
     color: "teal"
   },
 
-  // 환경 요인
   global: {
     icon: "/view/icons/global.svg",
     color: "yellow"
@@ -1751,9 +1869,6 @@ const viewpointMetaMap = {
 };
 
 
-/* =========================================================
-   10. 그룹 설명
-========================================================= */
 const groupDescMap = {
   "책임 소재": "기사에서 원인이나 책임이 누구에게 귀속되는지 보여줍니다.",
   "태도 및 감성": "기사의 서술 태도와 정서적 방향을 비교합니다.",
@@ -1763,9 +1878,6 @@ const groupDescMap = {
 };
 
 
-/* =========================================================
-   11. 전체 관점 분석 데이터 조회
-========================================================= */
 async function loadViewpointOverview() {
   const content = document.getElementById("overviewContent");
   const totalCountEl = document.getElementById("totalCount");
@@ -1803,9 +1915,6 @@ async function loadViewpointOverview() {
 }
 
 
-/* =========================================================
-   12. 그룹 / 카드 렌더링
-========================================================= */
 function renderOverviewGroups(groups) {
   const content = document.getElementById("overviewContent");
 
