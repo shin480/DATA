@@ -1703,38 +1703,38 @@ def get_dominant_opinions():
     #    중복 없는 scope 5개 추출
     # =========================
     recent_result = es.search(
-        index=NEWS_ECONOMY_INDEX,
+        index="news_scopes",
         body={
-            "size": 100,
+            "size": 5,
             "_source": [
                 "scopeID",
-                "published_at"
+                "scopeTitle",
+                "scope_keywords",
+                "sentiment_dist",
+                "updated_at",
+                "news_count"
             ],
             "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "multi_match": {
-                                "query": top_keyword,
-                                "fields": [
-                                    "title^3",
-                                    "summary^2",
-                                    "keywords^4",
-                                    "clean_text"
-                                ]
-                            }
-                        },
-                        {
-                            "exists": {
-                                "field": "scopeID"
-                            }
-                        }
-                    ]
+                "wildcard": {
+                    "scope_keywords": {
+                        "value": f"*{top_keyword}*",
+                        "case_insensitive": True
+                    }
                 }
             },
+
+            # =========================
+            # 1순위: 최신 업데이트
+            # 2순위: 누적 기사 수 많은 scope
+            # =========================
             "sort": [
                 {
-                    "published_at": {
+                    "updated_at": {
+                        "order": "desc"
+                    }
+                },
+                {
+                    "news_count": {
                         "order": "desc"
                     }
                 }
@@ -1742,7 +1742,11 @@ def get_dominant_opinions():
         }
     )
 
-    scope_ids = []
+    scope_ids = [
+        hit["_source"]["scopeID"]
+        for hit in recent_result["hits"]["hits"]
+        if hit["_source"].get("scopeID")
+    ]
     visited_scope_ids = set()
 
     for hit in recent_result["hits"]["hits"]:
@@ -2468,14 +2472,11 @@ def get_rank1_count_map(es, keyword: str = ""):
             "bool": {
                 "must": [
                     {
-                        "multi_match": {
-                            "query": keyword,
-                            "fields": [
-                                "title^3",
-                                "summary",
-                                "keywords",
-                                "clean_text"
-                            ]
+                        "wildcard": {
+                            "keywords": {
+                                "value": f"*{keyword}*",
+                                "case_insensitive": True
+                            }
                         }
                     }
                 ]
