@@ -1723,6 +1723,13 @@ async function fetchScopeData() {
 
     scopeData = res.data;
 
+    if (!scopeID && scopeData.scopeID) {
+      const newUrl =
+        `/view/scope_detail.html?scopeID=${encodeURIComponent(scopeData.scopeID)}`;
+
+      history.replaceState(null, "", newUrl);
+    }
+
     loadScopeInfo();
     loadSentimentDist();
     loadViewpoints();
