@@ -1,6 +1,6 @@
 from typing import Dict
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from util.db import get_engine
 from util.es import get_es
 from sqlalchemy import text
@@ -461,3 +461,101 @@ def get_press_reaction(info: dict):
     finally:
         if conn:
             conn.close()
+
+def get_admin_trends(start_date: str = "", end_date: str = ""):
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        today = datetime.now().date()
+
+        if not end_date:
+            end = today
+        else:
+            end = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+        if not start_date:
+            # 초기값: 서비스 전체 기간
+            start_row = conn.execute(text("""
+                SELECT MIN(created_at) AS first_date
+                FROM users
+            """)).mappings().first()
+
+            first_date = start_row["first_date"]
+
+            if first_date:
+                start = first_date.date()
+            else:
+                start = end - timedelta(days=6)
+        else:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+        # 날짜 간격이 7일보다 짧으면 최소 일주일
+        if (end - start).days < 6:
+            start = end - timedelta(days=6)
+
+        params = {
+            "start_date": start,
+            "end_date": end
+        }
+
+        view_rows = conn.execute(text("""
+            SELECT
+                DATE(created_at) AS date,
+                COUNT(*) AS count
+            FROM article_views
+            WHERE DATE(created_at) BETWEEN :start_date AND :end_date
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        """), params).mappings().all()
+
+        signup_rows = conn.execute(text("""
+            SELECT
+                DATE(created_at) AS date,
+                COUNT(*) AS count
+            FROM users
+            WHERE DATE(created_at) BETWEEN :start_date AND :end_date
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        """), params).mappings().all()
+
+        return {
+            "success": True,
+            "start_date": str(start),
+            "end_date": str(end),
+            "views": fill_daily_data(start, end, view_rows),
+            "signups": fill_daily_data(start, end, signup_rows)
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+    finally:
+        if conn:
+            conn.close()
+
+
+def fill_daily_data(start, end, rows):
+    row_map = {
+        str(row["date"]): int(row["count"] or 0)
+        for row in rows
+    }
+
+    result = []
+    current = start
+
+    while current <= end:
+        key = str(current)
+
+        result.append({
+            "date": key,
+            "count": row_map.get(key, 0)
+        })
+
+        current += timedelta(days=1)
+
+    return result

@@ -1352,7 +1352,7 @@ body.light-mode .footer-modal-btn {
         </h1>
 
         <p>
-          수집된 전체 뉴스 기사에서 대표 관점(rank 1)을 기준으로
+          수집된 전체 뉴스 기사에서 대표 관점을 기준으로
           어떤 시각이 많이 나타나는지 분석합니다.
           각 관점의 비율과 기사 수를 비교하고,
           상세 보기에서 해당 관점의 감성 분포와 관련 기사를 확인할 수 있습니다.
@@ -2032,7 +2032,7 @@ function renderOverviewGroups(groups) {
               </div>
 
               <div class="view-percent c-${meta.color}">
-                ${percent}%
+                ${item.percent_label || `${percent}%`}
               </div>
             </div>
           </div>

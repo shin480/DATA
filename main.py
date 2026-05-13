@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction
+from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction, get_admin_trends
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -1991,14 +1991,22 @@ def get_main_viewpoint_analysis():
         for category in categories:
             count = perspective_count.get(category, 0)
 
-            percent = (
-                round((count / total) * 100)
-                if total else 0
+            raw_percent = (
+                (count / total_count) * 100
+                if total_count else 0
             )
+
+            percent = round(raw_percent)
+
+            if count > 0 and percent == 0:
+                percent_label = "<1%"
+            else:
+                percent_label = f"{percent}%"
 
             items.append({
                 "title": category,
                 "percent": percent,
+                "percent_label": percent_label,
                 "count": count,
                 "reason": f"{category} 관점으로 분류된 기사 {count}건."
             })
@@ -2054,6 +2062,7 @@ def get_main_viewpoint_analysis():
                 "id": id_map[category],
                 "title": category,
                 "percent": item["percent"],
+                "percent_label": item["percent_label"],
                 "count": item["count"],
                 "reason": item["reason"]
             })
@@ -2354,15 +2363,23 @@ def get_viewpoint_overview():
         for category in categories:
             count = perspective_count.get(category, 0)
 
-            percent = (
-                round((count / total_count) * 100)
-                if total_count else 0
+            raw_percent = (
+                (count / total) * 100
+                if total else 0
             )
+
+            percent = round(raw_percent)
+
+            if count > 0 and percent == 0:
+                percent_label = "<1%"
+            else:
+                percent_label = f"{percent}%"
 
             item = {
                 "id": id_map.get(category, ""),
                 "title": category,
                 "percent": percent,
+                "percent_label": percent_label,
                 "count": count,
                 "reason": f"전체 기사 중 {category} 관점으로 분류된 기사 {count}건."
             }
@@ -2558,12 +2575,22 @@ def get_viewpoint_detail(
     selected_master = None
 
     if viewpoint:
+        # 1. 화면 표시명 기준으로 먼저 찾기
+        # 예: "개인 관점", "정부 관점"
         selected_master = title_to_master.get(viewpoint)
 
+        # 2. 못 찾으면 ES 실제 category 기준으로 다시 찾기
+        # 예: "개인 책임", "정부 책임", "결과 분석"
+        if selected_master is None:
+            selected_master = es_to_master.get(viewpoint)
+
+    # viewpoint가 없거나, 위 두 방식 모두 실패했을 때만
+    # 전체 기사 기준 최다 관점을 기본값으로 선택
     if selected_master is None and es_count_map:
         top_es_category = max(es_count_map, key=es_count_map.get)
         selected_master = es_to_master.get(top_es_category)
 
+    # 그래도 없으면 마스터 첫 번째 항목
     if selected_master is None:
         selected_master = master_items[0]
 
@@ -3333,3 +3360,7 @@ def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = "")
         "start_date": start_date,
         "end_date": end_date
     })
+
+@app.get("/admin_trends") # 이용자 그래프
+def admin_trends(start_date: str = "", end_date: str = ""):
+    return get_admin_trends(start_date, end_date)
