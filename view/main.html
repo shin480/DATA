@@ -1765,6 +1765,10 @@ body.light-mode .status-badge.neutral {
   color: #d97706;
 }
 
+body.light-mode .opinion-page {
+  color: #334155;
+}
+
 /* =========================================================
    14. 반응형
 ========================================================= */
@@ -1874,7 +1878,7 @@ body.light-mode .status-badge.neutral {
       <div class="card">
         <div class="section-title-wrap">
           <span>한줄 요약</span>
-          <h2>오늘의 지배적 여론</h2>
+          <h2>오늘의 주요 이슈 여론</h2>
         </div>
 
         <div class="opinion-card">
@@ -2238,7 +2242,7 @@ function bindGlobalClickEvents() {
       if (!scopeId) return;
 
       goLoginRequiredPage(
-        `/view/scope_detail.html?scope_id=${encodeURIComponent(scopeId)}`
+        `/view/scope_detail.html?scopeID=${encodeURIComponent(scopeId)}`
       );
 
       return;

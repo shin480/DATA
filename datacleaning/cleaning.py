@@ -15,7 +15,7 @@ es = get_es()
 kiwi = Kiwi()
 
 # 불용어 리스트 정의
-STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "와", "과", "도", "만", "기자", "뉴스"]
+STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "와", "과", "도", "만", "기자", "뉴스", "영상", "편집", "앵커"]
 
 DEBUG_MODE = False
 target_index = "news_economy"
@@ -28,7 +28,7 @@ def kiwi_noun_tokenizer(text: str) -> list[str]:
 
     results = []
     ALLOWED_NOUN_TAGS = {"NNG", "NNP"}
-    EXCLUDED_SUFFIXES = ("세요", "시오", "합니다", "했다", "된다", "됐다")
+    EXCLUDED_SUFFIXES = ("세요", "시오", "합니다", "했다", "된다", "됐다", "니다")
 
     for token in tokens:
         word = token.form.strip()
@@ -45,15 +45,47 @@ def kiwi_noun_tokenizer(text: str) -> list[str]:
     return list(dict.fromkeys(results))
 
 def advanced_clean_text(text: str) -> str:
-    """[1-03] 요구사항: 태그/이모지 제거 및 불용어 처리"""
-    if not text: return ""
-    text = re.sub(r'<[^>]*>', ' ', text)  # HTML 태그 제거
-    text = re.sub(r'[^가-힣a-zA-Z0-9\s]', ' ', text)  # 특수문자/이모지 제거
-    text = re.sub(r'\s+', ' ', text).strip()  # 공백 정규화
+    if not text:
+        return ""
 
-    # 불용어 제거
+    # 기자명 / 앵커명 제거
+    text = re.sub(
+        r'([가-힣]{2,4})\s?(기자|앵커|특파원|리포터|캐스터)',
+        ' ',
+        text
+    )
+
+    # 영상편집/그래픽 제거
+    text = re.sub(
+        r'(영상편집|그래픽|촬영|편집)\s*([가-힣]{2,4})',
+        ' ',
+        text
+    )
+
+    # 지역=이름 기자
+    text = re.sub(
+        r'[가-힣]+=\s*([가-힣]{2,4})\s?(기자|특파원)',
+        ' ',
+        text
+    )
+
+    # 기자 이름 역순
+    text = re.sub(
+        r'(기자|앵커|특파원)\s*([가-힣]{2,4})',
+        ' ',
+        text
+    )
+
+    text = re.sub(r'<[^>]*>', ' ', text)
+    text = re.sub(r'[^가-힣a-zA-Z0-9\s]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+
     words = text.split()
-    return " ".join([w for w in words if w not in STOPWORDS])
+
+    return " ".join([
+        w for w in words
+        if w not in STOPWORDS
+    ])
 
 # news_economy에 저장된 데이터 중복 검사
 def exists_in_news_economy(article_id, url, title, press):
