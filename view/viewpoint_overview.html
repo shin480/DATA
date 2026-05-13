@@ -2014,6 +2014,7 @@ function renderOverviewGroups(groups) {
 
       const percent = Number(item.percent || 0);
       const count = Number(item.count || 0);
+      const percentText = item.percent_label || (percent + "%");
 
       return `
         <article class="view-card">
@@ -2032,7 +2033,7 @@ function renderOverviewGroups(groups) {
               </div>
 
               <div class="view-percent c-${meta.color}">
-                ${item.percent_label || `${percent}%`}
+                ${percentText}
               </div>
             </div>
           </div>

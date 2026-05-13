@@ -790,6 +790,7 @@ td[title] {
 .analysis-table th:nth-child(7),
 .analysis-table td:nth-child(7){
   width:160px;
+  text-align:center;
 }
 
 .analysis-table th:nth-child(8),
@@ -933,9 +934,9 @@ td[title] {
 <h2 class="dashboard-title">감성 분석 비율</h2>
 <div class="donut"></div>
 <div class="legend">
-<div style="color:#45ded2;"></div>
-<div style="color:#f7c74d;"></div>
-<div style="color:#ff7070;"></div>
+  <div id="positiveLegend" style="color:#45ded2;">긍정 0% (0건)</div>
+  <div id="neutralLegend" style="color:#f7c74d;">중립 0% (0건)</div>
+  <div id="negativeLegend" style="color:#ff7070;">부정 0% (0건)</div>
 </div>
 </article>
 </section>
@@ -1348,6 +1349,72 @@ function renderScope() {
     `).join("");
 }
 
+function renderSentimentRatio(sentiment) {
+  const donut = document.querySelector(".donut");
+
+  if (!donut) return;
+
+  const positive =
+  Number(sentiment.positive || sentiment.positive_count || 0);
+
+  const neutral =
+    Number(sentiment.neutral || sentiment.neutral_count || 0);
+
+  const negative =
+    Number(sentiment.negative || sentiment.negative_count || 0);
+
+  const total = positive + neutral + negative;
+
+  if (total === 0) {
+    donut.style.background = "#1e293b";
+
+    document.getElementById("positiveLegend").textContent = "긍정 0% (0건)";
+    document.getElementById("neutralLegend").textContent = "중립 0% (0건)";
+    document.getElementById("negativeLegend").textContent = "부정 0% (0건)";
+
+    return;
+  }
+
+  const positivePercent =
+  Math.round((positive / total) * 100);
+
+  const neutralPercent =
+    Math.round((neutral / total) * 100);
+
+  const negativePercent =
+    Math.round((negative / total) * 100);
+
+  console.log("감성 비율", {
+    positive,
+    neutral,
+    negative,
+    total,
+    positivePercent,
+    neutralPercent,
+    negativePercent
+  });
+
+  const positiveEnd = positivePercent;
+  const neutralEnd = positivePercent + neutralPercent;
+
+  donut.style.background = `
+    conic-gradient(
+      #45ded2 0 ${positiveEnd}%,
+      #f7c74d ${positiveEnd}% ${neutralEnd}%,
+      #ff7070 ${neutralEnd}% 100%
+    )
+  `;
+
+  document.getElementById("positiveLegend").textContent =
+    `긍정 ${positivePercent}% (${positive.toLocaleString("ko-KR")}건)`;
+
+  document.getElementById("neutralLegend").textContent =
+    `중립 ${neutralPercent}% (${neutral.toLocaleString("ko-KR")}건)`;
+
+  document.getElementById("negativeLegend").textContent =
+    `부정 ${negativePercent}% (${negative.toLocaleString("ko-KR")}건)`;
+}
+
 async function loadScopeStats() {
   try {
     const { data } = await axios.get("/api/admin/scope-stats");
@@ -1526,6 +1593,9 @@ async function searchSummary() {
 
         renderPress();
       }
+      if (data.summary.sentiment_ratio) {
+        renderSentimentRatio(data.summary.sentiment_ratio);
+      }
 
       showToast("데이터 조회가 완료되었습니다.");
     } else {
@@ -1536,8 +1606,6 @@ async function searchSummary() {
     console.error("Summary 조회 실패:", error);
     showToast("서버 통신 중 오류가 발생했습니다.");
   }
-
-  showToast("임시 데이터로 조회되었습니다.");
 }
 
 function searchAnalysis() {
@@ -1843,7 +1911,20 @@ window.adminDashboardLogout = adminDashboardLogout;
 // ==============================
 
 document.addEventListener("DOMContentLoaded", function () {
-  renderPress();  
+  renderPress();
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  const todayText = `${yyyy}-${mm}-${dd}`;
+
+  document.getElementById("summaryStart").value = "2026-05-01";
+  document.getElementById("summaryEnd").value = todayText;
+
+  searchSummary();
+
   loadScopeStats();
   loadAnalysisLogs();
   loadBanners();

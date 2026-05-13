@@ -3093,6 +3093,7 @@ function renderViewGrid(data) {
   data.forEach(group => {
     group.items.forEach(item => {
       const percent = Number(item.percent) || 0;
+      const percentText = item.percent_label || (percent + "%");
 
       htmlContent += `
         <div class="view-card">
@@ -3108,7 +3109,7 @@ function renderViewGrid(data) {
               </div>
 
               <div class="vp c-${item.color}">
-                ${item.percent_label || `${percent}%`}
+                ${percentText}
               </div>
             </div>
           </div>
@@ -3177,6 +3178,7 @@ async function loadAnalysisData() {
     data.items.forEach(item => {
       serverMap[item.id] = {
         percent: item.percent,
+        percent_label: item.percent_label,
         reason: item.reason
       };
     });
@@ -3187,6 +3189,7 @@ async function loadAnalysisData() {
       group.items.forEach(item => {
         if (serverMap[item.id]) {
           item.percent = serverMap[item.id].percent;
+          item.percent_label = serverMap[item.id].percent_label;
           item.reason = serverMap[item.id].reason;
         }
       });
