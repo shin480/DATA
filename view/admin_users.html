@@ -923,9 +923,9 @@ async function searchUsers() {
       name: user.user_name || "-",
       join: user.created_at || "-",
       role:
-        user.role === "SUPERADMIN"
+        user.role === "SUPERADMIN" || user.role === "최고관리자"
           ? "최고관리자"
-          : user.role === "ADMIN"
+          : user.role === "ADMIN" || user.role === "관리자"
           ? "관리자"
           : "일반",
       like: Number(user.like_count || 0),
@@ -943,22 +943,55 @@ async function searchUsers() {
   }
 }
 
-function changeRole(userId, newRole) {
+async function changeRole(userId, newRole) {
   const target = userData.find(user => user.id === userId);
-
+  console.log(newRole);
   if (!target) return;
 
-  target.role = newRole;
+  try {
+    const roleMap = {
+      "일반": "general",
+      "관리자": "admin",
+      "최고관리자": "superadmin"
+    };
 
-  logData.unshift({
-    date: new Date().toISOString().slice(0, 19).replace("T", " "),
-    admin: "current_admin@data.com",
-    action: "권한변경",
-    content: `${userId} 사용자의 권한을 ${newRole}(으)로 변경함.`
-  });
+    const serverRole = roleMap[newRole];
+    const { data } = await axios.post(
+      "/change_role",
+      {
+        user_id: userId,
+        role: serverRole
+      },
+      {
+        withCredentials: true
+      }
+    );
 
-  renderLogs();
-  showToast("권한 변경이 임시 저장되었습니다.");
+    if (!data.success) {
+      showToast(data.message || "권한 변경에 실패했습니다.");
+      await searchUsers();
+      return;
+    }
+
+    target.role = newRole;
+
+    logData.unshift({
+      date: new Date().toISOString().slice(0, 19).replace("T", " "),
+      admin: "current_admin@data.com",
+      action: "권한변경",
+      content: `${userId} 사용자의 권한을 ${newRole}(으)로 변경함.`
+    });
+
+    renderLogs();
+    renderUsers(userData);
+
+    showToast("권한이 변경되었습니다.");
+
+  } catch (error) {
+    console.error("권한 변경 실패:", error);
+    showToast("서버 통신 중 오류가 발생했습니다.");
+    await searchUsers();
+  }
 }
 
 

@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats
+from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -3048,4 +3048,125 @@ def get_scope_stats():
     return {
         "success": True,
         "scopes": scopes
+    }
+
+@app.get("/change_role")
+def change_role(info:Dict[str,str]):
+    return change_user_role(info)
+
+@app.get("/api/admin/analysis-logs")
+def get_analysis_logs(
+    type: str = "전체",
+    start_date: str = "",
+    end_date: str = ""
+):
+    db = get_engine()
+
+    where = []
+    params = {}
+
+    if start_date:
+        where.append("DATE(pl.occurred_at) >= :start_date")
+        params["start_date"] = start_date
+
+    if end_date:
+        where.append("DATE(pl.occurred_at) <= :end_date")
+        params["end_date"] = end_date
+
+    if type == "성공 데이터":
+        where.append("pl.status = 'success'")
+
+    if type == "에러 데이터":
+        where.append("pl.status = 'fail'")
+
+    where_sql = ""
+    if where:
+        where_sql = "WHERE " + " AND ".join(where)
+
+    rows = db.execute(
+        text(f"""
+            SELECT
+                pl.history_id,
+                pl.job_id,
+                pl.code_id,
+                pl.article_id,
+                pl.status,
+                pl.occurred_at,
+
+                el.error_code,
+                el.error_message
+            FROM article_process_logs pl
+            LEFT JOIN article_error_logs el
+                ON pl.history_id = el.history_id
+            {where_sql}
+            ORDER BY pl.occurred_at DESC
+            LIMIT 100
+        """),
+        params
+    ).fetchall()
+
+    db.close()
+
+    es = get_es()
+    logs = []
+
+    for row in rows:
+        row = dict(row._mapping)
+
+        article_id = row.get("article_id")
+
+        title = "기사 정보 없음"
+        first = "-"
+        second = "-"
+
+        if article_id:
+            try:
+                result = es.get(
+                    index=NEWS_ECONOMY_INDEX,
+                    id=str(article_id)
+                )
+
+                source = result["_source"]
+
+                title = source.get("title", "기사 제목 없음")
+
+                sentiment = source.get("sentiment", "-")
+
+                if sentiment == "positive":
+                    first = "긍정"
+                elif sentiment == "negative":
+                    first = "부정"
+                elif sentiment == "neutral":
+                    first = "중립"
+                else:
+                    first = sentiment
+
+                perspectives = source.get("perspective", [])
+
+                if perspectives:
+                    second = perspectives[0].get("category", "-")
+
+            except Exception as e:
+                print("분석 로그 기사 조회 실패:", article_id, e)
+
+        is_success = row.get("status") == "success"
+
+        logs.append({
+            "id": article_id or "-",
+            "title": title,
+            "first": first,
+            "second": second,
+            "status": "성공" if is_success else "에러",
+            "code": row.get("error_code") or row.get("code_id") or "-",
+            "message": (
+                "정상 처리"
+                if is_success
+                else row.get("error_message") or "에러 메시지 없음"
+            ),
+            "time": str(row.get("occurred_at"))[:16]
+        })
+
+    return {
+        "success": True,
+        "logs": logs
     }
