@@ -3174,6 +3174,7 @@ async function fetchKeywordDetail(keyword) {
     articles = res.data.articles || [];
 
     visibleArticleCount = 5;
+    console.log(keywordData);
 
     renderKeyword();
     renderArticles();
