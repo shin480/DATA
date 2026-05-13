@@ -714,18 +714,19 @@
         <option value="negative">negative</option>
         <option value="neutral">neutral</option>
       </select>
-      <select id="corr-trained">
-        <option value="all">학습 여부 전체</option>
-        <option value="untrained">미학습만</option>
-        <option value="trained">학습됨만</option>
-      </select>
       <select id="corr-page-size">
         <option value="10">10건</option>
         <option value="20" selected>20건</option>
         <option value="50">50건</option>
       </select>
       <button class="btn" onclick="loadCorrection(1)">조회</button>
-      <button class="btn btn-sm" id="corr-export" onclick="exportCorrectionsCsv()" style="margin-left:auto;color:var(--blue)">📥 CSV 추출</button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <label class="check-label" style="font-size:12px;color:var(--text2);">
+          <input type="checkbox" id="corr-exclude-trained" checked>
+          학습됨 제외
+        </label>
+        <button class="btn btn-sm" id="corr-export" onclick="exportCorrectionsCsv()" style="color:var(--blue)">📥 CSV 추출</button>
+      </div>
     </div>
 
     <div id="corr-loading" class="state-msg" style="display:none">불러오는 중...</div>
@@ -1103,6 +1104,33 @@ function devFetch(path, opts={}) {
 
 function apiBase() { return API_BASE_URL; }
 
+// ── 감성 정정 CSV 추출 ──────────────────────────────
+function exportCorrectionsCsv() {
+  const mode           = document.getElementById('corr-mode').value;
+  const sentiment      = document.getElementById('corr-sentiment').value;
+  const excludeTrained = document.getElementById('corr-exclude-trained').checked;
+  const threshold      = 0.55;
+
+  const params = new URLSearchParams({ mode, threshold, exclude_trained: excludeTrained });
+  if (sentiment) params.set('sentiment', sentiment);
+
+  const btn = document.getElementById('corr-export');
+  btn.disabled    = true;
+  btn.textContent = '⏳ 추출 중...';
+
+  const a = document.createElement('a');
+  a.href  = `${apiBase()}/admin/corrections/export?${params.toString()}`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  setTimeout(() => {
+    btn.disabled    = false;
+    btn.textContent = '📥 CSV 추출';
+  }, 1500);
+}
+
 // ── Gemini CSV 일괄 업로드 ──────────────────────────
 document.addEventListener('click', function(e) {
   if (e.target && e.target.id === 'bulk-upload-btn') {
@@ -1432,33 +1460,6 @@ function corrModeChange() {
   const mode = document.getElementById('corr-mode').value;
   const searchEl = document.getElementById('corr-search');
   mode === 'search' ? show('corr-search') : hide('corr-search');
-}
-
-function exportCorrectionsCsv() {
-  const mode      = document.getElementById('corr-mode').value;
-  const sentiment = document.getElementById('corr-sentiment').value;
-  const trained   = document.getElementById('corr-trained').value;
-  const threshold = 0.55;
-
-  const params = new URLSearchParams({ mode, trained, threshold });
-  if (sentiment) params.set('sentiment', sentiment);
-
-  const btn = document.getElementById('corr-export');
-  btn.disabled = true;
-  btn.textContent = '⏳ 추출 중...';
-
-  const url = `${apiBase()}/admin/corrections/export?${params.toString()}`;
-  const a   = document.createElement('a');
-  a.href    = url;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  setTimeout(() => {
-    btn.disabled    = false;
-    btn.textContent = '📥 CSV 추출';
-  }, 1500);
 }
 
 async function loadCorrection(page=1) {

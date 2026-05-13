@@ -353,21 +353,18 @@ def trigger_finetune(background_tasks: BackgroundTasks):
 # ── 8. 감성 정정 CSV 추출 ──────────────────────────────
 @router.get("/export")
 def export_corrections_csv(
-    sentiment:  str | None = Query(default=None,    description="positive | negative | neutral"),
-    mode:       str        = Query(default="all",   description="all | low_confidence"),
-    threshold:  float      = Query(default=0.55,    ge=0.0, le=1.0),
-    trained:    str        = Query(default="all",   description="all | untrained | trained"),
+    sentiment:  str | None = Query(default=None,  description="positive | negative | neutral"),
+    mode:       str        = Query(default="all", description="all | low_confidence"),
+    threshold:  float      = Query(default=0.55,  ge=0.0, le=1.0),
+    exclude_trained: bool  = Query(default=True,  description="True면 이미 학습된 newsID 제외"),
 ):
     """
-    현재 필터 조건에 해당하는 correction_log 기반 뉴스를 CSV로 추출합니다.
+    현재 필터 조건에 해당하는 뉴스를 CSV로 추출합니다.
 
-    - trained=untrained : used_in_finetune=0 (미학습 — fine-tuning 준비용)
-    - trained=trained   : used_in_finetune=1 (학습 완료)
-    - trained=all       : 전체 (기본값)
-
-    건수 상한 없이 scroll API로 전체 추출합니다.
-    형식: newsID,title,content,original_sentiment,corrected_sentiment,used_in_finetune
-    content는 앞 300자만 포함합니다.
+    - exclude_trained=True (기본): correction_log에서 used_in_finetune=1인 newsID를 제외합니다.
+      추출 → 일괄 업로드 → fine-tuning 사이클에서 중복 학습을 방지합니다.
+    - 건수 상한 없이 scroll API로 전체 추출합니다.
+    - 형식: newsID, title, content, true_sentiment
     """
     import io
     import csv
@@ -375,106 +372,81 @@ def export_corrections_csv(
 
     if sentiment and sentiment not in VALID_SENTIMENTS:
         raise HTTPException(status_code=400, detail="유효하지 않은 sentiment 값")
-    if trained not in ("all", "untrained", "trained"):
-        raise HTTPException(status_code=400, detail="trained 값은 all | untrained | trained 중 하나여야 합니다.")
 
     try:
-        # ── correction_log에서 대상 newsID 목록 조회 ──────────
-        with get_db() as conn:
-            with conn.cursor() as cur:
-                where_parts, params = [], []
+        # ── 1. 학습 완료된 newsID 조회 (제외 목록) ────────────
+        trained_ids: set[str] = set()
+        if exclude_trained:
+            with get_db() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT DISTINCT newsID FROM correction_log WHERE used_in_finetune = 1"
+                    )
+                    trained_ids = {r["newsID"] for r in cur.fetchall()}
 
-                if trained == "untrained":
-                    where_parts.append("used_in_finetune = 0")
-                elif trained == "trained":
-                    where_parts.append("used_in_finetune = 1")
+        # ── 2. ES 쿼리 조건 구성 ──────────────────────────────
+        must     = [{"exists": {"field": "sentiment"}}]
+        must_not = []
 
-                if sentiment:
-                    where_parts.append("corrected_sentiment = %s")
-                    params.append(sentiment)
+        if sentiment:
+            must.append({"term": {"sentiment": sentiment}})
+        if mode == "low_confidence":
+            must.append({"range": {"sentiment_score": {"lt": threshold}}})
+        if trained_ids:
+            must_not.append({"ids": {"values": list(trained_ids)}})
 
-                where_sql = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
+        es_query = {"bool": {"must": must, "must_not": must_not}} if must_not else {"bool": {"must": must}}
 
-                cur.execute(f"""
-                    SELECT newsID, corrected_sentiment, used_in_finetune
-                    FROM correction_log
-                    {where_sql}
-                    ORDER BY created_at ASC
-                """, params)
-                log_rows = cur.fetchall()
+        # ── 3. scroll로 전체 추출 (상한 없음) ─────────────────
+        es    = get_es()
+        total = es.count(index=INDEX_NEWS, body={"query": es_query})["count"]
 
-        if not log_rows:
+        if total == 0:
+            es.close()
             raise HTTPException(status_code=404, detail="추출할 데이터가 없습니다.")
 
-        # newsID → correction 정보 매핑 (동일 newsID 복수 정정 시 최신 우선)
-        corr_map: dict[str, dict] = {}
-        for r in log_rows:
-            corr_map[r["newsID"]] = r  # ORDER BY created_at ASC → 뒤에 오는 게 최신
-
-        news_ids = list(corr_map.keys())
-
-        # ── ES mget으로 원문 일괄 조회 (scroll 불필요, ID 기반) ──
-        es   = get_es()
-        mget = es.mget(
-            index=INDEX_NEWS,
-            body={"ids": news_ids},
-            _source=["article_id", "title", "content", "sentiment"],
-        )
-        es.close()
-
-        es_map = {
-            d["_id"]: d["_source"]
-            for d in mget["docs"]
-            if d.get("found")
-        }
-
-        # mode=low_confidence 필터 (ES sentiment_score 기준)
-        # — 단, correction_log 기반 추출이므로 mode 필터는 참고용으로만 적용
-        # correction_log에 있는 기사는 이미 사람이 검토한 것이므로
-        # mode 필터는 프론트 조회와의 일관성을 위해 유지하되 선택적으로 적용
-        if mode == "low_confidence":
-            es2 = get_es()
-            lc_res = es2.search(
-                index=INDEX_NEWS,
-                body={
-                    "query": {"bool": {"must": [
-                        {"ids": {"values": news_ids}},
-                        {"range": {"sentiment_score": {"lt": threshold}}},
-                    ]}},
-                    "_source": ["article_id"],
-                    "size": len(news_ids),
-                },
-            )
-            es2.close()
-            lc_ids = {h["_source"].get("article_id", h["_id"]) for h in lc_res["hits"]["hits"]}
-            news_ids = [nid for nid in news_ids if nid in lc_ids]
-
-        if not news_ids:
-            raise HTTPException(status_code=404, detail="필터 조건에 맞는 데이터가 없습니다.")
-
-        # ── CSV 생성 ───────────────────────────────────────────
         output = io.StringIO()
         output.write("\ufeff")  # UTF-8 BOM (Excel 호환)
         writer = csv.writer(output)
-        writer.writerow(["newsID", "title", "content", "original_sentiment",
-                         "corrected_sentiment", "used_in_finetune"])
+        writer.writerow(["newsID", "title", "content", "true_sentiment"])
 
-        for nid in news_ids:
-            src  = es_map.get(nid, {})
-            corr = corr_map[nid]
-            writer.writerow([
-                nid,
-                src.get("title", ""),
-                src.get("content", "")[:300],
-                src.get("sentiment", ""),          # ES 현재 sentiment (정정 반영됨)
-                corr["corrected_sentiment"],
-                corr["used_in_finetune"],
-            ])
+        scroll_res = es.search(
+            index=INDEX_NEWS,
+            scroll="2m",
+            body={
+                "query":   es_query,
+                "_source": ["article_id", "title", "content", "sentiment"],
+                "sort":    [{"published_at": "desc"}],
+                "size":    1000,
+            },
+        )
+
+        scroll_id = scroll_res["_scroll_id"]
+        hits      = scroll_res["hits"]["hits"]
+
+        while hits:
+            for hit in hits:
+                src = hit["_source"]
+                writer.writerow([
+                    src.get("article_id", hit["_id"]),
+                    src.get("title", ""),
+                    src.get("content", "")[:300],
+                    src.get("sentiment", ""),
+                ])
+            scroll_res = es.scroll(scroll_id=scroll_id, scroll="2m")
+            scroll_id  = scroll_res["_scroll_id"]
+            hits       = scroll_res["hits"]["hits"]
+
+        try:
+            es.clear_scroll(scroll_id=scroll_id)
+        except Exception:
+            pass
+        es.close()
 
         output.seek(0)
-        trained_label = {"all": "all", "untrained": "미학습", "trained": "학습완료"}[trained]
-        sent_label    = sentiment or "all"
-        filename      = f"correction_export_{sent_label}_{trained_label}.csv"
+        sent_label = sentiment or "all"
+        excl_label = "_미학습" if exclude_trained else ""
+        filename   = f"sentiment_export_{sent_label}{excl_label}.csv"
 
         return StreamingResponse(
             iter([output.getvalue()]),
