@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Any
 import os
 import uuid
+import re
 
 from fastapi import FastAPI, Query, UploadFile, File
 from starlette.requests import Request
@@ -1719,6 +1720,12 @@ def get_dominant_opinions():
             or "해당 이슈"
         )
 
+        display_scope_title = re.sub(
+            r'^\[[^\]]+\]\s*',
+            '',
+            scope_title
+        )
+
         scope_keywords = parse_scope_keyword_list(
             scope_source.get("scope_keywords")
         )
@@ -1734,7 +1741,7 @@ def get_dominant_opinions():
         dominant = sentiment_dist["dominant"]
 
         opinion_sentence = make_dominant_opinion_sentence(
-            topic=scope_title,
+            topic=display_scope_title,
             positive=positive,
             neutral=neutral,
             negative=negative
@@ -3096,13 +3103,21 @@ def get_scope_detail(scope_id: str):
         if keyword.strip()
     ]
 
+    raw_scope_title = scope_source.get("scopeTitle", "AI 뉴스 분석")
+
+    display_scope_title = re.sub(
+        r'^\[[^\]]+\]\s*',
+        '',
+        raw_scope_title
+    )
+
     updated_at = str(scope_source.get("updated_at") or "")
 
     return {
         "scopeID": scope_source.get("scopeID", scope_id),
-        "title": scope_source.get("scopeTitle", "AI 뉴스 분석"),
+        "title": display_scope_title,
         "summary": scope_source.get("scope_summary")
-           or f"{scope_source.get('scopeTitle', '해당 이슈')} 관련 기사 {total}건을 분석한 결과입니다.",
+            or f"{display_scope_title} 관련 기사 {total}건을 분석한 결과입니다.",
         "keywords": scope_keywords[:5],
         "scopeSentiment": scope_source.get("sentiment", ""),
         "scopeSentimentScore": scope_source.get("sentiment_score", 0),
