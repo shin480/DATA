@@ -1125,6 +1125,14 @@ body.light-mode .more-btn:hover {
   border-color: #00cfe8;
   color: #00cfe8;
 }
+/* 키워드 클릭 */
+.keyword{
+  cursor: pointer;
+}
+
+.keyword:hover{
+  opacity: 0.8;
+}
 
 </style>
 </head>
@@ -1756,7 +1764,10 @@ function loadScopeInfo() {
 
   scopeData.keywords.slice(0, 5).forEach(function(keyword, index) {
     keywordList.innerHTML += `
-      <span class="keyword ${index === 0 ? "main" : ""}">
+      <span 
+        class="keyword ${index === 0 ? "main" : ""}"
+        onclick="moveKeywordDetail('${keyword}')"
+      >
         ${keyword}
       </span>
     `;
@@ -1767,6 +1778,13 @@ function loadScopeInfo() {
 
   document.getElementById("lastUpdated").innerText =
     scopeData.lastUpdated;
+}
+
+/* 키워드 상세 이동 */
+function moveKeywordDetail(keyword) {
+  location.href =
+    "/view/keyword_detail.html?keyword=" +
+    encodeURIComponent(keyword);
 }
 
 function loadSentimentDist() {
