@@ -3,7 +3,7 @@
 
 흐름:
   1. ES news_economy에서 keywords=NULL 레코드 polling
-  2. tokens(형태소 분석 완료) + 제목으로 TF-IDF 키워드 추출
+  2. tokens(형태소 분석 완료)으로 TF-IDF 키워드 추출
   3. news_economy.keywords upsert
 
 [수정 이력]
@@ -11,9 +11,10 @@
 - 불용어 처리 강화: 고빈도 동사/조사/어미 등 의미 없는 단어 필터링
 - _is_valid_keyword: 한글 단어 최소 2자, 단순 어간 제거 강화
 - [2026-05] 불용어 확장: 뉴스 어미 활용형 / URL 도메인 조각 / 언론 메타어 추가
-- [2026-05] 전처리 강화: URL/이메일/도메인/숫자/특수문자 패턴 제거 (title + tokens 양쪽 적용)
+- [2026-05] 전처리 강화: URL/이메일/도메인/숫자/특수문자 패턴 제거 (tokens 적용)
 - [2026-05] 동적 불용어: ES keyword_stopwords 인덱스에서 배치 시작 시 로드해 STOPWORDS에 병합
 - [2026-05] 명사 필터: 동사 어간 패턴으로 끝나는 토큰 제거 (_is_noun_like)
+- [2026-05] 제목 가중치 완전 제거: tokens에 없는 단어가 키워드로 생성되는 문제 수정
 """
 
 import logging
@@ -29,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE   = 10000
 MAX_KEYWORDS = 5
-TITLE_WEIGHT = 3.0
 MIN_WORD_LEN = 2
 INDEX_NEWS       = "news_economy"
 INDEX_STOPWORDS  = "keyword_stopwords"
@@ -174,7 +174,7 @@ def _load_dynamic_stopwords(es) -> set[str]:
 def _clean_text(text: str) -> str:
     """
     URL / 이메일 / 도메인 / 숫자 / 특수문자를 제거한 뒤 공백 정규화.
-    title 전처리와 tokens 개별 정제 양쪽에서 사용.
+    tokens 개별 정제에서 사용.
     """
     # 1) URL (http/https/ftp 스킴 포함)
     text = re.sub(r"https?://\S+", " ", text)
@@ -192,10 +192,6 @@ def _clean_text(text: str) -> str:
     # 7) 공백 정규화
     text = re.sub(r"\s+", " ", text)
     return text.strip()
-
-
-# 하위 호환용 alias (title 전처리에서 기존 이름으로 호출)
-_preprocess = _clean_text
 
 
 def _clean_token(token: str) -> str | None:
@@ -249,20 +245,13 @@ def _is_valid_keyword(word: str, stopwords: set | None = None) -> bool:
     return True
 
 
-def _remove_josa(word: str) -> str:
-    """단어 끝의 조사 제거"""
-    josa_pattern = r"(을|를|이|가|은|는|에서|에게|에|의|로부터|으로|로|와|과|도|만|까지|부터|한테|께서)$"
-    return re.sub(josa_pattern, "", word)
-
-
 # ─────────────────────────────────────────────────────────────
 # 키워드 추출
 # ─────────────────────────────────────────────────────────────
 
-def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS, stopwords: set | None = None) -> list[str]:
+def extract_keywords(tokens: list, max_keywords: int = MAX_KEYWORDS, stopwords: set | None = None) -> list[str]:
     """
     tokens: ES에 저장된 형태소 분석 결과 리스트
-    title: 뉴스 제목 (가중치 적용)
     stopwords: 배치 단위 동적 불용어 합산 set (미전달 시 기본 STOPWORDS)
     """
     # tokens 필터링: URL/이메일/숫자/특수문자 정제 후 유효 단어만 추출
@@ -277,17 +266,7 @@ def extract_keywords(title: str, tokens: list, max_keywords: int = MAX_KEYWORDS,
     if not valid_tokens:
         return []
 
-    # 제목 가중치: 제목 토큰 조사 제거 후 TITLE_WEIGHT배 반복
-    title_tokens = [
-        _remove_josa(t)
-        for t in _preprocess(title).split()
-        if re.fullmatch(r"[가-힣a-zA-Z0-9]+", t)
-    ]
-    title_tokens = [t for t in title_tokens if _is_valid_keyword(t, stopwords)]
-    title_repeated = title_tokens * int(TITLE_WEIGHT)
-
-    full_tokens = title_repeated + valid_tokens
-    full_text   = " ".join(full_tokens)
+    full_text = " ".join(valid_tokens)
 
     if not full_text.strip():
         return []
@@ -330,7 +309,6 @@ def extract_keywords_single(article_id: str, src: dict) -> None:
         dynamic_sw      = _load_dynamic_stopwords(es)
         batch_stopwords = STOPWORDS | dynamic_sw
         keywords     = extract_keywords(
-            src.get("title", ""),
             src.get("tokens", []),
             stopwords=batch_stopwords,
         )
@@ -358,7 +336,7 @@ def run_keyword_pipeline():
             index=INDEX_NEWS,
             body={
                 "query": {"bool": {"must_not": {"exists": {"field": "keywords"}}}},
-                "_source": ["article_id", "title", "tokens"],
+                "_source": ["article_id", "tokens"],
                 "sort":    [{"published_at": "asc"}],
                 "size":    BATCH_SIZE,
             },
@@ -382,7 +360,6 @@ def run_keyword_pipeline():
             article_id = src["article_id"]
             try:
                 keywords     = extract_keywords(
-                    src.get("title", ""),
                     src.get("tokens", []),
                     stopwords=batch_stopwords,
                 )
