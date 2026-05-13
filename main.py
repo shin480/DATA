@@ -1991,14 +1991,22 @@ def get_main_viewpoint_analysis():
         for category in categories:
             count = perspective_count.get(category, 0)
 
-            percent = (
-                round((count / total) * 100)
-                if total else 0
+            raw_percent = (
+                (count / total_count) * 100
+                if total_count else 0
             )
+
+            percent = round(raw_percent)
+
+            if count > 0 and percent == 0:
+                percent_label = "<1%"
+            else:
+                percent_label = f"{percent}%"
 
             items.append({
                 "title": category,
                 "percent": percent,
+                "percent_label": percent_label,
                 "count": count,
                 "reason": f"{category} 관점으로 분류된 기사 {count}건."
             })
@@ -2054,6 +2062,7 @@ def get_main_viewpoint_analysis():
                 "id": id_map[category],
                 "title": category,
                 "percent": item["percent"],
+                "percent_label": item["percent_label"],
                 "count": item["count"],
                 "reason": item["reason"]
             })
@@ -2354,15 +2363,23 @@ def get_viewpoint_overview():
         for category in categories:
             count = perspective_count.get(category, 0)
 
-            percent = (
-                round((count / total_count) * 100)
-                if total_count else 0
+            raw_percent = (
+                (count / total) * 100
+                if total else 0
             )
+
+            percent = round(raw_percent)
+
+            if count > 0 and percent == 0:
+                percent_label = "<1%"
+            else:
+                percent_label = f"{percent}%"
 
             item = {
                 "id": id_map.get(category, ""),
                 "title": category,
                 "percent": percent,
+                "percent_label": percent_label,
                 "count": count,
                 "reason": f"전체 기사 중 {category} 관점으로 분류된 기사 {count}건."
             }
