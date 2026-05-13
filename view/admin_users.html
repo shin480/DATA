@@ -739,7 +739,7 @@ td select {
 <h2 class="sub-title">일일 조회수 추이</h2>
 <div class="graph-box">
               조회수 추이
-              <svg preserveAspectRatio="none" viewBox="0 0 600 180">
+              <svg id="viewTrendSvg" preserveAspectRatio="none" viewBox="0 0 600 180">
 <polyline fill="none" points="0,140 80,120 160,130 240,80 320,95 400,55 500,70 600,35" stroke="#38bdf8" stroke-width="6"></polyline>
 </svg>
 </div>
@@ -748,7 +748,7 @@ td select {
 <h2 class="sub-title">신규 가입자 추이</h2>
 <div class="graph-box">
               가입자 추이
-              <svg preserveAspectRatio="none" viewBox="0 0 600 180">
+              <svg id="signupTrendSvg" preserveAspectRatio="none" viewBox="0 0 600 180">
 <polyline fill="none" points="0,135 80,125 160,100 240,110 320,70 400,90 500,45 600,65" stroke="#a78bfa" stroke-width="6"></polyline>
 </svg>
 </div>
@@ -957,7 +957,77 @@ function adminUsersLogout() {
 
   location.href = "/view/main.html";
 }
+// ==============================
+// 그래프
+// ==============================
+async function loadTrendGraphs() {
+  const startDate = document.getElementById("reactionStart")?.value || "";
+  const endDate = document.getElementById("reactionEnd")?.value || "";
 
+  try {
+    const { data } = await axios.get("/admin_trends", {
+      params: {
+        start_date: startDate,
+        end_date: endDate
+      },
+      withCredentials: true
+    });
+
+    if (!data.success) {
+      showToast("추이 그래프 조회 실패");
+      return;
+    }
+
+    drawLineGraph("viewTrendSvg", data.views || [], "#38bdf8");
+    drawLineGraph("signupTrendSvg", data.signups || [], "#a78bfa");
+
+  } catch (error) {
+    console.error("추이 그래프 로딩 실패:", error);
+    showToast("추이 그래프 로딩 실패");
+  }
+}
+
+function drawLineGraph(svgId, rows, color) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+
+  const width = 600;
+  const height = 180;
+  const padding = 25;
+
+  svg.innerHTML = "";
+
+  if (!rows.length) {
+    svg.innerHTML = `<text x="30" y="90" fill="#94a3b8">데이터 없음</text>`;
+    return;
+  }
+
+  const values = rows.map(row => Number(row.count || 0));
+  const maxValue = Math.max(...values, 1);
+
+  const points = rows.map((row, index) => {
+    const x =
+      rows.length === 1
+        ? width / 2
+        : padding + (index * (width - padding * 2)) / (rows.length - 1);
+
+    const y =
+      height - padding - (Number(row.count || 0) / maxValue) * (height - padding * 2);
+
+    return `${x},${y}`;
+  }).join(" ");
+
+  svg.innerHTML = `
+    <polyline
+      fill="none"
+      points="${points}"
+      stroke="${color}"
+      stroke-width="6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></polyline>
+  `;
+}
 
 // ==============================
 // 사용자 테이블
@@ -1160,14 +1230,22 @@ function renderReaction() {
 // 마지막 날짜 기준 자동 반영
 // ==============================
 function bindReactionDateEvents() {
-  const endDateInput =
-    document.getElementById("reactionEnd");
+  const startDateInput = document.getElementById("reactionStart");
+  const endDateInput = document.getElementById("reactionEnd");
 
-  if (!endDateInput) return;
+  if (startDateInput) {
+    startDateInput.addEventListener("change", function () {
+      loadPressReaction();
+      loadTrendGraphs();
+    });
+  }
 
-  endDateInput.addEventListener("change", function () {
-    loadPressReaction();
-  });
+  if (endDateInput) {
+    endDateInput.addEventListener("change", function () {
+      loadPressReaction();
+      loadTrendGraphs();
+    });
+  }
 }
 
 // ==============================
@@ -1251,6 +1329,7 @@ document.addEventListener("DOMContentLoaded", function () {
   renderLogs();
   loadUserUsageStats();
   bindReactionDateEvents();
+  loadTrendGraphs();
   // 기본: 전체 기간
   loadPressReaction();
 });

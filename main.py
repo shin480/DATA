@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction
+from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction, get_admin_trends
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -3324,3 +3324,7 @@ def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = "")
         "start_date": start_date,
         "end_date": end_date
     })
+
+@app.get("/admin_trends") # 이용자 그래프
+def admin_trends(start_date: str = "", end_date: str = ""):
+    return get_admin_trends(start_date, end_date)
