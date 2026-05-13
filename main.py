@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats
+from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -3049,3 +3049,7 @@ def get_scope_stats():
         "success": True,
         "scopes": scopes
     }
+
+@app.get("/change_role")
+def change_role(info:Dict[str,str]):
+    return change_user_role(info)
