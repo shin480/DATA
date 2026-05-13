@@ -243,6 +243,89 @@ select {
    Filter
 ============================== */
 
+.reaction-card {
+        /* 카드 전체 폭 축소 */
+  max-width: 420px;    /* 최대 폭 제한 */
+  margin-left: auto;   /* 오른쪽 정렬 유지 */
+  padding: 16px;
+}
+
+.reaction-card table {
+  width: 100%;
+  min-width: unset !important;   /* 기존 min-width:760px 제거 */
+  table-layout: fixed;           /* 칸 너비 균등 고정 */
+}
+
+.reaction-card th,
+.reaction-card td {
+  padding: 8px 4px;              /* 셀 내부 여백 축소 */
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 각 열 비율 직접 축소 */
+.reaction-card th:nth-child(1),
+.reaction-card td:nth-child(1) {
+  width: 38%;
+}
+
+.reaction-card th:nth-child(2),
+.reaction-card td:nth-child(2) {
+  width: 31%;
+}
+
+.reaction-card th:nth-child(3),
+.reaction-card td:nth-child(3) {
+  width: 31%;
+}
+
+#pressreaction {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 10px;
+  width: 100%;
+}
+
+/* 제목은 첫 줄 전체 */
+#pressreaction .reaction-title {
+  grid-column: 1 / -1;
+  margin: 0;
+  white-space: normal;
+}
+
+/* 날짜줄은 둘째 줄 가로 배치 */
+#pressreaction input#reactionStart,
+#pressreaction span,
+#pressreaction input#reactionEnd {
+  display: inline-flex;
+  align-items: center;
+}
+
+#pressreaction input#reactionStart {
+  grid-row: 2;
+  grid-column: 1;
+  width: 140px;
+}
+
+#pressreaction span {
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: center;
+}
+
+#pressreaction input#reactionEnd {
+  grid-row: 2;
+  grid-column: 3;
+  width: 140px;
+}
+
+/* 날짜줄 3칸 구조 */
+#pressreaction {
+  grid-template-columns: auto 20px auto;
+}
+
 .filter-row {
   display: flex;
   align-items: center;
@@ -302,6 +385,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 /* ==============================
    Table
 ============================== */
+
+
 
 .table-box {
   max-height: 245px;
@@ -522,7 +607,29 @@ td select {
   }
 
   .grid-section {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    gap: 14px;
+    margin-top: 18px;
+    align-items: start;
+  }
+
+  .chart-stack {
+    min-width: 0;
+  }
+
+  .reaction-card {
+    width: 420px;
+    max-width: 420px;
+    margin-left: 0;
+    height: auto;
+    max-height: none;
+    align-self: start;
+  }
+
+  .reaction-card .table-box.large {
+    max-height: 340px;
+    overflow-y: auto;
   }
 
   .stats-grid {
@@ -631,8 +738,7 @@ td select {
 <article class="chart-card">
 <h2 class="sub-title">일일 조회수 추이</h2>
 <div class="graph-box">
-              조회수 추이
-              <svg preserveAspectRatio="none" viewBox="0 0 600 180">
+              <svg id="viewTrendSvg" preserveAspectRatio="none" viewBox="0 0 600 180">
 <polyline fill="none" points="0,140 80,120 160,130 240,80 320,95 400,55 500,70 600,35" stroke="#38bdf8" stroke-width="6"></polyline>
 </svg>
 </div>
@@ -640,19 +746,18 @@ td select {
 <article class="chart-card">
 <h2 class="sub-title">신규 가입자 추이</h2>
 <div class="graph-box">
-              가입자 추이
-              <svg preserveAspectRatio="none" viewBox="0 0 600 180">
+              <svg id="signupTrendSvg" preserveAspectRatio="none" viewBox="0 0 600 180">
 <polyline fill="none" points="0,135 80,125 160,100 240,110 320,70 400,90 500,45 600,65" stroke="#a78bfa" stroke-width="6"></polyline>
 </svg>
 </div>
 </article>
 </div>
 <article class="reaction-card">
-<div class="filter-row">
-<h2 class="sub-title reaction-title">언론사별 콘텐츠 반응도</h2>
-<input id="reactionStart" type="date"/>
-<span>~</span>
-<input id="reactionEnd" type="date"/>
+<div class="filter-row" id="pressreaction">
+  <h2 class="sub-title reaction-title">언론사별 콘텐츠 반응도</h2>
+  <input id="reactionStart" type="date"/>
+  <span>~</span>
+  <input id="reactionEnd" type="date"/>
 </div>
 <div class="table-box large">
 <table>
@@ -797,18 +902,8 @@ async function loadUserUsageStats() {
 // 서버 연결 전 임시 데이터
 // ==============================
 
+let reactionData = []; 
 
-const reactionData = [
-  { press: "경향신문", views: 1, likes: 111 },
-  { press: "중앙일보", views: 31, likes: 91 },
-  { press: "한국경제", views: 102, likes: 301 },
-  { press: "연합뉴스", views: 72, likes: 184 },
-  { press: "한겨레", views: 46, likes: 123 },
-  { press: "매일경제", views: 91, likes: 211 },
-  { press: "조선일보", views: 55, likes: 67 },
-  { press: "서울경제", views: 41, likes: 99 },
-  { press: "머니투데이", views: 64, likes: 143 }
-];
 
 let logData = [
   { date: "2026-04-27 22:22:22", admin: "asdfg12345@naver.com", action: "U1111", content: "aaa000@gmail.com에 관리자 권한 부여함." },
@@ -860,6 +955,249 @@ function adminUsersLogout() {
 
   location.href = "/view/main.html";
 }
+// ==============================
+// 그래프
+// ==============================
+async function loadTrendGraphs() {
+  const startDate = document.getElementById("reactionStart")?.value || "";
+  const endDate = document.getElementById("reactionEnd")?.value || "";
+
+  try {
+    console.log("[GRAPH_REQUEST]", {
+      start_date: startDate || "전체기간",
+      end_date: endDate || "오늘"
+    });
+
+    const { data } = await axios.get("/admin_trends", {
+      params: {
+        start_date: startDate,
+        end_date: endDate
+      },
+      withCredentials: true
+    });
+
+    console.log("[GRAPH_RESPONSE_RAW]", data);
+
+    if (!data.success) {
+      showToast("추이 그래프 조회 실패");
+      return;
+    }
+
+    console.log("[VIEW_TREND_DATA]");
+    (data.views || []).forEach(row => {
+      console.log(`조회수 | ${row.date} | ${row.count}`);
+    });
+
+    console.log("[SIGNUP_TREND_DATA]");
+    (data.signups || []).forEach(row => {
+      console.log(`가입자 | ${row.date} | ${row.count}`);
+    });
+
+    drawLineGraph("viewTrendSvg", data.views || [], "#38bdf8");
+    drawLineGraph("signupTrendSvg", data.signups || [], "#a78bfa");
+
+  } catch (error) {
+    console.error("추이 그래프 로딩 실패:", error);
+
+    if (error.response) {
+      console.error("[GRAPH_ERROR_RESPONSE]", error.response.data);
+    }
+
+    showToast("추이 그래프 로딩 실패");
+  }
+}
+
+
+// ==============================
+// SVG 그래프 생성
+// ==============================
+function drawLineGraph(svgId, rows, color) {
+  const svg = document.getElementById(svgId);
+
+  if (!svg) return;
+
+  const width = 600;
+  const height = 180;
+
+  // 여백 (축 라벨 공간 확보)
+  const paddingLeft = 55;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 35;
+
+  svg.innerHTML = "";
+
+  if (!rows.length) {
+    svg.innerHTML = `
+      <text x="30" y="90" fill="#94a3b8">
+        데이터 없음
+      </text>
+    `;
+    return;
+  }
+
+  const values = rows.map(row => Number(row.count || 0));
+  const maxValue = Math.max(...values, 1);
+
+  // 보기 좋은 Y축 최대값
+  const roundedMax =
+    maxValue <= 5
+      ? 5
+      : Math.ceil(maxValue / 5) * 5;
+
+  const graphWidth = width - paddingLeft - paddingRight;
+  const graphHeight = height - paddingTop - paddingBottom;
+
+  let svgContent = "";
+
+  // ==============================
+  // Y축 / 가이드라인 (5단계)
+  // ==============================
+  for (let i = 0; i <= 5; i++) {
+    const value = Math.round((roundedMax / 5) * (5 - i));
+
+    const y =
+      paddingTop +
+      (graphHeight / 5) * i;
+
+    // 가이드 라인
+    svgContent += `
+      <line
+        x1="${paddingLeft}"
+        y1="${y}"
+        x2="${width - paddingRight}"
+        y2="${y}"
+        stroke="rgba(148,163,184,0.18)"
+        stroke-width="1"
+      />
+    `;
+
+    // Y축 숫자
+    svgContent += `
+      <text
+        x="${paddingLeft - 8}"
+        y="${y + 4}"
+        fill="#94a3b8"
+        font-size="11"
+        text-anchor="end"
+      >
+        ${value}
+      </text>
+    `;
+  }
+
+  // ==============================
+  // X축 / 날짜
+  // ==============================
+  rows.forEach((row, index) => {
+    const x =
+      rows.length === 1
+        ? paddingLeft + graphWidth / 2
+        : paddingLeft + (index * graphWidth) / (rows.length - 1);
+
+    // 날짜를 MM-DD 형식으로 축약
+    const shortDate =
+      row.date?.slice(5) || "";
+
+    svgContent += `
+      <text
+        x="${x}"
+        y="${height - 8}"
+        fill="#94a3b8"
+        font-size="10"
+        text-anchor="middle"
+      >
+        ${shortDate}
+      </text>
+    `;
+  });
+
+  // ==============================
+  // 축 라인
+  // ==============================
+  svgContent += `
+    <line
+      x1="${paddingLeft}"
+      y1="${paddingTop}"
+      x2="${paddingLeft}"
+      y2="${height - paddingBottom}"
+      stroke="rgba(148,163,184,0.45)"
+      stroke-width="2"
+    />
+  `;
+
+  svgContent += `
+    <line
+      x1="${paddingLeft}"
+      y1="${height - paddingBottom}"
+      x2="${width - paddingRight}"
+      y2="${height - paddingBottom}"
+      stroke="rgba(148,163,184,0.45)"
+      stroke-width="2"
+    />
+  `;
+
+  // ==============================
+  // 그래프 포인트 계산
+  // ==============================
+  const points = rows.map((row, index) => {
+    const x =
+      rows.length === 1
+        ? paddingLeft + graphWidth / 2
+        : paddingLeft + (index * graphWidth) / (rows.length - 1);
+
+    const y =
+      height -
+      paddingBottom -
+      (Number(row.count || 0) / roundedMax) *
+        graphHeight;
+
+    return { x, y, count: row.count };
+  });
+
+  // ==============================
+  // 선
+  // ==============================
+  svgContent += `
+    <polyline
+      fill="none"
+      points="${points.map(p => `${p.x},${p.y}`).join(" ")}"
+      stroke="${color}"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  `;
+
+  // ==============================
+  // 점 + 실제 수치
+  // ==============================
+  points.forEach(point => {
+    svgContent += `
+      <circle
+        cx="${point.x}"
+        cy="${point.y}"
+        r="4"
+        fill="${color}"
+      />
+    `;
+
+    svgContent += `
+      <text
+        x="${point.x}"
+        y="${point.y - 10}"
+        fill="#f8fafc"
+        font-size="10"
+        text-anchor="middle"
+      >
+        ${point.count}
+      </text>
+    `;
+  });
+
+  svg.innerHTML = svgContent;
+}
+
 
 
 // ==============================
@@ -996,7 +1334,50 @@ async function changeRole(userId, newRole) {
 
 
 // ==============================
-// 언론사별 반응도
+// 언론사별 콘텐츠 반응도 로딩
+// 기본: 전체 기간
+// 종료일 선택 시 자동 갱신
+// ==============================
+async function loadPressReaction() {
+  const startDate =
+    document.getElementById("reactionStart")?.value || "";
+
+  const endDate =
+    document.getElementById("reactionEnd")?.value || "";
+
+  try {
+    const { data } = await axios.get(
+      "/press_reaction",
+      {
+        params: {
+          start_date: startDate,
+          end_date: endDate
+        },
+        withCredentials: true
+      }
+    );
+
+    if (!data.success) {
+      showToast("언론사 반응도 조회 실패");
+      return;
+    }
+
+    reactionData = (data.data || []).map(item => ({
+      press: item.press || "-",
+      views: Number(item.views || 0),
+      likes: Number(item.likes || 0)
+    }));
+
+    renderReaction();
+
+  } catch (error) {
+    console.error("언론사 반응도 로딩 실패:", error);
+    showToast("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
+// ==============================
+// 테이블 렌더링
 // ==============================
 
 function renderReaction() {
@@ -1015,6 +1396,50 @@ function renderReaction() {
     `).join("");
 }
 
+// ==============================
+// 날짜 변경 감지
+// 마지막 날짜 기준 자동 반영
+// ==============================
+function bindReactionDateEvents() {
+  const startDateInput = document.getElementById("reactionStart");
+  const endDateInput = document.getElementById("reactionEnd");
+
+  if (startDateInput) {
+    startDateInput.addEventListener("change", function () {
+      loadPressReaction();
+      loadTrendGraphs();
+    });
+  }
+
+  if (endDateInput) {
+    endDateInput.addEventListener("change", function () {
+      loadPressReaction();
+      loadTrendGraphs();
+    });
+  }
+}
+
+// ==============================
+// 날짜 초기화
+// 시작일 비움 = 서비스 전체 기간
+// 종료일 오늘
+// ==============================
+function setToday() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const reactionStart =
+    document.getElementById("reactionStart");
+
+  const reactionEnd =
+    document.getElementById("reactionEnd");
+
+  const logDate =
+    document.getElementById("logDate");
+
+  if (reactionStart) reactionStart.value = "";
+  if (reactionEnd) reactionEnd.value = today;
+  if (logDate) logDate.value = today;
+}
 
 // ==============================
 // 관리자 로그
@@ -1055,23 +1480,6 @@ function searchLogs() {
 
 
 // ==============================
-// 날짜 초기화
-// ==============================
-
-function setToday() {
-  const today = new Date().toISOString().slice(0, 10);
-
-  const reactionStart = document.getElementById("reactionStart");
-  const reactionEnd = document.getElementById("reactionEnd");
-  const logDate = document.getElementById("logDate");
-
-  if (reactionStart) reactionStart.value = today;
-  if (reactionEnd) reactionEnd.value = today;
-  if (logDate) logDate.value = today;
-}
-
-
-// ==============================
 // 전역 등록
 // ==============================
 
@@ -1091,6 +1499,10 @@ document.addEventListener("DOMContentLoaded", function () {
   renderReaction();
   renderLogs();
   loadUserUsageStats();
+  bindReactionDateEvents();
+  loadTrendGraphs();
+  // 기본: 전체 기간
+  loadPressReaction();
 });
 </script>
 </body>

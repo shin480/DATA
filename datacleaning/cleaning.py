@@ -20,34 +20,28 @@ STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "
 DEBUG_MODE = False
 target_index = "news_economy"
 
-def kiwi_noun_tokenizer(text: str) -> list[str]:  # 키위 토크나이저 (명사 + 용언 명사화)
+def kiwi_noun_tokenizer(text: str) -> list[str]:
     if not text:
         return []
 
-    tokens = kiwi.tokenize(text)
+    tokens = kiwi.tokenize(text, split_complex=False)
 
     results = []
+    ALLOWED_NOUN_TAGS = {"NNG", "NNP"}
+    EXCLUDED_SUFFIXES = ("세요", "시오", "합니다", "했다", "된다", "됐다")
 
     for token in tokens:
         word = token.form.strip()
 
-        # 한 글자 제거 / 불용어 제거
         if len(word) <= 1 or word in STOPWORDS:
             continue
 
-        # 명사
-        if token.tag.startswith("N"):
+        if token.tag in ALLOWED_NOUN_TAGS:
+            if word.endswith(EXCLUDED_SUFFIXES):
+                continue
+
             results.append(word)
 
-        # 동사 / 형용사 → 어근 저장 (명사화 효과)
-        elif token.tag in ["VV", "VA"]:
-            results.append(word)
-
-        # 어근 / 명사파생
-        elif token.tag in ["XR", "XSN"]:
-            results.append(word)
-
-    # 중복 제거 (순서 유지)
     return list(dict.fromkeys(results))
 
 def advanced_clean_text(text: str) -> str:

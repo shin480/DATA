@@ -96,6 +96,51 @@ def get_search_summary(start_date: str, end_date: str):
         ]
 
         # =========================
+        # 5. 긍정/중립/부정 수집 비율
+        # 1차 분류가 완료된 news_economy 기준
+        # =========================
+        sentiment_query = {
+            "size": 0,
+            "query": {
+                "bool": {
+                    "must": [
+                        base_query,
+                        {
+                            "exists": {
+                                "field": "sentiment"
+                            }
+                        }
+                    ]
+                }
+            },
+            "aggs": {
+                "sentiment_stats": {
+                    "terms": {
+                        "field": "sentiment",
+                        "size": 10
+                    }
+                }
+            }
+        }
+
+        sentiment_res = es.search(
+            index="news_economy",
+            body=sentiment_query
+        )
+
+        sentiment_ratio = {
+            "positive": 0,
+            "neutral": 0,
+            "negative": 0
+        }
+
+        for bucket in sentiment_res["aggregations"]["sentiment_stats"]["buckets"]:
+            key = bucket["key"]
+
+            if key in sentiment_ratio:
+                sentiment_ratio[key] = bucket["doc_count"]
+
+        # =========================
         # 반환
         # =========================
         return {
@@ -105,7 +150,8 @@ def get_search_summary(start_date: str, end_date: str):
                 "processed": processed_count,
                 "removed": removed_count if removed_count > 0 else 0,
                 "press_stats": press_stats,
-                "scope_stats": scope_stats
+                "scope_stats": scope_stats,
+                "sentiment_ratio": sentiment_ratio
             }
         }
 
