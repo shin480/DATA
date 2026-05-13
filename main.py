@@ -1461,8 +1461,8 @@ def get_hot_news():
     }
 
 # =========================
-# 오늘의 지배적 여론
-# 최근 이슈 scope 5개 기준
+# 오늘의 주요 이슈 여론
+# 오늘의 핵심 키워드 관련 scope 5개 기준
 # scope별 감성 분포를 해석형 문장으로 변환
 # =========================
 
@@ -1566,7 +1566,7 @@ def get_scope_sentiment_distribution(es, scope_id: str):
 
 
 def make_dominant_opinion_sentence(
-    topic: str,
+    topic: str, # 얘 ai랑 무관함.
     positive: int,
     neutral: int,
     negative: int
@@ -1653,7 +1653,54 @@ def get_dominant_opinions():
     es = get_es()
 
     # =========================
-    # 1. 최근 기사 기준으로 중복 없는 scope 5개 추출
+    # 1. 오늘의 핵심 키워드 조회
+    # =========================
+    top_result = es.search(
+        index="daily_top_issue_report",
+        body={
+            "size": 1,
+            "sort": [
+                {
+                    "date": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    top_hits = top_result["hits"]["hits"]
+
+    if not top_hits:
+        return {
+            "opinions": [
+                {
+                    "title": "분석 가능한 여론 데이터가 아직 없습니다.",
+                    "keyword": "데이터 없음",
+                    "sentiment": "neutral"
+                }
+            ]
+        }
+
+    top_keyword = (
+        top_hits[0]["_source"]
+        .get("top_keyword", "")
+    )
+
+    if not top_keyword:
+        return {
+            "opinions": [
+                {
+                    "title": "오늘의 핵심 키워드 데이터를 불러오지 못했습니다.",
+                    "keyword": "데이터 없음",
+                    "sentiment": "neutral"
+                }
+            ]
+        }
+
+    # =========================
+    # 2. 핵심 키워드 관련 기사에서
+    #    중복 없는 scope 5개 추출
     # =========================
     recent_result = es.search(
         index=NEWS_ECONOMY_INDEX,
@@ -1664,8 +1711,25 @@ def get_dominant_opinions():
                 "published_at"
             ],
             "query": {
-                "exists": {
-                    "field": "scopeID"
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": top_keyword,
+                                "fields": [
+                                    "title^3",
+                                    "summary^2",
+                                    "keywords^4",
+                                    "clean_text"
+                                ]
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "scopeID"
+                            }
+                        }
+                    ]
                 }
             },
             "sort": [
@@ -1700,7 +1764,7 @@ def get_dominant_opinions():
     opinions = []
 
     # =========================
-    # 2. scope별 여론 해석문 생성
+    # 3. scope별 여론 해석문 생성
     # =========================
     for scope_id in scope_ids:
         try:
@@ -1720,6 +1784,7 @@ def get_dominant_opinions():
             or "해당 이슈"
         )
 
+        # 메인 한줄 요약 문장에서만 [게시판], [속보] 같은 말머리 제거
         display_scope_title = re.sub(
             r'^\[[^\]]+\]\s*',
             '',
@@ -1750,19 +1815,19 @@ def get_dominant_opinions():
         opinions.append({
             "scope_id": scope_id,
             "title": opinion_sentence,
-            "keyword": scope_keywords[0] if scope_keywords else "이슈 분석",
+            "keyword": scope_keywords[0] if scope_keywords else top_keyword,
             "sentiment": dominant
         })
 
     # =========================
-    # 3. 데이터 없을 때 기본값
+    # 4. 핵심 키워드 관련 scope가 없을 때 기본값
     # =========================
     if not opinions:
         return {
             "opinions": [
                 {
-                    "title": "분석 가능한 여론 데이터가 아직 없습니다.",
-                    "keyword": "데이터 없음",
+                    "title": f"{top_keyword} 관련 주요 이슈 여론을 아직 분석하지 못했습니다.",
+                    "keyword": top_keyword,
                     "sentiment": "neutral"
                 }
             ]
