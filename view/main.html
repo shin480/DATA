@@ -452,10 +452,26 @@ body {
   margin-top: 15px;
   padding: 6px 12px;
   border-radius: 8px;
-  background: rgba(244, 114, 114, 0.15);
-  color: #f47272;
   font-size: 12px;
   font-weight: 700;
+}
+
+/* 긍정 여론 우세 = 민트 */
+.status-badge.positive {
+  background: rgba(0, 229, 255, 0.15);
+  color: #00e5ff;
+}
+
+/* 부정 여론 우세 = 빨강 */
+.status-badge.negative {
+  background: rgba(244, 114, 114, 0.15);
+  color: #f47272;
+}
+
+/* 중립 여론 우세 = 노랑 */
+.status-badge.neutral {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
 }
 
 
@@ -600,6 +616,19 @@ body {
   line-height: 1.6;
   color: #e2e8f0;
   font-weight: 500;
+}
+
+.opinion-text {
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.opinion-text:hover {
+  color: #00e5ff;
+}
+
+body.light-mode .opinion-text:hover {
+  color: #4cb7d3;
 }
 
 .opinion-tags {
@@ -1720,6 +1749,21 @@ body.light-mode .footer-modal-btn {
   color: #06262b;
 }
 
+/* 라이트 모드 - 핵심 키워드 여론 우세 배지 */
+body.light-mode .status-badge.positive {
+  background: rgba(0, 188, 212, 0.14);
+  color: #00bcd4;
+}
+
+body.light-mode .status-badge.negative {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+body.light-mode .status-badge.neutral {
+  background: rgba(245, 158, 11, 0.14);
+  color: #d97706;
+}
 
 /* =========================================================
    14. 반응형
@@ -1829,7 +1873,7 @@ body.light-mode .footer-modal-btn {
       <!-- 오늘의 지배적 여론 -->
       <div class="card">
         <div class="section-title-wrap">
-          <span>관점 요약</span>
+          <span>한줄 요약</span>
           <h2>오늘의 지배적 여론</h2>
         </div>
 
@@ -2184,7 +2228,21 @@ function bindGlobalClickEvents() {
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
+    const opinionTextClick = e.target.closest(".opinion-text");
 
+    if (opinionTextClick) {
+      e.preventDefault();
+
+      const scopeId = opinionTextClick.dataset.scopeId;
+
+      if (!scopeId) return;
+
+      goLoginRequiredPage(
+        `/view/scope_detail.html?scope_id=${encodeURIComponent(scopeId)}`
+      );
+
+      return;
+    }
 
     if (themeToggleBtn) {
       e.preventDefault();
@@ -2596,6 +2654,18 @@ async function loadTopKeyword() {
 
     if (statusBadge) {
       statusBadge.innerText = data.status;
+
+      // 기존 색상 클래스 초기화
+      statusBadge.classList.remove("positive", "negative", "neutral");
+
+      // 우세 감성에 따라 배지 색상 적용
+      if (data.status === "긍정 여론 우세") {
+        statusBadge.classList.add("positive");
+      } else if (data.status === "부정 여론 우세") {
+        statusBadge.classList.add("negative");
+      } else {
+        statusBadge.classList.add("neutral");
+      }
     }
 
     updateGauge(".gauge-circle.pos", data.positive);
@@ -2706,6 +2776,7 @@ function renderOpinion() {
   const item = opinionList[opinionIndex];
 
   opinionText.innerText = item.title || "";
+  opinionText.dataset.scopeId = item.scope_id || "";
 
   if (tags[0]) {
     tags[0].innerText = item.keyword || "";
