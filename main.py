@@ -2257,6 +2257,137 @@ def get_rank1_count_map(es, keyword: str = ""):
     }
 
 
+# =========================================
+# 전체 기사 기준 2차 관점 분석 개요 API
+# 헤더 > 관점 분석(viewpoint_overview.html)용
+# =========================================
+@app.get("/api/viewpoints/overview")
+def get_viewpoint_overview():
+    es = get_es()
+
+    # =========================
+    # 전체 기사 기준 rank 1 관점별 기사 수 집계
+    # =========================
+    perspective_count = get_rank1_count_map(
+        es=es,
+        keyword=""
+    )
+
+    total_count = sum(perspective_count.values())
+
+    # =========================
+    # 그룹 정의
+    # 메인 핵심 키워드 관점 분석과 동일한 순서 유지
+    # =========================
+    group_map = {
+        "책임 소재": [
+            "정부 책임",
+            "기업 책임",
+            "개인 책임",
+            "외부 책임",
+            "복합 책임"
+        ],
+
+        "태도 및 감성": [
+            "비판적 태도",
+            "우려",
+            "기대",
+            "성과 예찬"
+        ],
+
+        "정보 전달 및 분석": [
+            "단순 전달",
+            "원인 분석",
+            "결과 분석",
+            "대응 분석",
+            "전망 분석"
+        ],
+
+        "정책 개입": [
+            "정부 개입 강조",
+            "시장 자율 강조"
+        ],
+
+        "환경 요인": [
+            "외부 요인(글로벌)",
+            "정책 요인(국내)"
+        ]
+    }
+
+    # =========================
+    # 프론트 카드 id 매핑
+    # viewpoint_overview.html에서도 main.html 카드 템플릿과 동일하게 사용 가능
+    # =========================
+    id_map = {
+        "정부 책임": "gov",
+        "개인 책임": "ind",
+        "복합 책임": "complex",
+        "기업 책임": "corp",
+        "외부 책임": "ext",
+
+        "기대": "exp",
+        "성과 예찬": "praise",
+        "비판적 태도": "crit",
+        "우려": "worry",
+
+        "결과 분석": "res",
+        "전망 분석": "fore",
+        "단순 전달": "simp",
+        "대응 분석": "resp",
+        "원인 분석": "cause",
+
+        "시장 자율 강조": "mkt",
+        "정부 개입 강조": "intr",
+        "정책 요인(국내)": "pol",
+        "외부 요인(글로벌)": "global"
+    }
+
+    # =========================
+    # 그룹별 데이터 생성
+    # =========================
+    groups = []
+    items_flat = []
+
+    for group_name, categories in group_map.items():
+        items = []
+
+        for category in categories:
+            count = perspective_count.get(category, 0)
+
+            percent = (
+                round((count / total_count) * 100)
+                if total_count else 0
+            )
+
+            item = {
+                "id": id_map.get(category, ""),
+                "title": category,
+                "percent": percent,
+                "count": count,
+                "reason": f"전체 기사 중 {category} 관점으로 분류된 기사 {count}건."
+            }
+
+            items.append(item)
+
+            if item["id"]:
+                items_flat.append(item)
+
+        groups.append({
+            "group": group_name,
+            "items": items
+        })
+
+    # =========================
+    # 최종 반환
+    # =========================
+    return {
+        "scope": "all_articles",
+        "title": "전체 기사 2차 관점 분석",
+        "total_count": total_count,
+        "items": items_flat,
+        "groups": groups
+    }
+
 def get_articles_by_perspective(
     es,
     es_category,
