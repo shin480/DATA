@@ -1470,6 +1470,10 @@ body {
   flex: 0 0 auto;
   cursor: pointer;
   background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
 }
 
 .meta-pill.active {
@@ -1520,27 +1524,29 @@ body {
 }
 
 .news-title-track {
-  width: 100%;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .news-title-item {
-  height: 46px;
-  display: block;
-  padding: 0 13px;
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 46px;
-  color: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+
+    height: 46px;        /* 너 JS에서 46px 쓰고 있음 */
+  display: flex;
+  align-items: center;
+}
+
 }
 
 .score-bar {
@@ -2133,6 +2139,126 @@ html.dark-transition *::after {
     background-color 0.18s ease,
     color 0.18s ease;
 }
+.article-tab-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.article-tab {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: #94a3b8;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.18s;
+}
+
+.article-tab:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* 다크모드 활성화 */
+.article-tab.active {
+  background: #4CB7D3;
+  color: #02131a;
+  border-color: #4CB7D3;
+}
+
+/* 라이트모드 */
+body.light-mode .article-tab {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #dbe4ee;
+}
+
+body.light-mode .article-tab:hover {
+  background: #e2e8f0;
+}
+
+/* 라이트모드 활성화 */
+body.light-mode .article-tab.active {
+  background: #34d6cc;
+  color: white;
+  border-color: #34d6cc;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* =========================
+   새로고침 버튼
+========================= */
+
+.random-keyword-btn {
+  border: none;
+  background: rgba(76,183,211,0.12);
+  color: #4CB7D3;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+.random-keyword-btn:hover {
+  background: rgba(76,183,211,0.2);
+}
+
+/* 라이트모드 */
+body.light-mode .random-keyword-btn {
+  background: rgba(52,214,204,0.12);
+  color: #34d6cc;
+}
+
+body.light-mode .random-keyword-btn:hover {
+  background: rgba(52,214,204,0.2);
+}
+
+  .news-title-item {
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.news-title-item:hover {
+  transform: translateY(-2px);
+
+
+  background: rgba(76, 183, 211, 0.10);
+  color: #4CB7D3;
+
+  box-shadow: 0 4px 12px rgba(76, 183, 211, 0.12);
+}
+
+/* 다크모드 */
+.news-title-item:hover {
+  color: #67e8f9;
+}
+
+/* 라이트모드 */
+body.light-mode .news-title-item:hover {
+  background: rgba(65, 191, 224, 0.10);
+  color: #41BFE0;
+  box-shadow: 0 4px 10px rgba(65, 191, 224, 0.10);
+}
+
+  .title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+  .random-keyword-btn {
+  margin-left: auto;
+}
 
 </style>
 </head>
@@ -2148,7 +2274,17 @@ html.dark-transition *::after {
 
       <section>
         <span class="keyword-badge">ECONOMY</span>
-        <h1 class="keyword-title" id="keywordTitle">금리</h1>
+        <div class="title-row">
+        <h1 class="keyword-title" id="keywordTitle">데이터 불러오는 중...</h1>
+<button
+    class="random-keyword-btn"
+    type="button"
+    onclick="reloadRandomKeyword()"
+  >
+    ↻ 다른 키워드
+  </button>
+
+</div>
         <p class="keyword-desc" id="keywordDesc"></p>
       </section>
 
@@ -2209,11 +2345,35 @@ html.dark-transition *::after {
         <div class="perspective-grid" id="perspectiveGrid"></div>
           <div id="loadTrigger"></div>
       </section>
+  </div>
 
-      <section>
-        <div class="reference-label">REFERENCE ARTICLES</div>
-        <div class="article-list" id="articleList"></div>
-      </section>
+  <div class="article-tab-content">
+
+<section>
+
+  <div class="article-tab-bar">
+
+    <button class="article-tab active" data-tab="normal">
+      일반 기사
+    </button>
+
+    <button class="article-tab" data-tab="ai">
+      AI 기사
+    </button>
+
+  </div>
+
+  <div class="article-tab-content">
+
+    <!-- 일반 기사 -->
+    <div class="article-list" id="articleList"></div>
+
+    <!-- AI 기사 -->
+    <div class="article-list hidden" id="aiArticleList"></div>
+
+  </div>
+
+</section>
     </div>
   </main>
 
@@ -2585,16 +2745,6 @@ function bindCommonSearch() {
     }
 
     if (e.key === "Escape") {
-      hideSearchSuggestions();
-    }
-  });
-
-  document.addEventListener("click", function (e) {
-    const searchWrap = document.querySelector(".main-search-wrap");
-
-    if (!searchWrap) return;
-
-    if (!searchWrap.contains(e.target)) {
       hideSearchSuggestions();
     }
   });
@@ -2999,7 +3149,12 @@ function renderPerspectives() {
         <div class="news-title-roller">
           <div class="news-title-track" id="titleTrack${index}">
             ${rollingArticles.map(article => `
-              <div class="news-title-item">${article.title}</div>
+              <div
+  class="news-title-item"
+  data-article-id="${article.article_id}"
+>
+  ${article.title}
+</div>
             `).join("")}
           </div>
         </div>
@@ -3094,42 +3249,107 @@ function checkPressArrow() {
 // Article Render
 // ==============================
 function renderArticles() {
+
   const list = document.getElementById("articleList");
 
   if (!list) return;
 
   if (!articles || articles.length === 0) {
+
     list.innerHTML = `
       <article class="article-card">
         <div>
           <div class="article-source">검색 결과 없음</div>
-          <h3 class="article-title">관련 기사가 없습니다.</h3>
-          <p class="article-desc">다른 키워드로 다시 검색해 주세요.</p>
+
+          <h3 class="article-title">
+            관련 기사가 없습니다.
+          </h3>
+
+          <p class="article-desc">
+            다른 키워드로 다시 검색해 주세요.
+          </p>
         </div>
       </article>
     `;
+
     return;
   }
 
-const visibleArticles = articles.slice(0, visibleArticleCount);
+  const visibleArticles =
+    articles.slice(0, visibleArticleCount);
 
-list.innerHTML = visibleArticles.map(article => `
-  <article class="article-card ${article.highlight ? "highlight" : ""}">
-    <div>
-      <div class="article-source">${article.source || "언론사 없음"}</div>
-      <h3 class="article-title">${article.title || "제목 없음"}</h3>
-      <p class="article-desc">${article.desc || "요약 정보가 없습니다."}</p>
-    </div>
+  list.innerHTML = visibleArticles.map(article => `
 
-    <button
-      class="original-btn article-detail-btn"
-      type="button"
-      data-article-id="${article.article_id || ""}"
-    >
-      원문 보기
-    </button>
-  </article>
-`).join("");
+    <article class="article-card">
+
+      <div>
+
+        <div class="article-source">
+          ${article.source || "언론사 없음"}
+        </div>
+
+        <h3 class="article-title">
+          ${article.title || "제목 없음"}
+        </h3>
+
+        <p class="article-desc">
+          ${article.desc || "요약 정보가 없습니다."}
+        </p>
+
+      </div>
+
+      <button
+        class="original-btn article-detail-btn"
+        type="button"
+        data-article-id="${article.article_id || ""}"
+      >
+        원문 보기
+      </button>
+
+    </article>
+
+  `).join("");
+}
+
+
+function renderAIArticles() {
+
+  const list =
+    document.getElementById("aiArticleList");
+
+  if (!list) return;
+
+  list.innerHTML = articles.map(article => `
+
+    <article class="article-card ai-card">
+
+      <div>
+
+        <div class="article-source">
+          [ AI분석 ]
+        </div>
+
+        <h3 class="article-title">
+          ${article.title || "제목 없음"}
+        </h3>
+
+        <p class="article-desc">
+          ${article.summary || article.desc || "AI 분석 결과입니다."}
+        </p>
+
+      </div>
+
+      <button
+        class="original-btn article-detail-btn"
+        type="button"
+        data-article-id="${article.article_id || ""}"
+      >
+        상세 보기
+      </button>
+
+    </article>
+
+  `).join("");
 }
 
 function openArticleDetail(articleId) {
@@ -3229,7 +3449,7 @@ function startRolling() {
       track.style.transform = `translateY(-${46 * current}px)`;
 
       if (current === realCount) {
-        updateActivePress(cardIndex, 0);  
+        updateActivePress(cardIndex, 0);
 
         setTimeout(() => {
           track.style.transition = "none";
@@ -3254,15 +3474,160 @@ window.movePressList = movePressList;
 window.selectPerspectiveArticle = selectPerspectiveArticle;
 
 // ==============================
+// 랜덤 키워드 새로고침 함수
+// ==============================
+window.reloadRandomKeyword = async function() {
+  try {
+    // 1. 서버로부터 새로운 랜덤 키워드를 가져옴
+    const res = await axios.get("/api/main/random-keyword");
+    const newKeyword = res.data.keyword;
+
+    if (newKeyword) {
+      // 2. 새로운 키워드 파라미터와 함께 페이지 이동 (새로고침 효과)
+      location.href = `/view/keyword_detail.html?keyword=${encodeURIComponent(newKeyword)}`;
+    } else {
+      showToast("새로운 키워드를 찾을 수 없습니다.");
+    }
+  } catch (error) {
+    console.error("랜덤 키워드 로드 실패:", error);
+    // 서버 통신 실패 시 단순히 현재 페이지 새로고침
+    location.reload();
+  }
+};
+
+function bindArticleTabs() {
+
+  const tabs =
+    document.querySelectorAll(".article-tab");
+
+  const normalList =
+    document.getElementById("articleList");
+
+  const aiList =
+    document.getElementById("aiArticleList");
+
+  if (!tabs.length || !normalList || !aiList) {
+    return;
+  }
+
+  tabs.forEach(tab => {
+
+    tab.addEventListener("click", function () {
+
+      const target = tab.dataset.tab;
+
+      tabs.forEach(t => {
+        t.classList.remove("active");
+      });
+
+      tab.classList.add("active");
+
+      if (target === "normal") {
+
+        normalList.classList.remove("hidden");
+        aiList.classList.add("hidden");
+
+      } else {
+
+        normalList.classList.add("hidden");
+        aiList.classList.remove("hidden");
+
+        renderAIArticles();
+      }
+
+    });
+
+  });
+
+}
+
+// ==============================
 // 최초 실행
 // ==============================
 document.addEventListener("DOMContentLoaded", function () {
   readKeywordFromUrl();
 
+  bindArticleTabs();
+
   window.addEventListener("resize", checkPressArrow);
 
   window.addEventListener("scroll", handleInfiniteScroll);
 });
+
+document.addEventListener("click", function (e) {
+
+const card = e.target.closest(".article-card");
+  const btn = e.target.closest(".article-detail-btn");
+
+  if (btn) {
+    const articleId = btn.dataset.articleId;
+    if (!articleId) return showToast("기사 ID 없음");
+
+    openArticleDetail(articleId);
+    return;
+  }
+
+  if (card) {
+    const btnInside = card.querySelector(".article-detail-btn");
+    if (!btnInside) return;
+
+    const articleId = btnInside.dataset.articleId;
+    if (!articleId) return showToast("기사 ID 없음");
+
+    openArticleDetail(articleId);
+    return;
+  }
+
+  // =========================
+  // 1. 롤링 뉴스 클릭
+  // =========================
+  const newsItem = e.target.closest(".news-title-item");
+  if (newsItem) {
+    const articleId = newsItem.dataset.articleId;
+
+    if (!articleId) {
+      showToast("기사 ID가 없습니다.");
+      return;
+    }
+
+    location.href =
+      `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
+
+    return;
+  }
+
+  // =========================
+  // 2. 기사 카드 버튼 클릭
+  // =========================
+  const articleBtn = e.target.closest(".article-detail-btn");
+  if (articleBtn) {
+    const articleId = articleBtn.dataset.articleId;
+
+    if (!articleId) {
+      showToast("기사 ID가 없습니다.");
+      return;
+    }
+
+    openArticleDetail(articleId);
+    return;
+  }
+
+  // =========================
+  // 3. (선택) chip 클릭
+  // =========================
+  const chip = e.target.closest(".chip");
+  if (chip) {
+    const keyword = chip.innerText.trim();
+
+    goLoginRequiredPage(
+      `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+    );
+
+    return;
+  }
+
+});
+
 </script>
 </body>
 </html>
