@@ -1292,12 +1292,13 @@ def get_top_keyword():
         status = "부정 여론 우세"
 
     # =========================
-    # 1위 키워드와 관련된 scope 찾기
+    # 1위 키워드 관련 주요 키워드 추출
     # =========================
+
     scope_result = es.search(
         index=NEWS_ECONOMY_INDEX,
         body={
-            "size": 1,
+            "size": 30,
             "_source": ["scopeID"],
             "query": {
                 "bool": {
@@ -1331,12 +1332,35 @@ def get_top_keyword():
         }
     )
 
-    chips = []
-
     scope_hits = scope_result["hits"]["hits"]
 
-    if scope_hits:
-        scope_id = scope_hits[0]["_source"].get("scopeID")
+    keyword_counter = {}
+
+    STOPWORDS = {
+        "기자", "뉴스", "관련", "오늘",
+        "co", "kr", "니다", "습니다"
+    }
+
+    INVALID_KEYWORDS = {
+        "은", "는", "이", "가",
+        "을", "를", "에", "의",
+        "및", "등", "속", "후"
+    }
+
+    visited_scope_ids = set()
+
+    for hit in scope_hits:
+
+        scope_id = hit["_source"].get("scopeID")
+
+        if not scope_id:
+            continue
+
+        # 중복 scope 제거
+        if scope_id in visited_scope_ids:
+            continue
+
+        visited_scope_ids.add(scope_id)
 
         try:
             scope_doc = es.get(
@@ -1357,14 +1381,57 @@ def get_top_keyword():
                     if keyword.strip()
                 ]
 
-            chips = [
-                keyword
-                for keyword in keyword_list
-                if keyword != top_keyword
-            ][:5]
+            for keyword in keyword_list:
+
+                # 자기 자신 제거
+                if keyword == top_keyword:
+                    continue
+
+                # 불용어 제거
+                if keyword in STOPWORDS:
+                    continue
+
+                # 조사/의미 없는 단어 제거
+                if keyword in INVALID_KEYWORDS:
+                    continue
+
+                # 숫자 제거
+                if keyword.isdigit():
+                    continue
+
+                keyword_counter[keyword] = (
+                        keyword_counter.get(keyword, 0) + 1
+                )
 
         except Exception as e:
-            print("news_scopes 관련 키워드 조회 실패:", e)
+            print("scope 조회 실패:", e)
+
+    sorted_keywords = sorted(
+        keyword_counter.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    chips = []
+
+    total_length = 0
+    MAX_TOTAL_LENGTH = 32
+
+    for keyword, _ in sorted_keywords:
+
+        keyword_length = len(keyword)
+
+        # 총 글자 수 제한
+        if total_length + keyword_length > MAX_TOTAL_LENGTH:
+            break
+
+        chips.append(keyword)
+
+        total_length += keyword_length
+
+        # 최대 6개 제한
+        if len(chips) >= 6:
+            break
 
     return {
         "keyword": top_keyword,
@@ -1374,6 +1441,7 @@ def get_top_keyword():
         "status": status,
         "chips": chips
     }
+
 # =========================
 # 지금 뜨는 뉴스 - 최근 1시간 반응순
 # =========================
