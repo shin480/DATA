@@ -1,3 +1,4 @@
+from typing import Dict
 from datetime import datetime
 from util.db import get_engine
 from sqlalchemy import text
@@ -244,3 +245,96 @@ def get_user_usage_stats():
 
     finally:
         db.close()
+
+def change_user_role(info:Dict[str,str]):
+    user_id = (info.get("user_id") or "").strip()
+    new_role = (info.get("role") or "").strip().lower()
+
+    # 허용 권한 체크
+    allowed_roles = {"general", "admin", "superadmin"}
+
+    if not user_id:
+        return {
+            "success": False,
+            "message": "user_id가 필요합니다."
+        }
+
+    if new_role not in allowed_roles:
+        return {
+            "success": False,
+            "message": "유효하지 않은 권한입니다."
+        }
+
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        # 대상 유저 존재 여부 확인
+        user_check_sql = text("""
+                SELECT user_id, role
+                FROM users
+                WHERE user_id = :user_id
+                LIMIT 1
+            """)
+
+        user_result = conn.execute(
+            user_check_sql,
+            {"user_id": user_id}
+        ).mappings().first()
+
+        if not user_result:
+            return {
+                "success": False,
+                "message": "존재하지 않는 사용자입니다."
+            }
+
+        old_role = user_result["role"]
+
+        # 동일 권한이면 업데이트 안 함
+        if old_role == new_role:
+            return {
+                "success": True,
+                "message": "이미 동일한 권한입니다.",
+                "user_id": user_id,
+                "old_role": old_role,
+                "new_role": new_role
+            }
+
+        # 권한 변경
+        update_sql = text("""
+                UPDATE users
+                SET role = :role
+                WHERE user_id = :user_id
+            """)
+
+        conn.execute(
+            update_sql,
+            {
+                "role": new_role,
+                "user_id": user_id
+            }
+        )
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "권한이 성공적으로 변경되었습니다.",
+            "user_id": user_id,
+            "old_role": old_role,
+            "new_role": new_role
+        }
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+
+        return {
+            "success": False,
+            "message": f"권한 변경 중 오류 발생: {str(e)}"
+        }
+
+    finally:
+        if conn:
+            conn.close()
