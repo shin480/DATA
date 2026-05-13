@@ -3066,7 +3066,7 @@ def get_scope_stats():
         "scopes": scopes
     }
 
-@app.get("/change_role")
+@app.post("/change_role")
 def change_role(info:Dict[str,str]):
     return change_user_role(info)
 
