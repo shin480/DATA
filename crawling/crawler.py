@@ -16,11 +16,11 @@ logger = Logger().get_logger(__name__)
 es = get_es()
 
 # INDEX_NAME = "test_article_raw"
-INDEX_NAME = "article_raw"
+INDEX_NAME = "test_article_raw"
 CODE_ID = "C101"
 
 # 운영 모드 : False 테스트 모드 : True
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
@@ -129,6 +129,24 @@ def save_process_log(job_id, status, article_id=None):
         db.commit()
 
         return result.lastrowid
+
+    finally:
+        db.close()
+
+def save_article_meta(article_id):
+    db = get_engine()
+
+    try:
+        sql = text("""
+            INSERT IGNORE INTO article_meta (article_id)
+            VALUES (:article_id)
+        """)
+
+        db.execute(sql, {
+            "article_id": article_id
+        })
+
+        db.commit()
 
     finally:
         db.close()
@@ -359,8 +377,8 @@ async def parse_rss_feed(rss_url: str, media_name: str, job_id):
 
                 pub_date = parsedate_to_datetime(entry.published)
 
-                if not is_valid_date(pub_date):
-                    continue
+                # if not is_valid_date(pub_date):
+                #     continue
 
                 detail = await get_article_details(client, link)
 
@@ -399,12 +417,6 @@ async def parse_rss_feed(rss_url: str, media_name: str, job_id):
                     raise ValueError("필수값 누락 기사")
 
                 results.append(news)
-
-                save_process_log(
-                    job_id=job_id,
-                    status="success",
-                    article_id=None
-                )
 
             except Exception as e:
                 fail_count += 1
@@ -487,8 +499,8 @@ async def crawl_naver(job_id, pages=50):
                     if not detail["published_at"]:
                         continue
 
-                    if not is_valid_date(detail["published_at"]):
-                        continue
+                    # if not is_valid_date(detail["published_at"]):
+                    #     continue
 
                     has_valid_article = True
 
@@ -512,12 +524,6 @@ async def crawl_naver(job_id, pages=50):
                         raise ValueError("필수값 누락 기사")
 
                     results.append(news)
-
-                    save_process_log(
-                        job_id=job_id,
-                        status="success",
-                        article_id=None
-                    )
 
                 except Exception as e:
                     fail_count += 1
@@ -561,6 +567,18 @@ async def run_crawling_job():
     logger.info(f"총 수집 대상: {len(all_data)}건")
 
     success_count, es_fail_count = save_bulk_to_es(all_data)
+
+    if success_count > 0:
+        for news in all_data:
+            article_id = news["article_id"]
+
+            save_article_meta(article_id)
+
+            save_process_log(
+                job_id=job_id,
+                status="success",
+                article_id=article_id
+            )
 
     total_fail_count += es_fail_count
 
