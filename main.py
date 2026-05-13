@@ -3269,15 +3269,15 @@ def get_analysis_logs(
         if article_id:
             try:
                 result = es.get(
-                    index=NEWS_ECONOMY_INDEX,
+                    index="news_economy",
                     id=str(article_id)
                 )
 
                 source = result["_source"]
 
-                title = source.get("title", "기사 제목 없음")
+                title = source.get("title") or "기사 제목 없음"
 
-                sentiment = source.get("sentiment", "-")
+                sentiment = source.get("sentiment") or "-"
 
                 if sentiment == "positive":
                     first = "긍정"
@@ -3288,10 +3288,19 @@ def get_analysis_logs(
                 else:
                     first = sentiment
 
-                perspectives = source.get("perspective", [])
+                perspective = source.get("perspective")
 
-                if perspectives:
-                    second = perspectives[0].get("category", "-")
+                if isinstance(perspective, list) and len(perspective) > 0:
+                    if isinstance(perspective[0], dict):
+                        second = perspective[0].get("category", "-")
+                    else:
+                        second = str(perspective[0])
+
+                elif isinstance(perspective, dict):
+                    second = perspective.get("category", "-")
+
+                elif isinstance(perspective, str):
+                    second = perspective
 
             except Exception as e:
                 print("분석 로그 기사 조회 실패:", article_id, e)

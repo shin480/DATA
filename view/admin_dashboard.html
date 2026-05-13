@@ -747,12 +747,20 @@ td[title] {
 
 .analysis-table th:nth-child(1),
 .analysis-table td:nth-child(1){
-  width:80px;
+  width:220px;
+  white-space:nowrap;
 }
 
 .analysis-table th:nth-child(2),
 .analysis-table td:nth-child(2){
-  width:240px;
+  width:320px;
+  padding-left:20px;
+}
+
+.analysis-table td:nth-child(2){
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
 .analysis-table th:nth-child(3),
