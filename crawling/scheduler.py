@@ -1,5 +1,5 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from crawler import run_crawling_job
+from crawling.crawler import run_crawling_job
 
 
 def get_scheduler():
@@ -13,7 +13,8 @@ def get_scheduler():
         minute=0,
         id="daily_news_crawling",
         replace_existing=True,
-        max_instances=1
+        max_instances=1,
+        misfire_grace_time=300
     )
 
     return sch
