@@ -3555,3 +3555,80 @@ def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = "")
 @app.get("/admin_trends") # 이용자 그래프
 def admin_trends(start_date: str = "", end_date: str = ""):
     return get_admin_trends(start_date, end_date)
+
+@app.get("/api/admin/logs")
+def get_admin_logs(
+    admin_id: str = "",
+    action_code: str = "",
+    log_date: str = ""
+):
+    db = get_engine()
+
+    where = []
+    params = {}
+
+    if admin_id:
+        where.append("al.admin_id LIKE :admin_id")
+        params["admin_id"] = f"%{admin_id}%"
+
+    if action_code:
+        where.append("al.action_code = :action_code")
+        params["action_code"] = action_code
+
+    if log_date:
+        where.append("DATE(al.created_at) = :log_date")
+        params["log_date"] = log_date
+
+    where_sql = ""
+    if where:
+        where_sql = "WHERE " + " AND ".join(where)
+
+    try:
+        rows = db.execute(
+            text(f"""
+                SELECT
+                    al.log_id,
+                    al.admin_id,
+                    al.action_code,
+                    al.action_detail,
+                    al.created_at
+                FROM admin_logs al
+                {where_sql}
+                ORDER BY al.created_at DESC
+                LIMIT 100
+            """),
+            params
+        ).mappings().all()
+
+        action_name_map = {
+            "ADMIN_LOGIN": "관리자 로그인",
+            "BANNER_CREATE": "배너 등록",
+            "BANNER_DELETE": "배너 삭제",
+            "BANNER_UPDATE": "배너 수정",
+            "BATCH_RETRY": "배치 재실행",
+            "BATCH_RUN": "배치 수동 실행",
+            "TERMS_CREATE": "약관 등록",
+            "TERMS_UPDATE": "약관 수정",
+            "USER_STATUS_UPDATE": "회원 상태 변경"
+        }
+
+        logs = []
+
+        for row in rows:
+            logs.append({
+                "date": str(row["created_at"])[:19],
+                "admin": row["admin_id"],
+                "action": action_name_map.get(
+                    row["action_code"],
+                    row["action_code"]
+                ),
+                "content": row["action_detail"] or "-"
+            })
+
+        return {
+            "success": True,
+            "logs": logs
+        }
+
+    finally:
+        db.close()
