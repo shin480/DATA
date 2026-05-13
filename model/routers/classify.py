@@ -305,6 +305,14 @@ def get_scope(scope_id: str):
         neutral =raw.get("neutral",  0.0),
     )
 
+    raw_kw = src.get("scope_keywords")
+    if isinstance(raw_kw, str):
+        scope_keywords = [k.strip() for k in raw_kw.split(",") if k.strip()]
+    elif isinstance(raw_kw, list):
+        scope_keywords = raw_kw
+    else:
+        scope_keywords = None
+
     return ScopeOut(
         scopeID         = src.get("scopeID", scope_id),
         scopeTitle      = src.get("scopeTitle"),
@@ -312,7 +320,7 @@ def get_scope(scope_id: str):
         sentiment_score = src.get("sentiment_score"),
         sentiment_dist  = dist,
         news_count      = src.get("news_count"),
-        scope_keywords  = src.get("scope_keywords"),
+        scope_keywords  = scope_keywords,
         scope_summary   = src.get("scope_summary"),
         created_at      = src.get("created_at"),
         updated_at      = src.get("updated_at"),
