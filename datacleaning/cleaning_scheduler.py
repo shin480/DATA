@@ -53,8 +53,8 @@ def get_preprocess_scheduler():
     sch.add_job(
         get_preprocessed_data,
         'cron',
-        hour=10,
-        minute=22,
+        hour=0,
+        minute=30,
         id='daily_preprocess'
     )
 

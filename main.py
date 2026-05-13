@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, Optional, Any
 import os
 import uuid
 
@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role
+from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup

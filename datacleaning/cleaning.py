@@ -21,10 +21,15 @@ DEBUG_MODE = False
 target_index = "news_economy"
 
 def kiwi_noun_tokenizer(text: str) -> list[str]:  # 키위 토크나이저 (명사 + 용언 명사화)
+    # 키위 토크나이저 (복합명사 유지 + 명사만 추출)
     if not text:
         return []
 
-    tokens = kiwi.tokenize(text)
+    # 복합명사 분해 최소화
+    tokens = kiwi.tokenize(
+        text,
+        split_complex=False
+    )
 
     results = []
 
@@ -35,16 +40,8 @@ def kiwi_noun_tokenizer(text: str) -> list[str]:  # 키위 토크나이저 (명�
         if len(word) <= 1 or word in STOPWORDS:
             continue
 
-        # 명사
+        # 명사만 허용
         if token.tag.startswith("N"):
-            results.append(word)
-
-        # 동사 / 형용사 → 어근 저장 (명사화 효과)
-        elif token.tag in ["VV", "VA"]:
-            results.append(word)
-
-        # 어근 / 명사파생
-        elif token.tag in ["XR", "XSN"]:
             results.append(word)
 
     # 중복 제거 (순서 유지)

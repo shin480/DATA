@@ -1,6 +1,8 @@
 from typing import Dict
+from collections import defaultdict
 from datetime import datetime
 from util.db import get_engine
+from util.es import get_es
 from sqlalchemy import text
 from zoneinfo import ZoneInfo
 
@@ -333,6 +335,127 @@ def change_user_role(info:Dict[str,str]):
         return {
             "success": False,
             "message": f"권한 변경 중 오류 발생: {str(e)}"
+        }
+
+    finally:
+        if conn:
+            conn.close()
+
+def get_press_reaction(info: dict):
+    start_date = (info.get("start_date") or "").strip()
+    end_date = (info.get("end_date") or "").strip()
+
+    conn = None
+
+    try:
+        conn = get_engine()
+        es = get_es()
+
+        sql = text("""
+                SELECT
+                    article_id,
+                    SUM(view_count) AS views,
+                    SUM(like_count) AS likes
+                FROM (
+                    SELECT
+                        article_id,
+                        COUNT(*) AS view_count,
+                        0 AS like_count
+                    FROM article_views
+                    WHERE (:start_date = '' OR DATE(created_at) >= :start_date)
+                      AND (:end_date = '' OR DATE(created_at) <= :end_date)
+                    GROUP BY article_id
+
+                    UNION ALL
+
+                    SELECT
+                        article_id,
+                        0 AS view_count,
+                        COUNT(*) AS like_count
+                    FROM article_reactions
+                    WHERE reaction_type = 'like'
+                      AND (:start_date = '' OR DATE(created_at) >= :start_date)
+                      AND (:end_date = '' OR DATE(created_at) <= :end_date)
+                    GROUP BY article_id
+                ) t
+                GROUP BY article_id
+            """)
+
+        rows = conn.execute(
+            sql,
+            {
+                "start_date": start_date,
+                "end_date": end_date
+            }
+        ).mappings().all()
+
+        if not rows:
+            return {
+                "success": True,
+                "data": []
+            }
+
+        article_stats = {
+            row["article_id"]: {
+                "views": int(row["views"] or 0),
+                "likes": int(row["likes"] or 0)
+            }
+            for row in rows
+        }
+
+        article_ids = list(article_stats.keys())
+
+        press_stats = defaultdict(lambda: {"views": 0, "likes": 0})
+
+        batch_size = 500
+
+        for i in range(0, len(article_ids), batch_size):
+            batch_ids = article_ids[i:i + batch_size]
+
+            es_res = es.search(
+                index="news_economy",
+                body={
+                    "size": len(batch_ids),
+                    "_source": ["article_id", "press"],
+                    "query": {
+                        "terms": {
+                            "article_id": batch_ids
+                        }
+                    }
+                }
+            )
+
+            for hit in es_res["hits"]["hits"]:
+                src = hit["_source"]
+                article_id = src.get("article_id")
+                press = src.get("press") or "-"
+
+                if article_id not in article_stats:
+                    continue
+
+                press_stats[press]["views"] += article_stats[article_id]["views"]
+                press_stats[press]["likes"] += article_stats[article_id]["likes"]
+
+        data = [
+            {
+                "press": press,
+                "views": values["views"],
+                "likes": values["likes"]
+            }
+            for press, values in press_stats.items()
+        ]
+
+        data.sort(key=lambda x: (x["views"], x["likes"]), reverse=True)
+
+        return {
+            "success": True,
+            "data": data
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"언론사 반응도 조회 중 오류 발생: {str(e)}"
         }
 
     finally:
