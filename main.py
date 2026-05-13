@@ -2558,12 +2558,22 @@ def get_viewpoint_detail(
     selected_master = None
 
     if viewpoint:
+        # 1. 화면 표시명 기준으로 먼저 찾기
+        # 예: "개인 관점", "정부 관점"
         selected_master = title_to_master.get(viewpoint)
 
+        # 2. 못 찾으면 ES 실제 category 기준으로 다시 찾기
+        # 예: "개인 책임", "정부 책임", "결과 분석"
+        if selected_master is None:
+            selected_master = es_to_master.get(viewpoint)
+
+    # viewpoint가 없거나, 위 두 방식 모두 실패했을 때만
+    # 전체 기사 기준 최다 관점을 기본값으로 선택
     if selected_master is None and es_count_map:
         top_es_category = max(es_count_map, key=es_count_map.get)
         selected_master = es_to_master.get(top_es_category)
 
+    # 그래도 없으면 마스터 첫 번째 항목
     if selected_master is None:
         selected_master = master_items[0]
 
