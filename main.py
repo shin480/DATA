@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Any
 import os
 import uuid
+import re
 
 from fastapi import FastAPI, Query, UploadFile, File
 from starlette.requests import Request
@@ -240,50 +241,27 @@ def get_keyword_detail(keyword: str):
     body = {
         "size": 50,
         "query": {
-            "bool": {
-                "should": [
-                    {
-                        "match_phrase": {
-                            "title": {
-                                "query": keyword,
-                                "boost": 5
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "summary": {
-                                "query": keyword,
-                                "boost": 3
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "keywords": {
-                                "query": keyword,
-                                "boost": 4
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "clean_text": {
-                                "query": keyword,
-                                "boost": 1
-                            }
-                        }
-                    }
-                ],
-                "minimum_should_match": 1
+            "wildcard": {
+                "keywords": {
+                    "value": f"*{keyword}*",
+                    "case_insensitive": True
+                }
+            }
+        },
+        "aggs": {
+            "sentiment_counts": {
+                "terms": {
+                    "field": "sentiment",
+                    "size": 10
+                }
+            },
+            "scope_count": {
+                "cardinality": {
+                    "field": "scopeID"
+                }
             }
         },
         "sort": [
-            {
-                "_score": {
-                    "order": "desc"
-                }
-            },
             {
                 "published_at": {
                     "order": "desc"
@@ -298,89 +276,69 @@ def get_keyword_detail(keyword: str):
     )
 
     hits = result["hits"]["hits"]
-
     total_count = result["hits"]["total"]["value"]
-    # =========================
-    # scope 개수 계산
-    # =========================
-    scope_set = set()
 
-    for hit in hits:
-
-        source = hit["_source"]
-
-        scope_id = source.get("scopeID")
-
-        if scope_id:
-            scope_set.add(scope_id)
-
-    ai_count = len(scope_set)
-
-    # =========================
-    # 검색 결과 없을 때
-    # =========================
     if total_count == 0:
-
         return {
             "category": "ECONOMY",
             "keyword": keyword,
-
             "pressCount": 0,
-
             "summary": f"{keyword} 관련 뉴스 데이터가 없습니다.",
-
             "aiCount": 0,
-
             "newsCount": 0,
-
             "flow": "데이터 없음",
-
             "sentiment": {
                 "positive": 0,
                 "neutral": 0,
                 "negative": 0
             },
-
             "articles": []
         }
 
     # =========================
-    # 감성 계산
+    # 감성 집계: 전체 검색 결과 기준
     # =========================
+    buckets = result.get("aggregations", {}) \
+        .get("sentiment_counts", {}) \
+        .get("buckets", [])
+
     positive_count = 0
     neutral_count = 0
     negative_count = 0
 
-    press_set = set()
+    for bucket in buckets:
+        key = bucket["key"]
+        count = bucket["doc_count"]
 
+        if key == "positive":
+            positive_count = count
+        elif key == "negative":
+            negative_count = count
+        elif key == "neutral":
+            neutral_count = count
+
+    # =========================
+    # scope 개수: 전체 검색 결과 기준
+    # =========================
+    ai_count = result.get("aggregations", {}) \
+        .get("scope_count", {}) \
+        .get("value", 0)
+
+    # =========================
+    # 기사 리스트 생성: 상위 50개만 표시
+    # =========================
+    press_set = set()
     articles = []
 
-    # =========================
-    # 기사 리스트 생성
-    # =========================
     for hit in hits:
-
         source = hit["_source"]
 
         press = source.get("press", "언론사 없음")
-
         sentiment = source.get("sentiment", "neutral")
 
         press_set.add(press)
 
-        # 감성 카운트
-        if sentiment == "positive":
-            positive_count += 1
-
-        elif sentiment == "negative":
-            negative_count += 1
-
-        else:
-            neutral_count += 1
-
-        # 기사 리스트
         articles.append({
-
             "article_id": source.get("article_id", ""),
 
             "source": press,
@@ -422,12 +380,11 @@ def get_keyword_detail(keyword: str):
     first_article = hits[0]["_source"]
 
     # =========================
-    # 여론 흐름 계산
+    # 여론 흐름 계산: 상위 50개 기준
     # =========================
     perspective_count = {}
 
     for hit in hits:
-
         source = hit["_source"]
 
         perspectives = source.get("perspective", [])
@@ -453,11 +410,7 @@ def get_keyword_detail(keyword: str):
     else:
         flow = "관점 분석 없음"
 
-    # =========================
-    # 최종 반환
-    # =========================
     return {
-
         "category": "ECONOMY",
 
         "keyword": keyword,
@@ -475,11 +428,8 @@ def get_keyword_detail(keyword: str):
         "flow": flow,
 
         "sentiment": {
-
             "positive": positive_percent,
-
             "neutral": neutral_percent,
-
             "negative": negative_percent
         },
 
@@ -1511,30 +1461,207 @@ def get_hot_news():
     }
 
 # =========================
-# 오늘의 지배적 여론
+# 오늘의 주요 이슈 여론
+# 오늘의 핵심 키워드 관련 scope 5개 기준
+# scope별 감성 분포를 해석형 문장으로 변환
 # =========================
+
+def normalize_opinion_sentiment(sentiment: str) -> str:
+    if sentiment in ["positive", "긍정"]:
+        return "positive"
+
+    if sentiment in ["negative", "부정"]:
+        return "negative"
+
+    return "neutral"
+
+
+def parse_scope_keyword_list(raw_keywords):
+    if not raw_keywords:
+        return []
+
+    if isinstance(raw_keywords, list):
+        return [
+            str(keyword).strip()
+            for keyword in raw_keywords
+            if str(keyword).strip()
+        ]
+
+    return [
+        keyword.strip()
+        for keyword in str(raw_keywords).split(",")
+        if keyword.strip()
+    ]
+
+
+def get_scope_sentiment_distribution(es, scope_id: str):
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 0,
+            "query": {
+                "term": {
+                    "scopeID": scope_id
+                }
+            },
+            "aggs": {
+                "sentiment_group": {
+                    "terms": {
+                        "field": "sentiment",
+                        "size": 10
+                    }
+                }
+            }
+        }
+    )
+
+    buckets = (
+        result
+        .get("aggregations", {})
+        .get("sentiment_group", {})
+        .get("buckets", [])
+    )
+
+    counts = {
+        "positive": 0,
+        "neutral": 0,
+        "negative": 0
+    }
+
+    for bucket in buckets:
+        sentiment = normalize_opinion_sentiment(bucket.get("key"))
+        counts[sentiment] += bucket.get("doc_count", 0)
+
+    total = sum(counts.values())
+
+    if total == 0:
+        return {
+            "positive": 0,
+            "neutral": 0,
+            "negative": 0,
+            "dominant": "neutral"
+        }
+
+    positive = round((counts["positive"] / total) * 100)
+    neutral = round((counts["neutral"] / total) * 100)
+    negative = 100 - positive - neutral
+
+    percent_map = {
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative
+    }
+
+    dominant = max(
+        percent_map,
+        key=percent_map.get
+    )
+
+    return {
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative,
+        "dominant": dominant
+    }
+
+
+def make_dominant_opinion_sentence(
+    topic: str, # 얘 ai랑 무관함.
+    positive: int,
+    neutral: int,
+    negative: int
+) -> str:
+    topic = topic or "해당 이슈"
+
+    percent_map = {
+        "positive": positive,
+        "neutral": neutral,
+        "negative": negative
+    }
+
+    sorted_sentiments = sorted(
+        percent_map.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )
+
+    dominant_sentiment, dominant_percent = sorted_sentiments[0]
+    second_sentiment, second_percent = sorted_sentiments[1]
+
+    # =========================
+    # 긍정 우세
+    # =========================
+    if dominant_sentiment == "positive":
+        if second_percent >= 20:
+            if second_sentiment == "neutral":
+                return (
+                    f"{topic} 이슈는 긍정적 기대와 우호적 평가가 가장 많이 나타나며, "
+                    f"중립적 전달도 함께 확인됩니다."
+                )
+
+            return (
+                f"{topic} 이슈는 긍정적 기대와 우호적 평가가 가장 많이 나타나며, "
+                f"일부 우려의 시각도 함께 확인됩니다."
+            )
+
+        return (
+            f"{topic} 이슈는 긍정적 기대와 우호적 평가가 뚜렷하게 나타납니다."
+        )
+
+    # =========================
+    # 부정 우세
+    # =========================
+    if dominant_sentiment == "negative":
+        if second_percent >= 20:
+            if second_sentiment == "neutral":
+                return (
+                    f"{topic} 이슈는 우려와 비판적 해석이 가장 많이 나타나며, "
+                    f"중립적 전달도 함께 확인됩니다."
+                )
+
+            return (
+                f"{topic} 이슈는 우려와 비판적 해석이 가장 많이 나타나며, "
+                f"일부 긍정적 기대도 함께 확인됩니다."
+            )
+
+        return (
+            f"{topic} 이슈는 우려와 비판적 해석이 뚜렷하게 나타납니다."
+        )
+
+    # =========================
+    # 중립 우세
+    # =========================
+    if second_percent >= 20:
+        if second_sentiment == "positive":
+            return (
+                f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 가장 많이 나타나며, "
+                f"긍정적 기대를 담은 해석도 일부 확인됩니다."
+            )
+
+        return (
+            f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 가장 많이 나타나며, "
+            f"부정적 우려를 담은 해석도 일부 확인됩니다."
+        )
+
+    return (
+        f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 우세하게 나타납니다."
+    )
+
+
 @app.get("/api/main/dominant-opinions")
 def get_dominant_opinions():
     es = get_es()
 
-    result = es.search(
-        index=NEWS_ECONOMY_INDEX,
+    # =========================
+    # 1. 오늘의 핵심 키워드 조회
+    # =========================
+    top_result = es.search(
+        index="daily_top_issue_report",
         body={
-            "size": 5,
-            "_source": [
-                "title",
-                "summary",
-                "keywords",
-                "sentiment",
-                "perspective",
-                "published_at"
-            ],
-            "query": {
-                "match_all": {}
-            },
+            "size": 1,
             "sort": [
                 {
-                    "published_at": {
+                    "date": {
                         "order": "desc"
                     }
                 }
@@ -1542,33 +1669,173 @@ def get_dominant_opinions():
         }
     )
 
+    top_hits = top_result["hits"]["hits"]
+
+    if not top_hits:
+        return {
+            "opinions": [
+                {
+                    "title": "분석 가능한 여론 데이터가 아직 없습니다.",
+                    "keyword": "데이터 없음",
+                    "sentiment": "neutral"
+                }
+            ]
+        }
+
+    top_keyword = (
+        top_hits[0]["_source"]
+        .get("top_keyword", "")
+    )
+
+    if not top_keyword:
+        return {
+            "opinions": [
+                {
+                    "title": "오늘의 핵심 키워드 데이터를 불러오지 못했습니다.",
+                    "keyword": "데이터 없음",
+                    "sentiment": "neutral"
+                }
+            ]
+        }
+
+    # =========================
+    # 2. 핵심 키워드 관련 기사에서
+    #    중복 없는 scope 5개 추출
+    # =========================
+    recent_result = es.search(
+        index="news_scopes",
+        body={
+            "size": 5,
+            "_source": [
+                "scopeID",
+                "scopeTitle",
+                "scope_keywords",
+                "sentiment_dist",
+                "updated_at",
+                "news_count"
+            ],
+            "query": {
+                "wildcard": {
+                    "scope_keywords": {
+                        "value": f"*{top_keyword}*",
+                        "case_insensitive": True
+                    }
+                }
+            },
+
+            # =========================
+            # 1순위: 최신 업데이트
+            # 2순위: 누적 기사 수 많은 scope
+            # =========================
+            "sort": [
+                {
+                    "updated_at": {
+                        "order": "desc"
+                    }
+                },
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    scope_ids = [
+        hit["_source"]["scopeID"]
+        for hit in recent_result["hits"]["hits"]
+        if hit["_source"].get("scopeID")
+    ]
+    visited_scope_ids = set()
+
+    for hit in recent_result["hits"]["hits"]:
+        source = hit["_source"]
+        scope_id = source.get("scopeID")
+
+        if not scope_id:
+            continue
+
+        if scope_id in visited_scope_ids:
+            continue
+
+        visited_scope_ids.add(scope_id)
+        scope_ids.append(scope_id)
+
+        if len(scope_ids) >= 5:
+            break
+
     opinions = []
 
-    for hit in result["hits"]["hits"]:
-        source = hit["_source"]
+    # =========================
+    # 3. scope별 여론 해석문 생성
+    # =========================
+    for scope_id in scope_ids:
+        try:
+            scope_result = es.get(
+                index="news_scopes",
+                id=scope_id
+            )
 
-        keyword_text = source.get("keywords") or ""
+            scope_source = scope_result["_source"]
 
-        if isinstance(keyword_text, list):
-            keyword_list = keyword_text
-        else:
-            keyword_list = [
-                keyword.strip()
-                for keyword in str(keyword_text).split(",")
-                if keyword.strip()
-            ]
+        except Exception as e:
+            print("지배적 여론 scope 조회 실패:", scope_id, e)
+            continue
 
-        perspectives = source.get("perspective", [])
+        scope_title = (
+            scope_source.get("scopeTitle")
+            or "해당 이슈"
+        )
 
-        top_perspective = ""
-        if perspectives:
-            top_perspective = perspectives[0].get("category", "")
+        # 메인 한줄 요약 문장에서만 [게시판], [속보] 같은 말머리 제거
+        display_scope_title = re.sub(
+            r'^\[[^\]]+\]\s*',
+            '',
+            scope_title
+        )
+
+        scope_keywords = parse_scope_keyword_list(
+            scope_source.get("scope_keywords")
+        )
+
+        sentiment_dist = get_scope_sentiment_distribution(
+            es=es,
+            scope_id=scope_id
+        )
+
+        positive = sentiment_dist["positive"]
+        neutral = sentiment_dist["neutral"]
+        negative = sentiment_dist["negative"]
+        dominant = sentiment_dist["dominant"]
+
+        opinion_sentence = make_dominant_opinion_sentence(
+            topic=display_scope_title,
+            positive=positive,
+            neutral=neutral,
+            negative=negative
+        )
 
         opinions.append({
-            "title": source.get("summary") or source.get("title") or "요약 없음",
-            "keyword": keyword_list[0] if keyword_list else top_perspective or "키워드 없음",
-            "sentiment": source.get("sentiment") or "neutral"
+            "scope_id": scope_id,
+            "title": opinion_sentence,
+            "keyword": scope_keywords[0] if scope_keywords else top_keyword,
+            "sentiment": dominant
         })
+
+    # =========================
+    # 4. 핵심 키워드 관련 scope가 없을 때 기본값
+    # =========================
+    if not opinions:
+        return {
+            "opinions": [
+                {
+                    "title": f"{top_keyword} 관련 주요 이슈 여론을 아직 분석하지 못했습니다.",
+                    "keyword": top_keyword,
+                    "sentiment": "neutral"
+                }
+            ]
+        }
 
     return {
         "opinions": opinions
@@ -2205,14 +2472,11 @@ def get_rank1_count_map(es, keyword: str = ""):
             "bool": {
                 "must": [
                     {
-                        "multi_match": {
-                            "query": keyword,
-                            "fields": [
-                                "title^3",
-                                "summary",
-                                "keywords",
-                                "clean_text"
-                            ]
+                        "wildcard": {
+                            "keywords": {
+                                "value": f"*{keyword}*",
+                                "case_insensitive": True
+                            }
                         }
                     }
                 ]
@@ -2905,13 +3169,21 @@ def get_scope_detail(scope_id: str):
         if keyword.strip()
     ]
 
+    raw_scope_title = scope_source.get("scopeTitle", "AI 뉴스 분석")
+
+    display_scope_title = re.sub(
+        r'^\[[^\]]+\]\s*',
+        '',
+        raw_scope_title
+    )
+
     updated_at = str(scope_source.get("updated_at") or "")
 
     return {
         "scopeID": scope_source.get("scopeID", scope_id),
-        "title": scope_source.get("scopeTitle", "AI 뉴스 분석"),
+        "title": display_scope_title,
         "summary": scope_source.get("scope_summary")
-           or f"{scope_source.get('scopeTitle', '해당 이슈')} 관련 기사 {total}건을 분석한 결과입니다.",
+            or f"{display_scope_title} 관련 기사 {total}건을 분석한 결과입니다.",
         "keywords": scope_keywords[:5],
         "scopeSentiment": scope_source.get("sentiment", ""),
         "scopeSentimentScore": scope_source.get("sentiment_score", 0),
@@ -3364,3 +3636,80 @@ def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = "")
 @app.get("/admin_trends") # 이용자 그래프
 def admin_trends(start_date: str = "", end_date: str = ""):
     return get_admin_trends(start_date, end_date)
+
+@app.get("/api/admin/logs")
+def get_admin_logs(
+    admin_id: str = "",
+    action_code: str = "",
+    log_date: str = ""
+):
+    db = get_engine()
+
+    where = []
+    params = {}
+
+    if admin_id:
+        where.append("al.admin_id LIKE :admin_id")
+        params["admin_id"] = f"%{admin_id}%"
+
+    if action_code:
+        where.append("al.action_code = :action_code")
+        params["action_code"] = action_code
+
+    if log_date:
+        where.append("DATE(al.created_at) = :log_date")
+        params["log_date"] = log_date
+
+    where_sql = ""
+    if where:
+        where_sql = "WHERE " + " AND ".join(where)
+
+    try:
+        rows = db.execute(
+            text(f"""
+                SELECT
+                    al.log_id,
+                    al.admin_id,
+                    al.action_code,
+                    al.action_detail,
+                    al.created_at
+                FROM admin_logs al
+                {where_sql}
+                ORDER BY al.created_at DESC
+                LIMIT 100
+            """),
+            params
+        ).mappings().all()
+
+        action_name_map = {
+            "ADMIN_LOGIN": "관리자 로그인",
+            "BANNER_CREATE": "배너 등록",
+            "BANNER_DELETE": "배너 삭제",
+            "BANNER_UPDATE": "배너 수정",
+            "BATCH_RETRY": "배치 재실행",
+            "BATCH_RUN": "배치 수동 실행",
+            "TERMS_CREATE": "약관 등록",
+            "TERMS_UPDATE": "약관 수정",
+            "USER_STATUS_UPDATE": "회원 상태 변경"
+        }
+
+        logs = []
+
+        for row in rows:
+            logs.append({
+                "date": str(row["created_at"])[:19],
+                "admin": row["admin_id"],
+                "action": action_name_map.get(
+                    row["action_code"],
+                    row["action_code"]
+                ),
+                "content": row["action_detail"] or "-"
+            })
+
+        return {
+            "success": True,
+            "logs": logs
+        }
+
+    finally:
+        db.close()

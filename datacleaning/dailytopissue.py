@@ -119,45 +119,67 @@ def get_top_keyword_for_day(es, date_str: str):
 # TOP 키워드 포함 기사 감성분포
 # ==============================
 def get_sentiment_distribution_for_keyword(es, date_str: str, keyword: str):
+
     query = {
-        "_source": ["sentiment", "keywords"],
-        "size": 10000,
+        "size": 0,
         "query": {
-            "range": {
-                "published_at": {
-                    "gte": f"{date_str}T00:00:00",
-                    "lte": f"{date_str}T23:59:59",
-                    "time_zone": "+09:00"
+            "bool": {
+                "must": [
+                    {
+                        "range": {
+                            "published_at": {
+                                "gte": f"{date_str}T00:00:00",
+                                "lte": f"{date_str}T23:59:59",
+                                "time_zone": "+09:00"
+                            }
+                        }
+                    },
+                    {
+                        "wildcard": {
+                            "keywords": {
+                                "value": f"*{keyword}*",
+                                "case_insensitive": True
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "aggs": {
+            "sentiment_counts": {
+                "terms": {
+                    "field": "sentiment",
+                    "size": 10
                 }
             }
         }
     }
 
-    res = es.search(index="news_economy", body=query)
+    res = es.search(
+        index="news_economy",
+        body=query
+    )
+
+    buckets = res.get("aggregations", {}) \
+        .get("sentiment_counts", {}) \
+        .get("buckets", [])
 
     positive = 0
     negative = 0
     neutral = 0
 
-    for hit in res["hits"]["hits"]:
-        source = hit["_source"]
+    for bucket in buckets:
+        key = bucket["key"]
+        count = bucket["doc_count"]
 
-        keyword_list = extract_keyword_list(source.get("keywords", ""))
-
-        if keyword not in keyword_list:
-            continue
-
-        sentiment = source.get("sentiment", "").lower()
-
-        if sentiment == "positive":
-            positive += 1
-        elif sentiment == "negative":
-            negative += 1
+        if key == "positive":
+            positive = count
+        elif key == "negative":
+            negative = count
         else:
-            neutral += 1
+            neutral = count
 
     total = positive + negative + neutral
-
 
     print(
         f"[감성집계] keyword={keyword} | "
@@ -291,4 +313,4 @@ def save_daily_top_issue_report(start_date: str, end_date: str):
 
 
 if __name__ == "__main__":
-    save_daily_top_issue_report("2026-04-01", "2026-05-12")
+    save_daily_top_issue_report("2026-04-01", "2026-05-13")

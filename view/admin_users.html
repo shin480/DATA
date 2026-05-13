@@ -335,6 +335,13 @@ select {
 }
 
 .filter-row label {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  margin-bottom: 0;
+}
+
+.filter-row label {
   font-size: 14px;
   font-weight: 800;
   color: #f8fafc;
@@ -343,26 +350,62 @@ select {
 
 input,
 select {
-  height: 32px;
+  height: 36px;
   background: #050b1b;
   color: #dbeafe;
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 999px;
-  padding: 0 12px;
+  padding: 0 38px 0 14px;
   outline: none;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+
+  background-position:
+    calc(100% - 18px) 15px,
+    calc(100% - 12px) 15px;
+
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+#actionName {
+  min-width: 170px;
+  padding-right: 32px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 13px,
+    calc(100% - 12px) 13px;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
 }
 
 input::placeholder {
   color: #697996;
 }
 
-select {
-  border-radius: 8px;
-}
-
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
+}
+
+#logDate {
+  width: 150px;
+  min-width: 150px;
 }
 
 .search-btn {
@@ -778,7 +821,18 @@ td select {
 <div class="filter-row">
 <label>관리자 로그 검색</label>
 <input id="adminId" placeholder="관리자 아이디" type="text"/>
-<input id="actionName" placeholder="작업이름" type="text"/>
+<select id="actionName">
+  <option value="">전체 작업</option>
+  <option value="ADMIN_LOGIN">관리자 로그인</option>
+  <option value="BANNER_CREATE">배너 등록</option>
+  <option value="BANNER_DELETE">배너 삭제</option>
+  <option value="BANNER_UPDATE">배너 수정</option>
+  <option value="BATCH_RETRY">배치 재실행</option>
+  <option value="BATCH_RUN">배치 수동 실행</option>
+  <option value="TERMS_CREATE">약관 등록</option>
+  <option value="TERMS_UPDATE">약관 수정</option>
+  <option value="USER_STATUS_UPDATE">회원 상태 변경</option>
+</select>
 <input id="logDate" type="date"/>
 <button class="search-btn" onclick="searchLogs()" type="button">⌕</button>
 </div>
@@ -905,15 +959,7 @@ async function loadUserUsageStats() {
 let reactionData = []; 
 
 
-let logData = [
-  { date: "2026-04-27 22:22:22", admin: "asdfg12345@naver.com", action: "U1111", content: "aaa000@gmail.com에 관리자 권한 부여함." },
-  { date: "2026-04-27 22:25:12", admin: "asdfg12345@naver.com", action: "U1111", content: "bbb000@gmail.com에 관리자 권한 부여함." },
-  { date: "2026-04-27 22:31:01", admin: "admin01@data.com", action: "U1112", content: "사용자 목록을 조회함." },
-  { date: "2026-04-27 22:34:22", admin: "admin01@data.com", action: "U1113", content: "권한 필터 조건으로 회원 정보를 검색함." },
-  { date: "2026-04-27 22:40:52", admin: "root01@data.com", action: "U1111", content: "ccc000@gmail.com에 최고관리자 권한 부여함." },
-  { date: "2026-04-27 22:43:10", admin: "asdfg12345@naver.com", action: "U1111", content: "ddd000@gmail.com에 관리자 권한 부여함." },
-  { date: "2026-04-27 22:51:33", admin: "asdfg12345@naver.com", action: "U1111", content: "eee000@gmail.com에 일반 권한으로 변경함." }
-];
+let logData = [];
 
 
 // ==============================
@@ -1460,22 +1506,36 @@ function renderLogs(data = logData) {
   `).join("");
 }
 
-function searchLogs() {
-  const adminId = document.getElementById("adminId").value.trim().toLowerCase();
-  const actionName = document.getElementById("actionName").value.trim().toLowerCase();
+async function searchLogs() {
+  const adminId = document.getElementById("adminId").value.trim();
+  const actionCode = document.getElementById("actionName").value;
+  const logDate = document.getElementById("logDate").value;
 
-  let result = [...logData];
+  try {
+    const { data } = await axios.get("/api/admin/logs", {
+      params: {
+        admin_id: adminId,
+        action_code: actionCode,
+        log_date: logDate
+      },
+      withCredentials: true
+    });
 
-  if (adminId) {
-    result = result.filter(log => log.admin.toLowerCase().includes(adminId));
+    if (!data.success) {
+      showToast("관리자 로그 조회 실패");
+      return;
+    }
+
+    logData = data.logs || [];
+
+    renderLogs(logData);
+
+    showToast(`관리자 로그 ${logData.length}건 조회 완료`);
+
+  } catch (error) {
+    console.error("관리자 로그 조회 실패:", error);
+    showToast("관리자 로그 조회 중 오류가 발생했습니다.");
   }
-
-  if (actionName) {
-    result = result.filter(log => log.action.toLowerCase().includes(actionName));
-  }
-
-  renderLogs(result);
-  showToast("임시 관리자 로그가 조회되었습니다.");
 }
 
 
@@ -1497,7 +1557,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setToday();
   renderUsers();
   renderReaction();
-  renderLogs();
+  searchLogs();
   loadUserUsageStats();
   bindReactionDateEvents();
   loadTrendGraphs();

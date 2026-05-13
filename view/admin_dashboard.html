@@ -262,12 +262,61 @@ select {
 
 input,
 select {
-  background: #0b1426;
-  color: #e5e7eb;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 9px;
-  padding: 11px 13px;
+  height: 36px;
+  background: #050b1b;
+  color: #dbeafe;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+  padding: 0 38px 0 14px;
   outline: none;
+  font-size: 14px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  transform: translateY(1px);
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+
+  background-position:
+    calc(100% - 18px) 15px,
+    calc(100% - 12px) 15px;
+
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+input[type="date"] {
+  width: 145px;
+  min-width: 145px;
+  height: 36px;
+  padding: 0 12px;
+
+  background: #050b1b;
+  color: #dbeafe;
+
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+
+  padding: 0 14px;
+
+  font-size: 14px;
+  outline: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  transform: translateY(1px);
 }
 
 textarea {
@@ -290,10 +339,6 @@ textarea::placeholder {
 
 .hidden {
   display: none !important;
-}
-
-input[type="date"] {
-  color: #ffffff;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
