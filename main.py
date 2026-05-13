@@ -3186,3 +3186,10 @@ def get_analysis_logs(
         "success": True,
         "logs": logs
     }
+
+@app.get("/press_reaction")
+def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = ""):
+    return get_press_reaction({
+        "start_date": start_date,
+        "end_date": end_date
+    })
