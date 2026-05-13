@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role
+from admin.user_admin import get_user_search, get_user_usage_stats
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -3009,6 +3009,43 @@ def search_users(user_id:str, role:str):
 def user_usage():
     return get_user_usage_stats()
 
-@app.post("/change_role")
-def change_role(info:Dict[str,str]):
-    return change_user_role(info)
+@app.get("/api/admin/scope-stats")
+def get_scope_stats():
+
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        body={
+            "size": 20,
+            "_source": [
+                "scopeTitle",
+                "news_count"
+            ],
+            "sort": [
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    scopes = []
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scopes.append({
+            "title": source.get("scopeTitle", "제목 없음"),
+            "count": source.get("news_count", 0)
+        })
+
+    return {
+        "success": True,
+        "scopes": scopes
+    }

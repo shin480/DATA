@@ -52,7 +52,7 @@ def aggregate_scope_sentiment(es, scope_id: str):
         score_sum[s]   += r["sentiment_score"]
         score_count[s] += 1
 
-    sentiment       = max(score_sum, key=score_sum.get)
+    sentiment       = max(score_count, key=score_count.get)
     sentiment_score = round(score_sum[sentiment] / score_count[sentiment], 4)
     total           = len(rows)
     sentiment_dist  = {
