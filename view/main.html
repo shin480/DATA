@@ -618,6 +618,19 @@ body {
   font-weight: 500;
 }
 
+.opinion-text {
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.opinion-text:hover {
+  color: #00e5ff;
+}
+
+body.light-mode .opinion-text:hover {
+  color: #4cb7d3;
+}
+
 .opinion-tags {
   position: absolute;
   bottom: 32px;
@@ -2215,7 +2228,21 @@ function bindGlobalClickEvents() {
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
+    const opinionTextClick = e.target.closest(".opinion-text");
 
+    if (opinionTextClick) {
+      e.preventDefault();
+
+      const scopeId = opinionTextClick.dataset.scopeId;
+
+      if (!scopeId) return;
+
+      goLoginRequiredPage(
+        `/view/scope_detail.html?scope_id=${encodeURIComponent(scopeId)}`
+      );
+
+      return;
+    }
 
     if (themeToggleBtn) {
       e.preventDefault();
@@ -2749,6 +2776,7 @@ function renderOpinion() {
   const item = opinionList[opinionIndex];
 
   opinionText.innerText = item.title || "";
+  opinionText.dataset.scopeId = item.scope_id || "";
 
   if (tags[0]) {
     tags[0].innerText = item.keyword || "";

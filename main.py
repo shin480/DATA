@@ -1792,6 +1792,7 @@ def get_dominant_opinions():
         )
 
         opinions.append({
+            "scope_id": scope_id,
             "title": opinion_sentence,
             "keyword": scope_keywords[0] if scope_keywords else "이슈 분석",
             "sentiment": dominant
