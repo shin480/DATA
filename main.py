@@ -1566,7 +1566,7 @@ def get_scope_sentiment_distribution(es, scope_id: str):
 
 
 def make_dominant_opinion_sentence(
-    topic: str,
+    topic: str, # 얘 ai랑 무관함.
     positive: int,
     neutral: int,
     negative: int
