@@ -240,50 +240,27 @@ def get_keyword_detail(keyword: str):
     body = {
         "size": 50,
         "query": {
-            "bool": {
-                "should": [
-                    {
-                        "match_phrase": {
-                            "title": {
-                                "query": keyword,
-                                "boost": 5
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "summary": {
-                                "query": keyword,
-                                "boost": 3
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "keywords": {
-                                "query": keyword,
-                                "boost": 4
-                            }
-                        }
-                    },
-                    {
-                        "match_phrase": {
-                            "clean_text": {
-                                "query": keyword,
-                                "boost": 1
-                            }
-                        }
-                    }
-                ],
-                "minimum_should_match": 1
+            "wildcard": {
+                "keywords": {
+                    "value": f"*{keyword}*",
+                    "case_insensitive": True
+                }
+            }
+        },
+        "aggs": {
+            "sentiment_counts": {
+                "terms": {
+                    "field": "sentiment",
+                    "size": 10
+                }
+            },
+            "scope_count": {
+                "cardinality": {
+                    "field": "scopeID"
+                }
             }
         },
         "sort": [
-            {
-                "_score": {
-                    "order": "desc"
-                }
-            },
             {
                 "published_at": {
                     "order": "desc"
@@ -298,89 +275,69 @@ def get_keyword_detail(keyword: str):
     )
 
     hits = result["hits"]["hits"]
-
     total_count = result["hits"]["total"]["value"]
-    # =========================
-    # scope 개수 계산
-    # =========================
-    scope_set = set()
 
-    for hit in hits:
-
-        source = hit["_source"]
-
-        scope_id = source.get("scopeID")
-
-        if scope_id:
-            scope_set.add(scope_id)
-
-    ai_count = len(scope_set)
-
-    # =========================
-    # 검색 결과 없을 때
-    # =========================
     if total_count == 0:
-
         return {
             "category": "ECONOMY",
             "keyword": keyword,
-
             "pressCount": 0,
-
             "summary": f"{keyword} 관련 뉴스 데이터가 없습니다.",
-
             "aiCount": 0,
-
             "newsCount": 0,
-
             "flow": "데이터 없음",
-
             "sentiment": {
                 "positive": 0,
                 "neutral": 0,
                 "negative": 0
             },
-
             "articles": []
         }
 
     # =========================
-    # 감성 계산
+    # 감성 집계: 전체 검색 결과 기준
     # =========================
+    buckets = result.get("aggregations", {}) \
+        .get("sentiment_counts", {}) \
+        .get("buckets", [])
+
     positive_count = 0
     neutral_count = 0
     negative_count = 0
 
-    press_set = set()
+    for bucket in buckets:
+        key = bucket["key"]
+        count = bucket["doc_count"]
 
+        if key == "positive":
+            positive_count = count
+        elif key == "negative":
+            negative_count = count
+        elif key == "neutral":
+            neutral_count = count
+
+    # =========================
+    # scope 개수: 전체 검색 결과 기준
+    # =========================
+    ai_count = result.get("aggregations", {}) \
+        .get("scope_count", {}) \
+        .get("value", 0)
+
+    # =========================
+    # 기사 리스트 생성: 상위 50개만 표시
+    # =========================
+    press_set = set()
     articles = []
 
-    # =========================
-    # 기사 리스트 생성
-    # =========================
     for hit in hits:
-
         source = hit["_source"]
 
         press = source.get("press", "언론사 없음")
-
         sentiment = source.get("sentiment", "neutral")
 
         press_set.add(press)
 
-        # 감성 카운트
-        if sentiment == "positive":
-            positive_count += 1
-
-        elif sentiment == "negative":
-            negative_count += 1
-
-        else:
-            neutral_count += 1
-
-        # 기사 리스트
         articles.append({
-
             "article_id": source.get("article_id", ""),
 
             "source": press,
@@ -422,12 +379,11 @@ def get_keyword_detail(keyword: str):
     first_article = hits[0]["_source"]
 
     # =========================
-    # 여론 흐름 계산
+    # 여론 흐름 계산: 상위 50개 기준
     # =========================
     perspective_count = {}
 
     for hit in hits:
-
         source = hit["_source"]
 
         perspectives = source.get("perspective", [])
@@ -453,11 +409,7 @@ def get_keyword_detail(keyword: str):
     else:
         flow = "관점 분석 없음"
 
-    # =========================
-    # 최종 반환
-    # =========================
     return {
-
         "category": "ECONOMY",
 
         "keyword": keyword,
@@ -475,11 +427,8 @@ def get_keyword_detail(keyword: str):
         "flow": flow,
 
         "sentiment": {
-
             "positive": positive_percent,
-
             "neutral": neutral_percent,
-
             "negative": negative_percent
         },
 
