@@ -3008,3 +3008,44 @@ def search_users(user_id:str, role:str):
 @app.post("/user_usage")
 def user_usage():
     return get_user_usage_stats()
+
+@app.get("/api/admin/scope-stats")
+def get_scope_stats():
+
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        body={
+            "size": 20,
+            "_source": [
+                "scopeTitle",
+                "news_count"
+            ],
+            "sort": [
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    scopes = []
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scopes.append({
+            "title": source.get("scopeTitle", "제목 없음"),
+            "count": source.get("news_count", 0)
+        })
+
+    return {
+        "success": True,
+        "scopes": scopes
+    }

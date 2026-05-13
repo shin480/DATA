@@ -1340,6 +1340,32 @@ function renderScope() {
     `).join("");
 }
 
+async function loadScopeStats() {
+  try {
+    const { data } = await axios.get("/api/admin/scope-stats");
+
+    if (!data.success) {
+      showToast("스코프 데이터를 불러오지 못했습니다.");
+      return;
+    }
+
+    scopeData.length = 0;
+
+    data.scopes.forEach(item => {
+      scopeData.push({
+        title: item.title,
+        count: Number(item.count || 0)
+      });
+    });
+
+    renderScope();
+
+  } catch (err) {
+    console.error("스코프 통계 조회 실패:", err);
+    showToast("스코프 통계 조회 실패");
+  }
+}
+
 function renderAnalysis(data = analysisData) {
   const tbody = document.getElementById("analysisTable");
 
@@ -1790,7 +1816,7 @@ window.adminDashboardLogout = adminDashboardLogout;
 
 document.addEventListener("DOMContentLoaded", function () {
   renderPress();
-  renderScope();
+  loadScopeStats();
   renderAnalysis();
   loadBanners();
 
