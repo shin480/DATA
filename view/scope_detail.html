@@ -288,10 +288,10 @@ body {
   flex-shrink: 0;
 }
 
-.search-highlight {
-  color: #00e5ff;
-  font-weight: 900;
-}
+    .search-highlight {
+      color: #41bfe0;
+      font-weight: 900;
+    }
 
 /* ==============================
    Footer
@@ -512,12 +512,29 @@ body {
   padding: 7px 12px;
   font-size: 12px;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
 }
 
 .keyword.main {
   background: #0b3d55;
   border-color: #16d9ff;
   color: #ffffff;
+  cursor: pointer;
+    transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.keyword.main:hover {
+  transform: translateY(-2px);
+  background: rgba(76, 183, 211, 0.12);
+  color: #4CB7D3;
+  box-shadow: 0 4px 14px rgba(76, 183, 211, 0.18);
 }
 
 .stat-title {
@@ -717,6 +734,9 @@ body {
   padding: 5px 7px;
   font-size: 11px;
   transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
 }
 
@@ -745,6 +765,38 @@ body {
   color: #dce8ff;
   font-weight: 800;
   margin-bottom: 8px;
+}
+
+span.card-tag {
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+span.card-tag:hover {
+  transform: translateY(-2px);
+
+  background: rgba(76, 183, 211, 0.10);
+  color: #4CB7D3;
+
+  border-color: rgba(76, 183, 211, 0.35);
+
+  box-shadow:
+    0 4px 14px rgba(76, 183, 211, 0.14);
+}
+
+body.light-mode span.card-tag:hover {
+  background: rgba(65, 191, 224, 0.10);
+  color: #41BFE0;
+
+  border-color: rgba(65, 191, 224, 0.28);
+
+  box-shadow:
+    0 4px 12px rgba(65, 191, 224, 0.12);
 }
 
 /* ==============================
@@ -799,7 +851,7 @@ body.light-mode .main-search-wrap:focus-within {
 }
 
 body.light-mode .search-box {
-  color: #1f2937;
+  color: #41bfe0;
 }
 
 body.light-mode .search-box::placeholder {
@@ -811,7 +863,7 @@ body.light-mode .search-icon-btn {
 }
 
 body.light-mode .search-icon-btn:hover {
-  color: #00cfe8;
+  color: 41BFE0;
 }
 
 body.light-mode .theme-btn {
@@ -1011,8 +1063,80 @@ body.light-mode .keyword.main {
   color: #075985;
 }
 
+body.light-mode .keyword.main:hover {
+  background: rgba(65, 191, 224, 0.10);
+  color: #41BFE0;
+  box-shadow: 0 4px 12px rgba(65, 191, 224, 0.14);
+}
+
 body.light-mode .meta-info {
   border-top-color: #e2e8f0;
+}
+
+span.keyword {
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+span.keyword:hover {
+  transform: translateY(-2px);
+  background: rgba(76, 183, 211, 0.10);
+  color: #4CB7D3;
+  border-color: rgba(76, 183, 211, 0.35);
+  box-shadow: 0 4px 14px rgba(76, 183, 211, 0.14);
+}
+
+body.light-mode span.keyword:hover {
+  background: rgba(65, 191, 224, 0.10);
+  color: #41BFE0;
+  border-color: rgba(65, 191, 224, 0.28);
+  box-shadow: 0 4px 12px rgba(65, 191, 224, 0.12);
+}
+
+span.viewpoint {
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+span.viewpoint:hover {
+
+  transform: translateY(-2px);
+
+  background:
+    rgba(76, 183, 211, 0.10);
+
+  color: #4CB7D3;
+
+  border-color:
+    rgba(76, 183, 211, 0.35);
+
+  box-shadow:
+    0 4px 14px rgba(76, 183, 211, 0.14);
+}
+
+body.light-mode span.viewpoint:hover {
+
+  background:
+    rgba(65, 191, 224, 0.10);
+
+  color: #41BFE0;
+
+  border-color:
+    rgba(65, 191, 224, 0.28);
+
+  box-shadow:
+    0 4px 12px rgba(65, 191, 224, 0.12);
 }
 
 /* ==============================
@@ -1125,13 +1249,154 @@ body.light-mode .more-btn:hover {
   border-color: #00cfe8;
   color: #00cfe8;
 }
-/* 키워드 클릭 */
-.keyword{
-  cursor: pointer;
+
+  /* =========================
+   Random Scope UI
+========================= */
+
+.scope-top-bar {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 18px;
 }
 
-.keyword:hover{
-  opacity: 0.8;
+.scope-live-badge {
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(76, 183, 211, 0.10);
+
+  border:
+    1px solid rgba(76, 183, 211, 0.22);
+
+  color: #7DD3E8;
+
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+
+  backdrop-filter: blur(10px);
+}
+
+.scope-live-badge::before {
+
+  content: "";
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #4CB7D3;
+
+  box-shadow:
+    0 0 12px rgba(76, 183, 211, 0.65);
+}
+
+.random-scope-btn {
+
+  border: none;
+  outline: none;
+
+  cursor: pointer;
+
+  padding: 10px 16px;
+
+  border-radius: 14px;
+
+  background:
+    rgba(255,255,255,0.06);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  color: #E2E8F0;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease;
+}
+
+.random-scope-btn:hover {
+
+  transform: translateY(-2px);
+
+  background:
+    rgba(76, 183, 211, 0.12);
+
+  border-color:
+    rgba(76, 183, 211, 0.24);
+
+  color: #7DD3E8;
+
+  box-shadow:
+    0 6px 18px rgba(76, 183, 211, 0.12);
+}
+
+
+/* =========================
+   Light Mode
+========================= */
+
+body.light-mode .scope-live-badge {
+
+  background:
+    rgba(65, 191, 224, 0.10);
+
+  border:
+    1px solid rgba(65, 191, 224, 0.18);
+
+  color: #1691B1;
+}
+
+body.light-mode .scope-live-badge::before {
+
+  background: #41BFE0;
+
+  box-shadow:
+    0 0 10px rgba(65, 191, 224, 0.45);
+}
+
+body.light-mode .random-scope-btn {
+
+  background: rgba(255,255,255,0.92);
+
+  border:
+    1px solid rgba(15, 23, 42, 0.08);
+
+  color: #334155;
+}
+
+body.light-mode .random-scope-btn:hover {
+
+  background:
+    rgba(65, 191, 224, 0.10);
+
+  border-color:
+    rgba(65, 191, 224, 0.20);
+
+  color: #1691B1;
+
+  box-shadow:
+    0 6px 16px rgba(65, 191, 224, 0.10);
 }
 
 </style>
@@ -1144,6 +1409,22 @@ body.light-mode .more-btn:hover {
 
   <div class="wrap">
     <div class="breadcrumb">AI 뉴스 분석  &gt; <span id="breadcrumbTitle"></span></div>
+
+    <div class="scope-top-bar">
+
+  <div class="scope-live-badge">
+    실시간 랜덤 분석
+  </div>
+
+  <button
+    class="random-scope-btn"
+    type="button"
+    onclick="reloadRandomScope()"
+  >
+    ↻ 다른 분석 보기
+  </button>
+
+</div>
 
     <div class="top-area">
       <section class="scope-box">
@@ -1417,6 +1698,39 @@ function bindGlobalClickEvents() {
     const logoutBtn = e.target.closest("#logoutBtn");
     const themeToggleBtn = e.target.closest("#themeToggleBtn");
     const loginRequiredLink = e.target.closest("[data-login-page]");
+
+    const cardTag = e.target.closest(".card-tag");
+
+    const viewpoint = e.target.closest(".viewpoint");
+
+    if (viewpoint) {
+
+  e.preventDefault();
+
+  const viewpointName =
+    viewpoint.dataset.viewpoint;
+
+  goLoginRequiredPage(
+    `/view/viewpoint_detail.html?viewpoint=${encodeURIComponent(viewpointName)}`
+  );
+
+  return;
+}
+
+
+
+if (cardTag) {
+  e.preventDefault();
+
+  const keyword = cardTag.dataset.keyword;
+
+  goLoginRequiredPage(
+    `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+  );
+
+  return;
+}
+
 
     if (themeToggleBtn) {
       e.preventDefault();
@@ -1762,29 +2076,33 @@ function loadScopeInfo() {
   const keywordList = document.getElementById("keywordList");
   keywordList.innerHTML = "";
 
-  scopeData.keywords.slice(0, 5).forEach(function(keyword, index) {
-    keywordList.innerHTML += `
-      <span 
-        class="keyword ${index === 0 ? "main" : ""}"
-        onclick="moveKeywordDetail('${keyword}')"
-      >
-        ${keyword}
-      </span>
-    `;
+scopeData.keywords.slice(0, 5).forEach(function(keyword, index) {
+  keywordList.innerHTML += `
+    <span
+      class="keyword ${index === 0 ? "main" : ""}"
+      data-keyword="${keyword}"
+    >
+      ${keyword}
+    </span>
+  `;
+});
+
+document.querySelectorAll(".keyword").forEach(function(el) {
+  el.addEventListener("click", function() {
+
+    const keyword = el.dataset.keyword;
+
+    goLoginRequiredPage(
+      `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+    );
   });
+});
 
   document.getElementById("articleCount").innerText =
     scopeData.articleCount + "건";
 
   document.getElementById("lastUpdated").innerText =
     scopeData.lastUpdated;
-}
-
-/* 키워드 상세 이동 */
-function moveKeywordDetail(keyword) {
-  location.href =
-    "/view/keyword_detail.html?keyword=" +
-    encodeURIComponent(keyword);
 }
 
 function loadSentimentDist() {
@@ -1824,8 +2142,13 @@ function loadViewpoints() {
 
   scopeData.viewpoints.slice(0, 4).forEach(function(item) {
     area.innerHTML += `
-      <span class="viewpoint">${item.name} ${item.percent}%</span>
-    `;
+  <span
+    class="viewpoint"
+    data-viewpoint="${item.name}"
+  >
+    ${item.name} ${item.percent}%
+  </span>
+`;
   });
 }
 
@@ -1890,7 +2213,14 @@ function renderArticleList(targetId, articles, sentiment) {
 
     const tags = (article.keywords || [])
       .map(function(tag) {
-        return `<span class="card-tag">${tag}</span>`;
+        return `
+  <span
+    class="card-tag"
+    data-keyword="${tag}"
+  >
+    ${tag}
+  </span>
+`;
       })
       .join("");
 
@@ -2018,6 +2348,26 @@ function loadMoreArticles(sentiment) {
     loadArticleColumns();
   });
 }
+
+  function reloadRandomScope() {
+
+  location.href =
+    "/view/scope_detail.html";
+
+}
+
+  function reloadRandomScope() {
+
+  document.body.style.opacity = "0.72";
+
+  setTimeout(function() {
+
+    location.href =
+      "/view/scope_detail.html";
+
+  }, 140);
+}
+
 </script>
 
 </body>
