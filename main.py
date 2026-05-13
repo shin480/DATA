@@ -1992,8 +1992,8 @@ def get_main_viewpoint_analysis():
             count = perspective_count.get(category, 0)
 
             raw_percent = (
-                (count / total_count) * 100
-                if total_count else 0
+                (count / total) * 100
+                if total else 0
             )
 
             percent = round(raw_percent)
@@ -2364,8 +2364,8 @@ def get_viewpoint_overview():
             count = perspective_count.get(category, 0)
 
             raw_percent = (
-                (count / total) * 100
-                if total else 0
+                (count / total_count) * 100
+                if total_count else 0
             )
 
             percent = round(raw_percent)
