@@ -288,16 +288,15 @@ body {
   flex-shrink: 0;
 }
 
-    .search-highlight {
-      color: #41bfe0;
-      font-weight: 900;
-    }
+.search-highlight {
+  color: #41bfe0;
+  font-weight: 900;
+}
 
 /* ==============================
    Footer
 ============================== */
 
-/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
 #footer {
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -305,7 +304,6 @@ body {
   overflow: visible;
 }
 
-/* 실제 footer */
 .footer {
   width: 100%;
   background: #020617;
@@ -313,7 +311,6 @@ body {
   box-sizing: border-box;
 }
 
-/* footer 안쪽 내용 */
 .footer-inner {
   width: 100%;
   min-height: 88px;
@@ -323,11 +320,6 @@ body {
   display: flex;
   align-items: center;
   gap: 22px;
-}
-
-html,
-body {
-  overflow-x: hidden;
 }
 
 .footer-logo-white {
@@ -372,12 +364,10 @@ body {
   color: #64748b;
 }
 
-
 /* ==============================
    Footer Modal
 ============================== */
 
-/* 모달은 화면 중앙 고정 */
 .footer-modal {
   position: fixed;
   inset: 0;
@@ -449,9 +439,10 @@ body {
 
 .top-area {
   display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 18px;
-  margin-bottom: 24px;
+  grid-template-columns: 1.9fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 30px;
 }
 
 .scope-box,
@@ -459,31 +450,44 @@ body {
   background: #0b1223;
   border: 1px solid #16223b;
   border-radius: 14px;
-  padding: 24px;
+  height: 100%;
+}
+
+.scope-box {
+  min-height: 270px;
+  padding: 30px 32px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-box {
+  padding: 22px 24px;
 }
 
 .scope-label {
   color: #16d9ff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .scope-title {
   color: #f1f6ff;
-  font-size: 24px;
+  font-size: 27px;
   font-weight: 900;
-  margin-bottom: 16px;
-  line-height: 1.4;
+  margin-bottom: 18px;
+  line-height: 1.42;
 }
 
 .scope-summary {
-  border-left: 3px solid #14d9ff;
-  padding-left: 14px;
+  position: relative;
+
+  padding-left: 18px;
   color: #8fa0bd;
-  font-size: 14px;
-  line-height: 1.7;
-  margin-bottom: 22px;
+  font-size: 15px;
+  line-height: 1.75;
+  margin-bottom: 26px;
 
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -491,11 +495,34 @@ body {
   overflow: hidden;
 }
 
+.scope-summary::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 4px;
+  height: 100%;
+
+  border-radius: 999px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 217, 255, 0) 0%,
+    rgba(20, 217, 255, 0.14) 14%,
+    rgba(20, 217, 255, 0.85) 50%,
+    rgba(20, 217, 255, 0.14) 86%,
+    rgba(20, 217, 255, 0) 100%
+  );
+}
+
 .keyword-list {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
+
+  margin-top: auto;
 }
 
 .keyword-list span {
@@ -508,39 +535,37 @@ body {
   background: #073044;
   color: #16d9ff;
   border: 1px solid #0c6e8a;
-  border-radius: 18px;
-  padding: 7px 12px;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: 999px;
+
+  padding: 10px 16px;
+
+  font-size: 13px;
+  font-weight: 350;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
 }
 
 .keyword.main {
   background: #0b3d55;
   border-color: #16d9ff;
-  color: #ffffff;
+  color: #16d9ff;
+
+  font-weight: 800;
+
   cursor: pointer;
-    transition:
+  transition:
     transform 0.18s ease,
     background 0.18s ease,
     color 0.18s ease,
     box-shadow 0.18s ease;
 }
 
-.keyword.main:hover {
-  transform: translateY(-2px);
-  background: rgba(76, 183, 211, 0.12);
-  color: #4CB7D3;
-  box-shadow: 0 4px 14px rgba(76, 183, 211, 0.18);
-}
-
 .stat-title {
   color: #7f8ea9;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 400;
   text-align: center;
   margin-bottom: 16px;
 }
@@ -582,24 +607,54 @@ body {
 .fill.neutral { background: #f0b83a; }
 .fill.negative { background: #ff4e5f; }
 
+/* ==============================
+   관점 상위 4개 - 정보 라벨
+============================== */
+
 .viewpoints {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  display: flex;
+  justify-content: center;
   align-items: center;
+
+  gap: 8px;
+  margin-top: 10px;
+
+  flex-wrap: nowrap;
 }
 
 .viewpoint {
-  border: 1px solid #2a3854;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  min-height: 28px;
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(120, 140, 180, 0.18);
+
   color: #9fb0ca;
-  border-radius: 16px;
-  padding: 6px 10px;
-  font-size: 12px;
+
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+
+  white-space: nowrap;
+  flex-shrink: 1;
+
+  cursor: default;
 }
 
 .meta-info {
+  width: 100%;
+  max-width: 340px;
+  margin: 18px auto 0;
   border-top: 1px solid #17223a;
   padding-top: 14px;
+
   font-size: 12px;
   color: #7f8ea9;
 }
@@ -607,7 +662,18 @@ body {
 .meta-line {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+
   margin-top: 8px;
+}
+
+.meta-line span {
+  font-weight: 500;
+}
+
+.meta-line strong {
+  color: #8fa0bd;
+  font-weight: 600;
 }
 
 .news-columns {
@@ -649,7 +715,6 @@ body {
   transform: translateY(-2px);
   border-color: #2f6dff;
 }
-
 
 .news-card::before {
   content: "";
@@ -737,7 +802,6 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
 }
 
 .empty-state {
@@ -801,8 +865,6 @@ body.light-mode span.card-tag:hover {
 
 /* ==============================
    Light Mode - Sage Premium Theme
-   전체 UI 세이지톤 통일
-   (포인트 민트색 유지)
 ============================== */
 
 body.light-mode .scope-label {
@@ -818,9 +880,7 @@ body.light-mode .page {
   background: #edf2ee;
 }
 
-/* ==============================
-   Header
-============================== */
+/* Header */
 
 body.light-mode .header {
   background: #f1f6f2;
@@ -863,7 +923,7 @@ body.light-mode .search-icon-btn {
 }
 
 body.light-mode .search-icon-btn:hover {
-  color: 41BFE0;
+  color: #41BFE0;
 }
 
 body.light-mode .theme-btn {
@@ -900,9 +960,7 @@ body.light-mode .header-btn.login:hover {
   filter: brightness(1.04);
 }
 
-/* ==============================
-   자동완성
-============================== */
+/* 자동완성 */
 
 body.light-mode .search-suggest-box {
   background: #f8fbf8;
@@ -928,15 +986,12 @@ body.light-mode .search-suggest-arrow {
   color: #839188;
 }
 
-/* ==============================
-   Footer
-============================== */
+/* Footer */
 
 body.light-mode .footer {
   background: #eef3ee;
   border-top: 1px solid #d8e0d9;
 }
-
 
 body.light-mode .footer-inner {
   color: #6f7d75;
@@ -962,9 +1017,7 @@ body.light-mode .footer-logo-white {
   background-color: #111827;
 }
 
-/* ==============================
-   Footer Modal
-============================== */
+/* Footer Modal */
 
 body.light-mode .footer-modal {
   background: rgba(110, 128, 116, 0.18);
@@ -990,12 +1043,13 @@ body.light-mode .footer-modal-btn {
   color: #06262b;
 }
 
-    body.light-mode .section-title-wrap h2,
+body.light-mode .section-title-wrap h2,
 body.light-mode .news-header h2 {
   color: #1e293b !important;
 }
 
 /* scope_detail light */
+
 body.light-mode .breadcrumb {
   color: #64748b;
 }
@@ -1098,47 +1152,6 @@ body.light-mode span.keyword:hover {
   box-shadow: 0 4px 12px rgba(65, 191, 224, 0.12);
 }
 
-span.viewpoint {
-  cursor: pointer;
-
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    color 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-span.viewpoint:hover {
-
-  transform: translateY(-2px);
-
-  background:
-    rgba(76, 183, 211, 0.10);
-
-  color: #4CB7D3;
-
-  border-color:
-    rgba(76, 183, 211, 0.35);
-
-  box-shadow:
-    0 4px 14px rgba(76, 183, 211, 0.14);
-}
-
-body.light-mode span.viewpoint:hover {
-
-  background:
-    rgba(65, 191, 224, 0.10);
-
-  color: #41BFE0;
-
-  border-color:
-    rgba(65, 191, 224, 0.28);
-
-  box-shadow:
-    0 4px 12px rgba(65, 191, 224, 0.12);
-}
-
 /* ==============================
    Responsive
 ============================== */
@@ -1174,18 +1187,16 @@ body.light-mode span.viewpoint:hover {
   }
 
   .news-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-
-  align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
   }
 
   .news-columns > div {
-  display: flex;
-  flex-direction: column;
-}
-
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1201,7 +1212,11 @@ body.light-mode span.viewpoint:hover {
   }
 }
 
-  .more-btn {
+/* ==============================
+   더보기 버튼
+============================== */
+
+.more-btn {
   width: 100%;
   height: 46px;
 
@@ -1222,9 +1237,9 @@ body.light-mode span.viewpoint:hover {
   background: rgba(255,255,255,0.06);
 }
 
-  .card-title {
+.card-title {
   display: -webkit-box;
-  -webkit-line-clamp: 2;   /* 2줄 제한 */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1232,13 +1247,13 @@ body.light-mode span.viewpoint:hover {
 
 .card-summary {
   display: -webkit-box;
-  -webkit-line-clamp: 2;   /* 2줄 제한 */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-  body.light-mode .more-btn {
+body.light-mode .more-btn {
   background: #f7faf7;
   border: 1px solid #d8e0d9;
   color: #3f4c45;
@@ -1250,12 +1265,11 @@ body.light-mode .more-btn:hover {
   color: #00cfe8;
 }
 
-  /* =========================
+/* =========================
    Random Scope UI
 ========================= */
 
 .scope-top-bar {
-
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1266,7 +1280,6 @@ body.light-mode .more-btn:hover {
 }
 
 .scope-live-badge {
-
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1291,7 +1304,6 @@ body.light-mode .more-btn:hover {
 }
 
 .scope-live-badge::before {
-
   content: "";
 
   width: 8px;
@@ -1306,7 +1318,6 @@ body.light-mode .more-btn:hover {
 }
 
 .random-scope-btn {
-
   border: none;
   outline: none;
 
@@ -1336,7 +1347,6 @@ body.light-mode .more-btn:hover {
 }
 
 .random-scope-btn:hover {
-
   transform: translateY(-2px);
 
   background:
@@ -1351,13 +1361,7 @@ body.light-mode .more-btn:hover {
     0 6px 18px rgba(76, 183, 211, 0.12);
 }
 
-
-/* =========================
-   Light Mode
-========================= */
-
 body.light-mode .scope-live-badge {
-
   background:
     rgba(65, 191, 224, 0.10);
 
@@ -1368,7 +1372,6 @@ body.light-mode .scope-live-badge {
 }
 
 body.light-mode .scope-live-badge::before {
-
   background: #41BFE0;
 
   box-shadow:
@@ -1376,7 +1379,6 @@ body.light-mode .scope-live-badge::before {
 }
 
 body.light-mode .random-scope-btn {
-
   background: rgba(255,255,255,0.92);
 
   border:
@@ -1386,7 +1388,6 @@ body.light-mode .random-scope-btn {
 }
 
 body.light-mode .random-scope-btn:hover {
-
   background:
     rgba(65, 191, 224, 0.10);
 
@@ -1408,23 +1409,21 @@ body.light-mode .random-scope-btn:hover {
   <div id="header"></div>
 
   <div class="wrap">
-    <div class="breadcrumb">AI 뉴스 분석  &gt; <span id="breadcrumbTitle"></span></div>
+    <div class="breadcrumb">AI 뉴스 분석 &gt; <span id="breadcrumbTitle"></span></div>
 
     <div class="scope-top-bar">
+      <div class="scope-live-badge">
+        실시간 랜덤 분석
+      </div>
 
-  <div class="scope-live-badge">
-    실시간 랜덤 분석
-  </div>
-
-  <button
-    class="random-scope-btn"
-    type="button"
-    onclick="reloadRandomScope()"
-  >
-    ↻ 다른 분석 보기
-  </button>
-
-</div>
+      <button
+        class="random-scope-btn"
+        type="button"
+        onclick="reloadRandomScope()"
+      >
+        ↻ 다른 분석 보기
+      </button>
+    </div>
 
     <div class="top-area">
       <section class="scope-box">
@@ -1438,7 +1437,7 @@ body.light-mode .random-scope-btn:hover {
         <div class="stat-title">감성 분포</div>
         <div id="sentimentArea"></div>
 
-        <div class="stat-title" style="margin-top:22px;">관점 상위 4개</div>
+        <div class="stat-title" style="margin-top:22px;">관점 분포</div>
         <div class="viewpoints" id="viewpointArea"></div>
 
         <div class="meta-info">
@@ -1456,45 +1455,37 @@ body.light-mode .random-scope-btn:hover {
 
     <section class="news-columns">
 
-  <div>
-    <div class="column-head positive">
-      <span><span class="dot positive-dot"></span>긍정</span>
-      <span id="positiveCount"></span>
-    </div>
+      <div>
+        <div class="column-head positive">
+          <span><span class="dot positive-dot"></span>긍정</span>
+          <span id="positiveCount"></span>
+        </div>
 
-    <div id="positiveList"></div>
+        <div id="positiveList"></div>
+        <div id="positiveMoreWrap"></div>
+      </div>
 
-    <!-- 추가 -->
-    <div id="positiveMoreWrap"></div>
-  </div>
+      <div>
+        <div class="column-head neutral">
+          <span><span class="dot neutral-dot"></span>중립</span>
+          <span id="neutralCount"></span>
+        </div>
 
+        <div id="neutralList"></div>
+        <div id="neutralMoreWrap"></div>
+      </div>
 
-  <div>
-    <div class="column-head neutral">
-      <span><span class="dot neutral-dot"></span>중립</span>
-      <span id="neutralCount"></span>
-    </div>
+      <div>
+        <div class="column-head negative">
+          <span><span class="dot negative-dot"></span>부정</span>
+          <span id="negativeCount"></span>
+        </div>
 
-    <div id="neutralList"></div>
+        <div id="negativeList"></div>
+        <div id="negativeMoreWrap"></div>
+      </div>
 
-    <!-- 추가 -->
-    <div id="neutralMoreWrap"></div>
-  </div>
-
-
-  <div>
-    <div class="column-head negative">
-      <span><span class="dot negative-dot"></span>부정</span>
-      <span id="negativeCount"></span>
-    </div>
-
-    <div id="negativeList"></div>
-
-    <!-- 추가 -->
-    <div id="negativeMoreWrap"></div>
-  </div>
-
-</section>
+    </section>
   </div>
 
   <div id="footer"></div>
@@ -1504,11 +1495,6 @@ body.light-mode .random-scope-btn:hover {
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-/* ==============================
-   common.js
-   main.html 기준 기능 그대로
-============================== */
-
 document.addEventListener("DOMContentLoaded", function () {
   applyThemeMode();
   loadHeader();
@@ -1698,39 +1684,19 @@ function bindGlobalClickEvents() {
     const logoutBtn = e.target.closest("#logoutBtn");
     const themeToggleBtn = e.target.closest("#themeToggleBtn");
     const loginRequiredLink = e.target.closest("[data-login-page]");
-
     const cardTag = e.target.closest(".card-tag");
 
-    const viewpoint = e.target.closest(".viewpoint");
+    if (cardTag) {
+      e.preventDefault();
 
-    if (viewpoint) {
+      const keyword = cardTag.dataset.keyword;
 
-  e.preventDefault();
+      goLoginRequiredPage(
+        `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+      );
 
-  const viewpointName =
-    viewpoint.dataset.viewpoint;
-
-  goLoginRequiredPage(
-    `/view/viewpoint_detail.html?viewpoint=${encodeURIComponent(viewpointName)}`
-  );
-
-  return;
-}
-
-
-
-if (cardTag) {
-  e.preventDefault();
-
-  const keyword = cardTag.dataset.keyword;
-
-  goLoginRequiredPage(
-    `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
-  );
-
-  return;
-}
-
+      return;
+    }
 
     if (themeToggleBtn) {
       e.preventDefault();
@@ -1935,7 +1901,9 @@ function selectSearchSuggestion(keyword) {
 
   hideSearchSuggestions();
 
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+  goLoginRequiredPage(
+    `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+  );
 }
 
 function moveSearch(keyword) {
@@ -1945,7 +1913,9 @@ function moveSearch(keyword) {
 
   hideSearchSuggestions();
 
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+  goLoginRequiredPage(
+    `/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`
+  );
 }
 
 window.logout = function () {
@@ -2011,6 +1981,7 @@ window.closeFooterModal = function () {
 /* ==============================
    scope_detail.js
 ============================== */
+
 let scopeData = null;
 
 const ARTICLE_BATCH_SIZE = 5;
@@ -2083,30 +2054,29 @@ function loadScopeInfo() {
   const keywordList = document.getElementById("keywordList");
   keywordList.innerHTML = "";
 
-scopeData.keywords.slice(0, 5).forEach(function(keyword, index) {
-  keywordList.innerHTML += `
-    <span
-      class="keyword ${index === 0 ? "main" : ""}"
-      data-keyword="${keyword}"
-    >
-      ${keyword}
-    </span>
-  `;
-});
-
-document.querySelectorAll(".keyword").forEach(function(el) {
-  el.addEventListener("click", function() {
-
-    const keyword = el.dataset.keyword;
-
-    goLoginRequiredPage(
-      `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
-    );
+  scopeData.keywords.slice(0, 5).forEach(function(keyword, index) {
+    keywordList.innerHTML += `
+      <span
+        class="keyword ${index === 0 ? "main" : ""}"
+        data-keyword="${keyword}"
+      >
+        ${keyword}
+      </span>
+    `;
   });
-});
+
+  document.querySelectorAll(".keyword").forEach(function(el) {
+    el.addEventListener("click", function() {
+      const keyword = el.dataset.keyword;
+
+      goLoginRequiredPage(
+        `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+      );
+    });
+  });
 
   document.getElementById("articleCount").innerText =
-    scopeData.articleCount + "건";
+    scopeData.articles.length + "건";
 
   document.getElementById("lastUpdated").innerText =
     scopeData.lastUpdated;
@@ -2149,13 +2119,10 @@ function loadViewpoints() {
 
   scopeData.viewpoints.slice(0, 4).forEach(function(item) {
     area.innerHTML += `
-  <span
-    class="viewpoint"
-    data-viewpoint="${item.name}"
-  >
-    ${item.name} ${item.percent}%
-  </span>
-`;
+      <span class="viewpoint">
+        ${item.name} ${item.percent}%
+      </span>
+    `;
   });
 }
 
@@ -2176,23 +2143,21 @@ function loadArticleColumns() {
   document.getElementById("neutralCount").innerText = neutral.length + "건";
   document.getElementById("negativeCount").innerText = negative.length + "건";
 
-renderArticleList("positiveList", positive, "positive");
-renderArticleList("neutralList", neutral, "neutral");
-renderArticleList("negativeList", negative, "negative");
+  renderArticleList("positiveList", positive, "positive");
+  renderArticleList("neutralList", neutral, "neutral");
+  renderArticleList("negativeList", negative, "negative");
 
-renderMoreButton("positive", positive.length);
-renderMoreButton("neutral", neutral.length);
-renderMoreButton("negative", negative.length);
+  renderMoreButton("positive", positive.length);
+  renderMoreButton("neutral", neutral.length);
+  renderMoreButton("negative", negative.length);
 }
 
 function renderArticleList(targetId, articles, sentiment) {
-
   const target = document.getElementById(targetId);
 
   target.innerHTML = "";
 
   if (articles.length === 0) {
-
     target.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon"></div>
@@ -2217,17 +2182,16 @@ function renderArticleList(targetId, articles, sentiment) {
   );
 
   visibleArticles.forEach(function(article) {
-
     const tags = (article.keywords || [])
       .map(function(tag) {
         return `
-  <span
-    class="card-tag"
-    data-keyword="${tag}"
-  >
-    ${tag}
-  </span>
-`;
+          <span
+            class="card-tag"
+            data-keyword="${tag}"
+          >
+            ${tag}
+          </span>
+        `;
       })
       .join("");
 
@@ -2263,7 +2227,6 @@ function renderArticleList(targetId, articles, sentiment) {
   });
 }
 
-
 /* =========================
    더보기 버튼
 ========================= */
@@ -2274,7 +2237,6 @@ function renderMoreButton(sentiment, totalCount) {
 
   const visible = articleState[sentiment].visible;
 
-  // 👉 핵심: "아직 더 보여줄 게 있을 때만 버튼"
   if (totalCount <= visible) {
     target.innerHTML = "";
     return;
@@ -2291,13 +2253,11 @@ function renderMoreButton(sentiment, totalCount) {
   `;
 }
 
-
 /* =========================
    인피니트 스크롤 시작
 ========================= */
 
 function enableInfiniteScroll(sentiment) {
-
   articleState[sentiment].infiniteEnabled = true;
 
   const wrap =
@@ -2306,16 +2266,15 @@ function enableInfiniteScroll(sentiment) {
   if (wrap) {
     wrap.innerHTML = "";
   }
+
   loadMoreArticles(sentiment);
 }
-
 
 /* =========================
    기사 추가 로딩
 ========================= */
 
 function loadMoreArticles(sentiment) {
-
   const state = articleState[sentiment];
 
   if (!state.infiniteEnabled) return;
@@ -2325,8 +2284,7 @@ function loadMoreArticles(sentiment) {
   loadArticleColumns();
 }
 
-
-  function handleColumnInfiniteScroll() {
+function handleColumnInfiniteScroll() {
   const scrollBottom =
     window.innerHeight + window.scrollY;
 
@@ -2338,7 +2296,6 @@ function loadMoreArticles(sentiment) {
   }
 
   ["positive", "neutral", "negative"].forEach(function(sentiment) {
-
     const state = articleState[sentiment];
 
     if (!state.infiniteEnabled) return;
@@ -2356,25 +2313,13 @@ function loadMoreArticles(sentiment) {
   });
 }
 
-  function reloadRandomScope() {
-
-  location.href =
-    "/view/scope_detail.html";
-
-}
-
-  function reloadRandomScope() {
-
+function reloadRandomScope() {
   document.body.style.opacity = "0.72";
 
   setTimeout(function() {
-
-    location.href =
-      "/view/scope_detail.html";
-
+    location.href = "/view/scope_detail.html";
   }, 140);
 }
-
 </script>
 
 </body>
