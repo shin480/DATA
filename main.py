@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, Optional, Any
 import os
 import uuid
 
@@ -32,7 +32,7 @@ from mypage.passwordcheck import check_user_password, check_auth_status
 from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
-from admin.user_admin import get_user_search, get_user_usage_stats
+from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction, get_admin_trends
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -1931,38 +1931,6 @@ def get_main_viewpoint_analysis():
         }
 
     # =========================
-    # 1위 키워드 기사 조회
-    # =========================
-    result = es.search(
-        index=NEWS_ECONOMY_INDEX,
-        body={
-            "size": 1000,
-            "_source": [
-                "perspective"
-            ],
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "multi_match": {
-                                "query": top_keyword,
-                                "fields": [
-                                    "title^3",
-                                    "summary",
-                                    "keywords",
-                                    "clean_text"
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    )
-
-    hits = result["hits"]["hits"]
-
-    # =========================
     # 그룹 정의
     # =========================
     group_map = {
@@ -2002,33 +1970,14 @@ def get_main_viewpoint_analysis():
 
     # =========================
     # 관점 집계
+    # 상세페이지와 동일한 기준으로 계산
     # =========================
-    perspective_count = {}
+    perspective_count = get_rank1_count_map(
+        es=es,
+        keyword=top_keyword
+    )
 
-    total = 0
-
-    for hit in hits:
-
-        perspectives = (
-            hit["_source"]
-            .get("perspective", [])
-        )
-
-        for item in perspectives:
-
-            if item.get("rank") != 1:
-                continue
-
-            category = item.get("category")
-
-            if not category:
-                continue
-
-            perspective_count[category] = (
-                perspective_count.get(category, 0) + 1
-            )
-
-            total += 1
+    total = sum(perspective_count.values())
 
     # =========================
     # 그룹별 반환
@@ -2042,14 +1991,22 @@ def get_main_viewpoint_analysis():
         for category in categories:
             count = perspective_count.get(category, 0)
 
-            percent = (
-                round((count / total) * 100)
-                if total else 0
+            raw_percent = (
+                (count / total_count) * 100
+                if total_count else 0
             )
+
+            percent = round(raw_percent)
+
+            if count > 0 and percent == 0:
+                percent_label = "<1%"
+            else:
+                percent_label = f"{percent}%"
 
             items.append({
                 "title": category,
                 "percent": percent,
+                "percent_label": percent_label,
                 "count": count,
                 "reason": f"{category} 관점으로 분류된 기사 {count}건."
             })
@@ -2105,6 +2062,7 @@ def get_main_viewpoint_analysis():
                 "id": id_map[category],
                 "title": category,
                 "percent": item["percent"],
+                "percent_label": item["percent_label"],
                 "count": item["count"],
                 "reason": item["reason"]
             })
@@ -2233,11 +2191,39 @@ def get_viewpoint_master(es):
     return items
 
 
-def get_rank1_count_map(es):
+def get_rank1_count_map(es, keyword: str = ""):
+    # =========================
+    # keyword가 있으면 해당 키워드 기사만 대상으로 집계
+    # keyword가 없으면 전체 기사 기준 집계
+    # =========================
+    query = {
+        "match_all": {}
+    }
+
+    if keyword:
+        query = {
+            "bool": {
+                "must": [
+                    {
+                        "multi_match": {
+                            "query": keyword,
+                            "fields": [
+                                "title^3",
+                                "summary",
+                                "keywords",
+                                "clean_text"
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+
     result = es.search(
         index=NEWS_ECONOMY_INDEX,
         body={
             "size": 0,
+            "query": query,
             "aggs": {
                 "perspective_nested": {
                     "nested": {
@@ -2280,7 +2266,152 @@ def get_rank1_count_map(es):
     }
 
 
-def get_articles_by_perspective(es, es_category, size=500, recent_7days=False):
+# =========================================
+# 전체 기사 기준 2차 관점 분석 개요 API
+# 헤더 > 관점 분석(viewpoint_overview.html)용
+# =========================================
+@app.get("/api/viewpoints/overview")
+def get_viewpoint_overview():
+    es = get_es()
+
+    # =========================
+    # 전체 기사 기준 rank 1 관점별 기사 수 집계
+    # =========================
+    perspective_count = get_rank1_count_map(
+        es=es,
+        keyword=""
+    )
+
+    total_count = sum(perspective_count.values())
+
+    # =========================
+    # 그룹 정의
+    # 메인 핵심 키워드 관점 분석과 동일한 순서 유지
+    # =========================
+    group_map = {
+        "책임 소재": [
+            "정부 책임",
+            "기업 책임",
+            "개인 책임",
+            "외부 책임",
+            "복합 책임"
+        ],
+
+        "태도 및 감성": [
+            "비판적 태도",
+            "우려",
+            "기대",
+            "성과 예찬"
+        ],
+
+        "정보 전달 및 분석": [
+            "단순 전달",
+            "원인 분석",
+            "결과 분석",
+            "대응 분석",
+            "전망 분석"
+        ],
+
+        "정책 개입": [
+            "정부 개입 강조",
+            "시장 자율 강조"
+        ],
+
+        "환경 요인": [
+            "외부 요인(글로벌)",
+            "정책 요인(국내)"
+        ]
+    }
+
+    # =========================
+    # 프론트 카드 id 매핑
+    # viewpoint_overview.html에서도 main.html 카드 템플릿과 동일하게 사용 가능
+    # =========================
+    id_map = {
+        "정부 책임": "gov",
+        "개인 책임": "ind",
+        "복합 책임": "complex",
+        "기업 책임": "corp",
+        "외부 책임": "ext",
+
+        "기대": "exp",
+        "성과 예찬": "praise",
+        "비판적 태도": "crit",
+        "우려": "worry",
+
+        "결과 분석": "res",
+        "전망 분석": "fore",
+        "단순 전달": "simp",
+        "대응 분석": "resp",
+        "원인 분석": "cause",
+
+        "시장 자율 강조": "mkt",
+        "정부 개입 강조": "intr",
+        "정책 요인(국내)": "pol",
+        "외부 요인(글로벌)": "global"
+    }
+
+    # =========================
+    # 그룹별 데이터 생성
+    # =========================
+    groups = []
+    items_flat = []
+
+    for group_name, categories in group_map.items():
+        items = []
+
+        for category in categories:
+            count = perspective_count.get(category, 0)
+
+            raw_percent = (
+                (count / total) * 100
+                if total else 0
+            )
+
+            percent = round(raw_percent)
+
+            if count > 0 and percent == 0:
+                percent_label = "<1%"
+            else:
+                percent_label = f"{percent}%"
+
+            item = {
+                "id": id_map.get(category, ""),
+                "title": category,
+                "percent": percent,
+                "percent_label": percent_label,
+                "count": count,
+                "reason": f"전체 기사 중 {category} 관점으로 분류된 기사 {count}건."
+            }
+
+            items.append(item)
+
+            if item["id"]:
+                items_flat.append(item)
+
+        groups.append({
+            "group": group_name,
+            "items": items
+        })
+
+    # =========================
+    # 최종 반환
+    # =========================
+    return {
+        "scope": "all_articles",
+        "title": "전체 기사 2차 관점 분석",
+        "total_count": total_count,
+        "items": items_flat,
+        "groups": groups
+    }
+
+def get_articles_by_perspective(
+    es,
+    es_category,
+    size=500,
+    recent_7days=False,
+    keyword: str = ""
+):
     filter_query = [
         {
             "nested": {
@@ -2305,6 +2436,7 @@ def get_articles_by_perspective(es, es_category, size=500, recent_7days=False):
         }
     ]
 
+    # 최근 7일 제한
     if recent_7days:
         filter_query.append({
             "range": {
@@ -2314,6 +2446,30 @@ def get_articles_by_perspective(es, es_category, size=500, recent_7days=False):
                 }
             }
         })
+
+    must_query = []
+
+    # 메인 핵심 키워드 관점 분석에서 들어온 경우
+    # 해당 키워드가 포함된 기사만 조회
+    if keyword:
+        must_query.append({
+            "multi_match": {
+                "query": keyword,
+                "fields": [
+                    "title^3",
+                    "summary",
+                    "keywords",
+                    "clean_text"
+                ]
+            }
+        })
+
+    bool_query = {
+        "filter": filter_query
+    }
+
+    if must_query:
+        bool_query["must"] = must_query
 
     result = es.search(
         index=NEWS_ECONOMY_INDEX,
@@ -2334,9 +2490,7 @@ def get_articles_by_perspective(es, es_category, size=500, recent_7days=False):
                 "perspective"
             ],
             "query": {
-                "bool": {
-                    "filter": filter_query
-                }
+                "bool": bool_query
             },
             "sort": [
                 {
@@ -2370,7 +2524,10 @@ def get_articles_by_perspective(es, es_category, size=500, recent_7days=False):
 
 
 @app.get("/api/viewpoints/detail")
-def get_viewpoint_detail(viewpoint: str = ""):
+def get_viewpoint_detail(
+    viewpoint: str = "",
+    keyword: str = ""
+):
     es = get_es()
 
     master_items = get_viewpoint_master(es)
@@ -2408,19 +2565,32 @@ def get_viewpoint_detail(viewpoint: str = ""):
     }
 
     # rank 1 관점별 전체 기사 수
-    es_count_map = get_rank1_count_map(es)
+    es_count_map = get_rank1_count_map(
+        es=es,
+        keyword=keyword
+    )
     total_count = sum(es_count_map.values())
 
     # 선택 관점 결정
     selected_master = None
 
     if viewpoint:
+        # 1. 화면 표시명 기준으로 먼저 찾기
+        # 예: "개인 관점", "정부 관점"
         selected_master = title_to_master.get(viewpoint)
 
+        # 2. 못 찾으면 ES 실제 category 기준으로 다시 찾기
+        # 예: "개인 책임", "정부 책임", "결과 분석"
+        if selected_master is None:
+            selected_master = es_to_master.get(viewpoint)
+
+    # viewpoint가 없거나, 위 두 방식 모두 실패했을 때만
+    # 전체 기사 기준 최다 관점을 기본값으로 선택
     if selected_master is None and es_count_map:
         top_es_category = max(es_count_map, key=es_count_map.get)
         selected_master = es_to_master.get(top_es_category)
 
+    # 그래도 없으면 마스터 첫 번째 항목
     if selected_master is None:
         selected_master = master_items[0]
 
@@ -2436,7 +2606,8 @@ def get_viewpoint_detail(viewpoint: str = ""):
         es=es,
         es_category=selected_es_category,
         size=10000,
-        recent_7days=False
+        recent_7days=False,
+        keyword=keyword
     )
 
     latest_date = ""
@@ -2460,8 +2631,8 @@ def get_viewpoint_detail(viewpoint: str = ""):
     keyword_counter = Counter()
 
     for article in selected_articles_all:
-        for keyword in article["keywords"]:
-            keyword_counter[keyword] += 1
+        for article_keyword in article["keywords"]:
+            keyword_counter[article_keyword] += 1
 
     keywords = [
         keyword
@@ -2474,7 +2645,8 @@ def get_viewpoint_detail(viewpoint: str = ""):
         es=es,
         es_category=selected_es_category,
         size=500,
-        recent_7days=True
+        recent_7days=True,
+        keyword=keyword
     )
 
     representative_keywords = set(keywords[:5])
@@ -2521,7 +2693,8 @@ def get_viewpoint_detail(viewpoint: str = ""):
             es=es,
             es_category=item_es_category,
             size=500,
-            recent_7days=False
+            recent_7days=False,
+            keyword=keyword
         )
 
         item_sentiment_counter = Counter(
@@ -2555,6 +2728,7 @@ def get_viewpoint_detail(viewpoint: str = ""):
 
     return {
         "title": selected_title,
+        "keyword": keyword,
         "icon": selected_master.get("icon", "📌"),
         "es_category": selected_es_category,
         "color_key": selected_master.get("color_key", "teal"),
@@ -3008,3 +3182,185 @@ def search_users(user_id:str, role:str):
 @app.post("/user_usage")
 def user_usage():
     return get_user_usage_stats()
+
+@app.get("/api/admin/scope-stats")
+def get_scope_stats():
+
+    es = get_es()
+
+    result = es.search(
+        index="news_scopes",
+        body={
+            "size": 20,
+            "_source": [
+                "scopeTitle",
+                "news_count"
+            ],
+            "sort": [
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    hits = result["hits"]["hits"]
+
+    scopes = []
+
+    for hit in hits:
+
+        source = hit["_source"]
+
+        scopes.append({
+            "title": source.get("scopeTitle", "제목 없음"),
+            "count": source.get("news_count", 0)
+        })
+
+    return {
+        "success": True,
+        "scopes": scopes
+    }
+
+@app.post("/change_role")
+def change_role(info:Dict[str,str]):
+    return change_user_role(info)
+
+@app.get("/api/admin/analysis-logs")
+def get_analysis_logs(
+    type: str = "전체",
+    start_date: str = "",
+    end_date: str = ""
+):
+    db = get_engine()
+
+    where = []
+    params = {}
+
+    if start_date:
+        where.append("DATE(pl.occurred_at) >= :start_date")
+        params["start_date"] = start_date
+
+    if end_date:
+        where.append("DATE(pl.occurred_at) <= :end_date")
+        params["end_date"] = end_date
+
+    if type == "성공 데이터":
+        where.append("pl.status = 'success'")
+
+    if type == "에러 데이터":
+        where.append("pl.status = 'fail'")
+
+    where_sql = ""
+    if where:
+        where_sql = "WHERE " + " AND ".join(where)
+
+    rows = db.execute(
+        text(f"""
+            SELECT
+                pl.history_id,
+                pl.job_id,
+                pl.code_id,
+                pl.article_id,
+                pl.status,
+                pl.occurred_at,
+
+                el.error_code,
+                el.error_message
+            FROM article_process_logs pl
+            LEFT JOIN article_error_logs el
+                ON pl.history_id = el.history_id
+            {where_sql}
+            ORDER BY pl.occurred_at DESC
+            LIMIT 100
+        """),
+        params
+    ).fetchall()
+
+    db.close()
+
+    es = get_es()
+    logs = []
+
+    for row in rows:
+        row = dict(row._mapping)
+
+        article_id = row.get("article_id")
+
+        title = "기사 정보 없음"
+        first = "-"
+        second = "-"
+
+        if article_id:
+            try:
+                result = es.get(
+                    index="news_economy",
+                    id=str(article_id)
+                )
+
+                source = result["_source"]
+
+                title = source.get("title") or "기사 제목 없음"
+
+                sentiment = source.get("sentiment") or "-"
+
+                if sentiment == "positive":
+                    first = "긍정"
+                elif sentiment == "negative":
+                    first = "부정"
+                elif sentiment == "neutral":
+                    first = "중립"
+                else:
+                    first = sentiment
+
+                perspective = source.get("perspective")
+
+                if isinstance(perspective, list) and len(perspective) > 0:
+                    if isinstance(perspective[0], dict):
+                        second = perspective[0].get("category", "-")
+                    else:
+                        second = str(perspective[0])
+
+                elif isinstance(perspective, dict):
+                    second = perspective.get("category", "-")
+
+                elif isinstance(perspective, str):
+                    second = perspective
+
+            except Exception as e:
+                print("분석 로그 기사 조회 실패:", article_id, e)
+
+        is_success = row.get("status") == "success"
+
+        logs.append({
+            "id": article_id or "-",
+            "title": title,
+            "first": first,
+            "second": second,
+            "status": "성공" if is_success else "에러",
+            "code": row.get("error_code") or row.get("code_id") or "-",
+            "message": (
+                "정상 처리"
+                if is_success
+                else row.get("error_message") or "에러 메시지 없음"
+            ),
+            "time": str(row.get("occurred_at"))[:16]
+        })
+
+    return {
+        "success": True,
+        "logs": logs
+    }
+
+@app.get("/press_reaction")
+def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = ""):
+    return get_press_reaction({
+        "start_date": start_date,
+        "end_date": end_date
+    })
+
+@app.get("/admin_trends") # 이용자 그래프
+def admin_trends(start_date: str = "", end_date: str = ""):
+    return get_admin_trends(start_date, end_date)

@@ -1767,7 +1767,14 @@ let viewTitle =
   viewpointParams.get("viewpoint") ||
   localStorage.getItem("viewpoint_title") ||
   "";
-  let viewEsCategory = "";
+
+// 메인 핵심 키워드 관점 분석에서 들어왔을 때만 존재
+let viewpointKeyword =
+  viewpointParams.get("keyword") ||
+  localStorage.getItem("viewpoint_keyword") ||
+  "";
+
+let viewEsCategory = "";
 
 function getSentimentText(sentiment) {
   if (sentiment === "positive") return "긍정";
@@ -1847,6 +1854,11 @@ async function loadViewpointDetail(selectedTitle) {
 
     if (selectedTitle) {
       requestParams.viewpoint = selectedTitle;
+    }
+
+    // 메인 핵심 키워드 관점 분석에서 들어온 경우에만 keyword 전달
+    if (viewpointKeyword) {
+      requestParams.keyword = viewpointKeyword;
     }
 
     const res = await axios.get("/api/viewpoints/detail", {
@@ -2142,8 +2154,12 @@ function renderCompareCards(compareGroups) {
 
       localStorage.setItem("viewpoint_title", selectedTitle);
 
-      const nextUrl =
+      let nextUrl =
         `/view/viewpoint_detail.html?viewpoint=${encodeURIComponent(selectedTitle)}`;
+
+      if (viewpointKeyword) {
+        nextUrl += `&keyword=${encodeURIComponent(viewpointKeyword)}`;
+      }
 
       history.pushState(null, "", nextUrl);
 

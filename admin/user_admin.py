@@ -1,5 +1,8 @@
-from datetime import datetime
+from typing import Dict
+from collections import defaultdict
+from datetime import datetime, timedelta
 from util.db import get_engine
+from util.es import get_es
 from sqlalchemy import text
 from zoneinfo import ZoneInfo
 
@@ -244,3 +247,315 @@ def get_user_usage_stats():
 
     finally:
         db.close()
+
+def change_user_role(info:Dict[str,str]):
+    user_id = (info.get("user_id") or "").strip()
+    new_role = (info.get("role") or "").strip().lower()
+
+    # 허용 권한 체크
+    allowed_roles = {"general", "admin", "superadmin"}
+
+    if not user_id:
+        return {
+            "success": False,
+            "message": "user_id가 필요합니다."
+        }
+
+    if new_role not in allowed_roles:
+        return {
+            "success": False,
+            "message": "유효하지 않은 권한입니다."
+        }
+
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        # 대상 유저 존재 여부 확인
+        user_check_sql = text("""
+                SELECT user_id, role
+                FROM users
+                WHERE user_id = :user_id
+                LIMIT 1
+            """)
+
+        user_result = conn.execute(
+            user_check_sql,
+            {"user_id": user_id}
+        ).mappings().first()
+
+        if not user_result:
+            return {
+                "success": False,
+                "message": "존재하지 않는 사용자입니다."
+            }
+
+        old_role = user_result["role"]
+
+        # 동일 권한이면 업데이트 안 함
+        if old_role == new_role:
+            return {
+                "success": True,
+                "message": "이미 동일한 권한입니다.",
+                "user_id": user_id,
+                "old_role": old_role,
+                "new_role": new_role
+            }
+
+        # 권한 변경
+        update_sql = text("""
+                UPDATE users
+                SET role = :role
+                WHERE user_id = :user_id
+            """)
+
+        conn.execute(
+            update_sql,
+            {
+                "role": new_role,
+                "user_id": user_id
+            }
+        )
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "권한이 성공적으로 변경되었습니다.",
+            "user_id": user_id,
+            "old_role": old_role,
+            "new_role": new_role
+        }
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+
+        return {
+            "success": False,
+            "message": f"권한 변경 중 오류 발생: {str(e)}"
+        }
+
+    finally:
+        if conn:
+            conn.close()
+
+def get_press_reaction(info: dict):
+    start_date = (info.get("start_date") or "").strip()
+    end_date = (info.get("end_date") or "").strip()
+
+    conn = None
+
+    try:
+        conn = get_engine()
+        es = get_es()
+
+        sql = text("""
+                SELECT
+                    article_id,
+                    SUM(view_count) AS views,
+                    SUM(like_count) AS likes
+                FROM (
+                    SELECT
+                        article_id,
+                        COUNT(*) AS view_count,
+                        0 AS like_count
+                    FROM article_views
+                    WHERE (:start_date = '' OR DATE(created_at) >= :start_date)
+                      AND (:end_date = '' OR DATE(created_at) <= :end_date)
+                    GROUP BY article_id
+
+                    UNION ALL
+
+                    SELECT
+                        article_id,
+                        0 AS view_count,
+                        COUNT(*) AS like_count
+                    FROM article_reactions
+                    WHERE reaction_type = 'like'
+                      AND (:start_date = '' OR DATE(created_at) >= :start_date)
+                      AND (:end_date = '' OR DATE(created_at) <= :end_date)
+                    GROUP BY article_id
+                ) t
+                GROUP BY article_id
+            """)
+
+        rows = conn.execute(
+            sql,
+            {
+                "start_date": start_date,
+                "end_date": end_date
+            }
+        ).mappings().all()
+
+        if not rows:
+            return {
+                "success": True,
+                "data": []
+            }
+
+        article_stats = {
+            row["article_id"]: {
+                "views": int(row["views"] or 0),
+                "likes": int(row["likes"] or 0)
+            }
+            for row in rows
+        }
+
+        article_ids = list(article_stats.keys())
+
+        press_stats = defaultdict(lambda: {"views": 0, "likes": 0})
+
+        batch_size = 500
+
+        for i in range(0, len(article_ids), batch_size):
+            batch_ids = article_ids[i:i + batch_size]
+
+            es_res = es.search(
+                index="news_economy",
+                body={
+                    "size": len(batch_ids),
+                    "_source": ["article_id", "press"],
+                    "query": {
+                        "terms": {
+                            "article_id": batch_ids
+                        }
+                    }
+                }
+            )
+
+            for hit in es_res["hits"]["hits"]:
+                src = hit["_source"]
+                article_id = src.get("article_id")
+                press = src.get("press") or "-"
+
+                if article_id not in article_stats:
+                    continue
+
+                press_stats[press]["views"] += article_stats[article_id]["views"]
+                press_stats[press]["likes"] += article_stats[article_id]["likes"]
+
+        data = [
+            {
+                "press": press,
+                "views": values["views"],
+                "likes": values["likes"]
+            }
+            for press, values in press_stats.items()
+        ]
+
+        data.sort(key=lambda x: (x["views"], x["likes"]), reverse=True)
+
+        return {
+            "success": True,
+            "data": data
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"언론사 반응도 조회 중 오류 발생: {str(e)}"
+        }
+
+    finally:
+        if conn:
+            conn.close()
+
+def get_admin_trends(start_date: str = "", end_date: str = ""):
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        today = datetime.now().date()
+
+        if not end_date:
+            end = today
+        else:
+            end = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+        if not start_date:
+            # 초기값: 서비스 전체 기간
+            start_row = conn.execute(text("""
+                SELECT MIN(created_at) AS first_date
+                FROM users
+            """)).mappings().first()
+
+            first_date = start_row["first_date"]
+
+            if first_date:
+                start = first_date.date()
+            else:
+                start = end - timedelta(days=6)
+        else:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+        # 날짜 간격이 7일보다 짧으면 최소 일주일
+        if (end - start).days < 6:
+            start = end - timedelta(days=6)
+
+        params = {
+            "start_date": start,
+            "end_date": end
+        }
+
+        view_rows = conn.execute(text("""
+            SELECT
+                DATE(created_at) AS date,
+                COUNT(*) AS count
+            FROM article_views
+            WHERE DATE(created_at) BETWEEN :start_date AND :end_date
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        """), params).mappings().all()
+
+        signup_rows = conn.execute(text("""
+            SELECT
+                DATE(created_at) AS date,
+                COUNT(*) AS count
+            FROM users
+            WHERE DATE(created_at) BETWEEN :start_date AND :end_date
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        """), params).mappings().all()
+
+        return {
+            "success": True,
+            "start_date": str(start),
+            "end_date": str(end),
+            "views": fill_daily_data(start, end, view_rows),
+            "signups": fill_daily_data(start, end, signup_rows)
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }
+
+    finally:
+        if conn:
+            conn.close()
+
+
+def fill_daily_data(start, end, rows):
+    row_map = {
+        str(row["date"]): int(row["count"] or 0)
+        for row in rows
+    }
+
+    result = []
+    current = start
+
+    while current <= end:
+        key = str(current)
+
+        result.append({
+            "date": key,
+            "count": row_map.get(key, 0)
+        })
+
+        current += timedelta(days=1)
+
+    return result

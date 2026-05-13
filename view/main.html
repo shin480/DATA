@@ -1,43 +1,236 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>DATA 다타 - AI 뉴스 인사이트</title>
-    <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
-    <link rel="preload" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2" as="font" type="font/woff2" crossorigin />
+
+<link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
+<link
+  rel="preload"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
 <style>
+/* =========================================================
+   0. 기본 설정
+========================================================= */
 html {
-  overflow-y: scroll; /* 항상 스크롤바 공간 고정 */
+  overflow-y: scroll;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden;
 }
 
-/* ===== common.css ===== */
-/* ==============================
-   Common Utility Only
-   메인 디자인 건드리지 않음
-============================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 .hidden {
   display: none !important;
 }
 
-
-/* ==============================
-   Search Suggest Dropdown
-   헤더 디자인은 main.css 기준
-============================== */
-
-.main-search-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
+body {
+  background: #050816;
+  color: #e5e7eb;
+  font-family: "Pretendard", Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
+.page {
+  width: 1300px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-top: 72px;
+  background: #050816;
+}
+
+.main {
+  padding: 40px 64px 80px;
+}
+
+
+/* =========================================================
+   1. 헤더
+========================================================= */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: none;
+  z-index: 10000;
+
+  width: 100%;
+  height: 72px;
+  padding: 0 56px;
+
+  display: flex;
+  align-items: center;
+
+  background: #070b1a;
+  border-bottom: 1px solid #111827;
+}
+
+.logo {
+  width: 155px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.header-logo-full {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-left: 22px;
+  color: #6b7280;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nav a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.18s;
+}
+
+.nav a:hover {
+  color: #00e5ff;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+/* 검색창 */
+.main-search-wrap {
+  position: relative;
+  width: 410px;
+  height: 40px;
+  border-radius: 999px;
+  background: #070b1a;
+  border: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 20px;
+}
+
+.main-search-wrap:focus-within {
+  border-color: #334155;
+}
+
+.search-box {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 15px;
+  padding: 0;
+}
+
+.search-box::placeholder {
+  color: #7c8493;
+}
+
+.search-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #8b95a7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.search-icon-btn:hover {
+  color: #00e5ff;
+}
+
+
+/* 테마 버튼 */
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #070b1a;
+  color: #facc15;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-btn:hover {
+  border-color: #334155;
+}
+
+
+/* 로그인 / 회원가입 버튼 */
+.header-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.header-btn.login {
+  border: 1px solid #00cfe8;
+  background: #00cfe8;
+  color: #020617;
+}
+
+.header-btn.login:hover {
+  filter: brightness(1.08);
+}
+
+.header-btn.join {
+  border: 1px solid #475569;
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.header-btn.join:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+
+/* =========================================================
+   2. 검색 자동완성
+========================================================= */
 .search-suggest-box {
   position: fixed;
   width: 410px;
@@ -115,11 +308,803 @@ html, body {
 }
 
 
-/* ==============================
-   Footer
-============================== */
+/* =========================================================
+   3. 히어로 섹션
+========================================================= */
+.hero {
+  height: 400px;
+  border-radius: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 
-/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
+  background:
+    radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15), transparent 70%),
+    #0f172a;
+
+  border: 1px solid #1e293b;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  font-size: 48px;
+  line-height: 1.3;
+  color: #fff;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.hero h1 span {
+  color: #00e5ff;
+}
+
+.hero p {
+  color: #94a3b8;
+  font-size: 16px;
+  margin-bottom: 32px;
+}
+
+.hero-tags {
+  display: flex;
+  gap: 12px;
+}
+
+.h-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  padding: 8px 18px;
+
+  font-family: "Pretendard", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8;
+  font-size: 14px;
+
+  transition:
+    color 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.h-tag:hover {
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.14);
+  border-color: rgba(0, 229, 255, 0.2);
+}
+
+
+/* =========================================================
+   4. 상단 데이터 카드 공통
+========================================================= */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 28px;
+  padding: 40px;
+  position: relative;
+}
+
+.section-title-wrap span {
+  color: #38bdf8;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.section-title-wrap h2 {
+  margin-top: 10px;
+  font-size: 32px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+
+/* =========================================================
+   5. 오늘의 핵심 키워드 카드
+========================================================= */
+.top-keyword-title {
+  width: fit-content;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.top-keyword-title:hover {
+  color: #00e5ff;
+}
+
+.status-badge {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(244, 114, 114, 0.15);
+  color: #f47272;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* 감성 게이지 */
+.gauge-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px 0;
+}
+
+.gauge-item {
+  text-align: center;
+}
+
+.gauge-circle {
+  --percent: 0;
+
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 15px;
+  position: relative;
+
+  background:
+    conic-gradient(
+      var(--gauge-color) calc(var(--percent) * 1%),
+      #1e293b 0
+    );
+
+  transition: background 0.18s ease;
+}
+
+.gauge-circle::before {
+  content: "";
+  position: absolute;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: #0f172a;
+}
+
+.gauge-circle .percent {
+  position: relative;
+  z-index: 2;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.gauge-circle.pos {
+  --gauge-color: #00e5ff;
+}
+
+.gauge-circle.neg {
+  --gauge-color: #f47272;
+}
+
+.gauge-circle.neu {
+  --gauge-color: #fbbf24;
+}
+
+.gauge-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+
+/* 주요 키워드 */
+.keyword-box {
+  background: rgba(255,255,255,0.03);
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.keyword-box-title {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 16px;
+  border-radius: 999px;
+
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.chip:hover {
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.14);
+}
+
+
+/* =========================================================
+   6. 오늘의 지배적 여론 카드
+========================================================= */
+.opinion-card {
+  background: rgba(255,255,255,0.03);
+  border-radius: 24px;
+  padding: 32px;
+  margin-top: 25px;
+  position: relative;
+  min-height: 280px;
+}
+
+.quote-icon {
+  font-size: 32px;
+  color: #38bdf8;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.opinion-text {
+  font-size: 20px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.opinion-tags {
+  position: absolute;
+  bottom: 32px;
+  left: 32px;
+  display: flex;
+  gap: 8px;
+}
+
+.o-tag {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.nav-btns {
+  position: absolute;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #334155;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.nav-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
+
+.opinion-page {
+  min-width: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: #f1f5f9;
+}
+
+
+/* =========================================================
+   7. 감성 비교 섹션
+========================================================= */
+.sentiment-compare {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 28px;
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.sentiment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.sentiment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.news-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 24px;
+  padding: 32px;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.news-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.media-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.s-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.s-badge.pos {
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff;
+}
+
+.s-badge.neg {
+  background: rgba(244, 114, 114, 0.1);
+  color: #f47272;
+}
+
+.s-badge.neu {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+}
+
+.news-card h3 {
+  font-size: 22px;
+  line-height: 1.4;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 16px;
+  word-break: keep-all;
+}
+
+.news-card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #94a3b8;
+  flex-grow: 1;
+  margin-bottom: 24px;
+}
+
+.action-btn {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+
+/* =========================================================
+   8. 핵심 키워드 관점 분석 섹션
+========================================================= */
+.viewpoint-box {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 28px;
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.view-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+
+  max-height: 440px;
+  overflow: hidden;
+  transition: max-height 0.18s ease;
+  margin-top: 24px;
+}
+
+.view-grid.expanded {
+  max-height: 2500px;
+}
+
+.view-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.view-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.view-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #0f172a;
+  border: 2px solid;
+
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.view-icon-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+.view-title-group .vt {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.view-title-group .vp {
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.view-bar-bg {
+  height: 6px;
+  background: #334155;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.view-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.18s ease;
+}
+
+.reason-label {
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.view-reason {
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.detail-btn {
+  width: fit-content;
+  height: 36px;
+  padding: 0 12px;
+
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.detail-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+}
+
+.toggle-btn {
+  width: 100%;
+  height: 52px;
+  margin-top: 28px;
+
+  border-radius: 14px;
+  border: 1px solid #1e293b;
+  background: #111827;
+  color: #38bdf8;
+
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
+
+.small-text {
+  font-size: 0.8em;
+}
+
+
+/* =========================================================
+   9. 지금 뜨는 뉴스
+========================================================= */
+.news-section {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 28px;
+  padding: 40px;
+  margin-top: 40px;
+}
+
+.news-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.news-header h2 {
+  font-size: 24px;
+  color: #fff;
+  font-weight: 800;
+}
+
+.realtime-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #38bdf8;
+  border-radius: 50%;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.news-item-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 24px;
+  padding: 28px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.news-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  margin-bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.badge-like {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.badge-dislike {
+  color: #f47272;
+  background: rgba(244, 114, 114, 0.1);
+}
+
+.badge-battle {
+  background: rgba(203, 213, 225, 0.18);
+  color: #cbd5e1;
+  font-weight: 700;
+  border: rgba(203, 213, 225, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.news-main-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.news-rank-circle {
+  min-width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #00e5ff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+  font-weight: 800;
+  color: #00e5ff;
+}
+
+.news-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+  text-align: left;
+  word-break: keep-all;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.news-quote {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  flex-grow: 1;
+  text-align: left;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reaction-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.react-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.react-item.up {
+  color: #3b82f6;
+}
+
+.react-item.down {
+  color: #ef4444;
+}
+
+.news-footer-btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #334155;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  padding-left: 16px;
+}
+
+.news-footer-btn:hover {
+  border-color: #334155;
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   10. Footer
+========================================================= */
 #footer {
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -127,7 +1112,6 @@ html, body {
   flex-shrink: 0;
 }
 
-/* 실제 footer */
 .footer {
   width: 100%;
   background: #020617;
@@ -135,7 +1119,6 @@ html, body {
   box-sizing: border-box;
 }
 
-/* footer 안쪽 내용 */
 .footer-inner {
   width: 100%;
   min-height: 88px;
@@ -190,11 +1173,7 @@ html, body {
 }
 
 
-/* ==============================
-   Footer Modal
-============================== */
-
-/* 모달은 화면 중앙 고정 */
+/* Footer Modal */
 .footer-modal {
   position: fixed;
   inset: 0;
@@ -216,6 +1195,7 @@ html, body {
   max-width: calc(100% - 32px);
   max-height: 70vh;
   overflow-y: auto;
+
   background: #111827;
   border: 1px solid #334155;
   border-radius: 18px;
@@ -238,432 +1218,116 @@ html, body {
   width: 100%;
   margin-top: 24px;
   padding: 13px;
+
   border: 0;
   border-radius: 10px;
   background: #00e5ff;
   color: #020617;
+
   font-weight: 900;
   cursor: pointer;
 }
 
 
-/* ==============================
-   Responsive
-============================== */
-
-@media (max-width: 980px) {
-  .footer-inner {
-    padding: 0 24px;
-    flex-wrap: wrap;
-  }
+/* =========================================================
+   11. 컬러 유틸리티
+========================================================= */
+.c-teal {
+  color: #2dd4bf;
+  border-color: #2dd4bf;
 }
 
-@media (max-width: 640px) {
-  .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
-  }
-
-  .footer-inner {
-    padding: 0 18px;
-  }
+.bg-teal {
+  background: #2dd4bf;
 }
 
-/* ===== main.css ===== */
-/* [확실] 기본 스타일 */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  background: #050816;
-  color: #e5e7eb;
-  font-family: 'Pretendard', Arial, sans-serif;
-
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
-.page {
-  width: 1300px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding-top: 72px;
-  background: #050816;
+.c-purple {
+  color: #a855f7;
+  border-color: #a855f7;
 }
 
-/* [확실] 헤더 */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  transform: none;
-  z-index: 10000;
-
-  width: 100%;
-  height: 72px;
-  padding: 0 56px;
-
-  display: flex;
-  align-items: center;
-
-  background: #070b1a;
-  border-bottom: 1px solid #111827;
+.bg-purple {
+  background: #a855f7;
 }
 
-.logo {
-  width: 155px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  flex-shrink: 0;
-  overflow: hidden;
+.c-blue {
+  color: #3b82f6;
+  border-color: #3b82f6;
 }
 
-.header-logo-full {
-  height: 52px;
-  width: auto;
-  display: block;
-  object-fit: contain;
+.bg-blue {
+  background: #3b82f6;
 }
 
-body.light .logo {
-  padding: 3px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.5);
-  border: 1px solid rgba(0,0,0,0.06);
-  filter: contrast(1.05);
+.c-orange {
+  color: #fb923c;
+  border-color: #fb923c;
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  margin-left: 22px;
-  color: #6b7280;
-  font-size: 15px;
-  font-weight: 700;
-  flex-shrink: 0;
+.bg-orange {
+  background: #fb923c;
 }
 
-.nav a {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.18s;
-}
-
-.nav a:hover {
-  color: #00e5ff;
-}
-
-.header-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.main-search-wrap {
-  position: relative;
-  width: 410px;
-  height: 40px;
-  border-radius: 999px;
-  background: #070b1a;
-  border: 1px solid #1f2937;
-  display: flex;
-  align-items: center;
-  padding: 0 14px 0 20px;
-}
-
-.search-box {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  outline: none;
-  background: transparent;
-  color: #cbd5e1;
-  font-size: 15px;
-  padding: 0;
-}
-
-.search-box::placeholder {
-  color: #7c8493;
-}
-
-.main-search-wrap:focus-within {
-  border-color: #334155;
-}
-
-.search-icon-btn {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: transparent;
-  color: #8b95a7;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.search-icon-btn:hover {
-  color: #00e5ff;
-}
-
-.theme-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid #1f2937;
-  background: #070b1a;
+.c-yellow {
   color: #facc15;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-color: #facc15;
 }
 
-.theme-btn:hover {
-  border-color: #334155;
+.bg-yellow {
+  background: #facc15;
 }
 
-.header-btn {
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-}
 
-.header-btn.login {
-  border: 1px solid #00cfe8;
-  background: #00cfe8;
-  color: #020617;
-}
-
-.header-btn.login:hover {
-  filter: brightness(1.08);
-}
-
-.header-btn.join {
-  border: 1px solid #475569;
-  background: transparent;
-  color: #cbd5e1;
-}
-
-.header-btn.join:hover {
-  border-color: #00e5ff;
-  color: #00e5ff;
-}
-
-/* [확실] 히어로 섹션 */
-.main { padding: 40px 64px 80px; }
-.hero {
-    height: 400px; border-radius: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-    background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.15), transparent 70%), #0f172a;
-    border: 1px solid #1e293b; margin-bottom: 40px; position: relative;
-}
-.hero-badge { display: inline-block; padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 13px; font-weight: 700; margin-bottom: 24px; }
-.hero h1 { font-size: 48px; line-height: 1.3; color: #fff; font-weight: 800; margin-bottom: 20px; }
-.hero h1 span { color: #00E5FF; }
-.hero p { color: #94a3b8; font-size: 16px; margin-bottom: 32px; }
-.hero-tags { display: flex; gap: 12px; }
-.h-tag { padding: 8px 18px;
-   cursor: pointer;
-  transition:
-    color 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease;
-    border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 14px; text-decoration: none; }
-
-.h-tag:hover {
-  color: #00E5FF;
-  background: rgba(0, 229, 255, 0.14);
-  border-color: rgba(0, 229, 255, 0.2);
-}
-
-/* [확실] 감성 분석 & 지배적 여론 그리드 */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
-.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; position: relative; }
-.section-title-wrap span { color: #38bdf8; font-size: 13px; font-weight: 700; text-transform: uppercase; }
-.section-title-wrap h2 { margin-top: 10px; font-size: 32px; color: #fff; font-weight: 800; }
-.top-keyword-title { width: fit-content; cursor: pointer; transition: color 0.18s ease; }
-.top-keyword-title:hover { color: #00E5FF; }
-.section-desc { font-size: 14px; color: #64748b; margin-top: 8px; }
-.status-badge { display: inline-block; margin-top: 15px; padding: 6px 12px; border-radius: 8px; background: rgba(244, 114, 114, 0.15); color: #f47272; font-size: 12px; font-weight: 700; }
-
-.gauge-container { display: flex; justify-content: space-between; margin: 40px 0; }
-.gauge-item { text-align: center; }
-.gauge-circle { --percent: 0; width: 140px; height: 140px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; position: relative;
-
-    background:
-        conic-gradient( var(--gauge-color) calc(var(--percent) * 1%), #1e293b 0 );
-transition: background 0.18s ease; }
-
-.gauge-circle::before { content: ""; position: absolute; width: 118px; height: 118px; border-radius: 50%; background: #0f172a; }
-
-.gauge-circle .percent { position: relative; z-index: 2; font-size: 26px; font-weight: 800; color: #fff; }
-
-/* 색상 */
-.gauge-circle.pos { --gauge-color: #00E5FF; }
-
-.gauge-circle.neg { --gauge-color: #f47272; }
-
-.gauge-circle.neu { --gauge-color: #fbbf24; }
-.gauge-circle .percent { font-size: 26px; font-weight: 800; color: #fff; }
-.gauge-label { font-size: 12px; font-weight: 700; color: #64748b; }
-
-.keyword-box { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 24px; margin-top: 20px; }
-.keyword-box-title { font-size: 13px; color: #64748b; margin-bottom: 16px; }
-.chip-group { display: flex; flex-wrap: wrap; gap: 10px; }
-.chip { padding: 8px 16px; border-radius: 999px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; font-size: 13px; cursor: pointer; transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
-.chip:hover { color: #00E5FF; background: rgba(0, 229, 255, 0.14); }
-
-.opinion-card { background: rgba(255,255,255,0.03); border-radius: 24px; padding: 32px; margin-top: 25px; position: relative; min-height: 280px; }
-.quote-icon { font-size: 32px; color: #38bdf8; margin-bottom: 20px; opacity: 0.5; }
-.opinion-text { font-size: 20px; line-height: 1.6; color: #e2e8f0; font-weight: 500; }
-.opinion-tags { position: absolute; bottom: 32px; left: 32px; display: flex; gap: 8px; }
-.o-tag { padding: 6px 12px; border-radius: 6px; background: #1e293b; color: #94a3b8; font-size: 11px; }
-.nav-btns { position: absolute; bottom: 32px; right: 32px; display: flex; align-items: center; gap: 12px; }
-.nav-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; }
-.opinion-page {
-    min-width: 46px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1;
-
-    color: #f1f5f9;
-}
-
-/* [확실] 감성 비교 섹션 */
-.sentiment-compare { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
-.sentiment-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
-.sentiment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.news-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; min-height: 320px; }
-.news-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.media-name { font-size: 15px; font-weight: 700; color: #f8fafc; }
-.s-badge { padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; }
-.s-badge.pos { background: rgba(0, 229, 255, 0.1); color: #00E5FF; }
-.s-badge.neg { background: rgba(244, 114, 114, 0.1); color: #f47272; }
-.s-badge.neu { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
-.news-card h3 { font-size: 22px; line-height: 1.4; color: #fff; font-weight: 700; margin-bottom: 16px; word-break: keep-all; }
-.news-card p { font-size: 14px; line-height: 1.6; color: #94a3b8; flex-grow: 1; margin-bottom: 24px; }
-.action-btn { height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #cbd5e1; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
-.action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-/* [확실] 관점 분석 섹션 */
-.viewpoint-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-bottom: 40px; }
-.view-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; max-height: 440px; overflow: hidden; transition: max-height 0.18s ease; margin-top: 24px; }
-.view-grid.expanded { max-height: 2500px; }
-.view-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; }
-.view-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.view-icon-img{ width: 22px; height: 22px; object-fit: contain; display: block; }
-.view-icon-box { width: 44px; height: 44px; border-radius: 50%; background: #0f172a; border: 2px solid; display: grid; place-items: center; font-size: 20px; }
-.view-title-group .vt { font-size: 14px; font-weight: 700; }
-.view-title-group .vp { font-size: 24px; font-weight: 900; }
-.view-bar-bg { height: 6px; background: #334155; border-radius: 999px; overflow: hidden; margin-bottom: 15px; }
-.view-bar-fill { height: 100%; border-radius: 999px; transition: width 0.18s ease; }
-.reason-label { font-size: 11px; color: #38bdf8; font-weight: 700; margin-bottom: 8px; }
-.view-reason { color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
-.detail-btn { width: fit-content;
- padding: 0 12px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid #334155; color: #94a3b8; font-size: 12px; cursor: pointer; transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease; }
- .detail-btn,
+/* =========================================================
+   12. 공통 transition / 렌더링 안정화
+========================================================= */
+body,
+header,
+.card,
+.view-card,
+.scope-box,
+.summary-box,
+.news-card,
+.keyword-card,
+button,
+a,
+.nav-btn,
+.detail-btn,
 .action-btn,
 .news-footer-btn,
 .toggle-btn,
-.nav-btn {
+.chip,
+.span-chip,
+.h-tag {
   transition:
+    background-color 0.18s ease,
     border-color 0.18s ease,
     color 0.18s ease,
-    background 0.18s ease;}
-.nav-btn:hover {
-  border-color: #334155;
-  background: rgba(255,255,255,0.06);
-  color: #ffffff;
+    box-shadow 0.18s ease;
 }
 
-.detail-btn:hover {
-  border-color: #334155;
-  background: rgba(255,255,255,0.08);
-  color: #ffffff;
-}
-.toggle-btn { width: 100%; height: 52px; margin-top: 28px; border-radius: 14px; border: 1px solid #1e293b; background: #111827; color: #38bdf8; font-weight: 600; font-size: 15px; cursor: pointer; }
-
-.toggle-btn:hover {
-  border-color: #334155;
-  background: rgba(255,255,255,0.06);
-  color: #ffffff;
+body,
+.page {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
-/* 지금 뜨는 뉴스 */
-.news-section { background: #0f172a; border: 1px solid #1e293b; border-radius: 28px; padding: 40px; margin-top: 40px; }
-.news-header { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
-.news-header h2 { font-size: 24px; color: #fff; font-weight: 800; }
-.realtime-dot { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #94a3b8; }
-.dot { width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; }
-
-.news-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 24px; }
-.news-item-card { background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
-
-.news-badge { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-bottom: 12px; padding: 4px 10px; border-radius: 6px; }
-.badge-like { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
-.badge-dislike { color: #f47272; background: rgba(244, 114, 114, 0.1); }
-
-.news-main-row { display: flex; align-items: flex-start; gap: 12px; width: 100%; margin-bottom: 20px; }
-.news-rank-circle { min-width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #00E5FF; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #00E5FF; }
-.news-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; text-align: left; word-break: keep-all;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
-}
-.news-quote { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; text-align: left;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
+.header,
+.card,
+.news-card,
+.view-card,
+.news-item-card,
+.hero {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: background-color;
 }
 
-.reaction-row { display: flex; gap: 16px; margin-bottom: 20px; width: 100%; justify-content: flex-start; }
-.react-item { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; color: #94a3b8; }
-.react-item.up { color: #3b82f6; }
-.react-item.down { color: #ef4444; }
 
-.news-footer-btn { width: 100%; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid #334155; color: #94a3b8; font-size: 13px; cursor: pointer; text-align: left; padding-left: 16px; }
-
-.news-footer-btn:hover {
-  border-color: #334155;
-  background: rgba(255,255,255,0.06);
-  color: #ffffff;
-}
-/* 접전 배지 */
-.badge-battle {
-    background: rgba(203, 213, 225, 0.18);
-    color: #CBD5E1;
-    font-weight: 700;
-    border:rgba(203, 213, 225, 0.35);
-    backdrop-filter: blur(4px);
-}
-
-/* 컬러 유틸리티 */
-.c-teal { color: #2dd4bf; border-color: #2dd4bf; } .bg-teal { background: #2dd4bf; }
-.c-purple { color: #a855f7; border-color: #a855f7; } .bg-purple { background: #a855f7; }
-.c-blue { color: #3b82f6; border-color: #3b82f6; } .bg-blue { background: #3b82f6; }
-.c-orange { color: #fb923c; border-color: #fb923c; } .bg-orange { background: #fb923c; }
-.c-yellow { color: #facc15; border-color: #facc15; } .bg-yellow { background: #facc15; }
-
-/* ==============================
-   Light Mode - Sage Premium Theme
-   전체 UI 세이지톤 통일
-   (포인트 민트색 유지)
-============================== */
-
-body.light-mode section.hero h1 span {
-  color: #41BFE0;
-}
-
+/* =========================================================
+   13. 라이트 모드
+========================================================= */
 body.light-mode {
   background: #edf2ee;
   color: #1f2937;
@@ -673,10 +1337,12 @@ body.light-mode .page {
   background: #edf2ee;
 }
 
-/* ==============================
-   Header
-============================== */
+body.light-mode section.hero h1 span {
+  color: #41bfe0;
+}
 
+
+/* Header */
 body.light-mode .header {
   background: #f1f6f2;
   border-bottom: 1px solid #d5ddd6;
@@ -689,7 +1355,7 @@ body.light-mode .nav {
 }
 
 body.light-mode .nav a:hover {
-  color: #4CB7D3;
+  color: #4cb7d3;
 }
 
 body.light-mode .main-search-wrap {
@@ -718,7 +1384,7 @@ body.light-mode .search-icon-btn {
 }
 
 body.light-mode .search-icon-btn:hover {
-  color: #4CB7D3;
+  color: #4cb7d3;
 }
 
 body.light-mode .theme-btn {
@@ -728,7 +1394,7 @@ body.light-mode .theme-btn {
 }
 
 body.light-mode .theme-btn:hover {
-  border-color: #4CB7D3;
+  border-color: #4cb7d3;
   background: #ffffff;
 }
 
@@ -739,8 +1405,8 @@ body.light-mode .header-btn.join {
 }
 
 body.light-mode .header-btn.join:hover {
-  border-color: #4CB7D3;
-  color: #4CB7D3;
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
 }
 
@@ -755,10 +1421,8 @@ body.light-mode .header-btn.login:hover {
   filter: brightness(1.04);
 }
 
-/* ==============================
-   자동완성
-============================== */
 
+/* 검색 자동완성 */
 body.light-mode .search-suggest-box {
   background: #f8fbf8;
   border: 1px solid #d7dfd8;
@@ -771,7 +1435,7 @@ body.light-mode .search-suggest-item {
 
 body.light-mode .search-suggest-item:hover {
   background: #ebf8fb;
-  color: #4CB7D3;
+  color: #4cb7d3;
 }
 
 body.light-mode .search-suggest-icon {
@@ -783,10 +1447,8 @@ body.light-mode .search-suggest-arrow {
   color: #839188;
 }
 
-/* ==============================
-   메인 공통 카드
-============================== */
 
+/* 메인 공통 카드 */
 body.light-mode .hero,
 body.light-mode .card,
 body.light-mode .sentiment-compare,
@@ -799,10 +1461,8 @@ body.light-mode .news-section {
     0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
-/* ==============================
-   Hero
-============================== */
 
+/* Hero */
 body.light-mode .hero {
   background:
     radial-gradient(
@@ -827,23 +1487,25 @@ body.light-mode .hero {
 body.light-mode .hero-badge {
   background: rgba(0, 207, 232, 0.08);
   border: 1px solid rgba(0, 207, 232, 0.18);
-  color: #4CB7D3;
+  color: #4cb7d3;
 }
 
 body.light-mode .hero h1 {
   color: #1e293b;
 }
 
+body.light-mode .hero p {
+  color: #5f6b76;
+}
+
+
+/* 제목 / 설명 */
 body.light-mode .section-title-wrap h2,
 body.light-mode .news-header h2,
 body.light-mode .news-card h3,
 body.light-mode .news-title,
 body.light-mode .opinion-text {
   color: #1f2937;
-}
-
-body.light-mode .hero p {
-  color: #5f6b76;
 }
 
 body.light-mode .section-desc,
@@ -855,47 +1517,12 @@ body.light-mode .view-reason {
   color: #68766f;
 }
 
-/* ==============================
-   태그 / 칩
-============================== */
-
-a.h-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  line-height: 1;
-  padding: 8px 18px;
-
-  font-family: "Pretendard", sans-serif;
+body.light-mode .top-keyword-title:hover {
+  color: #4cb7d3 !important;
 }
 
-body.light-mode .o-tag {
-  background: rgba(0, 207, 232, 0.08);
-  color: #00bcd4;
-}
 
-body.light-mode .nav-btn {
-  background: #f8fbf8;
-  border: 1px solid #d6ded7;
-  color: #607066;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    0 2px 8px rgba(15, 23, 42, 0.04);
-}
-
-body.light-mode .s-badge.pos { background: rgba(0, 229, 255, 0.1); color: #4CB7D3; }
-
-body.light-mode .news-rank-circle { border: 1.5px solid #4CB7D3;color: #4CB7D3; }
-
-
-body.light-mode .nav-btn:hover {
-  border-color: #4CB7D3;
-  color: #4CB7D3;
-  background: #ffffff;
-}
-
+/* 태그 / 칩 */
 body.light-mode .h-tag {
   background: #edf3ee;
   border: 1px solid #d8e0d9;
@@ -903,8 +1530,8 @@ body.light-mode .h-tag {
 }
 
 body.light-mode .h-tag:hover {
-  border-color: #4CB7D3;
-  color: #4CB7D3;
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
 }
 
@@ -914,14 +1541,17 @@ body.light-mode .chip {
 }
 
 body.light-mode .chip:hover {
-  color: #4CB7D3;
+  color: #4cb7d3;
   background: rgba(0, 207, 232, 0.14);
 }
 
-/* ==============================
-   내부 박스
-============================== */
+body.light-mode .o-tag {
+  background: rgba(0, 207, 232, 0.08);
+  color: #00bcd4;
+}
 
+
+/* 내부 박스 */
 body.light-mode .keyword-box,
 body.light-mode .opinion-card {
   background: linear-gradient(
@@ -933,10 +1563,8 @@ body.light-mode .opinion-card {
   border: 1px solid #d9e2da;
 }
 
-/* ==============================
-   뉴스 카드 / 관점 카드
-============================== */
 
+/* 뉴스 / 관점 카드 */
 body.light-mode .news-card,
 body.light-mode .view-card,
 body.light-mode .news-item-card {
@@ -946,17 +1574,12 @@ body.light-mode .news-item-card {
     #f1f6f2 100%
   );
 
-
   border: 1px solid #dbe3dc;
 
   box-shadow:
     0 4px 14px rgba(15, 23, 42, 0.03),
     inset 0 1px 0 rgba(255,255,255,0.8);
 }
-
-/* ==============================
-   Light Mode - View Icon Box
-============================== */
 
 body.light-mode .view-icon-box {
   background: linear-gradient(
@@ -972,38 +1595,26 @@ body.light-mode .view-icon-box {
     0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
-/* ==============================
-   게이지
-============================== */
 
+/* 게이지 */
 body.light-mode .gauge-circle {
-    background:
-        conic-gradient(
-            var(--gauge-color) calc(var(--percent) * 1%),
-            #dbe5dc 0
-        );
+  background:
+    conic-gradient(
+      var(--gauge-color) calc(var(--percent) * 1%),
+      #dbe5dc 0
+    );
 }
 
 body.light-mode .gauge-circle::before {
-    background: #f7faf7;
+  background: #f7faf7;
 }
 
 body.light-mode .gauge-circle .percent {
-    color: #1f2937;
+  color: #1f2937;
 }
 
-/* ==============================
-   관점 진행바
-============================== */
 
-body.light-mode .view-bar-bg {
-  background: #dfe7e0;
-}
-
-/* ==============================
-   버튼
-============================== */
-
+/* 버튼 */
 body.light-mode .detail-btn,
 body.light-mode .action-btn,
 body.light-mode .news-footer-btn,
@@ -1017,16 +1628,40 @@ body.light-mode .detail-btn:hover,
 body.light-mode .action-btn:hover,
 body.light-mode .news-footer-btn:hover,
 body.light-mode .toggle-btn:hover {
-  border-color: #4CB7D3;
-  color: #4CB7D3;
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 207, 232, 0.08);
 }
 
-/* ==============================
-   Footer
-============================== */
+body.light-mode .nav-btn {
+  background: #f8fbf8;
+  border: 1px solid #d6ded7;
+  color: #607066;
 
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+body.light-mode .nav-btn:hover {
+  border-color: #4cb7d3;
+  color: #4cb7d3;
+  background: #ffffff;
+}
+
+body.light-mode .s-badge.pos {
+  background: rgba(0, 229, 255, 0.1);
+  color: #4cb7d3;
+}
+
+body.light-mode .news-rank-circle {
+  border: 1.5px solid #4cb7d3;
+  color: #4cb7d3;
+}
+
+
+/* Footer */
 body.light-mode .footer {
   background: linear-gradient(
     180deg,
@@ -1046,7 +1681,7 @@ body.light-mode .footer-link {
 }
 
 body.light-mode .footer-link:hover {
-  color: #4CB7D3;
+  color: #4cb7d3;
 }
 
 body.light-mode .footer-copy {
@@ -1060,10 +1695,6 @@ body.light-mode .footer-divider {
 body.light-mode .footer-logo-white {
   background-color: #111827;
 }
-
-/* ==============================
-   Footer Modal
-============================== */
 
 body.light-mode .footer-modal {
   background: rgba(110, 128, 116, 0.18);
@@ -1085,250 +1716,279 @@ body.light-mode .footer-modal-content h3 {
 }
 
 body.light-mode .footer-modal-btn {
-  background: #4CB7D3;
+  background: #4cb7d3;
   color: #06262b;
 }
 
-    body.light-mode .section-title-wrap h2,
-body.light-mode .news-header h2 {
-  color: #1e293b !important;
+
+/* =========================================================
+   14. 반응형
+========================================================= */
+@media (max-width: 980px) {
+  .footer-inner {
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
 }
 
-    body.light-mode .top-keyword-title:hover {
-  color: #4CB7D3 !important;
+@media (max-width: 640px) {
+  .search-suggest-box {
+    left: 18px !important;
+    right: 18px !important;
+    width: auto !important;
+    max-width: none;
+  }
+
+  .footer-inner {
+    padding: 0 18px;
+  }
 }
-
-    .small-text {
-  font-size: 0.8em;
-}
-
-    /* ==============================
-   다크모드/라이트모드 전환 통일
-============================== */
-
-body,
-header,
-.card,
-.view-card,
-.scope-box,
-.summary-box,
-.news-card,
-.keyword-card,
-button,
-a,
-.nav-btn,
-.detail-btn,
-.action-btn,
-.news-footer-btn,
-.toggle-btn,
-.chip,
-.span-chip,
-.h-tag {
-  transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-    body,
-.page {
-  transition:
-    background-color 0.18s ease,
-    color 0.18s ease;
-}
-
-/* 렌더링 안정화 */
-.header,
-.card,
-.news-card,
-.view-card,
-.news-item-card,
-.hero {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: background-color;
-}
-
 </style>
 </head>
+
 <body>
 <div class="page">
-<div id="header"></div>
-<main class="main">
-<!-- 히어로 섹션 -->
-<section class="hero">
-<div class="hero-badge">같은 이슈를 여러 관점으로 보기</div>
-<h1>뉴스, 그냥 읽지 말고<br/><span>이해하고 활용하세요</span></h1>
-<p>키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설, 실생활 영향까지 한 번에 보여줍니다.</p>
-<div class="hero-tags">
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-<a class="h-tag" href="#"></a>
-</div>
-</section>
 
-<!-- 상단 데이터 그리드 -->
-<section class="grid-2">
-<div class="card">
-<div class="section-title-wrap">
-<span>1위 키워드</span>
-<h2 class="top-keyword-title"></h2>
-</div>
-<div class="status-badge"></div>
-<div class="gauge-container">
-<div class="gauge-item">
-<div class="gauge-circle pos">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">긍정</span>
-</div>
-<div class="gauge-item">
-<div class="gauge-circle neg">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">부정</span>
-</div>
-<div class="gauge-item">
-<div class="gauge-circle neu">
-<span class="percent"></span>
-</div>
-<span class="gauge-label">중립</span>
-</div>
-</div>
-<div class="keyword-box">
-<div class="keyword-box-title">주요 키워드</div>
-<div class="chip-group">
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-<span class="chip"></span>
-</div>
-</div>
-</div>
+  <div id="header"></div>
 
-<div class="card">
-<div class="section-title-wrap">
-<span>관점 요약</span>
-<h2>오늘의 지배적 여론</h2>
-</div>
-<div class="opinion-card">
-<div class="quote-icon">“</div>
-<div class="opinion-text"></div>
-<div class="quote-icon" style="text-align:right">”</div>
-<div class="opinion-tags">
-<span class="o-tag"></span>
-<span class="o-tag"></span>
-</div>
-<div class="nav-btns">
+  <main class="main">
 
-    <div class="nav-btn" onclick="prevOpinion()">
-        &lt;
-    </div>
+    <!-- =====================================================
+         히어로 섹션
+    ====================================================== -->
+    <section class="hero">
+      <div class="hero-badge">같은 이슈를 여러 관점으로 보기</div>
 
-    <div class="opinion-page">
-        - / -
-    </div>
+      <h1>
+        뉴스, 그냥 읽지 말고<br/>
+        <span>이해하고 활용하세요</span>
+      </h1>
 
-    <div class="nav-btn" onclick="nextOpinion()">
-        &gt;
-    </div>
+      <p>
+        키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설,
+        실생활 영향까지 한 번에 보여줍니다.
+      </p>
 
-</div>
+      <div class="hero-tags">
+        <a class="h-tag" href="#"></a>
+        <a class="h-tag" href="#"></a>
+        <a class="h-tag" href="#"></a>
+        <a class="h-tag" href="#"></a>
+        <a class="h-tag" href="#"></a>
+        <a class="h-tag" href="#"></a>
+      </div>
+    </section>
 
-</div>
-</div>
-</section>
 
-<!-- 감성 비교 섹션 -->
-<section class="sentiment-compare">
-<div class="sentiment-header">
-<div class="section-title-wrap">
-<span>감성 비교</span>
-<h2>같은 이슈, 다른 해석</h2>
-</div>
-<div class="section-desc">언론사별로 어떤 톤과 시각을 사용하는지 비교합니다.</div>
-</div>
-<div class="sentiment-grid">
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge pos">긍정</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge neg">부정</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-<div class="news-card">
-<div class="news-card-top">
-<span class="media-name"></span>
-<span class="s-badge neu">중립</span>
-</div>
-<h3></h3>
-<p></p>
-<button class="action-btn" type="button">상세 보기</button>
-</div>
-</div>
-</section>
+    <!-- =====================================================
+         상단 데이터 그리드
+    ====================================================== -->
+    <section class="grid-2">
 
-<!-- 2차 관점 분석 -->
-<section class="viewpoint-box">
-<div class="section-title-wrap">
-<span>관점 비교</span>
-<h2>2차 관점 분석</h2>
-</div>
-<div class="view-grid" id="viewGrid"></div>
-<button class="toggle-btn" id="toggleBtn" onclick="toggleView()" type="button">
+      <!-- 오늘의 핵심 키워드 -->
+      <div class="card">
+        <div class="section-title-wrap">
+          <span>오늘의 핵심 키워드</span>
+          <h2 class="top-keyword-title"></h2>
+        </div>
+
+        <div class="status-badge"></div>
+
+        <div class="gauge-container">
+          <div class="gauge-item">
+            <div class="gauge-circle pos">
+              <span class="percent"></span>
+            </div>
+            <span class="gauge-label">긍정</span>
+          </div>
+
+          <div class="gauge-item">
+            <div class="gauge-circle neg">
+              <span class="percent"></span>
+            </div>
+            <span class="gauge-label">부정</span>
+          </div>
+
+          <div class="gauge-item">
+            <div class="gauge-circle neu">
+              <span class="percent"></span>
+            </div>
+            <span class="gauge-label">중립</span>
+          </div>
+        </div>
+
+        <div class="keyword-box">
+          <div class="keyword-box-title">주요 키워드</div>
+          <div class="chip-group">
+            <!-- JS 렌더링 -->
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 오늘의 지배적 여론 -->
+      <div class="card">
+        <div class="section-title-wrap">
+          <span>관점 요약</span>
+          <h2>오늘의 지배적 여론</h2>
+        </div>
+
+        <div class="opinion-card">
+          <div class="quote-icon">“</div>
+
+          <div class="opinion-text"></div>
+
+          <div class="quote-icon" style="text-align:right">”</div>
+
+          <div class="opinion-tags">
+            <span class="o-tag"></span>
+            <span class="o-tag"></span>
+          </div>
+
+          <div class="nav-btns">
+            <div class="nav-btn" onclick="prevOpinion()">
+              &lt;
+            </div>
+
+            <div class="opinion-page">
+              - / -
+            </div>
+
+            <div class="nav-btn" onclick="nextOpinion()">
+              &gt;
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         감성 비교 섹션
+    ====================================================== -->
+    <section class="sentiment-compare">
+      <div class="sentiment-header">
+        <div class="section-title-wrap">
+          <span>감성 비교</span>
+          <h2>같은 이슈, 다른 해석</h2>
+        </div>
+
+        <div class="section-desc">
+          언론사별로 어떤 톤과 시각을 사용하는지 비교합니다.
+        </div>
+      </div>
+
+      <div class="sentiment-grid">
+
+        <div class="news-card">
+          <div class="news-card-top">
+            <span class="media-name"></span>
+            <span class="s-badge pos">긍정</span>
+          </div>
+
+          <h3></h3>
+          <p></p>
+
+          <button class="action-btn" type="button">
+            상세 보기
+          </button>
+        </div>
+
+        <div class="news-card">
+          <div class="news-card-top">
+            <span class="media-name"></span>
+            <span class="s-badge neg">부정</span>
+          </div>
+
+          <h3></h3>
+          <p></p>
+
+          <button class="action-btn" type="button">
+            상세 보기
+          </button>
+        </div>
+
+        <div class="news-card">
+          <div class="news-card-top">
+            <span class="media-name"></span>
+            <span class="s-badge neu">중립</span>
+          </div>
+
+          <h3></h3>
+          <p></p>
+
+          <button class="action-btn" type="button">
+            상세 보기
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================
+         핵심 키워드 관점 분석
+    ====================================================== -->
+    <section class="viewpoint-box">
+      <div class="section-title-wrap">
+        <span>관점 비교</span>
+        <h2>핵심 키워드 관점 분석</h2>
+      </div>
+
+      <div class="view-grid" id="viewGrid"></div>
+
+      <button
+        class="toggle-btn"
+        id="toggleBtn"
+        onclick="toggleView()"
+        type="button"
+      >
         전체 18개 관점 보기 ∨
       </button>
-</section>
+    </section>
 
-<!-- 지금 뜨는 뉴스 -->
-<section class="news-section">
-<div class="news-header">
-<h2>지금 뜨는 뉴스</h2>
-<div class="realtime-dot">
-<div class="dot"></div>실시간 반응순</div>
+
+    <!-- =====================================================
+         지금 뜨는 뉴스
+    ====================================================== -->
+    <section class="news-section">
+      <div class="news-header">
+        <h2>지금 뜨는 뉴스</h2>
+
+        <div class="realtime-dot">
+          <div class="dot"></div>
+          실시간 반응순
+        </div>
+      </div>
+
+      <div class="news-grid" id="hotNewsGrid"></div>
+    </section>
+
+  </main>
+
+  <div id="footer"></div>
+
 </div>
-<div class="news-grid" id="hotNewsGrid"></div>
-</section>
-</main>
-<div id="footer"></div>
-</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-/* ===== common.js ===== */
-// ==============================
-// 공통 UI 로드
-// ==============================
+/* =========================================================
+   1. 페이지 초기 공통 실행
+========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
   applyThemeMode();
   loadHeader();
   loadFooter();
   bindGlobalClickEvents();
-
-  // 기존 main 페이지 실행 코드들은 그대로 유지
 });
 
 
-// ==============================
-// 다크모드 / 화이트모드
-// ==============================
+/* =========================================================
+   2. 다크모드 / 라이트모드
+========================================================= */
 function applyThemeMode() {
   const savedTheme = localStorage.getItem("theme_mode");
   const themeBtn = document.getElementById("themeToggleBtn");
@@ -1370,9 +2030,9 @@ function toggleThemeMode() {
 }
 
 
-// ==============================
-// 로그인 정보 가져오기
-// ==============================
+/* =========================================================
+   3. 로그인 정보 / 로그인 상태 처리
+========================================================= */
 function getLoginInfo() {
   return {
     token:
@@ -1395,75 +2055,6 @@ function getLoginInfo() {
   };
 }
 
-
-// ==============================
-// Header 불러오기
-// ==============================
-function loadHeader() {
-  const headerArea = document.getElementById("header");
-
-  if (!headerArea) return;
-
-  if (headerArea.innerHTML.trim()) {
-    setHeaderLoginState();
-    bindCommonSearch();
-    applyThemeMode();
-    return;
-  }
-
-  fetch("/view/header.html?v=999")
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error("header.html 경로 오류");
-      }
-
-      return res.text();
-    })
-    .then(function (html) {
-      headerArea.innerHTML = html;
-
-      setHeaderLoginState();
-      bindCommonSearch();
-      applyThemeMode();
-    })
-    .catch(function (err) {
-      console.error("header 로드 실패:", err);
-    });
-}
-
-
-// ==============================
-// Footer 불러오기
-// ==============================
-function loadFooter() {
-  const footerArea = document.getElementById("footer");
-
-  if (!footerArea) return;
-
-  if (footerArea.innerHTML.trim()) {
-    return;
-  }
-
-  fetch("/view/footer.html?v=999")
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error("footer.html 경로 오류");
-      }
-
-      return res.text();
-    })
-    .then(function (html) {
-      footerArea.innerHTML = html;
-    })
-    .catch(function (err) {
-      console.error("footer 로드 실패:", err);
-    });
-}
-
-
-// ==============================
-// Header 로그인 상태 처리
-// ==============================
 function setHeaderLoginState() {
   const loginBtn = document.getElementById("loginBtn");
   const joinBtn = document.getElementById("joinBtn");
@@ -1496,17 +2087,11 @@ function setHeaderLoginState() {
     role === "superadmin" ||
     token === "admin-test-token";
 
-  if (isAdmin) {
-    primaryUserBtn.innerText = "관리자 페이지";
-  } else {
-    primaryUserBtn.innerText = "마이페이지";
-  }
+  primaryUserBtn.innerText = isAdmin
+    ? "관리자 페이지"
+    : "마이페이지";
 }
 
-
-// ==============================
-// 로그인 필요 페이지 이동
-// ==============================
 window.goLoginRequiredPage = function (targetUrl) {
   const loginInfo = getLoginInfo();
 
@@ -1520,10 +2105,70 @@ window.goLoginRequiredPage = function (targetUrl) {
 };
 
 
-// ==============================
-// 전역 클릭 이벤트
-// fetch로 늦게 들어온 header도 작동
-// ==============================
+/* =========================================================
+   4. Header / Footer 불러오기
+========================================================= */
+function loadHeader() {
+  const headerArea = document.getElementById("header");
+
+  if (!headerArea) return;
+
+  if (headerArea.innerHTML.trim()) {
+    setHeaderLoginState();
+    bindCommonSearch();
+    applyThemeMode();
+    return;
+  }
+
+  fetch("/view/header.html?v=999")
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("header.html 경로 오류");
+      }
+
+      return res.text();
+    })
+    .then(function (html) {
+      headerArea.innerHTML = html;
+
+      setHeaderLoginState();
+      bindCommonSearch();
+      applyThemeMode();
+    })
+    .catch(function (err) {
+      console.error("header 로드 실패:", err);
+    });
+}
+
+function loadFooter() {
+  const footerArea = document.getElementById("footer");
+
+  if (!footerArea) return;
+
+  if (footerArea.innerHTML.trim()) {
+    return;
+  }
+
+  fetch("/view/footer.html?v=999")
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error("footer.html 경로 오류");
+      }
+
+      return res.text();
+    })
+    .then(function (html) {
+      footerArea.innerHTML = html;
+    })
+    .catch(function (err) {
+      console.error("footer 로드 실패:", err);
+    });
+}
+
+
+/* =========================================================
+   5. 전역 클릭 이벤트
+========================================================= */
 function bindGlobalClickEvents() {
   document.addEventListener("click", function (e) {
     const loginBtn = e.target.closest("#loginBtn");
@@ -1539,6 +2184,7 @@ function bindGlobalClickEvents() {
     const actionBtn = e.target.closest(".action-btn");
     const newsFooterBtn = e.target.closest(".news-footer-btn");
     const detailBtn = e.target.closest(".detail-btn");
+
 
     if (themeToggleBtn) {
       e.preventDefault();
@@ -1572,11 +2218,9 @@ function bindGlobalClickEvents() {
         role === "superadmin" ||
         token === "admin-test-token";
 
-      if (isAdmin) {
-        location.href = "/view/admin_dashboard.html";
-      } else {
-        location.href = "/view/mypage_home.html";
-      }
+      location.href = isAdmin
+        ? "/view/admin_dashboard.html"
+        : "/view/mypage_home.html";
 
       return;
     }
@@ -1591,7 +2235,11 @@ function bindGlobalClickEvents() {
       e.preventDefault();
 
       const keyword = heroTag.innerText.replace("#", "").trim();
-      goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+
+      goLoginRequiredPage(
+        `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+      );
+
       return;
     }
 
@@ -1599,36 +2247,41 @@ function bindGlobalClickEvents() {
       e.preventDefault();
 
       const keyword = chip.innerText.trim();
-      goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+
+      goLoginRequiredPage(
+        `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+      );
+
       return;
     }
 
     if (topKeywordTitle) {
-  e.preventDefault();
+      e.preventDefault();
 
-  const keyword = topKeywordTitle.innerText.trim();
+      const keyword = topKeywordTitle.innerText.trim();
 
-  if (!keyword) return;
+      if (!keyword) return;
 
-  goLoginRequiredPage(
-    `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
-  );
+      goLoginRequiredPage(
+        `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+      );
 
-  return;
-}
-
+      return;
+    }
 
     if (actionBtn) {
       e.preventDefault();
 
       const articleId = actionBtn.getAttribute("data-article-id");
-      console.log("상세보기 클릭 articleId:", articleId);
 
       if (articleId) {
-        goLoginRequiredPage(`/view/article_detail.html?article_id=${articleId}`);
+        goLoginRequiredPage(
+          `/view/article_detail.html?article_id=${articleId}`
+        );
       } else {
         goLoginRequiredPage("/view/article_detail.html");
       }
+
       return;
     }
 
@@ -1638,7 +2291,9 @@ function bindGlobalClickEvents() {
       const articleId = newsFooterBtn.dataset.articleId;
 
       if (articleId) {
-        goLoginRequiredPage(`/view/article_detail.html?article_id=${articleId}`);
+        goLoginRequiredPage(
+          `/view/article_detail.html?article_id=${articleId}`
+        );
       } else {
         goLoginRequiredPage("/view/article_detail.html");
       }
@@ -1660,9 +2315,14 @@ function bindGlobalClickEvents() {
         localStorage.setItem("viewpoint_percent", percent);
       }
 
+      if (currentViewpointKeyword) {
+        localStorage.setItem("viewpoint_keyword", currentViewpointKeyword);
+      }
+
       goLoginRequiredPage("/view/viewpoint_detail.html");
       return;
     }
+
     if (loginRequiredLink) {
       e.preventDefault();
 
@@ -1674,9 +2334,9 @@ function bindGlobalClickEvents() {
 }
 
 
-// ==============================
-// 검색어 자동완성
-// ==============================
+/* =========================================================
+   6. 검색 자동완성
+========================================================= */
 function bindCommonSearch() {
   const input = document.getElementById("commonSearchInput");
   const searchBtn = document.getElementById("commonSearchBtn");
@@ -1724,10 +2384,17 @@ function bindCommonSearch() {
 function highlightKeyword(text, keyword) {
   if (!keyword) return text;
 
-  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedKeyword = keyword.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
   const regex = new RegExp(`(${escapedKeyword})`, "gi");
 
-  return text.replace(regex, `<span class="search-highlight">$1</span>`);
+  return text.replace(
+    regex,
+    `<span class="search-highlight">$1</span>`
+  );
 }
 
 async function renderSearchSuggestions(keyword) {
@@ -1778,18 +2445,15 @@ async function renderSearchSuggestions(keyword) {
     document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
       btn.addEventListener("click", function () {
         const keyword = btn.dataset.suggestKeyword;
-
         selectSearchSuggestion(keyword);
       });
     });
 
     positionSearchSuggestBox();
-
     suggestBox.classList.remove("hidden");
 
   } catch (error) {
     console.error("검색 자동완성 실패:", error);
-
     hideSearchSuggestions();
   }
 }
@@ -1824,7 +2488,9 @@ function selectSearchSuggestion(keyword) {
 
   hideSearchSuggestions();
 
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+  goLoginRequiredPage(
+    `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+  );
 }
 
 function moveSearch(keyword) {
@@ -1834,113 +2500,15 @@ function moveSearch(keyword) {
 
   hideSearchSuggestions();
 
-  goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
-}
-
-// ==============================
-// 지금 뜨는 뉴스
-// ==============================
-async function loadHotNews() {
-
-    try {
-
-        const res = await axios.get("/api/main/hot-news");
-
-        const articles = res.data.articles || [];
-
-        const grid =
-            document.getElementById("hotNewsGrid");
-
-        if (!grid) return;
-
-        grid.innerHTML =
-            articles.map((item, index) => {
-
-                const likeCount = Number(item.like_count) || 0;
-                const hateCount = Number(item.hate_count) || 0;
-
-                // 👍 👎 비교
-                const isTie = likeCount === hateCount;
-
-                const isLike = likeCount > hateCount;
-
-                return `
-
-                    <div class="news-item-card">
-
-                        <div class="news-badge ${
-                            isTie
-                                ? "badge-battle"
-                                : isLike
-                                    ? "badge-like"
-                                    : "badge-dislike"
-                        }">
-
-                            ${
-                                isTie
-                                    ? `<span class="battle-icon">🤜 접전 🤛</span>`
-                                    : isLike
-                                        ? "👍 긍정 반응 우세"
-                                        : "👎 부정 반응 우세"
-                            }
-
-                        </div>
-
-                        <div class="news-main-row">
-
-                            <div class="news-rank-circle">
-                                ${index + 1}
-                            </div>
-
-                            <div class="news-title">
-                                ${item.title}
-                            </div>
-
-                        </div>
-
-                        <div class="news-quote">
-                            ${item.summary || ""}
-                        </div>
-
-                        <div class="reaction-row">
-
-                            <div class="react-item up">
-                                👍 ${likeCount}
-                            </div>
-
-                            <div class="react-item down">
-                                👎 ${hateCount}
-                            </div>
-
-                        </div>
-
-                        <button
-                            class="news-footer-btn"
-                            data-article-id="${item.article_id}"
-                            type="button">
-                            상세 보기 >
-                        </button>
-
-                    </div>
-
-                `;
-
-            }).join("");
-
-    } catch (err) {
-
-        console.error(
-            "지금 뜨는 뉴스 로딩 실패:",
-            err
-        );
-
-    }
+  goLoginRequiredPage(
+    `/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`
+  );
 }
 
 
-// ==============================
-// 로그아웃
-// ==============================
+/* =========================================================
+   7. 로그아웃
+========================================================= */
 window.logout = function () {
   localStorage.removeItem("access_token");
   localStorage.removeItem("user_name");
@@ -1962,9 +2530,9 @@ window.logout = function () {
 };
 
 
-// ==============================
-// Footer 모달
-// ==============================
+/* =========================================================
+   8. Footer 모달
+========================================================= */
 window.openFooterTermsModal = function () {
   const modal = document.getElementById("footerModal");
   const content = document.getElementById("footerModalContent");
@@ -2005,580 +2573,689 @@ window.closeFooterModal = function () {
   modal.classList.add("hidden");
 };
 
-/* ===== main.js ===== */
-// ==============================
-// 1위 키워드 불러오기
-// ==============================
+
+/* =========================================================
+   9. 메인 데이터 로딩
+========================================================= */
+
+/* 오늘의 핵심 키워드 */
 async function loadTopKeyword() {
+  try {
+    const res = await axios.get("/api/main/top-keyword");
+    const data = res.data;
 
-    try {
+    const keywordTitle = document.querySelector(
+      ".grid-2 .card .section-title-wrap h2"
+    );
 
-        const res = await axios.get("/api/main/top-keyword");
-
-        const data = res.data;
-
-        // 제목
-        const keywordTitle = document.querySelector(
-            ".grid-2 .card .section-title-wrap h2"
-        );
-
-        if (keywordTitle) {
-            keywordTitle.innerText = data.keyword;
-        }
-
-        // 상태 배지
-        const statusBadge = document.querySelector(".status-badge");
-
-        if (statusBadge) {
-            statusBadge.innerText = data.status;
-        }
-
-        // 게이지
-        updateGauge(".gauge-circle.pos", data.positive);
-        updateGauge(".gauge-circle.neg", data.negative);
-        updateGauge(".gauge-circle.neu", data.neutral);
-
-        // 키워드 칩
-        const chips = document.querySelectorAll(".chip");
-
-        chips.forEach((chip, index) => {
-            chip.innerText = data.chips[index] || "";
-        });
-        return data.keyword;
-
-    } catch (err) {
-
-        console.error("1위 키워드 로딩 실패:", err);
-        return null;
-
+    if (keywordTitle) {
+      keywordTitle.innerText = data.keyword;
     }
+
+    const statusBadge = document.querySelector(".status-badge");
+
+    if (statusBadge) {
+      statusBadge.innerText = data.status;
+    }
+
+    updateGauge(".gauge-circle.pos", data.positive);
+    updateGauge(".gauge-circle.neg", data.negative);
+    updateGauge(".gauge-circle.neu", data.neutral);
+
+    const chipGroup = document.querySelector(".chip-group");
+
+    if (chipGroup) {
+      chipGroup.innerHTML = data.chips
+        .map(keyword => `
+          <a
+            href="/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}"
+            class="chip"
+            title="${keyword}"
+          >
+            ${keyword}
+          </a>
+        `)
+        .join("");
+    }
+
+    return data.keyword;
+
+  } catch (err) {
+    console.error("1위 키워드 로딩 실패:", err);
+    return null;
+  }
 }
 
+
+/* 히어로 Top5 키워드 */
 async function loadHeroTop5Keywords() {
-    try {
-        const res = await axios.get("/api/main/top5-keywords");
+  try {
+    const res = await axios.get("/api/main/top5-keywords");
+    const items = res.data.keywords || [];
 
-        const items = res.data.keywords || [];
+    const heroTags = document.querySelectorAll(".hero-tags .h-tag");
 
-        const heroTags = document.querySelectorAll(".hero-tags .h-tag");
+    heroTags.forEach(function (tag, index) {
+      const item = items[index];
+      const keyword = item ? item.keyword : "";
 
-        heroTags.forEach(function (tag, index) {
-            const item = items[index];
-            const keyword = item ? item.keyword : "";
+      if (
+        keyword &&
+        keyword !== "데이터 없음" &&
+        keyword !== "키워드 없음"
+      ) {
+        tag.innerText = `#${keyword}`;
+        tag.classList.remove("hidden");
+      } else {
+        tag.innerText = "";
+        tag.classList.add("hidden");
+      }
+    });
 
-            if (keyword && keyword !== "데이터 없음" && keyword !== "키워드 없음") {
-                tag.innerText = `#${keyword}`;
-                tag.classList.remove("hidden");
-            } else {
-                tag.innerText = "";
-                tag.classList.add("hidden");
-            }
-        });
-
-    } catch (err) {
-        console.error("메인 배너 Top5 키워드 로딩 실패:", err);
-    }
+  } catch (err) {
+    console.error("메인 배너 Top5 키워드 로딩 실패:", err);
+  }
 }
 
-// ==============================
-// 오늘의 지배적 여론
-// ==============================
+
+/* 오늘의 지배적 여론 */
 let opinionList = [];
 let opinionIndex = 0;
 
 async function loadDominantOpinion() {
-    try {
-        const res = await axios.get("/api/main/dominant-opinions");
+  try {
+    const res = await axios.get("/api/main/dominant-opinions");
 
-        opinionList = res.data.opinions || [];
+    opinionList = res.data.opinions || [];
 
-        if (opinionList.length === 0) {
-            opinionList = [
-                {
-                    title: "분석할 여론 데이터가 아직 없습니다.",
-                    keyword: "데이터 없음",
-                    sentiment: "대기"
-                }
-            ];
+    if (opinionList.length === 0) {
+      opinionList = [
+        {
+          title: "분석할 여론 데이터가 아직 없습니다.",
+          keyword: "데이터 없음",
+          sentiment: "대기"
         }
-
-        opinionIndex = 0;
-        renderOpinion();
-
-    } catch (err) {
-        console.error("오늘의 지배적 여론 로딩 실패:", err);
-
-        opinionList = [
-            {
-                title: "여론 데이터를 불러오지 못했습니다.",
-                keyword: "오류",
-                sentiment: "대기"
-            }
-        ];
-
-        renderOpinion();
+      ];
     }
+
+    opinionIndex = 0;
+    renderOpinion();
+
+  } catch (err) {
+    console.error("오늘의 지배적 여론 로딩 실패:", err);
+
+    opinionList = [
+      {
+        title: "여론 데이터를 불러오지 못했습니다.",
+        keyword: "오류",
+        sentiment: "대기"
+      }
+    ];
+
+    renderOpinion();
+  }
 }
 
 function renderOpinion() {
-    const opinionText = document.querySelector(".opinion-text");
-    const tags = document.querySelectorAll(".opinion-tags .o-tag");
-    const pageText = document.querySelector(".opinion-page");
+  const opinionText = document.querySelector(".opinion-text");
+  const tags = document.querySelectorAll(".opinion-tags .o-tag");
+  const pageText = document.querySelector(".opinion-page");
 
-    if (!opinionText) return;
+  if (!opinionText) return;
 
-    const item = opinionList[opinionIndex];
+  const item = opinionList[opinionIndex];
 
-    opinionText.innerText = item.title || "";
+  opinionText.innerText = item.title || "";
 
-    if (tags[0]) {
-        tags[0].innerText = item.keyword || "";
-    }
+  if (tags[0]) {
+    tags[0].innerText = item.keyword || "";
+  }
 
-    if (tags[1]) {
-        tags[1].innerText = convertSentimentText(item.sentiment);
-    }
-    if (pageText) {
-        pageText.innerText = `${opinionIndex + 1} / ${opinionList.length}`;
-    }
+  if (tags[1]) {
+    tags[1].innerText = convertSentimentText(item.sentiment);
+  }
+
+  if (pageText) {
+    pageText.innerText = `${opinionIndex + 1} / ${opinionList.length}`;
+  }
 }
 
 function convertSentimentText(sentiment) {
-    if (sentiment === "positive") return "긍정";
-    if (sentiment === "negative") return "부정";
-    if (sentiment === "neutral") return "중립";
+  if (sentiment === "positive") return "긍정";
+  if (sentiment === "negative") return "부정";
+  if (sentiment === "neutral") return "중립";
 
-    return sentiment || "중립";
+  return sentiment || "중립";
 }
 
 function prevOpinion() {
-    if (opinionList.length === 0) return;
+  if (opinionList.length === 0) return;
 
-    opinionIndex--;
+  opinionIndex--;
 
-    if (opinionIndex < 0) {
-        opinionIndex = opinionList.length - 1;
-    }
+  if (opinionIndex < 0) {
+    opinionIndex = opinionList.length - 1;
+  }
 
-    renderOpinion();
+  renderOpinion();
 }
 
 function nextOpinion() {
-    if (opinionList.length === 0) return;
+  if (opinionList.length === 0) return;
 
-    opinionIndex++;
+  opinionIndex++;
 
-    if (opinionIndex >= opinionList.length) {
-        opinionIndex = 0;
-    }
+  if (opinionIndex >= opinionList.length) {
+    opinionIndex = 0;
+  }
 
-    renderOpinion();
+  renderOpinion();
 }
 
-// 일정 시간마다 자동 변경
 setInterval(function () {
-    nextOpinion();
+  nextOpinion();
 }, 5000);
 
-// ==============================
-// 같은 이슈, 다른 해석
-// ==============================
+
+/* 같은 이슈, 다른 해석 */
 async function loadSentimentCompare(keyword) {
-    try {
-        if (!keyword) {
-            console.warn("1위 키워드가 없어 감성 비교를 불러오지 않습니다.");
-            return;
-        }
-
-        const res = await axios.get(
-            `/api/main/sentiment-compare?keyword=${encodeURIComponent(keyword)}`
-        );
-
-        const articles = res.data.articles || [];
-        const cards = document.querySelectorAll(".sentiment-grid .news-card");
-
-        cards.forEach(function (card, index) {
-            const item = articles[index];
-
-            if (!item) {
-                card.style.display = "none";
-                return;
-            }
-
-            card.style.display = "flex";
-
-            const mediaName = card.querySelector(".media-name");
-            const title = card.querySelector("h3");
-            const summary = card.querySelector("p");
-            const badge = card.querySelector(".s-badge");
-            const button = card.querySelector(".action-btn");
-
-            if (mediaName) {
-                mediaName.innerText = item.press || "언론사 없음";
-            }
-
-            if (title) {
-                title.innerText = item.title || "기사 제목 없음";
-            }
-
-            if (summary) {
-                summary.innerText = item.summary || "";
-            }
-
-            if (badge) {
-                badge.innerText = convertSentimentText(item.sentiment);
-                const badgeClass =
-                  item.sentiment === "positive"
-                    ? "pos"
-                    : item.sentiment === "negative"
-                      ? "neg"
-                      : "neu";
-
-                badge.className = "s-badge " + badgeClass;
-            }
-
-            if (button) {
-                button.setAttribute("data-article-id", item.article_id || "");
-            }
-        });
-
-    } catch (err) {
-        console.error("감성 비교 로딩 실패:", err);
+  try {
+    if (!keyword) {
+      console.warn("1위 키워드가 없어 감성 비교를 불러오지 않습니다.");
+      return;
     }
+
+    const res = await axios.get(
+      `/api/main/sentiment-compare?keyword=${encodeURIComponent(keyword)}`
+    );
+
+    const articles = res.data.articles || [];
+    const cards = document.querySelectorAll(".sentiment-grid .news-card");
+
+    cards.forEach(function (card, index) {
+      const item = articles[index];
+
+      if (!item) {
+        card.style.display = "none";
+        return;
+      }
+
+      card.style.display = "flex";
+
+      const mediaName = card.querySelector(".media-name");
+      const title = card.querySelector("h3");
+      const summary = card.querySelector("p");
+      const badge = card.querySelector(".s-badge");
+      const button = card.querySelector(".action-btn");
+
+      if (mediaName) {
+        mediaName.innerText = item.press || "언론사 없음";
+      }
+
+      if (title) {
+        title.innerText = item.title || "기사 제목 없음";
+      }
+
+      if (summary) {
+        summary.innerText = item.summary || "";
+      }
+
+      if (badge) {
+        badge.innerText = convertSentimentText(item.sentiment);
+
+        const badgeClass =
+          item.sentiment === "positive"
+            ? "pos"
+            : item.sentiment === "negative"
+              ? "neg"
+              : "neu";
+
+        badge.className = "s-badge " + badgeClass;
+      }
+
+      if (button) {
+        button.setAttribute("data-article-id", item.article_id || "");
+      }
+    });
+
+  } catch (err) {
+    console.error("감성 비교 로딩 실패:", err);
+  }
 }
 
-/*
-   [확실] 기준 데이터 (마스터 템플릿)
-   - 타이틀, 아이콘, 색상, 순서는 여기서 관리합니다.
-   - 서버 데이터와 매핑하기 위해 고유 'id'를 추가했습니다.
-*/
+
+/* 지금 뜨는 뉴스 */
+async function loadHotNews() {
+  try {
+    const res = await axios.get("/api/main/hot-news");
+    const articles = res.data.articles || [];
+
+    const grid = document.getElementById("hotNewsGrid");
+
+    if (!grid) return;
+
+    grid.innerHTML = articles.map((item, index) => {
+      const likeCount = Number(item.like_count) || 0;
+      const hateCount = Number(item.hate_count) || 0;
+
+      const isTie = likeCount === hateCount;
+      const isLike = likeCount > hateCount;
+
+      return `
+        <div class="news-item-card">
+
+          <div class="news-badge ${
+            isTie
+              ? "badge-battle"
+              : isLike
+                ? "badge-like"
+                : "badge-dislike"
+          }">
+            ${
+              isTie
+                ? `<span class="battle-icon">🤜 접전 🤛</span>`
+                : isLike
+                  ? "👍 긍정 반응 우세"
+                  : "👎 부정 반응 우세"
+            }
+          </div>
+
+          <div class="news-main-row">
+            <div class="news-rank-circle">
+              ${index + 1}
+            </div>
+
+            <div class="news-title">
+              ${item.title}
+            </div>
+          </div>
+
+          <div class="news-quote">
+            ${item.summary || ""}
+          </div>
+
+          <div class="reaction-row">
+            <div class="react-item up">
+              👍 ${likeCount}
+            </div>
+
+            <div class="react-item down">
+              👎 ${hateCount}
+            </div>
+          </div>
+
+          <button
+            class="news-footer-btn"
+            data-article-id="${item.article_id}"
+            type="button"
+          >
+            상세 보기 >
+          </button>
+
+        </div>
+      `;
+    }).join("");
+
+  } catch (err) {
+    console.error("지금 뜨는 뉴스 로딩 실패:", err);
+  }
+}
+
+
+/* =========================================================
+   10. 핵심 키워드 관점 분석
+========================================================= */
+
+/* 메인 핵심 키워드 관점 분석의 기준 키워드 */
+let currentViewpointKeyword = "";
+
+
+/* 관점 카드 기본 템플릿 */
 const groups = [
-    { name: "주체", items: [
-        {
-            id: "gov",
-            title: "정부 관점",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/gov.svg",
-            color: "teal"
-        },
-        {
-            id: "ind",
-            title: "개인 관점",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/person.svg",
-            color: "purple"
-        },
-        {
-            id: "complex",
-            title: "복합 관점",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/complex.svg",
-            color: "blue"
-        },
-        {
-            id: "corp",
-            title: "기업 관점",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/company.svg",
-            color: "orange"
-        },
-        {
-            id: "ext",
-            title: "외부 관점",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/global.svg",
-            color: "yellow"
-        }
-    ]},
+  {
+    name: "주체",
+    items: [
+      {
+        id: "gov",
+        title: "정부 관점",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/gov.svg",
+        color: "teal"
+      },
+      {
+        id: "ind",
+        title: "개인 관점",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/person.svg",
+        color: "purple"
+      },
+      {
+        id: "complex",
+        title: "복합 관점",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/complex.svg",
+        color: "blue"
+      },
+      {
+        id: "corp",
+        title: "기업 관점",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/company.svg",
+        color: "orange"
+      },
+      {
+        id: "ext",
+        title: "외부 관점",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/global.svg",
+        color: "yellow"
+      }
+    ]
+  },
 
-    { name: "감성", items: [
-        {
-            id: "exp",
-            title: "기대",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/star.svg",
-            color: "teal"
-        },
-        {
-            id: "praise",
-            title: "성과 예찬",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/trophy.svg",
-            color: "purple"
-        },
-        {
-            id: "crit",
-            title: "비판적 태도",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/chat.svg",
-            color: "blue"
-        },
-        {
-            id: "worry",
-            title: "우려",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/warning.svg",
-            color: "orange"
-        }
-    ]},
+  {
+    name: "감성",
+    items: [
+      {
+        id: "exp",
+        title: "기대",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/star.svg",
+        color: "teal"
+      },
+      {
+        id: "praise",
+        title: "성과 예찬",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/trophy.svg",
+        color: "purple"
+      },
+      {
+        id: "crit",
+        title: "비판적 태도",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/chat.svg",
+        color: "blue"
+      },
+      {
+        id: "worry",
+        title: "우려",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/warning.svg",
+        color: "orange"
+      }
+    ]
+  },
 
-    { name: "분석", items: [
-        {
-            id: "res",
-            title: "결과 분석",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/chart.svg",
-            color: "teal"
-        },
-        {
-            id: "fore",
-            title: "전망 분석",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/graph.svg",
-            color: "purple"
-        },
-        {
-            id: "simp",
-            title: "단순 전달",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/news.svg",
-            color: "blue"
-        },
-        {
-            id: "resp",
-            title: "대응 분석",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/gear.svg",
-            color: "orange"
-        },
-        {
-            id: "cause",
-            title: "원인 분석",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/search.svg",
-            color: "yellow"
-        }
-    ]},
+  {
+    name: "분석",
+    items: [
+      {
+        id: "res",
+        title: "결과 분석",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/chart.svg",
+        color: "teal"
+      },
+      {
+        id: "fore",
+        title: "전망 분석",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/graph.svg",
+        color: "purple"
+      },
+      {
+        id: "simp",
+        title: "단순 전달",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/news.svg",
+        color: "blue"
+      },
+      {
+        id: "resp",
+        title: "대응 분석",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/gear.svg",
+        color: "orange"
+      },
+      {
+        id: "cause",
+        title: "원인 분석",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/search.svg",
+        color: "yellow"
+      }
+    ]
+  },
 
-    { name: "요인", items: [
-        {
-            id: "mkt",
-            title: "시장 자율 강조",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/balance.svg",
-            color: "teal"
-        },
-        {
-            id: "intr",
-            title: "정부 개입 강조",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/building.svg",
-            color: "purple"
-        },
-        {
-            id: "pol",
-            title: "정책 요인 <span class='small-text'>(국내)</span>",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/location.svg",
-            color: "blue"
-        },
-        {
-            id: "global",
-            title: "외부 요인 <span class='small-text'>(글로벌)</span>",
-            percent: 0,
-            reason: "데이터를 불러오는 중입니다...",
-            icon: "/view/icons/global.svg",
-            color: "yellow"
-        }
-    ]}
+  {
+    name: "요인",
+    items: [
+      {
+        id: "mkt",
+        title: "시장 자율 강조",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/balance.svg",
+        color: "teal"
+      },
+      {
+        id: "intr",
+        title: "정부 개입 강조",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/building.svg",
+        color: "purple"
+      },
+      {
+        id: "pol",
+        title: "정책 요인 <span class='small-text'>(국내)</span>",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/location.svg",
+        color: "blue"
+      },
+      {
+        id: "global",
+        title: "외부 요인 <span class='small-text'>(글로벌)</span>",
+        percent: 0,
+        reason: "데이터를 불러오는 중입니다...",
+        icon: "/view/icons/global.svg",
+        color: "yellow"
+      }
+    ]
+  }
 ];
 
-/* [확실] 화면에 카드를 그리는 핵심 렌더링 함수 */
+
+/* 관점 카드 렌더링 */
 function renderViewGrid(data) {
-    const viewGrid = document.getElementById("viewGrid");
-    if (!viewGrid) return;
+  const viewGrid = document.getElementById("viewGrid");
 
-    let htmlContent = "";
+  if (!viewGrid) return;
 
-    data.forEach(group => {
-        group.items.forEach(item => {
+  let htmlContent = "";
 
-            // 퍼센트 안전 처리
-            const percent = Number(item.percent) || 0;
+  data.forEach(group => {
+    group.items.forEach(item => {
+      const percent = Number(item.percent) || 0;
 
-            htmlContent += `
-                <div class="view-card">
+      htmlContent += `
+        <div class="view-card">
 
-                    <div class="view-top">
+          <div class="view-top">
+            <div class="view-icon-box c-${item.color}">
+              <img src="${item.icon}" class="view-icon-img">
+            </div>
 
-                        <div class="view-icon-box c-${item.color}">
-                            <img src="${item.icon}" class="view-icon-img">
-                        </div>
+            <div class="view-title-group">
+              <div class="vt c-${item.color}">
+                ${item.title}
+              </div>
 
-                        <div class="view-title-group">
-                            <div class="vt c-${item.color}">
-                                ${item.title}
-                            </div>
+              <div class="vp c-${item.color}">
+                ${item.percent_label || `${percent}%`}
+              </div>
+            </div>
+          </div>
 
-                            <div class="vp c-${item.color}">
-                                ${percent}%
-                            </div>
-                        </div>
+          <div class="view-bar-bg">
+            <div
+              class="view-bar-fill bg-${item.color}"
+              style="width:${percent}%"
+            ></div>
+          </div>
 
-                    </div>
+          <div class="reason-label">
+            주요 근거
+          </div>
 
-                    <div class="view-bar-bg">
+          <div class="view-reason">
+            "${item.reason}"
+          </div>
 
-                        <div
-                            class="view-bar-fill bg-${item.color}"
-                            style="width:${percent}%"
-                        ></div>
+          <button
+            class="detail-btn"
+            data-title="${item.title}"
+            data-percent="${percent}"
+          >
+            상세 보기 >
+          </button>
 
-                    </div>
-
-                    <div class="reason-label">
-                        주요 근거
-                    </div>
-
-                    <div class="view-reason">
-                        "${item.reason}"
-                    </div>
-
-                    <button
-                        class="detail-btn"
-                        data-title="${item.title}"
-                        data-percent="${percent}"
-                    >
-                        상세 보기 >
-                    </button>
-
-                </div>
-            `;
-        });
-
-        // 5-4-5-4 정렬 유지용
-        if (group.items.length === 4) {
-            htmlContent += `
-                <div
-                    class="view-spacer"
-                    style="visibility:hidden;"
-                ></div>
-            `;
-        }
+        </div>
+      `;
     });
 
-    viewGrid.innerHTML = htmlContent;
+    if (group.items.length === 4) {
+      htmlContent += `
+        <div
+          class="view-spacer"
+          style="visibility:hidden;"
+        ></div>
+      `;
+    }
+  });
 
-    // 렌더 후 애니메이션 자연스럽게 적용
-    requestAnimationFrame(() => {
-        document.querySelectorAll(".view-bar-fill").forEach(bar => {
-            const width = bar.style.width;
-            bar.style.width = "0%";
+  viewGrid.innerHTML = htmlContent;
 
-            setTimeout(() => {
-                bar.style.width = width;
-            }, 50);
-        });
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".view-bar-fill").forEach(bar => {
+      const width = bar.style.width;
+      bar.style.width = "0%";
+
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 50);
     });
+  });
 }
 
-/* [확실] 백엔드 데이터를 가져와서 groups와 병합하는 함수 */
+
+/* 메인 핵심 키워드 관점 분석 데이터 조회 */
 async function loadAnalysisData() {
-    try {
-        const { data } = await axios.get("/api/main/viewpoint-analysis");
+  try {
+    const { data } = await axios.get("/api/main/viewpoint-analysis");
 
-        const serverMap = {};
+    currentViewpointKeyword = data.keyword || "";
 
-        data.items.forEach(item => {
-            serverMap[item.id] = {
-                percent: item.percent,
-                reason: item.reason
-            };
-        });
+    const serverMap = {};
 
-        const updatedData = JSON.parse(JSON.stringify(groups));
+    data.items.forEach(item => {
+      serverMap[item.id] = {
+        percent: item.percent,
+        reason: item.reason
+      };
+    });
 
-        updatedData.forEach(group => {
-            group.items.forEach(item => {
-                if (serverMap[item.id]) {
-                    item.percent = serverMap[item.id].percent;
-                    item.reason = serverMap[item.id].reason;
-                }
-            });
-        });
+    const updatedData = JSON.parse(JSON.stringify(groups));
 
-        renderViewGrid(updatedData);
+    updatedData.forEach(group => {
+      group.items.forEach(item => {
+        if (serverMap[item.id]) {
+          item.percent = serverMap[item.id].percent;
+          item.reason = serverMap[item.id].reason;
+        }
+      });
+    });
 
-    } catch (err) {
-        console.error("2차 관점 분석 로딩 실패:", err);
-        renderViewGrid(groups);
-    }
-}
+    renderViewGrid(updatedData);
 
-/* 기존 토글 기능 유지 */
-function toggleView() {
-    const grid = document.getElementById("viewGrid");
-    const btn = document.getElementById("toggleBtn");
-
-    if (!grid || !btn) return;
-
-    grid.classList.toggle("expanded");
-    btn.innerText = grid.classList.contains("expanded")
-        ? "접기 ∧"
-        : "전체 18개 관점 보기 ∨";
-}
-
-// 페이지 로드 시 실행
-document.addEventListener('DOMContentLoaded', async () => {
+  } catch (err) {
+    console.error("핵심 키워드 관점 분석 로딩 실패:", err);
     renderViewGrid(groups);
-    loadAnalysisData();
-
-    const keyword = await loadTopKeyword();
-
-    if (
-        keyword &&
-        keyword !== "데이터 없음" &&
-        keyword !== "키워드 없음" &&
-        keyword !== "분석 데이터 없음"
-    ) {
-        loadSentimentCompare(keyword);
-    }
-
-    loadHeroTop5Keywords();
-    loadHotNews();
-    loadDominantOpinion();
-});
-
-    function updateGauge(selector, percent) {
-    const gauge = document.querySelector(selector);
-
-    if (!gauge) return;
-
-    gauge.style.setProperty("--percent", percent);
-
-    const text = gauge.querySelector(".percent");
-
-    if (text) {
-        text.innerText = `${percent}%`;
-    }
+  }
 }
+
+
+/* 관점 전체 보기 토글 */
+function toggleView() {
+  const grid = document.getElementById("viewGrid");
+  const btn = document.getElementById("toggleBtn");
+
+  if (!grid || !btn) return;
+
+  grid.classList.toggle("expanded");
+
+  btn.innerText = grid.classList.contains("expanded")
+    ? "접기 ∧"
+    : "전체 18개 관점 보기 ∨";
+}
+
+
+/* =========================================================
+   11. 게이지 업데이트
+========================================================= */
+function updateGauge(selector, percent) {
+  const gauge = document.querySelector(selector);
+
+  if (!gauge) return;
+
+  gauge.style.setProperty("--percent", percent);
+
+  const text = gauge.querySelector(".percent");
+
+  if (text) {
+    text.innerText = `${percent}%`;
+  }
+}
+
+
+/* =========================================================
+   12. 메인 페이지 데이터 초기 실행
+========================================================= */
+document.addEventListener("DOMContentLoaded", async () => {
+  renderViewGrid(groups);
+  loadAnalysisData();
+
+  const keyword = await loadTopKeyword();
+
+  if (
+    keyword &&
+    keyword !== "데이터 없음" &&
+    keyword !== "키워드 없음" &&
+    keyword !== "분석 데이터 없음"
+  ) {
+    loadSentimentCompare(keyword);
+  }
+
+  loadHeroTop5Keywords();
+  loadHotNews();
+  loadDominantOpinion();
+});
 </script>
 </body>
 </html>
