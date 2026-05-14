@@ -1848,44 +1848,53 @@ def get_dominant_opinions():
             "_source": [
                 "scopeID",
                 "scopeTitle",
+                "scope_summary",
                 "scope_keywords",
                 "sentiment_dist",
                 "updated_at",
                 "news_count"
             ],
             "query": {
-                "wildcard": {
-                    "scope_keywords": {
-                        "value": f"*{top_keyword}*",
-                        "case_insensitive": True
-                    }
+                "bool": {
+                    "must": [
+                        {
+                            "wildcard": {
+                                "scope_keywords": {
+                                    "value": f"*{top_keyword}*",
+                                    "case_insensitive": True
+                                }
+                            }
+                        }
+                    ],
+                    "should": [
+                        {
+                            "match_phrase": {
+                                "scopeTitle": {
+                                    "query": top_keyword,
+                                    "boost": 6
+                                }
+                            }
+                        },
+                        {
+                            "match_phrase": {
+                                "scope_summary": {
+                                    "query": top_keyword,
+                                    "boost": 3
+                                }
+                            }
+                        }
+                    ]
                 }
             },
-
-            # =========================
-            # 1순위: 최신 업데이트
-            # 2순위: 누적 기사 수 많은 scope
-            # =========================
             "sort": [
-                {
-                    "updated_at": {
-                        "order": "desc"
-                    }
-                },
-                {
-                    "news_count": {
-                        "order": "desc"
-                    }
-                }
+                {"_score": {"order": "desc"}},
+                {"updated_at": {"order": "desc"}},
+                {"news_count": {"order": "desc"}}
             ]
         }
     )
 
-    scope_ids = [
-        hit["_source"]["scopeID"]
-        for hit in recent_result["hits"]["hits"]
-        if hit["_source"].get("scopeID")
-    ]
+    scope_ids = []
     visited_scope_ids = set()
 
     for hit in recent_result["hits"]["hits"]:
