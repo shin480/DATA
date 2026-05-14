@@ -3443,6 +3443,48 @@ def create_daily_keyword_metrics(target_date: str = None):
         "top5": top5
     }
 
+# 데일리키워드 재집계
+@app.post("/api/batch/daily-keyword-metrics/all")
+def create_all_daily_keyword_metrics():
+    es = get_es()
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 0,
+            "aggs": {
+                "dates": {
+                    "date_histogram": {
+                        "field": "published_at",
+                        "calendar_interval": "day",
+                        "format": "yyyy-MM-dd",
+                        "min_doc_count": 1
+                    }
+                }
+            }
+        }
+    )
+
+    buckets = result["aggregations"]["dates"]["buckets"]
+
+    results = []
+
+    for bucket in buckets:
+        target_date = bucket["key_as_string"]
+
+        res = create_daily_keyword_metrics(target_date)
+
+        results.append({
+            "date": target_date,
+            "result": res
+        })
+
+    return {
+        "success": True,
+        "updated_days": len(results),
+        "results": results
+    }
+
 @app.get("/search-summary")
 def search_summary(start_date: str, end_date: str):
     return get_search_summary(start_date, end_date)
