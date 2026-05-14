@@ -1744,7 +1744,33 @@ async function loadAnalysisLogs() {
       return;
     }
 
-    analysisData = data.logs || [];
+    console.log("[분석 로그 응답]", data.logs);
+
+    analysisData = (data.logs || []).map(item => ({
+      id: item.id || item.article_id || "-",
+      title: item.title || item.article_title || "-",
+
+      first:
+        item.first ||
+        item.first_analysis ||
+        item.analysis_1 ||
+        item.primary_analysis ||
+        item.step1_result ||
+        "-",
+
+      second:
+        item.second ||
+        item.second_analysis ||
+        item.analysis_2 ||
+        item.secondary_analysis ||
+        item.step2_result ||
+        "-",
+
+      status: item.status || "-",
+      code: item.code || item.code_id || "-",
+      message: item.message || "-",
+      time: item.time || item.created_at || "-"
+    }));
 
     renderAnalysis(analysisData);
 
