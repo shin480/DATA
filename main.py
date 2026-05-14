@@ -280,6 +280,90 @@ def get_keyword_detail(keyword: str):
     hits = result["hits"]["hits"]
     total_count = result["hits"]["total"]["value"]
 
+    # =========================
+    # 2. news_scopes 분석 데이터 조회
+    # scope_keywords에 keyword 포함
+    # 제목/요약에 keyword 포함된 scope 우선
+    # =========================
+    scope_result = es.search(
+        index="news_scopes",
+        body={
+            "size": 1000,
+            "_source": [
+                "scopeID",
+                "scopeTitle",
+                "scope_keywords",
+                "scope_summary",
+                "updated_at",
+                "news_count"
+            ],
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "wildcard": {
+                                "scope_keywords": {
+                                    "value": f"*{keyword}*",
+                                    "case_insensitive": True
+                                }
+                            }
+                        }
+                    ],
+                    "should": [
+                        {
+                            "match_phrase": {
+                                "scopeTitle": {
+                                    "query": keyword,
+                                    "boost": 5
+                                }
+                            }
+                        },
+                        {
+                            "match_phrase": {
+                                "scope_summary": {
+                                    "query": keyword,
+                                    "boost": 3
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "sort": [
+                {
+                    "_score": {
+                        "order": "desc"
+                    }
+                },
+                {
+                    "updated_at": {
+                        "order": "desc"
+                    }
+                },
+                {
+                    "news_count": {
+                        "order": "desc"
+                    }
+                }
+            ]
+        }
+    )
+
+    analysis = []
+
+    for hit in scope_result["hits"]["hits"]:
+        source = hit["_source"]
+
+        analysis.append({
+            "scopeID": source.get("scopeID", ""),
+            "scopeTitle": source.get("scopeTitle", "제목 없음"),
+            "scope_keywords": source.get("scope_keywords", ""),
+            "scope_summary": source.get("scope_summary", ""),
+            "updated_at": source.get("updated_at", ""),
+            "news_count": source.get("news_count", 0),
+            "score": hit.get("_score", 0)
+        })
+
     if total_count == 0:
         return {
             "category": "ECONOMY",
@@ -294,7 +378,8 @@ def get_keyword_detail(keyword: str):
                 "neutral": 0,
                 "negative": 0
             },
-            "articles": []
+            "articles": [],
+            "analysis": []
         }
 
     # =========================
@@ -435,7 +520,8 @@ def get_keyword_detail(keyword: str):
             "negative": negative_percent
         },
 
-        "articles": articles
+        "articles": articles,
+        "analysis": analysis
     }
 # =========================
 # 랜덤 키워드 조회 API
