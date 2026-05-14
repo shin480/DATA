@@ -444,14 +444,15 @@ def export_corrections_csv(
         es.close()
 
         output.seek(0)
+        from urllib.parse import quote
         sent_label = sentiment or "all"
-        excl_label = "_미학습" if exclude_trained else ""
+        excl_label = "_untrained" if exclude_trained else ""
         filename   = f"sentiment_export_{sent_label}{excl_label}.csv"
 
         return StreamingResponse(
             iter([output.getvalue()]),
             media_type="text/csv; charset=utf-8",
-            headers={"Content-Disposition": f"attachment; filename*=UTF-8''{filename}"},
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
 
     except HTTPException:

@@ -400,3 +400,56 @@ def get_classification_status():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── 키워드 순위 조회 ───────────────────────────────────
+
+@router.get("/keywords/ranking", summary="전체 뉴스 키워드 빈도 순위")
+def get_keyword_ranking():
+    """
+    전체 뉴스 기준 키워드 빈도 순위를 전체 반환합니다.
+    keywords 필드가 keyword 타입(콤마 구분 문자열)이므로
+    전체 doc을 스크롤로 가져와 Python에서 콤마 분리 후 집계합니다.
+    페이지네이션은 뷰어(클라이언트) 레벨에서 처리합니다.
+    """
+    from collections import Counter
+
+    try:
+        es      = get_es()
+        counter = Counter()
+        body    = {
+            "query":   {"exists": {"field": "keywords"}},
+            "_source": ["keywords"],
+            "size":    5000,
+        }
+
+        # scroll로 전체 doc 순회
+        res       = es.search(index=INDEX_NEWS, body=body, scroll="2m")
+        scroll_id = res["_scroll_id"]
+        hits      = res["hits"]["hits"]
+
+        while hits:
+            for hit in hits:
+                raw = hit["_source"].get("keywords", "")
+                if raw:
+                    for kw in raw.split(","):
+                        kw = kw.strip()
+                        if kw:
+                            counter[kw] += 1
+            res       = es.scroll(scroll_id=scroll_id, scroll="2m")
+            scroll_id = res["_scroll_id"]
+            hits      = res["hits"]["hits"]
+
+        es.clear_scroll(scroll_id=scroll_id)
+        es.close()
+
+        ranked = counter.most_common()  # 제한 없이 전체 반환
+        return {
+            "total": len(ranked),
+            "keywords": [
+                {"rank": i + 1, "keyword": kw, "count": cnt}
+                for i, (kw, cnt) in enumerate(ranked)
+            ],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
