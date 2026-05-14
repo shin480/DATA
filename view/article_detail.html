@@ -308,7 +308,7 @@ body {
 
 .article-detail-wrap {
   width: 1280px;
-  max-width: 100%;
+  max-width: 92%;
   margin: 0 auto;
 }
 
@@ -362,30 +362,41 @@ body {
   background: #0b1223;
   border: 1px solid #16223b;
   border-radius: 18px;
-  padding: 28px 32px;
+
+  padding: 40px 44px;
+}
+
+#newsContent {
   color: #d8e6ff;
-  font-size: 17px;
-  line-height: 2;
-  white-space: pre-line;
+  font-size: 18px;
 }
 
 .source-wrap {
-  margin: 34px 0;
-  text-align: center;
+    margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  text-align: flex;
 }
 
 .source-btn {
-  border: 0;
-  border-radius: 10px;
-  background: #1b2b47;
+  border: 1px solid #243552;
+  border-radius: 8px;
+
+  background: #13203a;
   color: #dce8ff;
-  padding: 14px 28px;
-  font-weight: 800;
+
+  padding: 6px 12px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+    align-items: center;
+
   cursor: pointer;
 }
 
 .source-btn:hover {
-  background: #22385d;
+  background: #1b2b47;
 }
 
 /* ==============================
@@ -393,41 +404,26 @@ body {
 ============================== */
 
 .article-viewpoint-card {
-  position: relative;
-  margin: 10px auto 32px;
-  padding: 30px 32px 28px;
-  max-width: 760px;
-  background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.10), transparent 38%),
-    #0b1223;
+  margin: 10px auto 34px;
+  padding: 26px 30px;
+  max-width: 720px;
+  background: #0b1223;
   border: 1px solid #16223b;
-  border-radius: 24px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
-  overflow: hidden;
-}
-
-.article-viewpoint-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 32px;
-  width: 88px;
-  height: 3px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #2dd4bf, rgba(45, 212, 191, 0.15));
+  border-radius: 22px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
 }
 
 .viewpoint-card-head {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 22px;
 }
 
 .viewpoint-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   border: 1px solid #2dd4bf;
   color: #2dd4bf;
   display: flex;
@@ -438,8 +434,8 @@ body {
 }
 
 .viewpoint-icon img {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   display: block;
 }
@@ -449,217 +445,119 @@ body {
   color: #2dd4bf;
   font-size: 13px;
   font-weight: 900;
-  letter-spacing: -0.1px;
 }
 
 .viewpoint-name {
   margin: 0;
   color: #f8fafc;
-  font-size: 25px;
+  font-size: 24px;
   font-weight: 900;
-  line-height: 1.3;
-  letter-spacing: -0.6px;
-}
-
-.viewpoint-desc {
-  margin-bottom: 22px;
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.7;
 }
 
 .viewpoint-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 66px;
-  padding: 16px 18px;
-  border: 1px solid #16223b;
-  border-radius: 18px;
-  background: rgba(15, 23, 42, 0.72);
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid #16223b;
 }
 
-.viewpoint-meta-left {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.viewpoint-meta-label {
-  color: #94a3b8;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.viewpoint-meta-caption {
-  color: #dbeafe;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.article-sentiment-badge {
-  min-width: 72px;
-  height: 38px;
-  padding: 0 16px;
+.viewpoint-meta span {
+  padding: 6px 12px;
   border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  background: #111d35;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.viewpoint-meta strong {
+  color: #e5e7eb;
   font-size: 16px;
   font-weight: 900;
-  letter-spacing: -0.3px;
-  border: 1px solid transparent;
-  flex-shrink: 0;
 }
 
-.article-sentiment-badge.positive {
-  color: #2dd4bf;
-  background: rgba(45, 212, 191, 0.12);
-  border-color: rgba(45, 212, 191, 0.32);
+body.light-mode .article-viewpoint-card {
+  background: #ffffff;
+  border-color: #dbe7df;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
-.article-sentiment-badge.negative {
-  color: #fb7185;
-  background: rgba(251, 113, 133, 0.12);
-  border-color: rgba(251, 113, 133, 0.32);
+body.light-mode .viewpoint-name {
+  color: #0f172a;
 }
 
-.article-sentiment-badge.neutral {
-  color: #facc15;
-  background: rgba(250, 204, 21, 0.12);
-  border-color: rgba(250, 204, 21, 0.32);
+body.light-mode .viewpoint-meta {
+  border-top-color: #e2e8f0;
 }
 
-.article-sentiment-badge.unknown {
-  color: #94a3b8;
-  background: rgba(148, 163, 184, 0.12);
-  border-color: rgba(148, 163, 184, 0.28);
+body.light-mode .viewpoint-meta span {
+  background: #f1f5f9;
+  color: #64748b;
 }
 
-/* ==============================
-   Vote Section
-   아래 콘텐츠가 이어지는 흐름을 살리기 위해
-   카드형 배경 없이 열려 있는 구조로 유지
-============================== */
+body.light-mode .viewpoint-meta strong {
+  color: #0f172a;
+}
 
 .vote-wrap {
-  padding: 10px 0 18px;
+  padding: 18px 0 24px;
   text-align: center;
 }
 
 .vote-title {
-  margin-bottom: 10px;
+  margin-bottom: 28px;
   color: #f8fafc;
-  font-size: 27px;
+  font-size: 26px;
   font-weight: 900;
-  line-height: 1.4;
-  letter-spacing: -0.7px;
-}
-
-.vote-desc {
-  margin-bottom: 24px;
-  color: #8ea0bd;
-  font-size: 14px;
-  font-weight: 600;
 }
 
 .vote-box {
   display: flex;
   justify-content: center;
-  gap: 22px;
+  gap: 30px;
 }
 
 .vote-btn {
-  width: 238px;
-  height: 94px;
-  padding: 0 24px;
-  border: 1px solid #1f2d47;
-  border-radius: 999px;
-  background: rgba(17, 29, 53, 0.88);
+  width: 220px;
+  height: 95px;
+  border: 0;
+  border-radius: 50px;
+  background: #111d35;
   color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-
+  transition: 0.2s;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vote-btn span {
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .vote-btn:hover {
-  transform: translateY(-3px);
-  border-color: rgba(25, 216, 255, 0.58);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
-}
-
-.vote-btn-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.vote-emoji {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.vote-text {
-  display: block;
-  color: #f8fafc;
-  font-size: 21px;
-  font-weight: 900;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-  white-space: nowrap;
-}
-
-.vote-count {
-  min-width: 28px;
-  color: #94a3b8;
-  font-size: 18px;
-  font-weight: 900;
-  text-align: right;
+  transform: translateY(-2px);
 }
 
 .vote-btn.active {
-  background: linear-gradient(135deg, #19d8ff, #00c7ea);
-  border-color: #19d8ff;
-  color: #00131f;
-  box-shadow: 0 16px 34px rgba(25, 216, 255, 0.25);
-}
-
-.vote-btn.active .vote-emoji {
-  background: rgba(255, 255, 255, 0.30);
-}
-
-.vote-btn.active .vote-text,
-.vote-btn.active .vote-count {
+  background: #19d8ff;
   color: #00131f;
 }
 
-/* ==============================
-   Deep News
-   투표 이후 바로 이어져 보이도록 위 여백 축소
-============================== */
+.vote-btn.active span {
+  color: #00131f;
+}
 
 .deep-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 34px 0 22px;
+  margin: 52px 0 22px;
   color: #f8fafc;
   font-size: 26px;
   font-weight: 900;
@@ -948,71 +846,23 @@ body.light-mode .source-btn:hover {
   background: #cffafe;
 }
 
-/* 결과 분석 카드 - 라이트 모드 */
-body.light-mode .article-viewpoint-card {
-  background:
-    radial-gradient(circle at top left, rgba(13, 148, 136, 0.08), transparent 38%),
-    #ffffff;
-  border-color: #dbe7df;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
-}
-
-body.light-mode .viewpoint-name {
-  color: #0f172a;
-}
-
-body.light-mode .viewpoint-desc {
-  color: #64748b;
-}
-
-body.light-mode .viewpoint-meta {
-  background: #f8fafc;
-  border-color: #e2e8f0;
-}
-
-body.light-mode .viewpoint-meta-label {
-  color: #64748b;
-}
-
-body.light-mode .viewpoint-meta-caption {
-  color: #334155;
-}
-
-/* 투표 영역 - 라이트 모드 */
-body.light-mode .vote-desc {
-  color: #64748b;
-}
-
 body.light-mode .vote-btn {
   background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-}
-
-body.light-mode .vote-btn:hover {
-  border-color: rgba(8, 145, 178, 0.55);
-}
-
-body.light-mode .vote-emoji {
-  background: #f1f5f9;
-}
-
-body.light-mode .vote-text {
+  border: 1px solid #e2e8f0;
   color: #0f172a;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
-body.light-mode .vote-count {
+body.light-mode .vote-btn span {
   color: #64748b;
 }
 
 body.light-mode .vote-btn.active {
-  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  background: #22d3ee;
   color: #020817;
-  border-color: #22d3ee;
 }
 
-body.light-mode .vote-btn.active .vote-text,
-body.light-mode .vote-btn.active .vote-count {
+body.light-mode .vote-btn.active span {
   color: #020817;
 }
 
@@ -1125,19 +975,6 @@ body.light-mode .footer-modal-content h3 {
     font-size: 32px;
   }
 
-  .article-viewpoint-card {
-    padding: 28px 22px 24px;
-  }
-
-  .viewpoint-meta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .vote-title {
-    font-size: 23px;
-  }
-
   .vote-box {
     flex-direction: column;
     align-items: center;
@@ -1145,7 +982,7 @@ body.light-mode .footer-modal-content h3 {
 
   .vote-btn {
     width: 100%;
-    max-width: 340px;
+    max-width: 320px;
   }
 
   .deep-grid {
@@ -1167,23 +1004,6 @@ body.light-mode .footer-modal-content h3 {
 
   .footer-inner {
     padding: 0 18px;
-  }
-
-  .viewpoint-card-head {
-    align-items: flex-start;
-  }
-
-  .viewpoint-name {
-    font-size: 22px;
-  }
-
-  .vote-btn {
-    height: 92px;
-    padding: 0 18px;
-  }
-
-  .vote-text {
-    font-size: 19px;
   }
 }
 </style>
@@ -1213,17 +1033,18 @@ body.light-mode .footer-modal-content h3 {
 
       <div class="article-line"></div>
 
-      <article class="content-box" id="newsContent"></article>
+<div class="content-box">
 
-      <div class="source-wrap">
-        <button class="source-btn" onclick="goSource()" type="button">
-          🔗 원문 보기
-        </button>
-      </div>
+  <article id="newsContent"></article>
 
-      <!-- ==============================
-           결과 분석 카드
-      =============================== -->
+  <div class="source-wrap">
+    <button class="source-btn" onclick="goSource()" type="button">
+      🔗 원문 보기
+    </button>
+  </div>
+
+</div>
+
       <section class="article-viewpoint-card">
         <div class="viewpoint-card-head">
           <span class="viewpoint-icon" id="articleViewpointIconWrap">
@@ -1233,72 +1054,41 @@ body.light-mode .footer-modal-content h3 {
               alt="관점 아이콘"
             >
           </span>
-
           <div>
             <div class="viewpoint-label">분석 관점</div>
             <h3 class="viewpoint-name" id="articleViewpoint">정부 관점</h3>
           </div>
         </div>
 
-        <p class="viewpoint-desc">
-          기사의 서술 방식과 핵심 흐름을 바탕으로 도출한 분석 결과입니다.
-        </p>
-
         <div class="viewpoint-meta">
-          <div class="viewpoint-meta-left">
-            <span class="viewpoint-meta-label">감성 분석</span>
-            <span class="viewpoint-meta-caption">기사의 전반적인 정서 흐름</span>
-          </div>
-
-          <strong
-            class="article-sentiment-badge unknown"
-            id="articleSentiment"
-          >
-            중립
-          </strong>
+          <span>감성</span>
+          <strong id="articleSentiment">중립</strong>
         </div>
+
       </section>
 
       <div class="article-line"></div>
 
-      <!-- ==============================
-           독자 반응 투표
-      =============================== -->
       <section class="vote-wrap">
         <div class="vote-title">
           이 기사에서 분석된 관점에 동의하시나요?
         </div>
 
-        <p class="vote-desc">
-          분석 결과에 대한 생각을 선택해 주세요.
-        </p>
-
         <div class="vote-box">
           <button class="vote-btn" id="likeBtn" onclick="selectVote('like')" type="button">
-            <span class="vote-btn-main">
-              <span class="vote-emoji">👍</span>
-              <span class="vote-text">동의해요</span>
-            </span>
-
-            <span class="vote-count" id="likeCount">0</span>
+            👍 동의해요
+            <span id="likeCount">0</span>
           </button>
 
           <button class="vote-btn" id="hateBtn" onclick="selectVote('hate')" type="button">
-            <span class="vote-btn-main">
-              <span class="vote-emoji">👎</span>
-              <span class="vote-text">반대해요</span>
-            </span>
-
-            <span class="vote-count" id="hateCount">0</span>
+            👎 반대해요
+            <span id="hateCount">0</span>
           </button>
         </div>
       </section>
 
       <div class="article-line"></div>
 
-      <!-- ==============================
-           깊이 읽기
-      =============================== -->
       <section>
         <div class="deep-title">
           💡 깊이 읽기
@@ -1813,7 +1603,6 @@ window.logout = function () {
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("userName");
-
   axios.post("/logout");
   location.href = "/view/main.html";
 };
@@ -1864,7 +1653,6 @@ window.closeFooterModal = function () {
 
 <script>
 /* ===== article_detail.js ===== */
-
 // ==============================
 // 기사 상세 접근 체크
 // ==============================
@@ -1903,31 +1691,30 @@ function getArticleIdFromUrl() {
 // ==============================
 // 유효 조회 확인
 // ==============================
-async function view() {
+async function view(){
   const articleId = getArticleIdFromUrl();
 
   if (!articleId) return;
 
   try {
     console.log("조회");
-
     await axios.post("/view", {
       article_id: articleId
     }, {
       withCredentials: true
     });
 
-    // 3초 뒤 유효 조회 처리
+        // 3초 뒤 유효 조회 처리
     setTimeout(() => {
       validateView();
     }, 3000);
+
 
   } catch (error) {
     console.error("조회수 증가 실패:", error);
   }
 }
-
-view();
+view()
 
 // ==============================
 // 3초 이상 체류 시 True 업데이트
@@ -1966,8 +1753,8 @@ async function fetchArticleDetail() {
     );
 
     newsDetail = res.data;
-
     loadDeepNews();
+
     loadNewsDetail();
 
   } catch (error) {
@@ -1994,7 +1781,7 @@ const deepNews = [
 let currentVote = "";
 
 // ==============================
-// 감성 영문 → 한글 변환
+// 뉴스 출력
 // ==============================
 function convertSentimentToKorean(sentiment) {
   const value = String(sentiment || "").toLowerCase();
@@ -2080,24 +1867,10 @@ function loadNewsDetail() {
   }
 
   // ==============================
-  // 감성 출력 + 배지 색상 적용
+  // 감성 출력
   // ==============================
   if (sentiment) {
-    const sentimentText = convertSentimentToKorean(newsDetail.sentiment);
-
-    sentiment.innerText = sentimentText;
-
-    sentiment.classList.remove("positive", "negative", "neutral", "unknown");
-
-    if (sentimentText === "긍정") {
-      sentiment.classList.add("positive");
-    } else if (sentimentText === "부정") {
-      sentiment.classList.add("negative");
-    } else if (sentimentText === "중립") {
-      sentiment.classList.add("neutral");
-    } else {
-      sentiment.classList.add("unknown");
-    }
+    sentiment.innerText = convertSentimentToKorean(newsDetail.sentiment);
   }
 
   // ==============================
