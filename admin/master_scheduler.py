@@ -411,7 +411,7 @@ def run_model_pipeline_sync():
     _run_with_timeout(run_summary_pipeline, "summary")
     print("[model] 5 요약 완료")
     print("[model] 6 스콥 타이틀 추출 시작")
-    _run_with_timeout(run_scope_title_batch, "scope_title")
+    _run_with_timeout(run_scope_title_batch, "scope_title_chain")
     print("[model] 6 스콥 타이틀 추출 완료")
     print("[model] 7 스콥 감성 집계 시작")
     _run_with_timeout(run_scope_sentiment_batch, "scope_sentiment")

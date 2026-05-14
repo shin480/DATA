@@ -89,6 +89,9 @@ def run_scope_sentiment_batch():
                 body={
                     "query": {
                         "bool": {
+                            "must": [
+                                {"range": {"news_count": {"gte": MIN_NEWS_COUNT}}}
+                            ],
                             "must_not": {"exists": {"field": "sentiment"}},
                         }
                     },

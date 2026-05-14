@@ -27,5 +27,4 @@ feedparser
 itsdangerous
 kiwipiepy
 
-# 비밀번호 해싱
 bcrypt==3.2.2

@@ -20,7 +20,7 @@ MAX_SCOPE_KEYWORDS = 5
 BATCH_SIZE         = 500
 INDEX_NEWS         = "news_economy"
 INDEX_SCOPES       = "news_scopes"
-
+MIN_NEWS_COUNT = 3
 
 def aggregate_scope_keywords(es, scope_id: str) -> str:
     # 해당 scope 뉴스의 keywords 수집
@@ -90,6 +90,9 @@ def run_scope_keywords_batch():
                 body={
                     "query": {
                         "bool": {
+                            "must": [
+                                {"range": {"news_count": {"gte": MIN_NEWS_COUNT}}}
+                            ],
                             "must_not": {"exists": {"field": "scope_keywords"}},
                         }
                     },

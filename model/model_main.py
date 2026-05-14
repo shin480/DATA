@@ -71,7 +71,13 @@ def _run_with_timeout(fn, job_id: str, timeout_sec: int = JOB_TIMEOUT_SEC):
             logger.critical(
                 f"[타임아웃] {job_id} — {timeout_sec}초 초과. 체인 중단."
             )
-            raise
+        except Exception as e:  # ← 추가
+            logger.error(  # ← 추가
+                f"[{job_id}] 예외: {type(e).__name__}: {e}",  # ← 추가
+                exc_info=True  # ← 추가
+            )  # ← 추가
+            raise  # ← 추가
+
 
 
 # ── FastAPI 앱 ─────────────────────────────────────────
