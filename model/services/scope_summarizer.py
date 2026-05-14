@@ -13,6 +13,9 @@ scope 대표 요약 생성 서비스
 - 요약 방식 변경: TextRank 다중 문장 → 1문장 (70자 이내)
 - 선택 로직: TextRank 상위 3개 중 scope_keywords 포함 빈도 가장 높은 문장 선택
 - MIN_NEWS_COUNT 제거: 뉴스 1건이어도 요약 생성
+- ES 쿼리 버그 수정: should(OR) → must_not exists 단순화
+  (기존 should + news_count>0 조건으로 이미 처리된 scope까지 조회되던 문제)
+- BATCH_SIZE 제거: 500 제한 → 10000으로 상향 (scope 수 증가 대응)
 """
 
 import logging
@@ -28,7 +31,7 @@ from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE          = 500
+BATCH_SIZE          = 10000
 MAX_NEWS_PER_PRESS  = 3
 TOP_N               = 3
 DAMPING             = 0.85
@@ -204,11 +207,7 @@ def run_scope_summary_batch():
             body={
                 "query": {
                     "bool": {
-                        "should": [
-                            {"bool": {"must_not": {"exists": {"field": "scope_summary"}}}},
-                            {"range": {"news_count": {"gt": 0}}},
-                        ],
-                        "minimum_should_match": 1,
+                        "must_not": {"exists": {"field": "scope_summary"}}
                     }
                 },
                 "_source": ["scopeID"],
