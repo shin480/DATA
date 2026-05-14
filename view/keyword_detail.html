@@ -1252,7 +1252,7 @@ body {
 
 .section-label {
   color: #22d3ee;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 900;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -2032,6 +2032,19 @@ body.light-mode .news-header h2 {
   color: #1e293b !important;
 }
 
+.section-label,
+.article-tab-bar {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.article-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 /* 배지 */
 body.light-mode .keyword-badge {
   border-color: #06b6d4;
@@ -2207,43 +2220,61 @@ html.dark-transition *::after {
 }
 
 .article-tab {
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
+  background: transparent;
+  border: none;
   color: #94a3b8;
-  padding: 10px 18px;
-  border-radius: 999px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
+  padding: 10px 6px;
+  cursor: pointer;
+  position: relative;
+}
   transition: 0.18s;
 }
 
+.article-tab.active {
+  color: #00e5ff;
+}
+
+.article-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0%;
+  height: 2px;
+  background: #00e5ff;
+  transition: 0.25s ease;
+}
+
+.article-tab.active::after {
+  width: 100%;
+}
+
 .article-tab:hover {
-  background: rgba(255,255,255,0.06);
+  color: #00e5ff;
+}
+
+.article-tab:hover::after {
+  width: 100%;
 }
 
 /* 다크모드 활성화 */
 .article-tab.active {
-  background: #4CB7D3;
-  color: #02131a;
+  color: #FFFFFF;
   border-color: #4CB7D3;
 }
 
 /* 라이트모드 */
 body.light-mode .article-tab {
-  background: #f1f5f9;
   color: #64748b;
   border-color: #dbe4ee;
 }
 
-body.light-mode .article-tab:hover {
-  background: #e2e8f0;
-}
 
 /* 라이트모드 활성화 */
 body.light-mode .article-tab.active {
-  background: #34d6cc;
-  color: white;
+  color: #02131a;
   border-color: #34d6cc;
 }
 
@@ -2256,7 +2287,7 @@ body.light-mode .article-tab.active {
 ========================= */
 
 .random-keyword-btn {
-  border: none;
+  border: 1px solid #4CB7D3;
   background: rgba(76,183,211,0.12);
   color: #4CB7D3;
   padding: 10px 14px;
@@ -2273,8 +2304,9 @@ body.light-mode .article-tab.active {
 
 /* 라이트모드 */
 body.light-mode .random-keyword-btn {
-  background: rgba(52,214,204,0.12);
+  background: #FFFFFF;
   color: #34d6cc;
+  border: 1px solid #34D6CC;
 }
 
 body.light-mode .random-keyword-btn:hover {
@@ -2415,17 +2447,22 @@ body.light-mode .news-title-item:hover {
 
 <section>
 
+  <div class="article-header-row">
+
+  <div class="section-label">REFERENCE</div>
+
   <div class="article-tab-bar">
 
     <button class="article-tab active" data-tab="normal">
-      일반 기사
+      ARTICLE
     </button>
 
     <button class="article-tab" data-tab="ai">
-      AI 기사
+      AI ANALYSIS
     </button>
 
   </div>
+    </div>
 
   <div class="article-tab-content">
 
