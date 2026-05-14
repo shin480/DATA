@@ -733,6 +733,26 @@ td[title] {
   word-break: keep-all;
 }
 
+.upload-box.file-selected {
+  border-color: rgba(56, 189, 248, 0.9);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.upload-box.file-selected #bannerUploadTitle {
+  color: #7dd3fc;
+}
+
+.upload-box.file-selected #bannerUploadText {
+  color: #e0f2fe;
+  font-weight: 800;
+  margin-top: 6px;
+  word-break: break-all;
+}
+
+.upload-box.file-selected #bannerUploadGuide {
+  color: #38bdf8 !important;
+}
+
 .help {
   width: 100%;
   margin-top: 8px;
@@ -1147,14 +1167,14 @@ td[title] {
     <p>권장 비율: 약 8.7:1</p>
   </div>
 
-  <label class="upload-box">
-    <strong>이미지 업로드</strong>
-    <span>PNG / JPG / JPEG / WEBP 파일 선택</span>
-    <span style="margin-top:8px;font-size:13px;color:#64748b;">
-      화면에는 약 960 × 110px 비율로 표시됩니다.
-    </span>
-    <input accept="image/*" hidden="" id="bannerImage" type="file"/>
-  </label>
+    <label class="upload-box" id="bannerUploadBox">
+      <strong id="bannerUploadTitle">이미지 업로드</strong>
+      <span id="bannerUploadText">PNG / JPG / JPEG / WEBP 파일 선택</span>
+      <span id="bannerUploadGuide" style="margin-top:8px;font-size:13px;color:#64748b;">
+        화면에는 약 960 × 110px 비율로 표시됩니다.
+      </span>
+      <input accept="image/*" hidden id="bannerImage" type="file"/>
+    </label>
 </div>
 <div class="help" id="bannerImageHelp">
   광고 배너 권장 크기: 1920 × 220px · 화면에는 약 960 × 110px 비율로 표시됩니다.
@@ -1293,6 +1313,38 @@ function showToast(message) {
   setTimeout(() => {
     toast.style.display = "none";
   }, 2200);
+}
+
+function updateBannerImageFileUI() {
+  const imageInput = document.getElementById("bannerImage");
+  const uploadBox = document.getElementById("bannerUploadBox");
+  const uploadTitle = document.getElementById("bannerUploadTitle");
+  const uploadText = document.getElementById("bannerUploadText");
+  const uploadGuide = document.getElementById("bannerUploadGuide");
+
+  if (
+    !imageInput ||
+    !uploadBox ||
+    !uploadTitle ||
+    !uploadText ||
+    !uploadGuide
+  ) {
+    return;
+  }
+
+  const file = imageInput.files[0];
+
+  if (file) {
+    uploadBox.classList.add("file-selected");
+    uploadTitle.textContent = "이미지 선택 완료";
+    uploadText.textContent = file.name;
+    uploadGuide.textContent = "등록하기를 누르면 이미지가 업로드됩니다.";
+  } else {
+    uploadBox.classList.remove("file-selected");
+    uploadTitle.textContent = "이미지 업로드";
+    uploadText.textContent = "PNG / JPG / JPEG / WEBP 파일 선택";
+    uploadGuide.textContent = "화면에는 약 960 × 110px 비율로 표시됩니다.";
+  }
 }
 
 function validateDateRange(start, end) {
@@ -1787,6 +1839,7 @@ function openModal() {
     if (noticeContent) noticeContent.value = "";
     if (bannerPinned) bannerPinned.checked = false;
 
+    updateBannerImageFileUI();
     updateBannerImageRequiredUI();
 
   if (modal) modal.classList.add("show");
@@ -1912,6 +1965,8 @@ function editBanner(id) {
   document.getElementById("bannerEnd").value = target.end_at || "";
   document.getElementById("bannerImage").value = "";
 
+  updateBannerImageFileUI();
+
   document.getElementById("bannerModal").classList.add("show");
 }
 
@@ -2003,6 +2058,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (bannerTypeSelect) {
     bannerTypeSelect.addEventListener("change", updateBannerImageRequiredUI);
+  }
+
+  const bannerImageInput = document.getElementById("bannerImage");
+
+  if (bannerImageInput) {
+    bannerImageInput.addEventListener("change", updateBannerImageFileUI);
   }
 
   const modal = document.getElementById("bannerModal");
