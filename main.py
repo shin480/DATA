@@ -3208,7 +3208,91 @@ def get_scope_detail(scope_id: str):
 def create_daily_keyword_metrics(target_date: str = None):
     es = get_es()
 
-    # target_date를 안 넣으면 keywords가 있는 최신 기사 날짜 기준으로 집계
+    # =========================================================
+    # 0. 공통 필터 기준
+    # =========================================================
+    stopwords = {
+        "com", "co", "kr", "www", "http", "https",
+        "db", "photo", "newsis", "yna", "yonhap",
+        "graphics", "graphic",
+        "그래픽", "사진", "기자", "제공", "금지",
+        "관련", "종합", "단독", "속보", "뉴스",
+        "보도", "기사", "무단", "전재", "재배포",
+        "습니다", "합니다", "했습니다", "있습니다", "없습니다",
+        "됩니다", "됐습니다",
+
+        # 과거 집계에서 튀어나온 잡키워드 직접 차단
+        "일제히", "본격적인", "굳어지", "손본다"
+    }
+
+    bad_endings = (
+        "습니다",
+        "합니다",
+        "했습니다",
+        "됩니다",
+        "됐습니다",
+        "있습니다",
+        "없습니다",
+        "한다고",
+        "했다고",
+        "된다",
+        "됐다",
+        "한다",
+        "했다",
+        "있다",
+        "없다",
+        "하다",
+        "되다"
+    )
+
+    def clean_keyword(raw_keyword: str):
+        """
+        키워드 1개를 정리하고,
+        저장 가능한 키워드면 문자열 반환,
+        버릴 키워드면 None 반환
+        """
+        keyword = str(raw_keyword).strip().lower()
+
+        keyword = (
+            keyword.replace("#", "")
+                   .replace('"', "")
+                   .replace("'", "")
+                   .replace("“", "")
+                   .replace("”", "")
+                   .replace("‘", "")
+                   .replace("’", "")
+                   .replace("…", "")
+                   .replace("·", "")
+                   .replace(".", "")
+                   .replace(",", "")
+                   .replace("?", "")
+                   .replace("!", "")
+                   .strip()
+        )
+
+        if not keyword:
+            return None
+
+        if len(keyword) < 2:
+            return None
+
+        if keyword.isdigit():
+            return None
+
+        if keyword in stopwords:
+            return None
+
+        if keyword.endswith(bad_endings):
+            return None
+
+        if "@" in keyword:
+            return None
+
+        return keyword
+
+    # =========================================================
+    # 1. target_date가 없으면 keywords가 있는 최신 기사 날짜 기준
+    # =========================================================
     if target_date is None:
         latest_result = es.search(
             index=NEWS_ECONOMY_INDEX,
@@ -3256,6 +3340,9 @@ def create_daily_keyword_metrics(target_date: str = None):
     start_at = f"{target_date}T00:00:00"
     end_at = f"{target_date}T23:59:59"
 
+    # =========================================================
+    # 2. 1차 시도: 원본 news_economy의 keywords로 정상 재집계
+    # =========================================================
     result = es.search(
         index=NEWS_ECONOMY_INDEX,
         body={
@@ -3295,39 +3382,7 @@ def create_daily_keyword_metrics(target_date: str = None):
     )
 
     hits = result["hits"]["hits"]
-
     keyword_counter = Counter()
-
-    stopwords = {
-        "com", "co", "kr", "www", "http", "https",
-        "db", "photo", "newsis", "yna", "yonhap",
-        "graphics", "graphic",
-        "그래픽", "사진", "기자", "제공", "금지",
-        "관련", "종합", "단독", "속보", "뉴스",
-        "보도", "기사", "무단", "전재", "재배포",
-        "습니다", "합니다", "했습니다", "있습니다", "없습니다",
-        "됩니다", "됐습니다"
-    }
-
-    bad_endings = (
-        "습니다",
-        "합니다",
-        "했습니다",
-        "됩니다",
-        "됐습니다",
-        "있습니다",
-        "없습니다",
-        "한다고",
-        "했다고",
-        "된다",
-        "됐다",
-        "한다",
-        "했다",
-        "있다",
-        "없다",
-        "하다",
-        "되다"
-    )
 
     for hit in hits:
         source = hit["_source"]
@@ -3343,57 +3398,131 @@ def create_daily_keyword_metrics(target_date: str = None):
         unique_keywords = set()
 
         for keyword in keyword_list:
-            keyword = str(keyword).strip().lower()
+            cleaned_keyword = clean_keyword(keyword)
 
-            keyword = (
-                keyword.replace("#", "")
-                       .replace('"', "")
-                       .replace("'", "")
-                       .replace("“", "")
-                       .replace("”", "")
-                       .replace("‘", "")
-                       .replace("’", "")
-                       .replace("…", "")
-                       .replace("·", "")
-                       .replace(".", "")
-                       .replace(",", "")
-                       .replace("?", "")
-                       .replace("!", "")
-                       .strip()
-            )
-
-            if not keyword:
+            if cleaned_keyword is None:
                 continue
 
-            if len(keyword) < 2:
-                continue
-
-            if keyword.isdigit():
-                continue
-
-            if keyword in stopwords:
-                continue
-
-            if keyword.endswith(bad_endings):
-                continue
-
-            if "@" in keyword:
-                continue
-
-            unique_keywords.add(keyword)
+            unique_keywords.add(cleaned_keyword)
 
         for keyword in unique_keywords:
             keyword_counter[keyword] += 1
 
-    if not keyword_counter:
+    # =========================================================
+    # 3. 정상 재집계가 가능하면 그대로 저장
+    # =========================================================
+    if keyword_counter:
+        rebuild_mode = "source_keywords_rebuild"
+
+        # 같은 날짜 기존 집계 삭제
+        es.delete_by_query(
+            index="daily_keyword_metrics",
+            body={
+                "query": {
+                    "term": {
+                        "date": target_date
+                    }
+                }
+            },
+            conflicts="proceed",
+            refresh=True
+        )
+
+        saved_count = 0
+
+        for keyword, count in keyword_counter.items():
+            doc_id = f"{target_date}_{keyword}"
+
+            es.index(
+                index="daily_keyword_metrics",
+                id=doc_id,
+                body={
+                    "date": target_date,
+                    "keyword": keyword,
+                    "article_count": count
+                },
+                refresh=False
+            )
+
+            saved_count += 1
+
+        es.indices.refresh(index="daily_keyword_metrics")
+
+        top5 = [
+            {
+                "keyword": keyword,
+                "article_count": count
+            }
+            for keyword, count in keyword_counter.most_common(5)
+        ]
+
+        return {
+            "success": True,
+            "mode": rebuild_mode,
+            "date": target_date,
+            "source_article_count": len(hits),
+            "saved_keyword_count": saved_count,
+            "top5": top5,
+            "message": "news_economy의 keywords 기준으로 재집계 완료"
+        }
+
+    # =========================================================
+    # 4. 원본 keywords가 없으면:
+    #    기존 daily_keyword_metrics 데이터를 청소해서 다시 저장
+    # =========================================================
+    existing_metrics_result = es.search(
+        index="daily_keyword_metrics",
+        body={
+            "size": 10000,
+            "_source": [
+                "date",
+                "keyword",
+                "article_count"
+            ],
+            "query": {
+                "term": {
+                    "date": target_date
+                }
+            }
+        }
+    )
+
+    existing_metric_hits = existing_metrics_result["hits"]["hits"]
+
+    if not existing_metric_hits:
         return {
             "success": False,
             "date": target_date,
             "source_article_count": len(hits),
-            "message": "집계할 키워드가 없습니다."
+            "message": "원본 keywords도 없고, 정리할 기존 daily_keyword_metrics 데이터도 없습니다."
         }
 
-    # 같은 날짜 데이터가 이미 있으면 지우고 다시 저장
+    cleaned_metric_counter = Counter()
+    removed_keywords = []
+
+    for hit in existing_metric_hits:
+        source = hit["_source"]
+
+        original_keyword = source.get("keyword", "")
+        article_count = source.get("article_count", 0)
+
+        cleaned_keyword = clean_keyword(original_keyword)
+
+        if cleaned_keyword is None:
+            removed_keywords.append(original_keyword)
+            continue
+
+        cleaned_metric_counter[cleaned_keyword] += article_count
+
+    if not cleaned_metric_counter:
+        return {
+            "success": False,
+            "date": target_date,
+            "message": "기존 집계 데이터를 정리했지만 남는 키워드가 없습니다.",
+            "removed_keywords": removed_keywords
+        }
+
+    # 기존 해당 날짜 집계 전체 삭제
     es.delete_by_query(
         index="daily_keyword_metrics",
         body={
@@ -3409,7 +3538,8 @@ def create_daily_keyword_metrics(target_date: str = None):
 
     saved_count = 0
 
-    for keyword, count in keyword_counter.items():
+    # 정리된 집계 다시 저장
+    for keyword, count in cleaned_metric_counter.items():
         doc_id = f"{target_date}_{keyword}"
 
         es.index(
@@ -3432,15 +3562,61 @@ def create_daily_keyword_metrics(target_date: str = None):
             "keyword": keyword,
             "article_count": count
         }
-        for keyword, count in keyword_counter.most_common(5)
+        for keyword, count in cleaned_metric_counter.most_common(5)
     ]
 
     return {
         "success": True,
+        "mode": "existing_metrics_cleanup",
         "date": target_date,
         "source_article_count": len(hits),
         "saved_keyword_count": saved_count,
-        "top5": top5
+        "removed_keyword_count": len(removed_keywords),
+        "removed_keywords": removed_keywords[:50],
+        "top5": top5,
+        "message": "원본 keywords가 없어 기존 daily_keyword_metrics 집계값을 정리해서 다시 저장했습니다."
+    }
+
+# 데일리키워드 재집계
+@app.post("/api/batch/daily-keyword-metrics/all")
+def create_all_daily_keyword_metrics():
+    es = get_es()
+
+    result = es.search(
+        index=NEWS_ECONOMY_INDEX,
+        body={
+            "size": 0,
+            "aggs": {
+                "dates": {
+                    "date_histogram": {
+                        "field": "published_at",
+                        "calendar_interval": "day",
+                        "format": "yyyy-MM-dd",
+                        "min_doc_count": 1
+                    }
+                }
+            }
+        }
+    )
+
+    buckets = result["aggregations"]["dates"]["buckets"]
+
+    results = []
+
+    for bucket in buckets:
+        target_date = bucket["key_as_string"]
+
+        res = create_daily_keyword_metrics(target_date)
+
+        results.append({
+            "date": target_date,
+            "result": res
+        })
+
+    return {
+        "success": True,
+        "updated_days": len(results),
+        "results": results
     }
 
 @app.get("/search-summary")

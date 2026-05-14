@@ -15,20 +15,84 @@ es = get_es()
 kiwi = Kiwi()
 
 # 불용어 리스트 정의
-STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "와", "과", "도", "만", "기자", "뉴스", "영상", "편집", "앵커"]
+STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "와", "과", "도", "만", "기자", "뉴스", "영상", "편집", "앵커", "연합뉴스", "뉴시스", "한경", "한경닷컴",
+ "게티이미지뱅크", "사진", "제공",
+ "기자", "특파원", "앵커", "포토", "사진", "이미지", "캡처", "닷컴",
+"헤럴드", "경제", "뉴스", "기자",
+"이상섭", "최혁", "정호원", "김익환"]
 
 DEBUG_MODE = False
 target_index = "news_economy"
 
-def kiwi_noun_tokenizer(text: str) -> list[str]:
+def kiwi_noun_tokenizer(text: str, author: str = "") -> list[str]:
     if not text:
         return []
 
-    tokens = kiwi.tokenize(text, split_complex=False)
+    banned_names = set()
+
+    # =========================
+    # author 기반 기자명 제거
+    # =========================
+    if author:
+        author = str(author).strip()
+
+        if author:
+            banned_names.add(author)
+            banned_names.add(author.replace(" ", ""))
+            banned_names.add(author.replace("기자", "").strip())
+            banned_names.add(
+                author.replace("기자", "").replace(" ", "").strip()
+            )
+
+    # =========================
+    # 본문 내 기자명 패턴 제거
+    # =========================
+    text = re.sub(
+        r'[가-힣]{2,4}\s?(기자|앵커|특파원|리포터|캐스터)',
+        ' ',
+        text
+    )
+
+    text = re.sub(
+        r'(사진|제공|연합뉴스|뉴시스|한경DB|게티이미지뱅크)[=:\s]*[가-힣A-Za-z0-9· ]{0,20}',
+        ' ',
+        text
+    )
+
+    text = re.sub(
+        r'(기자|앵커|특파원|리포터|캐스터)\s?[가-힣]{2,4}',
+        ' ',
+        text
+    )
+
+    text = re.sub(
+        r'\[[가-힣]{2,4}의 [^\]]+\]',
+        ' ',
+        text
+    )
+
+    text = re.sub(
+        r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}',
+        ' ',
+        text
+    )
+
+    # =========================
+    # Kiwi 토큰화 (author 여부와 무관하게 항상 실행)
+    # =========================
+    tokens = kiwi.tokenize(
+        text,
+        split_complex=False
+    )
 
     results = []
+
     ALLOWED_NOUN_TAGS = {"NNG", "NNP"}
-    EXCLUDED_SUFFIXES = ("세요", "시오", "합니다", "했다", "된다", "됐다", "니다")
+
+    EXCLUDED_SUFFIXES = (
+        "세요", "시오", "합니다",
+        "했다", "된다", "됐다", "니다"
+    )
 
     for token in tokens:
         word = token.form.strip()
@@ -36,7 +100,18 @@ def kiwi_noun_tokenizer(text: str) -> list[str]:
         if len(word) <= 1 or word in STOPWORDS:
             continue
 
+        # 기자명 제거
+        if word in banned_names:
+            continue
+
+        if any(name and name in word for name in banned_names):
+            continue
+
+        if "기자" in word or "특파원" in word:
+            continue
+
         if token.tag in ALLOWED_NOUN_TAGS:
+
             if word.endswith(EXCLUDED_SUFFIXES):
                 continue
 
@@ -72,6 +147,34 @@ def advanced_clean_text(text: str) -> str:
     # 기자 이름 역순
     text = re.sub(
         r'(기자|앵커|특파원)\s*([가-힣]{2,4})',
+        ' ',
+        text
+    )
+
+    # 사진/출처 제거
+    text = re.sub(
+        r'(사진|제공|연합뉴스|뉴시스|한경DB|게티이미지뱅크)[=:\s]*[가-힣A-Za-z0-9· ]{0,20}',
+        ' ',
+        text
+    )
+
+    # 코너명 제거
+    text = re.sub(
+        r'\[[가-힣]{2,4}의 [^\]]+\]',
+        ' ',
+        text
+    )
+
+    # [김익환의 ...] title 앞뒤 포함 제거 강화
+    text = re.sub(
+        r'\[[^\]]+\]',
+        ' ',
+        text
+    )
+
+    # 포즈 / 사진설명 제거
+    text = re.sub(
+        r'(포즈|캡처|자료사진)',
         ' ',
         text
     )
@@ -136,7 +239,7 @@ def get_preprocessed_data():
                 "must": [{"term": {"status": "collected"}}]
             }
         },
-        "size": 1000
+        "size": 7000
     }
     res = es.search(index="article_raw", body=query)
     hits = res["hits"]["hits"]
@@ -437,7 +540,7 @@ def get_preprocessed_data():
         doc_id = row['_id']
         try:
             # 사용자 정의 tokenizer 함수 호출
-            tokenized_str = kiwi_noun_tokenizer(row['clean_text'])
+            tokenized_str = kiwi_noun_tokenizer(row.get("clean_text", ""),row.get("author", ""))
 
             token_model_inputs.append([doc_id, tokenized_str])
 
@@ -544,7 +647,7 @@ def retokenize_news_economy(): # news_economy 전체 재토큰화
         index=target_index,
         query={
             "query": {"match_all": {}},
-            "_source": ["clean_text"]
+            "_source": ["clean_text", "author"]
         },
         size=5000,
         scroll="10m"
@@ -558,10 +661,12 @@ def retokenize_news_economy(): # news_economy 전체 재토큰화
     for doc in docs:
         total += 1
         doc_id = doc["_id"]
-        clean_text = doc.get("_source", {}).get("clean_text", "")
 
         try:
-            tokens = kiwi_noun_tokenizer(clean_text)
+            source = doc.get("_source", {})
+            clean_text = source.get("clean_text", "")
+            author = source.get("author", "")
+            tokens = kiwi_noun_tokenizer(clean_text, author)
 
             actions.append({
                 "_op_type": "update",
