@@ -530,7 +530,22 @@ td select {
   width: 90px;
   height: 28px;
   border-radius: 6px;
-  background: #1f2b3d;
+  background-color: #1f2b3d;
+  padding: 0 24px 0 12px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+
+  background-position:
+    calc(100% - 14px) 11px,
+    calc(100% - 9px) 11px;
+
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
 }
 
 
@@ -1274,7 +1289,7 @@ function drawLineGraph(svgId, rows, color) {
       <circle
         cx="${point.x}"
         cy="${point.y}"
-        r="2.8  "
+        r="2.8"
         fill="${color}"
         opacity="0.9"
       />
