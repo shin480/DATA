@@ -16,11 +16,8 @@ logger = Logger().get_logger(__name__)
 es = get_es()
 
 # INDEX_NAME = "test_article_raw"
-INDEX_NAME = "test_article_raw"
+INDEX_NAME = "article_raw"
 CODE_ID = "C101"
-
-# 운영 모드 : False 테스트 모드 : True
-DEBUG_MODE = True
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
@@ -42,7 +39,7 @@ def to_iso(dt):
     return dt.isoformat()
 
 
-def is_valid_date(pub_date):
+def is_valid_date(pub_date, mode="auto"):
     if pub_date is None:
         return False
 
@@ -51,13 +48,23 @@ def is_valid_date(pub_date):
 
     now = datetime.now()
 
-    start = (now - timedelta(days=1)).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    # 자동 배치
+    if mode == "auto":
+        start = (now - timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
 
-    end = now.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+        end = now.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+    # 관리자 수동 실행
+    else:
+        start = now.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        end = now
 
     return start <= pub_date < end
 
@@ -350,7 +357,7 @@ def save_bulk_to_es(news_list):
     return success, fail_count
 
 
-async def parse_rss_feed(rss_url: str, media_name: str, job_id):
+async def parse_rss_feed(rss_url: str, media_name: str, job_id, mode="auto"):
     results = []
     fail_count = 0
 
@@ -377,8 +384,8 @@ async def parse_rss_feed(rss_url: str, media_name: str, job_id):
 
                 pub_date = parsedate_to_datetime(entry.published)
 
-                # if not is_valid_date(pub_date):
-                #     continue
+                if not is_valid_date(pub_date, mode):
+                    continue
 
                 detail = await get_article_details(client, link)
 
@@ -427,23 +434,25 @@ async def parse_rss_feed(rss_url: str, media_name: str, job_id):
     return results, fail_count
 
 
-async def crawl_yonhap(job_id):
+async def crawl_yonhap(job_id, mode="auto"):
     return await parse_rss_feed(
         "https://www.yna.co.kr/rss/economy.xml",
         "연합뉴스",
-        job_id
+        job_id,
+        mode
     )
 
 
-async def crawl_hankyung(job_id):
+async def crawl_hankyung(job_id, mode="auto"):
     return await parse_rss_feed(
         "https://www.hankyung.com/feed/economy",
         "한국경제",
-        job_id
+        job_id,
+        mode
     )
 
 
-async def crawl_naver(job_id, pages=50):
+async def crawl_naver(job_id, mode="auto", pages=50):
     results = []
     fail_count = 0
     empty_page_count = 0
@@ -499,8 +508,8 @@ async def crawl_naver(job_id, pages=50):
                     if not detail["published_at"]:
                         continue
 
-                    # if not is_valid_date(detail["published_at"]):
-                    #     continue
+                    if not is_valid_date(detail["published_at"], mode):
+                        continue
 
                     has_valid_article = True
 
@@ -544,7 +553,7 @@ async def crawl_naver(job_id, pages=50):
     return results, fail_count
 
 
-async def run_crawling_job():
+async def run_crawling_job(mode="auto"):
     job_id = save_batch_start()
 
     logger.info("운영 크롤링 시작")
@@ -553,9 +562,9 @@ async def run_crawling_job():
     total_fail_count = 0
 
     results = await asyncio.gather(
-        crawl_naver(job_id),
-        crawl_yonhap(job_id),
-        crawl_hankyung(job_id)
+        crawl_naver(job_id, mode),
+        crawl_yonhap(job_id, mode),
+        crawl_hankyung(job_id, mode)
     )
 
     all_data = []

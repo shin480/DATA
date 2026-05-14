@@ -964,7 +964,7 @@ td[title] {
 <button class="action-btn" onclick="searchSummary()" type="button">
             조회
           </button>
-<button class="outline-btn" onclick="runManualCollect()" type="button">
+<button id="manualCollectBtn" class="outline-btn" onclick="runManualCollect()" type="button">
             수동 수집 실행
           </button>
 </div>
@@ -1750,12 +1750,37 @@ async function loadAnalysisLogs() {
   }
 }
 
-function runManualCollect() {
-  const ok = confirm("서버 연결 전 임시 기능입니다. 수집 실행 상태만 표시할까요?");
+async function runManualCollect() {
+  const ok = confirm(
+    "오늘 00시부터 현재 시각까지의 최신 기사 수집 및 AI 분석을 즉시 실행하시겠습니까?"
+  );
 
   if (!ok) return;
 
-  showToast("배치 생성 성공 : 수집이 시작되었습니다. 현재는 임시 처리입니다.");
+  const btn = document.getElementById("manualCollectBtn");
+  
+  try {
+    btn.disabled = true;
+    btn.textContent = "수집 실행 중...";
+
+    const { data } = await axios.post(
+      "/api/admin/manual-crawl"
+    );
+
+    if (data.status === "success") {
+      showToast("수집이 시작되었습니다.");
+    } else {
+      showToast(data.message || "수동 수집 실행 실패");
+    }
+
+  } catch (err) {
+    console.error("수동 수집 실패:", err);
+    showToast("수동 수집 실행 중 오류가 발생했습니다.");
+
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "수동 수집 실행";
+  }
 }
 
 function deleteAnalysis(id) {
