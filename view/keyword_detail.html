@@ -105,6 +105,14 @@ body.light-mode .keyword-title {
   color: #1f2937;
 }
 
+.keyword-title {
+  text-transform: uppercase;
+}
+
+.summary-title {
+  text-transform: uppercase;
+}
+
 /* ==============================
    Search Suggest Dropdown
    헤더 디자인은 main.css 기준
@@ -3006,6 +3014,8 @@ let rollingTimers = [];
 let visibleArticleCount = 5;
 const ARTICLE_LOAD_SIZE = 5;
 
+let currentArticleTab = "normal";
+
 function buildPerspectiveData(data) {
   articles = data.articles || [];
 
@@ -3345,7 +3355,10 @@ function renderAIArticles() {
 
   if (!list) return;
 
-  list.innerHTML = articles.map(article => `
+  const visibleArticles =
+  articles.slice(0, visibleArticleCount);
+
+list.innerHTML = visibleArticles.map(article => `
 
     <article class="article-card ai-card">
 
@@ -3433,21 +3446,27 @@ async function fetchKeywordDetail(keyword) {
 }
 
 function handleInfiniteScroll() {
+
   const scrollY = window.scrollY;
   const windowHeight = window.innerHeight;
   const bodyHeight = document.body.offsetHeight;
 
-  // 바닥 근처 도착
   if (scrollY + windowHeight >= bodyHeight - 200) {
 
-    // 아직 남은 기사 있으면
     if (visibleArticleCount < articles.length) {
 
       visibleArticleCount += ARTICLE_LOAD_SIZE;
 
-      renderArticles();
+      if (currentArticleTab === "normal") {
+        renderArticles();
+      } else {
+        renderAIArticles();
+      }
+
     }
+
   }
+
 }
 
 // ==============================
@@ -3542,6 +3561,8 @@ function bindArticleTabs() {
     tab.addEventListener("click", function () {
 
       const target = tab.dataset.tab;
+
+      currentArticleTab = target;
 
       tabs.forEach(t => {
         t.classList.remove("active");
