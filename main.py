@@ -35,7 +35,7 @@ from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
 from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction, get_admin_trends
-from admin.master_scheduler import run_full_pipeline
+from admin.master_scheduler import run_full_pipeline, get_scheduler_00
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -47,18 +47,25 @@ app.mount("/view", StaticFiles(directory="view"))
 # 파이프라인 앱을 통째로 "/pipeline" 주소에 마운트
 app.mount("/pipeline", pipeline_app)
 
-@app.on_event("startup")
-async def startup_event():
-    pipeline_startup()
+# 자정에 모든 스케줄이 굴러가는지 확인하러 잠시 주석처리 합니당
+# @app.on_event("startup")
+# async def startup_event():
+#     pipeline_startup()
 
 app.add_middleware(SessionMiddleware, secret_key="motmachugetjyo")
 
 scheduler = get_scheduler()
 
+# 자정에 모든 스케줄이 굴러가는지 확인하러 잠시 주석처리 합니당
+# @app.on_event("startup")
+# async def start_scheduler():
+#     scheduler.start()
+#     print("스케줄러 시작됨")
+
 @app.on_event("startup")
 async def start_scheduler():
-    scheduler.start()
-    print("스케줄러 시작됨")
+    sch = get_scheduler_00()
+    sch.start()
 
 @app.get("/")
 def main():

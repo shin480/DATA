@@ -1,9 +1,13 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import asyncio
+
 from util.es import get_es, NEWS_ECONOMY_INDEX
 from util.logger import log_admin_activity
+
 from starlette.requests import Request
 from collections import Counter
 from datetime import date
+
 from crawling.crawler import run_crawling_job
 from datacleaning.cleaning import get_preprocessed_data
 from model.model_main import classification_job
@@ -538,3 +542,75 @@ async def run_full_pipeline(req: Request):
             "message": str(e),
             "results": results
         }
+
+async def run_full_pipeline_for_schedule():
+
+    results = {}
+
+    try:
+        today = date.today().strftime("%Y-%m-%d")
+        print(f"[FULL_PIPELINE] 시작 | target_date={today}")
+
+        print("[FULL_PIPELINE] 1/6 크롤링 시작")
+        await run_crawling_job()
+        print("[FULL_PIPELINE] 1/6 크롤링 완료")
+        results["crawling"] = "success"
+
+        print("[FULL_PIPELINE] 2/6 전처리 시작")
+        preprocess_result = get_preprocessed_data()
+        print(f"[FULL_PIPELINE] 2/6 전처리 완료 | result={preprocess_result}")
+        results["preprocessing"] = "success"
+
+        print("[FULL_PIPELINE] 3/6 AI 파이프라인 시작")
+        run_model_pipeline_sync()
+        print("[FULL_PIPELINE] 3/6 AI 파이프라인 완료")
+        results["classification"] = "success"
+
+        print("[FULL_PIPELINE] 4/6 관점 분석 시작")
+        viewpoint_result = update_perspective_to_es()
+        print(f"[FULL_PIPELINE] 4/6 관점 분석 완료 | result={viewpoint_result}")
+        results["viewpoint"] = "success"
+
+        print(f"[FULL_PIPELINE] 5/6 데일리 키워드 집계 시작 | date={today}")
+        keyword_result = create_daily_keyword_metrics(today)
+        print(f"[FULL_PIPELINE] 5/6 데일리 키워드 집계 완료 | result={keyword_result}")
+        results["daily_keyword_metrics"] = "success"
+
+        print(f"[FULL_PIPELINE] 6/6 TOP 이슈 리포트 시작 | date={today}")
+        top_issue_result = save_daily_top_issue_report(today, today)
+        print(f"[FULL_PIPELINE] 6/6 TOP 이슈 리포트 완료 | result={top_issue_result}")
+        results["daily_top_issue"] = "success"
+
+        print("[FULL_PIPELINE] 전체 완료")
+
+        return {
+            "success": True,
+            "message": "전체 수집 파이프라인 실행 완료",
+            "results": results
+        }
+
+    except Exception as e:
+        print(f"[FULL_PIPELINE_ERROR] {e}")
+        return {
+            "success": False,
+            "message": str(e),
+            "results": results
+        }
+
+def get_scheduler_00():
+    sch = AsyncIOScheduler(timezone="Asia/Seoul")
+
+    sch.add_job(
+        lambda: asyncio.create_task(
+            run_full_pipeline_for_schedule()
+        ),
+        "cron",
+        hour=0,
+        minute=0,
+        id="daily_full_pipeline",
+        replace_existing=True,
+        max_instances=1,
+        misfire_grace_time=600
+    )
+
+    return sch
