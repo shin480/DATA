@@ -3237,6 +3237,7 @@ const groups = [
       {
         id: "pol",
         title: "정책 요인 <span class='small-text'>(국내)</span>",
+        detailTitle: "정책 요인(국내)",
         percent: 0,
         reason: "데이터를 불러오는 중입니다...",
         icon: "/view/icons/location.svg",
@@ -3245,6 +3246,7 @@ const groups = [
       {
         id: "global",
         title: "외부 요인 <span class='small-text'>(글로벌)</span>",
+        detailTitle: "외부 요인(글로벌)",
         percent: 0,
         reason: "데이터를 불러오는 중입니다...",
         icon: "/view/icons/global.svg",
@@ -3304,7 +3306,7 @@ function renderViewGrid(data) {
 
           <button
             class="detail-btn"
-            data-title="${item.title}"
+            data-title="${item.detailTitle || item.title}"
             data-percent="${percent}"
           >
             상세 보기 >

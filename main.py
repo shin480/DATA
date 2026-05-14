@@ -602,90 +602,52 @@ def get_article_list(
     page: int = 1,
     size: int = 50,
     sentiment: str = "",
-    viewpoint: str = ""
+    viewpoint: str = "",
+    keyword: str = ""
 ):
     es = get_es()
 
+    viewpoint = str(viewpoint or "").strip()
+    keyword = str(keyword or "").strip()
+    sentiment = str(sentiment or "").strip()
+
     from_value = (page - 1) * size
 
-    must_conditions = []
-
-    if sentiment:
-        must_conditions.append({
-            "terms": {
-                "sentiment": denormalize_sentiment_for_es(sentiment)
-            }
-        })
-
+    # viewpoint_detail과 같은 기준으로 먼저 기사 전체 조회
     if viewpoint:
-        must_conditions.append({
-            "nested": {
-                "path": "perspective",
-                "query": {
-                    "bool": {
-                        "must": [
-                            {
-                                "term": {
-                                    "perspective.category": viewpoint
-                                }
-                            },
-                            {
-                                "term": {
-                                    "perspective.rank": 1
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        })
+        all_articles = get_articles_by_perspective(
+            es=es,
+            es_category=viewpoint,
+            size=10000,
+            recent_7days=False,
+            keyword=keyword
+        )
+    else:
+        all_articles = []
 
-    query = {
-        "match_all": {}
-    }
-
-    if must_conditions:
-        query = {
-            "bool": {
-                "must": must_conditions
-            }
-        }
-
-    body = {
-        "from": from_value,
-        "size": size,
-        "query": query,
-        "sort": [
-            {
-                "published_at": {
-                    "order": "desc"
-                }
-            }
+    # 감성 필터
+    if sentiment:
+        normalized_sentiments = denormalize_sentiment_for_es(sentiment)
+        all_articles = [
+            article for article in all_articles
+            if article.get("sentiment") in normalized_sentiments
         ]
-    }
 
-    result = es.search(
-        index=NEWS_ECONOMY_INDEX,
-        body=body
-    )
-
-    hits = result["hits"]["hits"]
-    total = result["hits"]["total"]["value"]
+    total = len(all_articles)
+    page_articles = all_articles[from_value:from_value + size]
 
     articles = []
 
-    for hit in hits:
-        source = hit["_source"]
-
+    for article in page_articles:
         articles.append({
-            "article_id": source.get("article_id") or hit["_id"],
-            "source": source.get("press", "언론사 없음"),
-            "press": source.get("press", "언론사 없음"),
-            "title": source.get("title", "제목 없음"),
-            "summary": source.get("summary") or source.get("content", "")[:120],
-            "published_at": source.get("published_at", ""),
-            "url": source.get("url", "#"),
-            "sentiment": source.get("sentiment", ""),
+            "article_id": article.get("article_id", ""),
+            "source": article.get("press", "언론사 없음"),
+            "press": article.get("press", "언론사 없음"),
+            "title": article.get("title", "제목 없음"),
+            "summary": article.get("summary", ""),
+            "published_at": article.get("published_at", ""),
+            "url": article.get("url", "#"),
+            "sentiment": article.get("sentiment", ""),
         })
 
     return {
@@ -2471,8 +2433,12 @@ def get_viewpoint_master(es):
 
 def get_rank1_count_map(es, keyword: str = ""):
     # =========================
-    # keyword가 있으면 해당 키워드 기사만 대상으로 집계
-    # keyword가 없으면 전체 기사 기준 집계
+    # keyword가 있으면:
+    # 상세페이지 기사 조회 기준과 동일하게
+    # title / summary / keywords / clean_text 전체에서 검색
+    #
+    # keyword가 없으면:
+    # 전체 기사 기준 집계
     # =========================
     query = {
         "match_all": {}
@@ -2483,11 +2449,14 @@ def get_rank1_count_map(es, keyword: str = ""):
             "bool": {
                 "must": [
                     {
-                        "wildcard": {
-                            "keywords": {
-                                "value": f"*{keyword}*",
-                                "case_insensitive": True
-                            }
+                        "multi_match": {
+                            "query": keyword,
+                            "fields": [
+                                "title^3",
+                                "summary",
+                                "keywords",
+                                "clean_text"
+                            ]
                         }
                     }
                 ]
@@ -3011,8 +2980,8 @@ def get_viewpoint_detail(
         "count": selected_count,
         "total_count": total_count,
         "date": format_base_date(latest_date),
-        "analysis_title": selected_master.get("analysis_title") or f"{selected_title} 분석",
-        "analysis_desc": selected_master.get("analysis_desc") or f"{selected_title}에 해당하는 기사 흐름을 분석한 결과입니다.",
+        "analysis_title": selected_master.get("analysis_title") or f"{selected_title}",
+        "analysis_desc": selected_master.get("analysis_desc") or f"{selected_title}에 해당하는 기사들이 어떤 흐름으로 나타나는지 보여드립니다.",
         "sentiment": selected_sentiment,
         "keywords": keywords,
         "articles": top_articles,

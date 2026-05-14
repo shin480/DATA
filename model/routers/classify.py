@@ -371,6 +371,9 @@ def get_classification_status():
         has_scope_title = _count(INDEX_SCOPES, {
             "bool": {"must": {"exists": {"field": "scopeTitle"}}}
         })
+        no_embedding = _count(INDEX_NEWS, {
+            "bool": {"must_not": {"term": {"has_embedding": True}}}
+        })
 
         # 감성 분포
         agg_res = es.search(
@@ -393,6 +396,7 @@ def get_classification_status():
         es.close()
 
         return {
+            "no_embedding_news":      no_embedding,
             "unclassified_news":      unclassified,
             "no_sentiment_news":      no_sentiment,
             "no_scope_title":         no_scope_title,
