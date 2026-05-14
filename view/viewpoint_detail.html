@@ -1786,6 +1786,12 @@ let viewpointKeyword =
   localStorage.getItem("viewpoint_keyword") ||
   "";
 
+if (viewpointKeyword) {
+  localStorage.setItem("viewpoint_keyword", viewpointKeyword);
+} else {
+  localStorage.removeItem("viewpoint_keyword");
+}
+
 let viewEsCategory = "";
 
 function getSentimentText(sentiment) {
@@ -2208,10 +2214,24 @@ function renderCompareCards(compareGroups) {
 }
 
 function goArticleList(sentiment) {
-  const targetViewpoint = viewEsCategory || viewTitle;
+  const currentParams = new URLSearchParams(window.location.search);
+  const currentKeyword =
+    currentParams.get("keyword") ||
+    viewpointKeyword ||
+    "";
 
-  location.href =
-    `/view/article_list.html?viewpoint=${encodeURIComponent(targetViewpoint)}&sentiment=${encodeURIComponent(sentiment)}`;
+  const urlParams = new URLSearchParams();
+
+  urlParams.set("viewpoint", viewEsCategory || viewTitle);
+  urlParams.set("sentiment", sentiment);
+
+  if (currentKeyword) {
+    urlParams.set("keyword", currentKeyword);
+  }
+
+  urlParams.set("v", Date.now());
+
+  location.href = `/view/article_list.html?${urlParams.toString()}`;
 }
 
 function goArticleDetail(articleId) {

@@ -601,90 +601,52 @@ def get_article_list(
     page: int = 1,
     size: int = 50,
     sentiment: str = "",
-    viewpoint: str = ""
+    viewpoint: str = "",
+    keyword: str = ""
 ):
     es = get_es()
 
+    viewpoint = str(viewpoint or "").strip()
+    keyword = str(keyword or "").strip()
+    sentiment = str(sentiment or "").strip()
+
     from_value = (page - 1) * size
 
-    must_conditions = []
-
-    if sentiment:
-        must_conditions.append({
-            "terms": {
-                "sentiment": denormalize_sentiment_for_es(sentiment)
-            }
-        })
-
+    # viewpoint_detail과 같은 기준으로 먼저 기사 전체 조회
     if viewpoint:
-        must_conditions.append({
-            "nested": {
-                "path": "perspective",
-                "query": {
-                    "bool": {
-                        "must": [
-                            {
-                                "term": {
-                                    "perspective.category": viewpoint
-                                }
-                            },
-                            {
-                                "term": {
-                                    "perspective.rank": 1
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        })
+        all_articles = get_articles_by_perspective(
+            es=es,
+            es_category=viewpoint,
+            size=10000,
+            recent_7days=False,
+            keyword=keyword
+        )
+    else:
+        all_articles = []
 
-    query = {
-        "match_all": {}
-    }
-
-    if must_conditions:
-        query = {
-            "bool": {
-                "must": must_conditions
-            }
-        }
-
-    body = {
-        "from": from_value,
-        "size": size,
-        "query": query,
-        "sort": [
-            {
-                "published_at": {
-                    "order": "desc"
-                }
-            }
+    # 감성 필터
+    if sentiment:
+        normalized_sentiments = denormalize_sentiment_for_es(sentiment)
+        all_articles = [
+            article for article in all_articles
+            if article.get("sentiment") in normalized_sentiments
         ]
-    }
 
-    result = es.search(
-        index=NEWS_ECONOMY_INDEX,
-        body=body
-    )
-
-    hits = result["hits"]["hits"]
-    total = result["hits"]["total"]["value"]
+    total = len(all_articles)
+    page_articles = all_articles[from_value:from_value + size]
 
     articles = []
 
-    for hit in hits:
-        source = hit["_source"]
-
+    for article in page_articles:
         articles.append({
-            "article_id": source.get("article_id") or hit["_id"],
-            "source": source.get("press", "언론사 없음"),
-            "press": source.get("press", "언론사 없음"),
-            "title": source.get("title", "제목 없음"),
-            "summary": source.get("summary") or source.get("content", "")[:120],
-            "published_at": source.get("published_at", ""),
-            "url": source.get("url", "#"),
-            "sentiment": source.get("sentiment", ""),
+            "article_id": article.get("article_id", ""),
+            "source": article.get("press", "언론사 없음"),
+            "press": article.get("press", "언론사 없음"),
+            "title": article.get("title", "제목 없음"),
+            "summary": article.get("summary", ""),
+            "published_at": article.get("published_at", ""),
+            "url": article.get("url", "#"),
+            "sentiment": article.get("sentiment", ""),
         })
 
     return {

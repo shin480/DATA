@@ -1093,13 +1093,18 @@ async function fetchArticles() {
 
     const sentiment = urlParams.get("sentiment") || "";
     const viewpoint = urlParams.get("viewpoint") || "";
+    const keyword = urlParams.get("keyword") || "";
+
+    console.log("ARTICLE_LIST URL:", location.href);
+    console.log("ARTICLE_LIST keyword:", keyword);
 
     const res = await axios.get("/api/articles", {
       params: {
         page: currentPage,
         size: pageSize,
         sentiment: sentiment,
-        viewpoint: viewpoint
+        viewpoint: viewpoint,
+        keyword: keyword
       }
     });
 
