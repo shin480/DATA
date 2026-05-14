@@ -280,7 +280,7 @@ def enqueue_missing_scope_titles():
 
 def run_scope_title_batch():
     """
-    scope_refresh_queue의 pending 항목 배치 처리 (30분 주기) — news_count >= 10 전용.
+    scope_refresh_queue의 pending 항목 전체를 배치 루프로 처리합니다 — news_count >= 10 전용.
 
     - generate_scope_title 성공(str 반환) → done
     - generate_scope_title 실패(None 반환) → retry_count 증가
@@ -290,73 +290,84 @@ def run_scope_title_batch():
     try:
         es = get_es()
 
-        res = es.search(
-            index=INDEX_QUEUE,
-            body={
-                "query": {"term": {"status": "pending"}},
-                "sort":  [{"queued_at": "asc"}],
-                "size":  BATCH_SIZE,
-            },
-        )
-        hits = res["hits"]["hits"]
+        total_processed = 0
+        batch_num       = 0
 
-        if not hits:
-            logger.info("scope_refresh_queue 처리할 항목 없음")
-            es.close()
-            return
+        while True:
+            batch_num += 1
 
-        logger.info(f"scopeTitle 배치 처리 시작: {len(hits)}건")
+            res = es.search(
+                index=INDEX_QUEUE,
+                body={
+                    "query": {"term": {"status": "pending"}},
+                    "sort":  [{"queued_at": "asc"}],
+                    "size":  BATCH_SIZE,
+                },
+            )
+            hits = res["hits"]["hits"]
 
-        for hit in hits:
-            doc_id      = hit["_id"]
-            scope_id    = hit["_source"]["scopeID"]
-            retry_count = hit["_source"].get("retry_count", 0)
-            now_utc     = datetime.now(timezone.utc).isoformat()
-
-            # MAX_RETRY 초과 시 failed 처리 후 스킵
-            if retry_count >= MAX_RETRY:
-                logger.error(
-                    f"최대 재시도 초과, failed 처리: scopeID={scope_id} "
-                    f"(retry_count={retry_count})"
-                )
-                es.update(index=INDEX_QUEUE, id=doc_id,
-                          body={"doc": {"status": "failed", "processed_at": now_utc}})
-                continue
-
-            es.update(index=INDEX_QUEUE, id=doc_id,
-                      body={"doc": {"status": "processing"}})
-
-            result = generate_scope_title(es, scope_id, news_count=None)
-
-            if result is not None:
-                es.update(index=INDEX_QUEUE, id=doc_id,
-                          body={"doc": {"status": "done", "processed_at": now_utc}})
-            else:
-                # titles 자체가 없는 경우만 None → retry_count 증가
-                new_retry = retry_count + 1
-                if new_retry >= MAX_RETRY:
-                    logger.error(f"재시도 한도 도달, failed 처리: scopeID={scope_id}")
-                    es.update(index=INDEX_QUEUE, id=doc_id,
-                              body={"doc": {
-                                  "status":       "failed",
-                                  "retry_count":  new_retry,
-                                  "processed_at": now_utc,
-                              }})
+            if not hits:
+                if batch_num == 1:
+                    logger.info("scope_refresh_queue 처리할 항목 없음")
                 else:
-                    logger.warning(
-                        f"scopeTitle 생성 실패, 재시도 예정: scopeID={scope_id} "
-                        f"(retry_count={new_retry}/{MAX_RETRY})"
+                    logger.info(f"scopeTitle 배치 전체 완료 | total={total_processed}")
+                break
+
+            logger.info(f"[배치 {batch_num}] scopeTitle 처리 시작: {len(hits)}건")
+
+            for hit in hits:
+                doc_id      = hit["_id"]
+                scope_id    = hit["_source"]["scopeID"]
+                retry_count = hit["_source"].get("retry_count", 0)
+                now_utc     = datetime.now(timezone.utc).isoformat()
+
+                # MAX_RETRY 초과 시 failed 처리 후 스킵
+                if retry_count >= MAX_RETRY:
+                    logger.error(
+                        f"최대 재시도 초과, failed 처리: scopeID={scope_id} "
+                        f"(retry_count={retry_count})"
                     )
                     es.update(index=INDEX_QUEUE, id=doc_id,
-                              body={"doc": {
-                                  "status":      "pending",
-                                  "retry_count": new_retry,
-                              }})
+                              body={"doc": {"status": "failed", "processed_at": now_utc}})
+                    continue
 
-            time.sleep(10)  # gemini-2.5-flash-lite RPM 대응
+                es.update(index=INDEX_QUEUE, id=doc_id,
+                          body={"doc": {"status": "processing"}})
+
+                result = generate_scope_title(es, scope_id, news_count=None)
+
+                if result is not None:
+                    es.update(index=INDEX_QUEUE, id=doc_id,
+                              body={"doc": {"status": "done", "processed_at": now_utc}})
+                    total_processed += 1
+                else:
+                    new_retry = retry_count + 1
+                    if new_retry >= MAX_RETRY:
+                        logger.error(f"재시도 한도 도달, failed 처리: scopeID={scope_id}")
+                        es.update(index=INDEX_QUEUE, id=doc_id,
+                                  body={"doc": {
+                                      "status":       "failed",
+                                      "retry_count":  new_retry,
+                                      "processed_at": now_utc,
+                                  }})
+                    else:
+                        logger.warning(
+                            f"scopeTitle 생성 실패, 재시도 예정: scopeID={scope_id} "
+                            f"(retry_count={new_retry}/{MAX_RETRY})"
+                        )
+                        es.update(index=INDEX_QUEUE, id=doc_id,
+                                  body={"doc": {
+                                      "status":      "pending",
+                                      "retry_count": new_retry,
+                                  }})
+
+                time.sleep(10)  # gemini-2.5-flash-lite RPM 대응
+
+            es.indices.refresh(index=INDEX_QUEUE)
+            logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
 
         es.close()
-        logger.info(f"scopeTitle 배치 처리 완료: {len(hits)}건")
+        logger.info(f"scopeTitle 배치 처리 완료 | total={total_processed}")
 
     except Exception as e:
         log_pipeline_error(pipeline="scope_title", error=e)

@@ -75,46 +75,52 @@ def aggregate_scope_keywords(es, scope_id: str) -> str:
 
 
 def run_scope_keywords_batch():
-    """scope_keywords 집계 배치 처리 (30분 주기)"""
+    """scope_keywords 없는 scope 전체를 배치 루프로 집계합니다."""
     try:
         es = get_es()
 
-        # scope_keywords가 없거나 news_count가 있는 scope 조회
-        res = es.search(
-            index=INDEX_SCOPES,
-            body={
-                "query": {
-                    "bool": {
-                        "should": [
-                            {"bool": {"must_not": {"exists": {"field": "scope_keywords"}}}},
-                            {"range": {"news_count": {"gt": 0}}},
-                        ],
-                        "minimum_should_match": 1,
-                    }
+        total_processed = 0
+        batch_num       = 0
+
+        while True:
+            batch_num += 1
+
+            res = es.search(
+                index=INDEX_SCOPES,
+                body={
+                    "query": {
+                        "bool": {
+                            "must_not": {"exists": {"field": "scope_keywords"}},
+                        }
+                    },
+                    "_source": ["scopeID"],
+                    "size": BATCH_SIZE,
                 },
-                "_source": ["scopeID"],
-                "size": BATCH_SIZE,
-            },
-        )
-        hits = res["hits"]["hits"]
+            )
+            hits = res["hits"]["hits"]
 
-        if not hits:
-            logger.info("scope 키워드 집계할 대상 없음")
-            es.close()
-            return
+            if not hits:
+                if batch_num == 1:
+                    logger.info("scope 키워드 집계할 대상 없음")
+                else:
+                    logger.info(f"scope 키워드 집계 전체 완료 | total={total_processed}")
+                break
 
-        logger.info(f"scope 키워드 집계 시작: {len(hits)}건")
+            logger.info(f"[배치 {batch_num}] scope 키워드 집계 시작: {len(hits)}건")
 
-        for hit in hits:
-            scope_id = hit["_source"]["scopeID"]
-            try:
-                aggregate_scope_keywords(es, scope_id)
-            except Exception as e:
-                logger.error(f"scope 키워드 집계 실패 scopeID={scope_id}: {e}")
-                continue
+            for hit in hits:
+                scope_id = hit["_source"]["scopeID"]
+                try:
+                    aggregate_scope_keywords(es, scope_id)
+                    total_processed += 1
+                except Exception as e:
+                    logger.error(f"scope 키워드 집계 실패 scopeID={scope_id}: {e}")
+                    continue
+
+            es.indices.refresh(index=INDEX_SCOPES)
+            logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
 
         es.close()
-        logger.info(f"scope 키워드 집계 완료: {len(hits)}건")
 
     except Exception as e:
         log_pipeline_error(pipeline="scope_keywords", error=e)

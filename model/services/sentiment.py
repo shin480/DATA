@@ -168,59 +168,70 @@ def classify_single_article(article_id: str, src: dict) -> None:
 # ── 배치 파이프라인 진입점 ─────────────────────────────────────
 
 def run_sentiment_pipeline():
-    """sentiment=NULL / scopeID 존재 뉴스를 배치 감성 분류합니다."""
+    """sentiment=NULL / scopeID 존재 뉴스 전체를 배치 루프로 감성 분류합니다."""
     try:
         es = get_es()
 
         keyword_dict = _load_keyword_dict()
         logger.info(f"Admin 키워드 {len(keyword_dict)}개 로드")
 
-        res = es.search(
-            index=INDEX_NEWS,
-            body={
-                "query": {
-                    "bool": {
-                        "must":     {"exists": {"field": "scopeID"}},
-                        "must_not": {"exists": {"field": "sentiment"}},
-                    }
+        total_processed = 0
+        batch_num       = 0
+
+        while True:
+            batch_num += 1
+
+            res = es.search(
+                index=INDEX_NEWS,
+                body={
+                    "query": {
+                        "bool": {
+                            "must":     {"exists": {"field": "scopeID"}},
+                            "must_not": {"exists": {"field": "sentiment"}},
+                        }
+                    },
+                    "_source": ["article_id", "title", "content"],
+                    "sort":    [{"published_at": "asc"}],
+                    "size":    BATCH_SIZE,
                 },
-                "_source": ["article_id", "title", "content"],
-                "sort":    [{"published_at": "asc"}],
-                "size":    BATCH_SIZE,
-            },
-        )
-        hits = res["hits"]["hits"]
+            )
+            hits = res["hits"]["hits"]
 
-        if not hits:
-            logger.info("감성 분류할 뉴스 없음")
-            es.close()
-            return
+            if not hits:
+                if batch_num == 1:
+                    logger.info("감성 분류할 뉴스 없음")
+                else:
+                    logger.info(f"감성 분류 전체 완료 | total={total_processed}")
+                break
 
-        logger.info(f"감성 분류 시작: {len(hits)}건")
+            logger.info(f"[배치 {batch_num}] 감성 분류 시작: {len(hits)}건")
 
-        for hit in hits:
-            src        = hit["_source"]
-            article_id = src["article_id"]
-            try:
-                sentiment, score = predict_single(
-                    src.get("title", ""),
-                    src.get("content", ""),
-                    keyword_dict,
-                )
-                es.update(
-                    index=INDEX_NEWS,
-                    id=article_id,
-                    body={"doc": {
-                        "sentiment":       sentiment,
-                        "sentiment_score": round(score, 6),
-                    }},
-                )
-            except Exception as e:
-                logger.error(f"감성 분류 실패 article_id={article_id}: {e}")
-                continue
+            for hit in hits:
+                src        = hit["_source"]
+                article_id = src["article_id"]
+                try:
+                    sentiment, score = predict_single(
+                        src.get("title", ""),
+                        src.get("content", ""),
+                        keyword_dict,
+                    )
+                    es.update(
+                        index=INDEX_NEWS,
+                        id=article_id,
+                        body={"doc": {
+                            "sentiment":       sentiment,
+                            "sentiment_score": round(score, 6),
+                        }},
+                    )
+                    total_processed += 1
+                except Exception as e:
+                    logger.error(f"감성 분류 실패 article_id={article_id}: {e}")
+                    continue
+
+            es.indices.refresh(index=INDEX_NEWS)
+            logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
 
         es.close()
-        logger.info(f"감성 분류 완료: {len(hits)}건")
 
     except Exception as e:
         log_pipeline_error(pipeline="sentiment", error=e)
