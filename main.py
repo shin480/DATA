@@ -596,6 +596,7 @@ def denormalize_sentiment_for_es(sentiment):
     if sentiment == "negative":
         return ["negative", "부정"]
     return [sentiment]
+
 # 기사 목록
 @app.get("/api/articles")
 def get_article_list(
@@ -613,7 +614,10 @@ def get_article_list(
 
     from_value = (page - 1) * size
 
-    # viewpoint_detail과 같은 기준으로 먼저 기사 전체 조회
+    # =========================
+    # 1. 관점 필터가 있는 경우
+    # 기존 관점 상세 기준 유지
+    # =========================
     if viewpoint:
         all_articles = get_articles_by_perspective(
             es=es,
@@ -622,20 +626,105 @@ def get_article_list(
             recent_7days=False,
             keyword=keyword
         )
+
+        if sentiment:
+            normalized_sentiments = denormalize_sentiment_for_es(sentiment)
+            all_articles = [
+                article for article in all_articles
+                if article.get("sentiment") in normalized_sentiments
+            ]
+
+        total = len(all_articles)
+        page_articles = all_articles[from_value:from_value + size]
+
+    # =========================
+    # 2. 관점 필터가 없는 경우
+    # 뉴스 탐색 = 전체 기사 조회
+    # =========================
     else:
-        all_articles = []
+        must_conditions = []
 
-    # 감성 필터
-    if sentiment:
-        normalized_sentiments = denormalize_sentiment_for_es(sentiment)
-        all_articles = [
-            article for article in all_articles
-            if article.get("sentiment") in normalized_sentiments
-        ]
+        if keyword:
+            must_conditions.append({
+                "multi_match": {
+                    "query": keyword,
+                    "fields": [
+                        "title^3",
+                        "summary^2",
+                        "content",
+                        "clean_text",
+                        "keywords^3"
+                    ]
+                }
+            })
 
-    total = len(all_articles)
-    page_articles = all_articles[from_value:from_value + size]
+        if sentiment:
+            normalized_sentiments = denormalize_sentiment_for_es(sentiment)
+            must_conditions.append({
+                "terms": {
+                    "sentiment": normalized_sentiments
+                }
+            })
 
+        query = {
+            "match_all": {}
+        }
+
+        if must_conditions:
+            query = {
+                "bool": {
+                    "must": must_conditions
+                }
+            }
+
+        res = es.search(
+            index=NEWS_ECONOMY_INDEX,
+            body={
+                "from": from_value,
+                "size": size,
+                "track_total_hits": True,
+                "_source": [
+                    "article_id",
+                    "title",
+                    "content",
+                    "summary",
+                    "press",
+                    "url",
+                    "published_at",
+                    "sentiment",
+                    "keywords"
+                ],
+                "query": query,
+                "sort": [
+                    {
+                        "published_at": {
+                            "order": "desc"
+                        }
+                    }
+                ]
+            }
+        )
+
+        total = res["hits"]["total"]["value"]
+
+        page_articles = []
+
+        for hit in res["hits"]["hits"]:
+            source = hit["_source"]
+
+            page_articles.append({
+                "article_id": source.get("article_id") or hit.get("_id", ""),
+                "press": source.get("press", "언론사 없음"),
+                "title": source.get("title", "제목 없음"),
+                "summary": source.get("summary") or source.get("content", "")[:120],
+                "published_at": source.get("published_at", ""),
+                "url": source.get("url", "#"),
+                "sentiment": source.get("sentiment", ""),
+            })
+
+    # =========================
+    # 3. 프론트 반환 형식 통일
+    # =========================
     articles = []
 
     for article in page_articles:
