@@ -2,7 +2,7 @@ from fastapi import Request
 from typing import Any, Dict
 from sqlalchemy import text
 from util.db import get_engine
-from util.logger import log_user_activity, log_login
+from util.logger import log_user_activity, log_login, log_admin_activity
 from regist.hashing import verify_password
 
 def login_user(info: Dict[str, Any], req: Request):
@@ -63,7 +63,10 @@ def login_user(info: Dict[str, Any], req: Request):
                 req.session["user"] = user_info
 
                 log_login(result.user_id, "login", "success")
+
                 log_user_activity(result.user_id, "lgn103", req)
+                if result.role != "general":
+                    log_admin_activity(result.user_id, "ADMIN_LOGIN", f"{result.user_id}({result.name}) 로그인")
 
                 return {"success": True, "message": f"{result.name}님, 환영합니다!",
                         "user": {
@@ -96,6 +99,7 @@ def logout_user(req: Request):
         # 로그인 상태였으면 로그 기록
         if user:
             user_id = user.get("user_id", "")
+            user_role = user.get("user_role", "")
 
             # 로그아웃 로그 저장
             log_login(user_id, "logout", "success")
