@@ -1427,12 +1427,6 @@ async function changeRole(userId, newRole) {
 
     target.role = newRole;
 
-    logData.unshift({
-      date: new Date().toISOString().slice(0, 19).replace("T", " "),
-      admin: "current_admin@data.com",
-      action: "권한변경",
-      content: `${userId} 사용자의 권한을 ${newRole}(으)로 변경함.`
-    });
 
     renderLogs();
     renderUsers(userData);

@@ -1,5 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from util.es import get_es, NEWS_ECONOMY_INDEX
+from util.logger import log_admin_activity
+from starlette.requests import Request
 from collections import Counter
 from datetime import date
 from crawling.crawler import run_crawling_job
@@ -481,7 +483,10 @@ def get_master_scheduler():
 
     return sch
 
-async def run_full_pipeline():
+async def run_full_pipeline(req: Request):
+    user = req.session.get("user")
+    log_admin_activity(user.get("user_id"), "BATCH_RUN", f"{user.get('user_id')}({user.get('name')}) 배치 수동 실행")
+
     results = {}
 
     try:

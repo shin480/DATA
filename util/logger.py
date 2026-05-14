@@ -94,3 +94,53 @@ def log_login(user_id: str, event_type: str, result: str):
         if conn:
             conn.close()  # 연결 반환
 
+
+def log_admin_activity(admin_id: str,action_code: str,action_detail: str = ""):
+    """
+    admin_logs 기록
+    저장 컬럼:
+    - admin_id
+    - action_code
+    - action_detail
+    """
+
+    logger.info(
+        f"[ADMIN LOG] Admin: {admin_id} | Action: {action_code} | Detail: {action_detail}"
+    )
+
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        query = text("""
+            INSERT INTO admin_logs (
+                admin_id,
+                action_code,
+                action_detail
+            )
+            VALUES (
+                :admin_id,
+                :action_code,
+                :action_detail
+            )
+        """)
+
+        conn.execute(
+            query,
+            {
+                "admin_id": admin_id,
+                "action_code": action_code,
+                "action_detail": action_detail
+            }
+        )
+
+        conn.commit()
+
+    except Exception as e:
+        logger.error(f"🚨 ADMIN LOG 저장 실패: {e}")
+
+    finally:
+        if conn:
+            conn.close()
+
