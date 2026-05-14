@@ -1,10 +1,14 @@
 from typing import Dict
 from collections import defaultdict
 from datetime import datetime, timedelta
+
+from starlette.requests import Request
+
 from util.db import get_engine
 from util.es import get_es
 from sqlalchemy import text
 from zoneinfo import ZoneInfo
+from util.logger import log_admin_activity
 
 def get_user_search(user_id: str = "", role: str = ""):
     conn = None
@@ -248,7 +252,7 @@ def get_user_usage_stats():
     finally:
         db.close()
 
-def change_user_role(info:Dict[str,str]):
+def change_user_role(info:Dict[str,str], req: Request):
     user_id = (info.get("user_id") or "").strip()
     new_role = (info.get("role") or "").strip().lower()
 
@@ -319,6 +323,9 @@ def change_user_role(info:Dict[str,str]):
         )
 
         conn.commit()
+
+        user = req.session.get("user")
+        log_admin_activity(user.get("user_id"), "USER_STATUS_UPDATE", f"{user_id}를 {new_role}로 권한 변경")
 
         return {
             "success": True,
