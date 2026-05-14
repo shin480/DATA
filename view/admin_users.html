@@ -221,17 +221,19 @@ select {
 }
 
 .card-title {
-  color: #eaf6ff;
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 900;
-  margin-bottom: 16px;
+  color: #e0f2fe;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
 }
 
 .sub-title {
-  color: #9be7ff;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 900;
-  margin-bottom: 12px;
+  color: #e0f2fe;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
 }
 
 .usage-card {
@@ -244,10 +246,10 @@ select {
 ============================== */
 
 .reaction-card {
-        /* 카드 전체 폭 축소 */
-  max-width: 420px;    /* 최대 폭 제한 */
-  margin-left: auto;   /* 오른쪽 정렬 유지 */
-  padding: 16px;
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  padding: 18px;
 }
 
 .reaction-card table {
@@ -283,8 +285,8 @@ select {
 
 #pressreaction {
   display: grid;
-  grid-template-columns: 1fr;
-  row-gap: 10px;
+  grid-template-columns: auto 20px auto;
+  row-gap: 20px;
   width: 100%;
 }
 
@@ -303,22 +305,25 @@ select {
   align-items: center;
 }
 
-#pressreaction input#reactionStart {
-  grid-row: 2;
-  grid-column: 1;
-  width: 140px;
-}
-
 #pressreaction span {
   grid-row: 2;
   grid-column: 2;
   justify-self: center;
 }
 
+#pressreaction input#reactionStart,
 #pressreaction input#reactionEnd {
-  grid-row: 2;
-  grid-column: 3;
-  width: 140px;
+  width: 145px;
+  min-width: 145px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+#pressreaction {
+  justify-content: flex-start;
+  column-gap: 8px;
 }
 
 /* 날짜줄 3칸 구조 */
@@ -421,6 +426,37 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .search-btn:hover {
+  background: linear-gradient(135deg, #7dd3fc, #3b82f6);
+}
+
+.dashboard-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #e0f2fe;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+
+.filter {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: #06101f;
+  font-weight: 900;
+  padding: 12px 24px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(56, 189, 248, 0.18);
+}
+
+.action-btn:hover {
   background: linear-gradient(135deg, #7dd3fc, #3b82f6);
 }
 
@@ -555,16 +591,22 @@ td select {
 ============================== */
 
 .grid-section {
-  display: grid;
-  grid-template-columns: 1.25fr 0.85fr;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   margin-top: 18px;
+  width: 100%;
 }
 
 .chart-stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
+  width: 100%;
+}
+
+.chart-card {
+  width: 100%;
 }
 
 .chart-card,
@@ -573,7 +615,7 @@ td select {
 }
 
 .graph-box {
-  height: 150px;
+  height: 220px;
   background:
     radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 38%),
     #0b1426;
@@ -650,11 +692,7 @@ td select {
   }
 
   .grid-section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 420px;
-    gap: 14px;
-    margin-top: 18px;
-    align-items: start;
+    flex-direction: column;
   }
 
   .chart-stack {
@@ -662,12 +700,8 @@ td select {
   }
 
   .reaction-card {
-    width: 420px;
-    max-width: 420px;
-    margin-left: 0;
-    height: auto;
-    max-height: none;
-    align-self: start;
+    width: 100%;
+    max-width: none;
   }
 
   .reaction-card .table-box.large {
@@ -726,16 +760,16 @@ td select {
 <section class="admin-users-content">
 <!-- 사용자 검색 -->
 <article class="admin-card">
-<div class="filter-row">
-<label>사용자 검색</label>
-<input id="userKeyword" placeholder="아이디" type="text"/>
-<select id="roleFilter">
-<option value="전체">전체</option>
-<option value="일반">일반</option>
-<option value="관리자">관리자</option>
-<option value="최고관리자">최고관리자</option>
-</select>
-<button class="search-btn" onclick="searchUsers()" type="button">⌕</button>
+<h2 class="dashboard-title">사용자 검색</h2>
+<div class="filter">
+  <input id="userKeyword" placeholder="아이디" type="text"/>
+  <select id="roleFilter">
+    <option value="전체">전체</option>
+    <option value="일반">일반</option>
+    <option value="관리자">관리자</option>
+    <option value="최고관리자">최고관리자</option>
+  </select>
+  <button class="search-btn" onclick="searchUsers()" type="button">⌕</button>
 </div>
 <div class="table-box">
 <table>
@@ -818,23 +852,23 @@ td select {
 </div>
 <!-- 관리자 로그 검색 -->
 <article class="admin-card log-card">
-<div class="filter-row">
-<label>관리자 로그 검색</label>
-<input id="adminId" placeholder="관리자 아이디" type="text"/>
-<select id="actionName">
-  <option value="">전체 작업</option>
-  <option value="ADMIN_LOGIN">관리자 로그인</option>
-  <option value="BANNER_CREATE">배너 등록</option>
-  <option value="BANNER_DELETE">배너 삭제</option>
-  <option value="BANNER_UPDATE">배너 수정</option>
-  <option value="BATCH_RETRY">배치 재실행</option>
-  <option value="BATCH_RUN">배치 수동 실행</option>
-  <option value="TERMS_CREATE">약관 등록</option>
-  <option value="TERMS_UPDATE">약관 수정</option>
-  <option value="USER_STATUS_UPDATE">회원 상태 변경</option>
-</select>
-<input id="logDate" type="date"/>
-<button class="search-btn" onclick="searchLogs()" type="button">⌕</button>
+<h2 class="dashboard-title">관리자 로그 검색</h2>
+<div class="filter">
+  <input id="adminId" placeholder="관리자 아이디" type="text"/>
+  <select id="actionName">
+    <option value="">전체 작업</option>
+    <option value="ADMIN_LOGIN">관리자 로그인</option>
+    <option value="BANNER_CREATE">배너 등록</option>
+    <option value="BANNER_DELETE">배너 삭제</option>
+    <option value="BANNER_UPDATE">배너 수정</option>
+    <option value="BATCH_RETRY">배치 재실행</option>
+    <option value="BATCH_RUN">배치 수동 실행</option>
+    <option value="TERMS_CREATE">약관 등록</option>
+    <option value="TERMS_UPDATE">약관 수정</option>
+    <option value="USER_STATUS_UPDATE">회원 상태 변경</option>
+  </select>
+  <input id="logDate" type="date"/>
+  <button class="search-btn" onclick="searchLogs()" type="button">⌕</button>
 </div>
 <div class="table-box large">
 <table>
