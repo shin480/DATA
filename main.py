@@ -3713,3 +3713,7 @@ def get_admin_logs(
 
     finally:
         db.close()
+
+@app.post("/api/admin/manual-crawl")
+async def manual_crawl():
+    return await run_crawling_job(mode="manual")
