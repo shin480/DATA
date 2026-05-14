@@ -2423,8 +2423,12 @@ def get_viewpoint_master(es):
 
 def get_rank1_count_map(es, keyword: str = ""):
     # =========================
-    # keyword가 있으면 해당 키워드 기사만 대상으로 집계
-    # keyword가 없으면 전체 기사 기준 집계
+    # keyword가 있으면:
+    # 상세페이지 기사 조회 기준과 동일하게
+    # title / summary / keywords / clean_text 전체에서 검색
+    #
+    # keyword가 없으면:
+    # 전체 기사 기준 집계
     # =========================
     query = {
         "match_all": {}
@@ -2435,11 +2439,14 @@ def get_rank1_count_map(es, keyword: str = ""):
             "bool": {
                 "must": [
                     {
-                        "wildcard": {
-                            "keywords": {
-                                "value": f"*{keyword}*",
-                                "case_insensitive": True
-                            }
+                        "multi_match": {
+                            "query": keyword,
+                            "fields": [
+                                "title^3",
+                                "summary",
+                                "keywords",
+                                "clean_text"
+                            ]
                         }
                     }
                 ]
