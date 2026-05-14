@@ -328,53 +328,64 @@ def extract_keywords_single(article_id: str, src: dict) -> None:
 # ─────────────────────────────────────────────────────────────
 
 def run_keyword_pipeline():
-    """keywords=NULL 뉴스를 배치로 가져와 키워드를 추출합니다."""
+    """keywords=NULL 뉴스 전체를 배치 루프로 키워드를 추출합니다."""
     try:
         es = get_es()
 
-        res = es.search(
-            index=INDEX_NEWS,
-            body={
-                "query": {"bool": {"must_not": {"exists": {"field": "keywords"}}}},
-                "_source": ["article_id", "tokens"],
-                "sort":    [{"published_at": "asc"}],
-                "size":    BATCH_SIZE,
-            },
-        )
-        hits = res["hits"]["hits"]
+        total_processed = 0
+        batch_num       = 0
 
-        if not hits:
-            logger.info("키워드 추출할 뉴스 없음")
-            es.close()
-            return
+        while True:
+            batch_num += 1
 
-        logger.info(f"키워드 추출 시작: {len(hits)}건")
+            res = es.search(
+                index=INDEX_NEWS,
+                body={
+                    "query": {"bool": {"must_not": {"exists": {"field": "keywords"}}}},
+                    "_source": ["article_id", "tokens"],
+                    "sort":    [{"published_at": "asc"}],
+                    "size":    BATCH_SIZE,
+                },
+            )
+            hits = res["hits"]["hits"]
 
-        # 동적 불용어 로드 — 배치 실행마다 새로 로드해 기본 STOPWORDS와 합산
-        # 전역 STOPWORDS를 직접 수정하지 않고 배치 범위 내 local set 사용
-        dynamic_sw      = _load_dynamic_stopwords(es)
-        batch_stopwords = STOPWORDS | dynamic_sw
+            if not hits:
+                if batch_num == 1:
+                    logger.info("키워드 추출할 뉴스 없음")
+                else:
+                    logger.info(f"키워드 추출 전체 완료 | total={total_processed}")
+                break
 
-        for hit in hits:
-            src        = hit["_source"]
-            article_id = src["article_id"]
-            try:
-                keywords     = extract_keywords(
-                    src.get("tokens", []),
-                    stopwords=batch_stopwords,
-                )
-                keywords_str = ",".join(keywords)
-                es.update(
-                    index=INDEX_NEWS,
-                    id=article_id,
-                    body={"doc": {"keywords": keywords_str}},
-                )
-            except Exception as e:
-                logger.error(f"키워드 추출 실패 article_id={article_id}: {e}")
-                continue
+            logger.info(f"[배치 {batch_num}] 키워드 추출 시작: {len(hits)}건")
+
+            # 동적 불용어 로드 — 배치 실행마다 새로 로드해 기본 STOPWORDS와 합산
+            # 전역 STOPWORDS를 직접 수정하지 않고 배치 범위 내 local set 사용
+            dynamic_sw      = _load_dynamic_stopwords(es)
+            batch_stopwords = STOPWORDS | dynamic_sw
+
+            for hit in hits:
+                src        = hit["_source"]
+                article_id = src["article_id"]
+                try:
+                    keywords     = extract_keywords(
+                        src.get("tokens", []),
+                        stopwords=batch_stopwords,
+                    )
+                    keywords_str = ",".join(keywords)
+                    es.update(
+                        index=INDEX_NEWS,
+                        id=article_id,
+                        body={"doc": {"keywords": keywords_str}},
+                    )
+                    total_processed += 1
+                except Exception as e:
+                    logger.error(f"키워드 추출 실패 article_id={article_id}: {e}")
+                    continue
+
+            es.indices.refresh(index=INDEX_NEWS)
+            logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
 
         es.close()
-        logger.info(f"키워드 추출 완료: {len(hits)}건")
 
     except Exception as e:
         log_pipeline_error(pipeline="keyword", error=e)

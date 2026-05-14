@@ -198,42 +198,53 @@ def _save(es, scope_id: str, summary: str):
 
 
 def run_scope_summary_batch():
-    """scope_summary 배치 처리 (1일 1회)"""
+    """scope_summary 없는 scope 전체를 배치 루프로 처리합니다."""
     try:
         es = get_es()
 
-        res = es.search(
-            index=INDEX_SCOPES,
-            body={
-                "query": {
-                    "bool": {
-                        "must_not": {"exists": {"field": "scope_summary"}}
-                    }
+        total_processed = 0
+        batch_num       = 0
+
+        while True:
+            batch_num += 1
+
+            res = es.search(
+                index=INDEX_SCOPES,
+                body={
+                    "query": {
+                        "bool": {
+                            "must_not": {"exists": {"field": "scope_summary"}}
+                        }
+                    },
+                    "_source": ["scopeID"],
+                    "sort":    [{"created_at": "asc"}],
+                    "size":    BATCH_SIZE,
                 },
-                "_source": ["scopeID"],
-                "sort":    [{"created_at": "asc"}],
-                "size":    BATCH_SIZE,
-            },
-        )
-        hits = res["hits"]["hits"]
+            )
+            hits = res["hits"]["hits"]
 
-        if not hits:
-            logger.info("scope_summary 처리할 scope 없음")
-            es.close()
-            return
+            if not hits:
+                if batch_num == 1:
+                    logger.info("scope_summary 처리할 scope 없음")
+                else:
+                    logger.info(f"scope_summary 전체 완료 | total={total_processed}")
+                break
 
-        logger.info(f"scope_summary 배치 처리 시작: {len(hits)}건")
+            logger.info(f"[배치 {batch_num}] scope_summary 처리 시작: {len(hits)}건")
 
-        for hit in hits:
-            scope_id = hit["_source"]["scopeID"]
-            try:
-                generate_scope_summary(es, scope_id)
-            except Exception as e:
-                logger.error(f"scope_summary 생성 실패 scopeID={scope_id}: {e}")
-                continue
+            for hit in hits:
+                scope_id = hit["_source"]["scopeID"]
+                try:
+                    generate_scope_summary(es, scope_id)
+                    total_processed += 1
+                except Exception as e:
+                    logger.error(f"scope_summary 생성 실패 scopeID={scope_id}: {e}")
+                    continue
+
+            es.indices.refresh(index=INDEX_SCOPES)
+            logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
 
         es.close()
-        logger.info(f"scope_summary 배치 처리 완료: {len(hits)}건")
 
     except Exception as e:
         log_pipeline_error(pipeline="scope_summarizer", error=e)
