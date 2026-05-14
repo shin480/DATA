@@ -1388,6 +1388,19 @@ body {
   background: #0d1729;
 }
 
+.sentiment-guide {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+
+  color: #7891b5;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.2px;
+  text-align: left;
+}
+
 /* ==============================
    Perspective
 ============================== */
@@ -1796,6 +1809,11 @@ body.light-mode .article-category {
   color: #06b6d4 !important;
 }
 
+body.light-mode .sentiment-guide {
+  color: #64748b;
+  border-top-color: rgba(100, 116, 139, 0.16);
+}
+
 /* ==============================
    Light Mode - Sage Premium Theme
    전체 UI 세이지톤 통일
@@ -2013,12 +2031,12 @@ body.light-mode .footer-modal-btn {
   color: #06262b;
 }
 
-    body.light-mode .section-title-wrap h2,
+body.light-mode .section-title-wrap h2,
 body.light-mode .news-header h2 {
   color: #1e293b !important;
 }
 
-    /* 배지 */
+/* 배지 */
 body.light-mode .keyword-badge {
   border-color: #06b6d4;
   color: #41BFE0;
@@ -2367,7 +2385,9 @@ body.light-mode .news-title-item:hover {
               <div class="donut" id="sentimentDonut"></div>
             </div>
           </div>
-          <div class="stat-label">키워드의 전체 감성 집계입니다.</div>
+          <div class="sentiment-guide">
+            해당 키워드가 포함된 전체 기사 기준 감성 분포입니다.
+          </div>
         </article>
       </section>
 
