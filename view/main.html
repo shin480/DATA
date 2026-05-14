@@ -437,6 +437,82 @@ body {
 /* =========================================================
    5. 오늘의 핵심 키워드 카드
 ========================================================= */
+.keyword-title-guide {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.keyword-info-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.keyword-info-btn {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1;
+  cursor: help;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keyword-info-btn:hover {
+  color: #38bdf8;
+}
+
+.keyword-info-tooltip {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+
+  width: 360px;
+  padding: 14px 16px;
+
+  border-radius: 14px;
+  border: 1px solid #334155;
+  background: #111827;
+  color: #cbd5e1;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.7;
+  white-space: normal;
+
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 50;
+
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s ease;
+}
+
+.keyword-info-tooltip strong {
+  color: #f8fafc;
+  font-weight: 800;
+}
+
+.keyword-info-wrap:hover .keyword-info-tooltip,
+.keyword-info-wrap:focus-within .keyword-info-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 .top-keyword-title {
   width: fit-content;
   cursor: pointer;
@@ -1840,7 +1916,25 @@ body.light-mode .view-bar-bg {
       <!-- 오늘의 핵심 키워드 -->
       <div class="card">
         <div class="section-title-wrap">
-          <span>오늘의 핵심 키워드</span>
+          <div class="keyword-title-guide">
+            <span>오늘의 핵심 키워드</span>
+
+            <div class="keyword-info-wrap">
+              <button
+                class="keyword-info-btn"
+                type="button"
+                aria-label="오늘의 핵심 키워드 안내"
+              >
+                ⓘ
+              </button>
+
+              <div class="keyword-info-tooltip">
+                오늘의 핵심 키워드는 전일 00시부터 당일 00시까지 수집된 뉴스를 기준으로 선정됩니다.<br>
+                키워드를 클릭하면 해당 키워드와 관련된 <strong>전체 기사 분석 결과</strong>를 확인할 수 있습니다.
+              </div>
+            </div>
+          </div>
+
           <h2 class="top-keyword-title"></h2>
         </div>
 
