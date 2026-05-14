@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>키워드 순위 — 다타</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0d0f;
+    --surface:   #16161a;
+    --border:    #2a2a30;
+    --accent:    #c8f135;
+    --accent2:   #3df0c2;
+    --text:      #e8e8ec;
+    --muted:     #6b6b78;
+    --rank-w:    56px;
+    --bar-max:   160px;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  /* ── 헤더 ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: .12em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #status-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all .3s;
+  }
+  #status-badge.ok    { color: var(--accent2); border-color: var(--accent2); }
+  #status-badge.error { color: #f05c5c;        border-color: #f05c5c; }
+
+  #refresh-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    letter-spacing: .08em;
+    transition: background .2s, color .2s;
+  }
+  #refresh-btn:hover { background: var(--accent); color: var(--bg); }
+  #refresh-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── 검색 / 필터 바 ── */
+  .toolbar {
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #search-input {
+    flex: 1;
+    max-width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+  }
+  #search-input:focus { border-color: var(--accent2); }
+  #search-input::placeholder { color: var(--muted); }
+
+  .total-info {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .total-info span { color: var(--accent); }
+
+  /* ── 테이블 헤더 ── */
+  .table-head {
+    display: grid;
+    grid-template-columns: var(--rank-w) 1fr var(--bar-max) 72px;
+    padding: 10px 32px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  /* ── 리스트 ── */
+  #list {
+    padding: 0 32px 80px;
+  }
+
+  .kw-row {
+    display: grid;
+    grid-template-columns: var(--rank-w) 1fr var(--bar-max) 72px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn .25s ease both;
+    cursor: default;
+    transition: background .15s;
+    border-radius: 4px;
+  }
+  .kw-row:hover { background: var(--surface); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 순위 */
+  .kw-rank {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    padding-left: 4px;
+  }
+  .kw-rank.top3 { color: var(--accent); font-weight: 500; }
+
+  /* 키워드 */
+  .kw-word {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -.01em;
+  }
+  .kw-word mark {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* 바 */
+  .kw-bar-wrap {
+    display: flex;
+    align-items: center;
+    padding-right: 16px;
+  }
+  .kw-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width .4s ease;
+    min-width: 2px;
+  }
+
+  /* 카운트 */
+  .kw-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    padding-right: 4px;
+  }
+
+  /* ── 로딩 / 에러 ── */
+  #loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 80px 32px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #error-msg {
+    display: none;
+    margin: 40px 32px;
+    padding: 16px 20px;
+    border: 1px solid #f05c5c44;
+    background: #f05c5c11;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #f05c5c;
+    line-height: 1.7;
+  }
+
+  /* ── 스크롤바 ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">DATA · 키워드 순위</div>
+    <div class="subtitle">news_economy — 전체 뉴스 기준</div>
+  </div>
+  <div class="header-right">
+    <div id="status-badge">—</div>
+    <button id="refresh-btn" onclick="loadData()">↺ 새로고침</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input id="search-input" type="text" placeholder="키워드 검색..." oninput="filterList()" />
+  <div class="total-info" id="total-info"></div>
+</div>
+
+<div class="table-head">
+  <span>순위</span>
+  <span>키워드</span>
+  <span>빈도</span>
+  <span style="text-align:right">건수</span>
+</div>
+
+<div id="loader">
+  <div class="spinner"></div>
+  <span>데이터 로딩 중...</span>
+</div>
+<div id="error-msg"></div>
+<div id="list"></div>
+
+<script>
+  const API_BASE = 'http://100.99.254.68:8000/pipeline';
+  let allKeywords = [];
+
+  async function loadData() {
+    const btn    = document.getElementById('refresh-btn');
+    const loader = document.getElementById('loader');
+    const errEl  = document.getElementById('error-msg');
+    const badge  = document.getElementById('status-badge');
+    const list   = document.getElementById('list');
+
+    btn.disabled  = true;
+    loader.style.display = 'flex';
+    errEl.style.display  = 'none';
+    list.innerHTML = '';
+    badge.className = '';
+    badge.textContent = '로딩 중...';
+
+    try {
+      const res  = await fetch(`${API_BASE}/keywords/ranking?size=500`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      allKeywords = data.keywords || [];
+      badge.className   = 'ok';
+      badge.textContent = `${allKeywords.length}개 로드됨`;
+
+      renderList(allKeywords);
+    } catch (e) {
+      badge.className   = 'error';
+      badge.textContent = 'ERROR';
+      errEl.style.display = 'block';
+      errEl.innerHTML = `<strong>불러오기 실패</strong><br>${e.message}<br><br>엔드포인트: ${API_BASE}/keywords/ranking`;
+    } finally {
+      loader.style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  function renderList(keywords) {
+    const list    = document.getElementById('list');
+    const infoEl  = document.getElementById('total-info');
+    const query   = document.getElementById('search-input').value.trim();
+
+    list.innerHTML = '';
+    infoEl.innerHTML = `총 <span>${keywords.length}</span>개`;
+
+    if (!keywords.length) {
+      list.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted);font-family:DM Mono,monospace;font-size:12px;">검색 결과 없음</div>';
+      return;
+    }
+
+    const maxCount = keywords[0]?.count || 1;
+
+    keywords.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'kw-row';
+      row.style.animationDelay = `${Math.min(idx * 8, 200)}ms`;
+
+      const barPct  = Math.max((item.count / maxCount) * 100, 1);
+      const barPx   = Math.round((barPct / 100) * 144);
+      const isTop3  = item.rank <= 3;
+
+      const highlighted = query
+        ? item.keyword.replace(new RegExp(`(${escapeRE(query)})`, 'gi'), '<mark>$1</mark>')
+        : item.keyword;
+
+      row.innerHTML = `
+        <div class="kw-rank ${isTop3 ? 'top3' : ''}">${item.rank}</div>
+        <div class="kw-word">${highlighted}</div>
+        <div class="kw-bar-wrap">
+          <div class="kw-bar" style="width:${barPx}px"></div>
+        </div>
+        <div class="kw-count">${item.count.toLocaleString()}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function filterList() {
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    if (!q) {
+      renderList(allKeywords);
+      return;
+    }
+    const filtered = allKeywords.filter(k => k.keyword.toLowerCase().includes(q));
+    renderList(filtered);
+  }
+
+  function escapeRE(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  loadData();
+</script>
+</body>
+</html>

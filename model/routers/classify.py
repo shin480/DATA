@@ -400,3 +400,43 @@ def get_classification_status():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── 키워드 순위 조회 ───────────────────────────────────
+
+@router.get("/keywords/ranking", summary="전체 뉴스 키워드 빈도 순위")
+def get_keyword_ranking(size: int = 500):
+    """
+    전체 뉴스 기준 키워드 빈도 순위를 반환합니다.
+    keywords 필드(콤마 구분 문자열)를 terms 집계로 분리 집계합니다.
+    size: 반환할 최대 키워드 수 (기본 500)
+    """
+    try:
+        es  = get_es()
+        res = es.search(
+            index=INDEX_NEWS,
+            body={
+                "size": 0,
+                "query": {"exists": {"field": "keywords"}},
+                "aggs": {
+                    "top_keywords": {
+                        "terms": {
+                            "field": "keywords",
+                            "size":  size,
+                            "order": {"_count": "desc"},
+                        }
+                    }
+                },
+            },
+        )
+        buckets = res["aggregations"]["top_keywords"]["buckets"]
+        es.close()
+        return {
+            "total": len(buckets),
+            "keywords": [
+                {"rank": i + 1, "keyword": b["key"], "count": b["doc_count"]}
+                for i, b in enumerate(buckets)
+            ],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
