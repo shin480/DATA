@@ -408,34 +408,47 @@ def get_classification_status():
 def get_keyword_ranking(size: int = 500):
     """
     전체 뉴스 기준 키워드 빈도 순위를 반환합니다.
-    keywords 필드(콤마 구분 문자열)를 terms 집계로 분리 집계합니다.
+    keywords 필드가 keyword 타입(콤마 구분 문자열)이므로
+    전체 doc을 스크롤로 가져와 Python에서 콤마 분리 후 집계합니다.
     size: 반환할 최대 키워드 수 (기본 500)
     """
+    from collections import Counter
+
     try:
-        es  = get_es()
-        res = es.search(
-            index=INDEX_NEWS,
-            body={
-                "size": 0,
-                "query": {"exists": {"field": "keywords"}},
-                "aggs": {
-                    "top_keywords": {
-                        "terms": {
-                            "field": "keywords",
-                            "size":  size,
-                            "order": {"_count": "desc"},
-                        }
-                    }
-                },
-            },
-        )
-        buckets = res["aggregations"]["top_keywords"]["buckets"]
+        es      = get_es()
+        counter = Counter()
+        body    = {
+            "query":   {"exists": {"field": "keywords"}},
+            "_source": ["keywords"],
+            "size":    5000,
+        }
+
+        # scroll로 전체 doc 순회
+        res        = es.search(index=INDEX_NEWS, body=body, scroll="2m")
+        scroll_id  = res["_scroll_id"]
+        hits       = res["hits"]["hits"]
+
+        while hits:
+            for hit in hits:
+                raw = hit["_source"].get("keywords", "")
+                if raw:
+                    for kw in raw.split(","):
+                        kw = kw.strip()
+                        if kw:
+                            counter[kw] += 1
+            res       = es.scroll(scroll_id=scroll_id, scroll="2m")
+            scroll_id = res["_scroll_id"]
+            hits      = res["hits"]["hits"]
+
+        es.clear_scroll(scroll_id=scroll_id)
         es.close()
+
+        top = counter.most_common(size)
         return {
-            "total": len(buckets),
+            "total": len(top),
             "keywords": [
-                {"rank": i + 1, "keyword": b["key"], "count": b["doc_count"]}
-                for i, b in enumerate(buckets)
+                {"rank": i + 1, "keyword": kw, "count": cnt}
+                for i, (kw, cnt) in enumerate(top)
             ],
         }
     except Exception as e:
