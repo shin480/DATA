@@ -12,6 +12,7 @@ from starlette.middleware.sessions import SessionMiddleware
 import pandas as pd
 from util.db import get_engine
 from util.es import get_es, NEWS_ECONOMY_INDEX
+from util.logger import log_admin_activity
 from crawling.crawler import run_crawling_job
 from sqlalchemy import text
 
@@ -1906,7 +1907,7 @@ def get_admin_banners():
 
 
 @app.post("/api/admin/banners")
-def create_admin_banner(info: Dict[str, Any]):
+def create_admin_banner(info: Dict[str, Any], req: Request):
     db = get_engine()
 
     try:
@@ -1947,6 +1948,9 @@ def create_admin_banner(info: Dict[str, Any]):
 
         db.commit()
 
+        user = req.session.get("user")
+        log_admin_activity(user.get("user_id"), "BANNER_CREATE", f"{user.get('user_id')}({user.get('name')}) 배너 저장")
+
         return {
             "success": True,
             "message": "배너가 등록되었습니다."
@@ -1970,7 +1974,7 @@ def create_admin_banner(info: Dict[str, Any]):
 # =========================================
 
 @app.post("/api/admin/banners/upload-image")
-async def upload_banner_image(file: UploadFile = File(...)):
+async def upload_banner_image(req: Request, file: UploadFile = File(...)):
     upload_dir = "view/img/banners"
 
     os.makedirs(upload_dir, exist_ok=True)
@@ -1998,7 +2002,7 @@ async def upload_banner_image(file: UploadFile = File(...)):
     }
 
 @app.put("/api/admin/banners/{banner_id}")
-def update_admin_banner(banner_id: int, info: Dict[str, Any]):
+def update_admin_banner(banner_id: int, info: Dict[str, Any], req: Request):
     db = get_engine()
 
     try:
@@ -2030,6 +2034,9 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
 
         db.commit()
 
+        user = req.session.get("user")
+        log_admin_activity(user.get("user_id"), "BANNER_UPDATE", f"{user.get('user_id')}({user.get('name')}) 배너 수정")
+
         return {
             "success": True,
             "message": "배너가 수정되었습니다."
@@ -2049,7 +2056,7 @@ def update_admin_banner(banner_id: int, info: Dict[str, Any]):
 
 
 @app.delete("/api/admin/banners/{banner_id}")
-def delete_admin_banner(banner_id: int):
+def delete_admin_banner(banner_id: int, req:Request):
     db = get_engine()
 
     try:
@@ -2061,6 +2068,9 @@ def delete_admin_banner(banner_id: int):
         })
 
         db.commit()
+
+        user = req.session.get("user")
+        log_admin_activity(user.get("user_id"), "BANNER_DELETE", f"{user.get('user_id')}({user.get('name')}) 배너 삭제")
 
         return {
             "success": True,
@@ -3643,8 +3653,8 @@ def get_scope_stats():
     }
 
 @app.post("/change_role")
-def change_role(info:Dict[str,str]):
-    return change_user_role(info)
+def change_role(info:Dict[str,str], req:Request):
+    return change_user_role(info, req)
 
 @app.get("/api/admin/analysis-logs")
 def get_analysis_logs(
@@ -3861,5 +3871,5 @@ def get_admin_logs(
         db.close()
 
 @app.post("/api/admin/manual-crawl")
-async def manual_crawl():
-    return await run_full_pipeline()
+async def manual_crawl(Req: Request):
+    return await run_full_pipeline(Req)
