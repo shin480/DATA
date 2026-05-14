@@ -17,6 +17,7 @@ from model.services.summarizer import run_summary_pipeline, summarize_single_art
 from model.services.keyword_extractor import run_keyword_pipeline, extract_keywords_single
 from model.services.scope_keywords import run_scope_keywords_batch
 from model.services.scope_sentiment import run_scope_sentiment_batch
+from model.services.embedding_generator import run_embedding_pipeline
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/classify", tags=["classify"])
@@ -70,6 +71,12 @@ VALID_TARGETS = {"sentiment", "keywords", "summary"}
 
 
 # ── 기존 배치 트리거 엔드포인트 ────────────────────────
+
+@router.post("/embedding")
+def trigger_embedding(background_tasks: BackgroundTasks):
+    background_tasks.add_task(run_embedding_pipeline)
+    return {"message": "embedding 생성 시작됨 (백그라운드)"}
+
 
 @router.post("/run")
 def trigger_classification(background_tasks: BackgroundTasks):
