@@ -1071,8 +1071,8 @@ async function loadTrendGraphs() {
       console.log(`가입자 | ${row.date} | ${row.count}`);
     });
 
-    drawLineGraph("viewTrendSvg", data.views || [], "#38bdf8");
-    drawLineGraph("signupTrendSvg", data.signups || [], "#a78bfa");
+    drawLineGraph("viewTrendSvg", data.views || [], "#4fb3e8");
+    drawLineGraph("signupTrendSvg", data.signups || [], "#7c8cff");
 
   } catch (error) {
     console.error("추이 그래프 로딩 실패:", error);
@@ -1202,7 +1202,7 @@ function drawLineGraph(svgId, rows, color) {
       x2="${paddingLeft}"
       y2="${height - paddingBottom}"
       stroke="rgba(148,163,184,0.45)"
-      stroke-width="2"
+      stroke-width="1.8"
     />
   `;
 
@@ -1213,7 +1213,7 @@ function drawLineGraph(svgId, rows, color) {
       x2="${width - paddingRight}"
       y2="${height - paddingBottom}"
       stroke="rgba(148,163,184,0.45)"
-      stroke-width="2"
+      stroke-width="1.8"
     />
   `;
 
@@ -1250,7 +1250,7 @@ function drawLineGraph(svgId, rows, color) {
     <polygon
       points="${areaPoints}"
       fill="${color}"
-      opacity="0.28"
+      opacity="0.16"
     />
   `;
 
@@ -1259,7 +1259,7 @@ function drawLineGraph(svgId, rows, color) {
       fill="none"
       points="${linePoints}"
       stroke="${color}"
-      stroke-width="2"
+      stroke-width="1.8"
       stroke-linecap="round"
       stroke-linejoin="round"
       opacity="0.75"
@@ -1274,7 +1274,7 @@ function drawLineGraph(svgId, rows, color) {
       <circle
         cx="${point.x}"
         cy="${point.y}"
-        r="3.5"
+        r="2.8  "
         fill="${color}"
         opacity="0.9"
       />
