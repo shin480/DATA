@@ -238,6 +238,37 @@
     line-height: 1.7;
   }
 
+  /* ── 페이지네이션 ── */
+  .pagination {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .page-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
+  .page-btn.active { border-color: var(--accent); color: var(--accent); background: var(--surface); }
+  .page-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .page-gap { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; padding: 0 4px; }
+
   /* ── 스크롤바 ── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -275,10 +306,14 @@
 </div>
 <div id="error-msg"></div>
 <div id="list"></div>
+<div class="pagination" id="pagination" style="display:none"></div>
 
 <script>
-  const API_BASE = 'http://100.99.254.68:8000/pipeline/classify';
-  let allKeywords = [];
+  const API_BASE   = 'http://100.99.254.68:8000/pipeline/classify';
+  const PAGE_SIZE  = 500;
+  let allKeywords  = [];
+  let filteredKw   = [];
+  let currentPage  = 1;
 
   async function loadData() {
     const btn    = document.getElementById('refresh-btn');
@@ -286,24 +321,28 @@
     const errEl  = document.getElementById('error-msg');
     const badge  = document.getElementById('status-badge');
     const list   = document.getElementById('list');
+    const pgEl   = document.getElementById('pagination');
 
-    btn.disabled  = true;
+    btn.disabled         = true;
     loader.style.display = 'flex';
     errEl.style.display  = 'none';
-    list.innerHTML = '';
-    badge.className = '';
-    badge.textContent = '로딩 중...';
+    list.innerHTML       = '';
+    pgEl.style.display   = 'none';
+    badge.className      = '';
+    badge.textContent    = '로딩 중...';
 
     try {
-      const res  = await fetch(`${API_BASE}/keywords/ranking?size=500`);
+      const res  = await fetch(`${API_BASE}/keywords/ranking`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      allKeywords = data.keywords || [];
+      allKeywords  = data.keywords || [];
+      filteredKw   = allKeywords;
+      currentPage  = 1;
       badge.className   = 'ok';
       badge.textContent = `${allKeywords.length}개 로드됨`;
 
-      renderList(allKeywords);
+      renderPage();
     } catch (e) {
       badge.className   = 'error';
       badge.textContent = 'ERROR';
@@ -315,29 +354,38 @@
     }
   }
 
-  function renderList(keywords) {
-    const list    = document.getElementById('list');
-    const infoEl  = document.getElementById('total-info');
-    const query   = document.getElementById('search-input').value.trim();
+  function renderPage() {
+    const list   = document.getElementById('list');
+    const infoEl = document.getElementById('total-info');
+    const pgEl   = document.getElementById('pagination');
+    const query  = document.getElementById('search-input').value.trim();
 
     list.innerHTML = '';
-    infoEl.innerHTML = `총 <span>${keywords.length}</span>개`;
 
-    if (!keywords.length) {
+    const totalPages = Math.ceil(filteredKw.length / PAGE_SIZE);
+    const start      = (currentPage - 1) * PAGE_SIZE;
+    const pageItems  = filteredKw.slice(start, start + PAGE_SIZE);
+
+    const from = filteredKw.length ? start + 1 : 0;
+    const to   = Math.min(start + PAGE_SIZE, filteredKw.length);
+    infoEl.innerHTML = `총 <span>${filteredKw.length}</span>개 · ${from}–${to} 표시`;
+
+    if (!pageItems.length) {
       list.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--muted);font-family:DM Mono,monospace;font-size:12px;">검색 결과 없음</div>';
+      pgEl.style.display = 'none';
       return;
     }
 
-    const maxCount = keywords[0]?.count || 1;
+    // 바 기준: 전체 1위 기준으로 고정 (페이지 바뀌어도 비율 일관)
+    const maxCount = allKeywords[0]?.count || 1;
 
-    keywords.forEach((item, idx) => {
+    pageItems.forEach((item, idx) => {
       const row = document.createElement('div');
       row.className = 'kw-row';
-      row.style.animationDelay = `${Math.min(idx * 8, 200)}ms`;
+      row.style.animationDelay = `${Math.min(idx * 4, 120)}ms`;
 
-      const barPct  = Math.max((item.count / maxCount) * 100, 1);
-      const barPx   = Math.round((barPct / 100) * 144);
-      const isTop3  = item.rank <= 3;
+      const barPx  = Math.round(Math.max((item.count / maxCount), 0.01) * 144);
+      const isTop3 = item.rank <= 3;
 
       const highlighted = query
         ? item.keyword.replace(new RegExp(`(${escapeRE(query)})`, 'gi'), '<mark>$1</mark>')
@@ -353,16 +401,59 @@
       `;
       list.appendChild(row);
     });
+
+    renderPagination(totalPages);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderPagination(totalPages) {
+    const pgEl = document.getElementById('pagination');
+    if (totalPages <= 1) { pgEl.style.display = 'none'; return; }
+    pgEl.style.display = 'flex';
+    pgEl.innerHTML = '';
+
+    const addBtn = (label, page, active = false, disabled = false) => {
+      const btn = document.createElement('button');
+      btn.className = 'page-btn' + (active ? ' active' : '');
+      btn.textContent = label;
+      btn.disabled = disabled;
+      if (!disabled && !active) btn.onclick = () => { currentPage = page; renderPage(); };
+      pgEl.appendChild(btn);
+    };
+
+    const addGap = () => {
+      const s = document.createElement('span');
+      s.className = 'page-gap';
+      s.textContent = '…';
+      pgEl.appendChild(s);
+    };
+
+    // 이전
+    addBtn('←', currentPage - 1, false, currentPage === 1);
+
+    // 페이지 번호: 앞 2, 현재 ±2, 뒤 2
+    const pages = new Set([1, 2, totalPages - 1, totalPages,
+      currentPage - 2, currentPage - 1, currentPage,
+      currentPage + 1, currentPage + 2
+    ]);
+    const sorted = [...pages].filter(p => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+
+    let prev = 0;
+    sorted.forEach(p => {
+      if (prev && p - prev > 1) addGap();
+      addBtn(p, p, p === currentPage);
+      prev = p;
+    });
+
+    // 다음
+    addBtn('→', currentPage + 1, false, currentPage === totalPages);
   }
 
   function filterList() {
     const q = document.getElementById('search-input').value.trim().toLowerCase();
-    if (!q) {
-      renderList(allKeywords);
-      return;
-    }
-    const filtered = allKeywords.filter(k => k.keyword.toLowerCase().includes(q));
-    renderList(filtered);
+    filteredKw  = q ? allKeywords.filter(k => k.keyword.toLowerCase().includes(q)) : allKeywords;
+    currentPage = 1;
+    renderPage();
   }
 
   function escapeRE(str) {
