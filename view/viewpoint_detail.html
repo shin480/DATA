@@ -622,12 +622,24 @@ body {
   flex-wrap: wrap;
 }
 
-.keywords span {
+.keywords span,
+.keywords a {
   padding: 12px 22px;
   border-radius: 999px;
   background: rgba(20, 184, 220, 0.18);
   color: #58e5f5;
   font-weight: 800;
+}
+
+.keyword-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.keyword-link:hover {
+  transform: translateY(-1px);
 }
 
 /* ==============================
@@ -2038,7 +2050,14 @@ function renderKeywords(keywords) {
   }
 
   keywordBox.innerHTML = keywords.map(function (keyword) {
-    return `<span>${keyword}</span>`;
+    return `
+      <a
+        class="keyword-link"
+        href="/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}"
+      >
+        ${keyword}
+      </a>
+    `;
   }).join("");
 }
 
