@@ -34,6 +34,7 @@ from mypage.article_view import view_log
 
 from admin.data_admin import get_search_summary
 from admin.user_admin import get_user_search, get_user_usage_stats, change_user_role, get_press_reaction, get_admin_trends
+from admin.master_scheduler import run_full_pipeline
 
 from collections import Counter
 from model.model_main import startup as pipeline_startup
@@ -3000,8 +3001,8 @@ def get_viewpoint_detail(
         "count": selected_count,
         "total_count": total_count,
         "date": format_base_date(latest_date),
-        "analysis_title": selected_master.get("analysis_title") or f"{selected_title} 분석",
-        "analysis_desc": selected_master.get("analysis_desc") or f"{selected_title}에 해당하는 기사 흐름을 분석한 결과입니다.",
+        "analysis_title": selected_master.get("analysis_title") or f"{selected_title}",
+        "analysis_desc": selected_master.get("analysis_desc") or f"{selected_title}에 해당하는 기사들이 어떤 흐름으로 나타나는지 보여드립니다.",
         "sentiment": selected_sentiment,
         "keywords": keywords,
         "articles": top_articles,
@@ -3892,4 +3893,4 @@ def get_admin_logs(
 
 @app.post("/api/admin/manual-crawl")
 async def manual_crawl():
-    return await run_crawling_job(mode="manual")
+    return await run_full_pipeline()

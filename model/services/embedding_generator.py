@@ -162,7 +162,10 @@ def run_embedding_pipeline() -> dict:
                     "_op_type": "update",
                     "_index":   INDEX_NEWS,
                     "_id":      doc_id,
-                    "doc":      {"embedding": vec.tolist()},
+                    "doc":      {
+                        "embedding":     vec.tolist(),
+                        "has_embedding": True,
+                    },
                 })
                 batch_processed += 1
 
