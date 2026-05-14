@@ -7,6 +7,7 @@ from datacleaning.cleaning import get_preprocessed_data
 from model.model_main import classification_job
 from viewpoint_classify.viewpoint_classify import update_perspective_to_es
 from datacleaning.dailytopissue import save_daily_top_issue_report
+from model.services.embedding_generator import run_embedding_pipeline
 from model.model_main import (
     _run_with_timeout,
     run_classification_pipeline,
@@ -392,14 +393,33 @@ def create_daily_keyword_metrics(target_date: str = None):
     }
 
 def run_model_pipeline_sync():
+    print("[model] 1 임베딩 시작")
+    _run_with_timeout(run_embedding_pipeline, "embedding")
+    print("[model] 1 임베딩 완료")
+    print("[model] 2 분류 시작")
     _run_with_timeout(run_classification_pipeline, "classification")
+    print("[model] 2 분류 완료")
+    print("[model] 3 감성 분류 시작")
     _run_with_timeout(run_sentiment_pipeline, "sentiment")
+    print("[model] 3 감성 분류 완료")
+    print("[model] 4 키워드 추출 시작")
     _run_with_timeout(run_keyword_pipeline, "keywords")
+    print("[model] 4 키워드 추출 완료")
+    print("[model] 5 요약 시작")
     _run_with_timeout(run_summary_pipeline, "summary")
+    print("[model] 5 요약 완료")
+    print("[model] 6 스콥 타이틀 추출 시작")
     _run_with_timeout(run_scope_title_batch, "scope_title")
+    print("[model] 6 스콥 타이틀 추출 완료")
+    print("[model] 7 스콥 감성 집계 시작")
     _run_with_timeout(run_scope_sentiment_batch, "scope_sentiment")
+    print("[model] 7 스콥 감성 집계 완료")
+    print("[model] 8 스콥 요약 시작")
     _run_with_timeout(run_scope_summary_batch, "scope_summary")
+    print("[model] 8 스콥 요약 완료")
+    print("[model] 9 스콥 키워드 추출 시작")
     _run_with_timeout(run_scope_keywords_batch, "scope_keywords")
+    print("[model] 9 스콥 키워드 추출 완료")
 
 def get_master_scheduler():
     sch = AsyncIOScheduler(timezone="Asia/Seoul")
