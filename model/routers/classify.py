@@ -12,11 +12,11 @@ from model.database import get_es
 from model.services.classifier import run_classification_pipeline
 from model.services.scope_title import run_scope_title_batch, enqueue_missing_scope_titles
 from model.services.scope_summarizer import run_scope_summary_batch
+from model.services.scope_sentiment import run_scope_sentiment_batch
 from model.services.sentiment import run_sentiment_pipeline, classify_single_article
 from model.services.summarizer import run_summary_pipeline, summarize_single_article
 from model.services.keyword_extractor import run_keyword_pipeline, extract_keywords_single
 from model.services.scope_keywords import run_scope_keywords_batch
-from model.services.scope_sentiment import run_scope_sentiment_batch
 from model.services.embedding_generator import run_embedding_pipeline
 
 logger = logging.getLogger(__name__)
@@ -255,6 +255,43 @@ def reprocess_article(article_id: str, body: ReprocessRequest):
         results    = results,
         after      = _to_article_out(article_id, after_src),
     )
+
+
+# ── 단건 비활성화 ──────────────────────────────────────
+
+@router.post("/article/{article_id}/disable", summary="아티클 비활성화 (파이프라인 제외)")
+def disable_article(article_id: str):
+    """
+    지정한 article_id에 is_disabled: true 를 설정합니다.
+    파이프라인(분류·감성·요약·키워드) 배치 처리 대상에서 제외됩니다.
+    원본 데이터는 삭제되지 않으며, is_disabled: false 로 재활성화 가능합니다.
+    """
+    try:
+        es  = get_es()
+        res = es.get(index=INDEX_NEWS, id=article_id, ignore=[404])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not res.get("found"):
+        es.close()
+        raise HTTPException(status_code=404, detail=f"article_id '{article_id}' 를 찾을 수 없습니다.")
+
+    try:
+        es.update(
+            index=INDEX_NEWS,
+            id=article_id,
+            body={"doc": {
+                "is_disabled": True,
+                "disabled_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"비활성화 처리 실패: {e}")
+    finally:
+        es.close()
+
+    logger.info(f"[비활성화] article_id={article_id}")
+    return {"article_id": article_id, "is_disabled": True}
 
 
 # ── 내부 헬퍼 ──────────────────────────────────────────

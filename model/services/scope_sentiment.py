@@ -2,12 +2,17 @@
 scope 단위 감성 집계 서비스
 
 흐름:
-  1. news_scopes에서 sentiment=NULL 이거나 갱신 필요한 scope 조회
+  1. news_scopes에서 sentiment_dist=NULL인 scope 조회
   2. news_economy에서 해당 scope 뉴스의 sentiment/sentiment_score 집계
-  3. news_scopes.sentiment / sentiment_score / sentiment_dist upsert
+  3. news_scopes.sentiment_score / sentiment_dist upsert
+
+[수정 이력]
+- sentiment(대표 레이블) 제거: scope 자체는 단일 감성 레이블을 갖지 않음
+  · sentiment_score: 전체 기사 sentiment_score 평균
+  · sentiment_dist:  전체 기사의 레이블 분포 비율 (positive/negative/neutral)
+- 배치 조건 변경: must_not exists sentiment → must_not exists sentiment_dist
 """
 
-import json
 import logging
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -45,32 +50,30 @@ def aggregate_scope_sentiment(es, scope_id: str):
     if len(rows) < MIN_NEWS_COUNT:
         return None
 
-    score_sum   = defaultdict(float)
     score_count = defaultdict(int)
     for r in rows:
-        s = r["sentiment"]
-        score_sum[s]   += r["sentiment_score"]
-        score_count[s] += 1
+        score_count[r["sentiment"]] += 1
 
-    sentiment       = max(score_count, key=score_count.get)
-    sentiment_score = round(score_sum[sentiment] / score_count[sentiment], 4)
-    total           = len(rows)
-    sentiment_dist  = {
+    total          = len(rows)
+    sentiment_dist = {
         label: round(score_count[label] / total, 4)
         for label in ("positive", "negative", "neutral")
     }
+
+    # 전체 기사 sentiment_score 평균
+    all_scores      = [r["sentiment_score"] for r in rows]
+    sentiment_score = round(sum(all_scores) / len(all_scores), 4)
 
     es.update(
         index=INDEX_SCOPES,
         id=scope_id,
         body={"doc": {
-            "sentiment":       sentiment,
             "sentiment_score": sentiment_score,
             "sentiment_dist":  sentiment_dist,
             "updated_at":      datetime.now(timezone.utc).isoformat(),
         }},
     )
-    return sentiment, sentiment_score, sentiment_dist
+    return sentiment_score, sentiment_dist
 
 
 def run_scope_sentiment_batch():
@@ -92,7 +95,7 @@ def run_scope_sentiment_batch():
                             "must": [
                                 {"range": {"news_count": {"gte": MIN_NEWS_COUNT}}}
                             ],
-                            "must_not": {"exists": {"field": "sentiment"}},
+                            "must_not": {"exists": {"field": "sentiment_dist"}},
                         }
                     },
                     "_source": ["scopeID"],
