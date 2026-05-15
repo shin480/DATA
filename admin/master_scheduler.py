@@ -601,9 +601,7 @@ def get_scheduler_00():
     sch = AsyncIOScheduler(timezone="Asia/Seoul")
 
     sch.add_job(
-        lambda: asyncio.create_task(
-            run_full_pipeline_for_schedule()
-        ),
+        run_full_pipeline_for_schedule,  # 람다 래핑 없이 함수 자체를 전달
         "cron",
         hour=0,
         minute=0,
