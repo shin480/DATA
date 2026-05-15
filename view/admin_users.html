@@ -1325,29 +1325,69 @@ function drawLineGraph(svgId, rows, color) {
   // 점 + 실제 수치
   // ==============================
   points.forEach(point => {
-    svgContent += `
-      <circle
-        cx="${point.x}"
-        cy="${point.y}"
-        r="2.8"
-        fill="${color}"
-        opacity="0.9"
-      />
-    `;
 
-    svgContent += `
-      <text
-        x="${point.x}"
-        y="${point.y - 8}"
-        fill="#f8fafc"
-        font-size="10"
-        font-weight="500"
-        text-anchor="middle"
-      >
-        ${point.count}
-      </text>
-    `;
-  });
+  // 점
+  svgContent += `
+    <circle
+      cx="${point.x}"
+      cy="${point.y}"
+      r="3"
+      fill="${color}"
+      opacity="0.95"
+    />
+  `;
+
+  // 말풍선 배경
+  svgContent += `
+    <rect
+      x="${point.x - 26}"
+      y="${Math.max(point.y - 31, 6)}"
+      width="52"
+      height="22"
+      rx="5"
+      fill="#4b5563"
+      opacity="0"
+      class="tooltip-bg"
+    />
+  `;
+
+  // 숫자
+  svgContent += `
+    <text
+      x="${point.x}"
+      y="${Math.max(point.y - 16, 21)}"
+      fill="#ffffff"
+      font-size="11"
+      font-weight="400"
+      text-anchor="middle"
+      opacity="0"
+      class="tooltip-text"
+    >
+      ${point.count}명
+    </text>
+  `;  
+
+  // hover 영역
+  svgContent += `
+    <circle
+      cx="${point.x}"
+      cy="${point.y}"
+      r="10"
+      fill="transparent"
+      class="hover-point"
+      onmousemove="
+        const svg = this.ownerSVGElement;
+        svg.querySelectorAll('.tooltip-bg')[${points.indexOf(point)}].setAttribute('opacity','1');
+        svg.querySelectorAll('.tooltip-text')[${points.indexOf(point)}].setAttribute('opacity','1');
+      "
+      onmouseleave="
+        const svg = this.ownerSVGElement;
+        svg.querySelectorAll('.tooltip-bg')[${points.indexOf(point)}].setAttribute('opacity','0');
+        svg.querySelectorAll('.tooltip-text')[${points.indexOf(point)}].setAttribute('opacity','0');
+      "
+    />
+  `;
+});
 
   svg.innerHTML = svgContent;
 }
