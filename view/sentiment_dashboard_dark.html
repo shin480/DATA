@@ -230,6 +230,7 @@
   }
   .btn-danger   { color: var(--red); border-color: #4a1515; }
   .btn-danger:hover { background: var(--red-bg); }
+  .btn-danger:disabled { opacity: 1; color: #4a1f1f; border-color: #2a1010; cursor: default; background: var(--bg3); }
   .btn-sm { padding: 3px 10px; font-size: 12px; }
 
   /* 정정 버튼 그룹 */
@@ -841,6 +842,7 @@
         </div>
         <button class="btn btn-primary" id="rp-search-btn" onclick="searchArticle()">조회</button>
         <button class="btn" onclick="clearReprocess()">초기화</button>
+        <button class="btn btn-danger" id="rp-disable-btn" onclick="openDisableModal()" disabled>삭제</button>
       </div>
       <div id="rp-search-error" class="error-msg" style="display:none;margin-top:8px;"></div>
     </div>
@@ -873,12 +875,11 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-primary" id="rp-run-btn" onclick="runReprocess()">재처리 실행</button>
-          <button class="btn btn-danger" id="rp-disable-btn" onclick="openDisableModal()">비활성화</button>
           <span id="rp-run-msg" style="font-size:12px;color:var(--text3);"></span>
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6;">
           ⚠ 선택된 필드를 초기화한 뒤 즉시 재처리합니다. 배치 스케줄과 무관하게 동기 실행됩니다.<br>
-          ⚠ 비활성화는 해당 아티클을 파이프라인 처리 대상에서 제외합니다. 데이터는 유지됩니다.
+          ⚠ 삭제 버튼은 해당 아티클을 파이프라인 처리 대상에서 제외합니다. 데이터는 유지됩니다.
         </div>
       </div>
 
@@ -933,7 +934,7 @@
 <!-- 비활성화 확인 모달 -->
 <div class="modal-overlay" id="disable-modal">
   <div class="modal" style="width:440px;">
-    <div class="modal-title" style="color:var(--red);">아티클 비활성화</div>
+    <div class="modal-title" style="color:var(--red);">아티클 삭제</div>
     <div class="modal-body">
       <div style="margin-bottom:.75rem;">
         <div class="modal-label">Article ID</div>
@@ -948,9 +949,9 @@
         원본 데이터는 삭제되지 않으며 재활성화가 가능합니다.
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" id="disable-modal-footer">
       <button class="btn" onclick="closeDisableModal()">취소</button>
-      <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">비활성화 확인</button>
+      <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
     </div>
   </div>
 </div>
@@ -1844,7 +1845,7 @@ function rpArticleInfoHtml(a) {
           <td style="color:var(--text3);padding:5px 8px;white-space:nowrap;">Article ID</td>
           <td style="padding:5px 8px;font-weight:500;color:var(--text)">${escHtml(a.article_id || '—')}
             ${a.is_disabled
-              ? `<span class="badge badge-neg" style="margin-left:8px;font-size:11px;">비활성화</span>`
+              ? `<span class="badge badge-neg" style="margin-left:8px;font-size:11px;">삭제됨</span>`
               : ''}
           </td>
         </tr>
@@ -1912,10 +1913,10 @@ async function searchArticle() {
     const disableBtn = $('rp-disable-btn');
     if (data.is_disabled) {
       disableBtn.disabled = true;
-      disableBtn.textContent = '비활성화됨';
+      disableBtn.textContent = '삭제됨';
     } else {
       disableBtn.disabled = false;
-      disableBtn.textContent = '비활성화';
+      disableBtn.textContent = '삭제';
     }
   } catch(e) {
     html('rp-search-error', '조회 실패: ' + e.message);
@@ -1986,15 +1987,22 @@ function clearReprocess() {
   hide('rp-after');
   hide('rp-search-error');
   show('rp-empty');
+  const disableBtn = $('rp-disable-btn');
+  disableBtn.disabled = true;
+  disableBtn.textContent = '삭제';
 }
 
 // ── 비활성화 ──────────────────────────────────────────
 function openDisableModal() {
   if (!rpCurrentArticle) { toast('먼저 아티클을 조회해주세요.'); return; }
-  if (rpCurrentArticle.is_disabled) { toast('이미 비활성화된 아티클입니다.'); return; }
+  if (rpCurrentArticle.is_disabled) { toast('이미 삭제된 아티클입니다.'); return; }
   text('disable-article-id', rpCurrentArticle.article_id || '—');
   text('disable-article-title', rpCurrentArticle.title || '—');
-  $('disable-submit-btn').disabled = false;
+  $('disable-submit-btn') && ($('disable-submit-btn').disabled = false);
+  html('disable-modal-footer', `
+    <button class="btn" onclick="closeDisableModal()">취소</button>
+    <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
+  `);
   $('disable-modal').classList.add('open');
 }
 
@@ -2016,9 +2024,10 @@ async function submitDisable() {
     // 비활성화 버튼 dim 처리
     const disableBtn = $('rp-disable-btn');
     disableBtn.disabled = true;
-    disableBtn.textContent = '비활성화됨';
-    closeDisableModal();
-    toast('비활성화 처리되었습니다.');
+    disableBtn.textContent = '삭제됨';
+    // 모달 푸터를 닫기 버튼만 남기도록 교체
+    html('disable-modal-footer', '<button class="btn btn-primary" onclick="closeDisableModal()">닫기</button>');
+    toast('삭제 처리되었습니다.');
   } catch(e) {
     toast('오류: ' + e.message);
     btn.disabled = false;

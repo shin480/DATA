@@ -74,14 +74,18 @@ def save_batch_start():
 
     try:
         sql = text("""
-            INSERT INTO batch_jobs (code_id, start_at)
-            VALUES (:code_id, NOW())
+            SELECT job_id
+            FROM batch_jobs
+            ORDER BY job_id DESC
+            LIMIT 1
         """)
 
-        result = db.execute(sql, {"code_id": CODE_ID})
-        db.commit()
+        result = db.execute(sql).fetchone()
 
-        return result.lastrowid
+        if result:
+            return result[0]
+
+        return None
 
     finally:
         db.close()
