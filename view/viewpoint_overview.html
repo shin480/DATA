@@ -112,6 +112,35 @@ body {
   color: #00e5ff;
 }
 
+.nav a {
+  position: relative;
+}
+
+.nav a.active {
+  color: #00e5ff !important;
+  font-weight: 900 !important;
+}
+
+.nav a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -26px;
+  height: 3px;
+  border-radius: 999px;
+  background: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.65);
+}
+
+body.light-mode .nav a.active {
+  color: #41BFE0 !important;
+}
+
+body.light-mode .nav a.active::after {
+  background: #41BFE0;
+}
+
 .header-right {
   margin-left: auto;
   display: flex;
@@ -1448,6 +1477,7 @@ function loadHeader() {
     setHeaderLoginState();
     bindCommonSearch();
     applyThemeMode();
+    activateCurrentHeaderMenu();
     return;
   }
 
@@ -1465,10 +1495,31 @@ function loadHeader() {
       setHeaderLoginState();
       bindCommonSearch();
       applyThemeMode();
+
+      activateCurrentHeaderMenu();
     })
     .catch(function (err) {
       console.error("header 로드 실패:", err);
     });
+}
+
+function activateCurrentHeaderMenu() {
+  const currentFile = window.location.pathname.split("/").pop();
+  const navLinks = document.querySelectorAll(".nav a");
+
+  navLinks.forEach(function (link) {
+    const targetPath = link.dataset.loginPage;
+
+    if (!targetPath) return;
+
+    const targetFile = targetPath.split("/").pop();
+
+    link.classList.remove("active");
+
+    if (currentFile === targetFile) {
+      link.classList.add("active");
+    }
+  });
 }
 
 function loadFooter() {
