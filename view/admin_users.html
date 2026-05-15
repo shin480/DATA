@@ -1211,7 +1211,7 @@ function drawLineGraph(svgId, rows, color) {
         x="${paddingLeft - 8}"
         y="${y + 4}"
         fill="#94a3b8"
-        font-size="10"
+        font-size="9.5"
         font-weight="400"
         text-anchor="end"
       >
@@ -1236,10 +1236,11 @@ function drawLineGraph(svgId, rows, color) {
     svgContent += `
       <text
         x="${x}"
-        y="${height - 8}"
+        y="${height - 14}"
         fill="#94a3b8"
-        font-size="10"
+        font-size="9.5"
         font-weight="400"
+        letter-spacing="-0.6px"
         text-anchor="middle"
       >
         ${shortDate}
