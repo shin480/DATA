@@ -58,9 +58,11 @@ logger = logging.getLogger(__name__)
 # 너무 잘게 쪼개지면 0.75 정도로 낮추면 됨.
 SIMILARITY_THRESHOLD = 0.78
 
-BATCH_SIZE          = 10000
-MAX_SCOPE_SIZE      = 10000   # _build_faiss_index / _initialize_scope_sequence 공용 상한
-SCOPE_ID_PREFIX_FMT = "%Y%m%d"
+BATCH_SIZE               = 10000
+MAX_SCOPE_SIZE           = 10000   # _build_faiss_index / _initialize_scope_sequence 공용 상한
+MAX_ARTICLES_PER_SCOPE   = 30      # 스코프당 기사 수 상한 - 초과 시 차순위 스코프 또는 신규 생성
+FAISS_TOP_K              = 3       # 유사도 비교 후보 수 (k=1이면 포화 스코프를 피할 수 없음)
+SCOPE_ID_PREFIX_FMT      = "%Y%m%d"
 
 INDEX_NEWS   = "news_economy"
 INDEX_SCOPES = "news_scopes"
@@ -380,13 +382,32 @@ def run_classification_pipeline() -> dict:
             best_score        = None
 
             # --- 4-1. 기존 scope와 유사도 비교 ---
+            # FAISS_TOP_K개 후보를 검색한 뒤, 유사도 threshold를 넘으면서
+            # MAX_ARTICLES_PER_SCOPE 미만인 첫 번째 스코프를 선택한다.
+            # k=1이면 1순위 스코프가 포화 상태여도 무조건 배정되는 문제가 있었음.
             if faiss_index is not None and len(scope_ids) > 0:
-                scores, indices = faiss_index.search(vec, k=1)
-                best_score = float(scores[0][0])
-                best_idx   = int(indices[0][0])
+                k = min(FAISS_TOP_K, len(scope_ids))
+                scores, indices = faiss_index.search(vec, k=k)
 
-                if best_idx >= 0 and best_score >= SIMILARITY_THRESHOLD:
-                    assigned_scope_id = scope_ids[best_idx]
+                for rank_score, rank_idx in zip(scores[0], indices[0]):
+                    if int(rank_idx) < 0:
+                        continue
+                    candidate_id    = scope_ids[int(rank_idx)]
+                    candidate_score = float(rank_score)
+
+                    if candidate_score < SIMILARITY_THRESHOLD:
+                        break  # 이미 내림차순이므로 이후 후보도 threshold 미달
+
+                    if scope_count_map.get(candidate_id, 0) < MAX_ARTICLES_PER_SCOPE:
+                        assigned_scope_id = candidate_id
+                        best_score        = candidate_score
+                        break  # 조건 충족하는 첫 번째 후보 선택
+                    else:
+                        logger.debug(
+                            f"스코프 포화로 skip: scopeID={candidate_id}, "
+                            f"count={scope_count_map.get(candidate_id)}, "
+                            f"score={candidate_score:.4f}"
+                        )
 
             # --- 4-2. 기존 scope에 병합 ---
             if assigned_scope_id is not None:
