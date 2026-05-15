@@ -20,8 +20,6 @@ MAX_SCOPE_KEYWORDS = 5
 BATCH_SIZE         = 500
 INDEX_NEWS         = "news_economy"
 INDEX_SCOPES       = "news_scopes"
-MIN_NEWS_COUNT = 3
-
 def aggregate_scope_keywords(es, scope_id: str) -> str:
     # 해당 scope 뉴스의 keywords 수집
     res = es.search(
@@ -41,6 +39,15 @@ def aggregate_scope_keywords(es, scope_id: str) -> str:
     )
     hits = res["hits"]["hits"]
     if not hits:
+        es.update(
+            index=INDEX_SCOPES,
+            id=scope_id,
+            body={"doc": {
+                "scope_keywords": "",
+                "scope_keywords_status": "insufficient",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
         return ""
 
     # 기존 scope_keywords 2배 가중
@@ -90,9 +97,6 @@ def run_scope_keywords_batch():
                 body={
                     "query": {
                         "bool": {
-                            "must": [
-                                {"range": {"news_count": {"gte": MIN_NEWS_COUNT}}}
-                            ],
                             "must_not": {"exists": {"field": "scope_keywords"}},
                         }
                     },
