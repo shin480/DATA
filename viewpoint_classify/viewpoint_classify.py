@@ -129,21 +129,42 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
     print(top3)
     return top3
 
-def update_perspective_to_es():
+def update_perspective_to_es(all:bool=False):
     es = get_es()
+    query = {}
 
-    query = {
-        "_source": ["article_id", "title", "clean_text", "sentiment", "sentiment_score"],
-        "query": {
-            "bool": {
-                "must": [
-                    {"exists": {"field": "title"}},
-                    {"exists": {"field": "clean_text"}}
-                ]
-            }
-        },
-        "size": 500
-    }
+    if all:
+        query = {
+            "_source": ["article_id", "title", "clean_text", "sentiment", "sentiment_score"],
+            "query": {
+                "bool": {
+                    "must": [
+                        {"exists": {"field": "title"}},
+                        {"exists": {"field": "clean_text"}}
+                    ]
+                }
+            },
+        }
+    else:
+        query = {
+            "_source": ["article_id", "title", "clean_text", "sentiment", "sentiment_score"],
+            "query": {
+                "bool": {
+                    "must": [
+                        {"exists": {"field": "title"}},
+                        {"exists": {"field": "clean_text"}}
+                    ],
+                    "must_not": [
+                        {
+                            "nested": {
+                                "path": "perspective",
+                                "query": {"exists": {"field": "perspective"}}
+                            }
+                        }
+                    ]
+                }
+            },
+        }
 
     resp = es.search(
         index=NEWS_ECONOMY_INDEX,
@@ -197,4 +218,4 @@ def update_perspective_to_es():
     print("관점 분류 Top-3 ES 저장 완료")
 
 if __name__ == "__main__":
-    update_perspective_to_es()
+    update_perspective_to_es(True)

@@ -372,7 +372,7 @@ def get_classification_status():
             "bool": {"must": {"exists": {"field": "scopeTitle"}}}
         })
         no_embedding = _count(INDEX_NEWS, {
-            "bool": {"must_not": {"term": {"has_embedding": True}}}
+            "bool": {"must_not": {"exists": {"field": "embedding"}}}
         })
 
         # 감성 분포
