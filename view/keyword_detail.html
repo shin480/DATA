@@ -3441,7 +3441,9 @@ function renderAIArticles() {
   const visibleAnalysis = analysis.slice(0, visibleArticleCount);
 
   list.innerHTML = visibleAnalysis.map(item => `
-    <article class="article-card ai-card">
+    <article class="article-card ai-card"
+    type="button"
+    onclick="location.href='/view/scope_detail.html?scopeID=${encodeURIComponent(item.scopeID || "")}'">
       <div>
         <div class="article-source">
           [ AI분석 ] ${item.news_count || 0}건

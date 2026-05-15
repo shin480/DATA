@@ -99,31 +99,31 @@ select {
 }
 
 .logo-wrap {
-  margin: 0 20px 26px;
-  padding: 0 14px;
-  height: 76px;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 45%),
-    rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(56, 189, 248, 0.22);
+  margin: 0 24px 32px;
+  padding: 0;
+  height: auto;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+
   cursor: pointer;
-  transition: 0.2s ease;
 
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .logo-wrap:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.2);
+  transform: none;
+  border: none;
+  box-shadow: none;
 }
 
 .admin-side-logo {
   display: block;
-  width: 158px;
+  width: 170px;
   max-width: 100%;
   height: auto;
   object-fit: contain;
@@ -1341,9 +1341,9 @@ function drawLineGraph(svgId, rows, color) {
   // 말풍선 배경
   svgContent += `
     <rect
-      x="${point.x - 26}"
+      x="${point.x - 18}"
       y="${Math.max(point.y - 31, 6)}"
-      width="52"
+      width="36"
       height="22"
       rx="5"
       fill="#4b5563"
@@ -1358,7 +1358,7 @@ function drawLineGraph(svgId, rows, color) {
       x="${point.x}"
       y="${Math.max(point.y - 16, 21)}"
       fill="#ffffff"
-      font-size="11"
+      font-size="10"
       font-weight="400"
       text-anchor="middle"
       opacity="0"
