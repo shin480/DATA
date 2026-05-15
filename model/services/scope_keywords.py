@@ -20,6 +20,8 @@ MAX_SCOPE_KEYWORDS = 5
 BATCH_SIZE         = 500
 INDEX_NEWS         = "news_economy"
 INDEX_SCOPES       = "news_scopes"
+
+
 def aggregate_scope_keywords(es, scope_id: str) -> str:
     # 해당 scope 뉴스의 keywords 수집
     res = es.search(
@@ -43,15 +45,15 @@ def aggregate_scope_keywords(es, scope_id: str) -> str:
             index=INDEX_SCOPES,
             id=scope_id,
             body={"doc": {
-                "scope_keywords": "",
+                "scope_keywords":        "",
                 "scope_keywords_status": "insufficient",
-                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at":            datetime.now(timezone.utc).isoformat(),
             }},
         )
         return ""
 
     # 기존 scope_keywords 2배 가중
-    scope_res  = es.get(index=INDEX_SCOPES, id=scope_id, ignore=404)
+    scope_res    = es.get(index=INDEX_SCOPES, id=scope_id, ignore=404)
     all_keywords = []
     if scope_res.get("found"):
         existing_kw = scope_res["_source"].get("scope_keywords")
@@ -63,10 +65,21 @@ def aggregate_scope_keywords(es, scope_id: str) -> str:
         kw = hit["_source"].get("keywords", "")
         all_keywords.extend([k.strip() for k in kw.split(",") if k.strip()])
 
+    # [BUG FIX] 키워드가 비어있어도 반드시 ES update — 하지 않으면 scope_keywords 필드가
+    # NULL로 남아 다음 배치에서 동일 scope가 계속 조회되어 무한루프 발생
     if not all_keywords:
+        es.update(
+            index=INDEX_SCOPES,
+            id=scope_id,
+            body={"doc": {
+                "scope_keywords":        "",
+                "scope_keywords_status": "insufficient",
+                "updated_at":            datetime.now(timezone.utc).isoformat(),
+            }},
+        )
         return ""
 
-    counter     = Counter(all_keywords)
+    counter      = Counter(all_keywords)
     top_keywords = [w for w, _ in counter.most_common(MAX_SCOPE_KEYWORDS)]
     result       = ",".join(top_keywords)
 
@@ -74,8 +87,9 @@ def aggregate_scope_keywords(es, scope_id: str) -> str:
         index=INDEX_SCOPES,
         id=scope_id,
         body={"doc": {
-            "scope_keywords": result,
-            "updated_at":     datetime.now(timezone.utc).isoformat(),
+            "scope_keywords":        result,
+            "scope_keywords_status": "ok",
+            "updated_at":            datetime.now(timezone.utc).isoformat(),
         }},
     )
     return result

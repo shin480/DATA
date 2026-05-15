@@ -953,8 +953,9 @@
       </div>
     </div>
     <div class="modal-footer" id="disable-modal-footer">
-      <button class="btn" onclick="closeDisableModal()">취소</button>
+      <button class="btn" id="disable-cancel-btn" onclick="closeDisableModal()">취소</button>
       <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
+      <button class="btn btn-primary" id="disable-close-btn" onclick="closeDisableModal()" style="display:none;">닫기</button>
     </div>
   </div>
 </div>
@@ -2003,10 +2004,11 @@ function openDisableModal() {
   text('disable-article-title', rpCurrentArticle.title || '—');
   show('disable-warning');
   hide('disable-result');
-  html('disable-modal-footer', `
-    <button class="btn" onclick="closeDisableModal()">취소</button>
-    <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
-  `);
+  show('disable-cancel-btn');
+  show('disable-submit-btn');
+  $('disable-submit-btn').disabled = false;
+  $('disable-submit-btn').textContent = '삭제 확인';
+  hide('disable-close-btn');
   $('disable-modal').classList.add('open');
 }
 
@@ -2023,16 +2025,17 @@ async function submitDisable() {
     const articleId = rpCurrentArticle.article_id;
     await apiFetch(`/classify/article/${encodeURIComponent(articleId)}/disable`, { method: 'POST' });
     rpCurrentArticle.is_disabled = true;
-    // 현재 상태 카드 갱신
     html('rp-article-info', rpArticleInfoHtml(rpCurrentArticle));
-    // 비활성화 버튼 dim 처리
     const disableBtn = $('rp-disable-btn');
     disableBtn.disabled = true;
     disableBtn.textContent = '삭제됨';
-    // 모달: 경고 → 완료 메시지, 푸터 → 닫기만
+    // 모달 상태 전환
     hide('disable-warning');
     show('disable-result');
-    html('disable-modal-footer', '<button class="btn btn-primary" onclick="closeDisableModal()">닫기</button>');
+    hide('disable-submit-btn');
+    hide('disable-cancel-btn');
+    show('disable-close-btn');
+    toast('비활성 처리가 완료되었습니다.');
   } catch(e) {
     toast('오류: ' + e.message);
     btn.disabled = false;
