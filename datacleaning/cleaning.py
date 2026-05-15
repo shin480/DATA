@@ -12,7 +12,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 from kiwipiepy import Kiwi
 
 es = get_es()
-kiwi = Kiwi()
+
+try:
+    # 기존 컴퓨터에서는 원래 방식으로 정상 실행
+    kiwi = Kiwi()
+
+except Exception as e:
+    # 노트북처럼 OneDrive/한글 경로 문제로 Kiwi 모델을 못 읽는 경우만 대체 경로 사용
+    if "Cannot open extract.mdl" in str(e):
+        kiwi = Kiwi(model_path=r"C:\kiwi_model")
+    else:
+        raise
 
 # 불용어 리스트 정의
 STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "와", "과", "도", "만", "기자", "뉴스", "영상", "편집", "앵커", "연합뉴스", "뉴시스", "한경", "한경닷컴",
