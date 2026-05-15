@@ -8,7 +8,7 @@ import feedparser
 from bs4 import BeautifulSoup
 from sqlalchemy import text
 
-from util.logger import Logger
+from util.logger import Logger, save_article_process_log
 from util.db import get_engine
 from util.es import get_es, bulk
 
@@ -587,19 +587,21 @@ async def run_crawling_job(mode="auto"):
 
             save_article_meta(article_id)
 
-            save_process_log(
-                job_id=job_id,
-                status="success",
-                article_id=article_id
-            )
+            save_article_process_log("C101", article_id, "success")
+
+            # save_process_log(
+            #     job_id=job_id,
+            #     status="success",
+            #     article_id=article_id
+            # )
 
     total_fail_count += es_fail_count
 
-    finish_batch(
-        job_id=job_id,
-        total_count=len(all_data),
-        fail_count=total_fail_count
-    )
+    # finish_batch(
+    #     job_id=job_id,
+    #     total_count=len(all_data),
+    #     fail_count=total_fail_count
+    # )
 
     logger.info(
         f"운영 크롤링 종료: 수집 {len(all_data)}건 / ES 성공 {success_count}건 / 실패 {total_fail_count}건"
