@@ -408,11 +408,21 @@ def run_scope_title_batch():
                               body={"doc": {"status": "failed", "processed_at": now_utc}})
                     continue
 
-                # 사용 가능한 키가 아예 없으면 배치 중단 (남은 항목 모두 pending 유지)
+                # 사용 가능한 키가 아예 없으면 Gemini 생략 → 최신 기사 제목으로 즉시 폴백
                 if _get_next_available_key() is None:
-                    logger.error("모든 Gemini 키 차단 상태 → 배치 중단, 다음 실행 시 재시도")
-                    es.close()
-                    return
+                    logger.warning(
+                        f"모든 Gemini 키 차단 → 최신 기사 제목 폴백: scopeID={scope_id}"
+                    )
+                    fallback_result = generate_scope_title(es, scope_id, news_count=0)
+                    if fallback_result is not None:
+                        es.update(index=INDEX_QUEUE, id=doc_id,
+                                  body={"doc": {"status": "done", "processed_at": now_utc}})
+                        total_processed += 1
+                    else:
+                        # 기사 자체가 없는 경우 → failed
+                        es.update(index=INDEX_QUEUE, id=doc_id,
+                                  body={"doc": {"status": "failed", "processed_at": now_utc}})
+                    continue
 
                 es.update(index=INDEX_QUEUE, id=doc_id,
                           body={"doc": {"status": "processing"}})

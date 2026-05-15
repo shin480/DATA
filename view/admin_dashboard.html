@@ -1604,7 +1604,6 @@ function renderAnalysis(data = analysisData) {
         <td title="${item.message}">${item.message}</td>
         <td>${item.time}</td>
         <td>
-          <button class="btn-small btn-delete" onclick="deleteAnalysis('${item.id}')">삭제</button>
           <button class="btn-small btn-success" onclick="retryAnalysis('${item.id}')">재실행</button>
         </td>
       </tr>

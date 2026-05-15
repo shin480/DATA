@@ -551,6 +551,7 @@ async def run_full_pipeline_for_schedule():
     try:
         today = date.today().strftime("%Y-%m-%d")
         print(f"[FULL_PIPELINE] 시작 | target_date={today}")
+        job_id = create_batch_job("BS101")
 
         print("[FULL_PIPELINE] 1/6 크롤링 시작")
         await run_crawling_job()
@@ -581,6 +582,8 @@ async def run_full_pipeline_for_schedule():
         top_issue_result = save_daily_top_issue_report(today, today)
         print(f"[FULL_PIPELINE] 6/6 TOP 이슈 리포트 완료 | result={top_issue_result}")
         results["daily_top_issue"] = "success"
+
+        update_batch_job(job_id)
 
         print("[FULL_PIPELINE] 전체 완료")
 

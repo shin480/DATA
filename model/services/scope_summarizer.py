@@ -16,6 +16,9 @@ scope 대표 요약 생성 서비스
 - ES 쿼리 버그 수정: should(OR) → must_not exists 단순화
   (기존 should + news_count>0 조건으로 이미 처리된 scope까지 조회되던 문제)
 - BATCH_SIZE 제거: 500 제한 → 10000으로 상향 (scope 수 증가 대응)
+- 무한루프 버그 수정: rows/filtered 없을 때 return None → _save(es, scope_id, "") 처리
+  (NULL 탈출 실패로 동일 3건이 배치마다 반복 조회되던 문제)
+- 배치 루프 안전장치 추가: processed_in_batch==0 이면 강제 break + 실패 건도 빈값 저장
 """
 
 import logging
@@ -137,6 +140,7 @@ def generate_scope_summary(es, scope_id: str):
     )
     rows = [h["_source"] for h in res["hits"]["hits"]]
     if not rows:
+        _save(es, scope_id, "")
         return None
 
     # 동일 언론사 최대 MAX_NEWS_PER_PRESS건
@@ -148,6 +152,7 @@ def generate_scope_summary(es, scope_id: str):
             filtered.append(r["summary"])
 
     if not filtered:
+        _save(es, scope_id, "")
         return None
 
     # 뉴스 1건이면 그대로 절단
@@ -232,17 +237,27 @@ def run_scope_summary_batch():
 
             logger.info(f"[배치 {batch_num}] scope_summary 처리 시작: {len(hits)}건")
 
+            processed_in_batch = 0
             for hit in hits:
                 scope_id = hit["_source"]["scopeID"]
                 try:
                     generate_scope_summary(es, scope_id)
                     total_processed += 1
+                    processed_in_batch += 1
                 except Exception as e:
                     logger.error(f"scope_summary 생성 실패 scopeID={scope_id}: {e}")
+                    try:
+                        _save(es, scope_id, "")
+                    except Exception:
+                        pass
                     continue
 
             es.indices.refresh(index=INDEX_SCOPES)
             logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
+
+            if processed_in_batch == 0:
+                logger.warning("배치에서 처리된 건 없음, 루프 강제 탈출")
+                break
 
         es.close()
 

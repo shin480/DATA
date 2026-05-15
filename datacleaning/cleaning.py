@@ -5,6 +5,7 @@ from util.es import get_es, bulk
 from elasticsearch.helpers import scan
 from sqlalchemy import text
 from util.db import get_engine
+from util.logger import Logger, save_article_process_log
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
