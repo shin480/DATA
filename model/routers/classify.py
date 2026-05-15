@@ -257,6 +257,43 @@ def reprocess_article(article_id: str, body: ReprocessRequest):
     )
 
 
+# ── 단건 비활성화 ──────────────────────────────────────
+
+@router.post("/article/{article_id}/disable", summary="아티클 비활성화 (파이프라인 제외)")
+def disable_article(article_id: str):
+    """
+    지정한 article_id에 is_disabled: true 를 설정합니다.
+    파이프라인(분류·감성·요약·키워드) 배치 처리 대상에서 제외됩니다.
+    원본 데이터는 삭제되지 않으며, is_disabled: false 로 재활성화 가능합니다.
+    """
+    try:
+        es  = get_es()
+        res = es.get(index=INDEX_NEWS, id=article_id, ignore=[404])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not res.get("found"):
+        es.close()
+        raise HTTPException(status_code=404, detail=f"article_id '{article_id}' 를 찾을 수 없습니다.")
+
+    try:
+        es.update(
+            index=INDEX_NEWS,
+            id=article_id,
+            body={"doc": {
+                "is_disabled": True,
+                "disabled_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"비활성화 처리 실패: {e}")
+    finally:
+        es.close()
+
+    logger.info(f"[비활성화] article_id={article_id}")
+    return {"article_id": article_id, "is_disabled": True}
+
+
 # ── 내부 헬퍼 ──────────────────────────────────────────
 
 def _to_article_out(article_id: str, src: dict) -> ArticleOut:
