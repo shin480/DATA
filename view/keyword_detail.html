@@ -7,6 +7,16 @@
 <title>키워드 상세보기 | DATA 다타</title>
 <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
+<script>
+(function () {
+  const savedTheme = localStorage.getItem("theme_mode");
+
+  if (savedTheme === "light") {
+    document.documentElement.classList.add("light-mode");
+  }
+})();
+</script>
+
 <style>
 
 
@@ -1816,13 +1826,17 @@ body.light-mode .sentiment-guide {
    (포인트 민트색 유지)
 ============================== */
 
-body.light-mode {
+html.light-mode body {
   background: #edf2ee;
   color: #1f2937;
 }
 
-body.light-mode .page {
+html.light-mode body.page {
   background: #edf2ee;
+}
+
+html.light-mode body.light-mode {
+  all: unset;
 }
 
 /* ==============================
@@ -2305,8 +2319,8 @@ body.light-mode .article-tab.active {
 /* 라이트모드 */
 body.light-mode .random-keyword-btn {
   background: #FFFFFF;
-  color: #41bfe0;
-  border: 1px solid #41bfe0;
+  color: #34d6cc;
+  border: 1px solid #34D6CC;
 }
 
 body.light-mode .random-keyword-btn:hover {
@@ -2351,6 +2365,18 @@ body.light-mode .news-title-item:hover {
 
   .random-keyword-btn {
   margin-left: auto;
+}
+
+  html.light-mode .header,
+html.light-mode .page,
+html.light-mode .keyword-detail-page,
+html.light-mode .footer,
+html.light-mode .article-card,
+html.light-mode .keyword-card,
+html.light-mode .news-card,
+html.light-mode .main-search-wrap,
+html.light-mode .search-suggest-box {
+  transition: none !important;
 }
 
 </style>
@@ -2506,33 +2532,42 @@ function applyThemeMode() {
   const themeBtn = document.getElementById("themeToggleBtn");
 
   if (savedTheme === "light") {
+    document.documentElement.classList.add("light-mode");
     document.body.classList.add("light-mode");
-
-    if (themeBtn) {
-      themeBtn.innerText = "☀️";
-    }
   } else {
+    document.documentElement.classList.remove("light-mode");
     document.body.classList.remove("light-mode");
+  }
 
-    if (themeBtn) {
-      themeBtn.innerText = "🌙";
-    }
+  if (themeBtn) {
+    themeBtn.innerText =
+      savedTheme === "light" ? "☀️" : "🌙";
   }
 }
 
 function toggleThemeMode() {
-  const isLight = document.body.classList.contains("light-mode");
-  const themeBtn = document.getElementById("themeToggleBtn");
+  const isLight =
+    document.documentElement.classList.contains("light-mode");
+
+  const themeBtn =
+    document.getElementById("themeToggleBtn");
 
   if (isLight) {
+
+    document.documentElement.classList.remove("light-mode");
     document.body.classList.remove("light-mode");
+
     localStorage.setItem("theme_mode", "dark");
 
     if (themeBtn) {
       themeBtn.innerText = "🌙";
     }
+
   } else {
+
+    document.documentElement.classList.add("light-mode");
     document.body.classList.add("light-mode");
+
     localStorage.setItem("theme_mode", "light");
 
     if (themeBtn) {
@@ -3441,9 +3476,7 @@ function renderAIArticles() {
   const visibleAnalysis = analysis.slice(0, visibleArticleCount);
 
   list.innerHTML = visibleAnalysis.map(item => `
-    <article class="article-card ai-card"
-    type="button"
-    onclick="location.href='/view/scope_detail.html?scopeID=${encodeURIComponent(item.scopeID || "")}'">
+    <article class="article-card ai-card">
       <div>
         <div class="article-source">
           [ AI분석 ] ${item.news_count || 0}건
