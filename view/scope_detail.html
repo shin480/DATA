@@ -48,6 +48,28 @@ body {
   flex-direction: column;
 }
 
+.back-btn {
+  display: inline-block;
+  margin-bottom: 26px;
+  color: #3b82a0;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  color: #00e5ff;
+}
+
+body.light-mode .back-btn {
+  color: #64748b !important;
+}
+
+body.light-mode .back-btn:hover,
+body.light-mode .article-category {
+  color: #06b6d4 !important;
+}
+
 /* ==============================
    Header
    main.html 기준 그대로
@@ -1409,6 +1431,12 @@ body.light-mode .random-scope-btn:hover {
   <div id="header"></div>
 
   <div class="wrap">
+
+      <main class="scope-detail-page">
+    <div>
+      <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
+
+
     <div class="breadcrumb">AI 뉴스 분석 &gt; <span id="breadcrumbTitle"></span></div>
 
     <div class="scope-top-bar">
