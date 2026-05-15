@@ -102,32 +102,31 @@ select {
 }
 
 .logo-wrap {
-  margin: 0 20px 26px;
-  padding: 0 14px;
-  height: 76px;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 45%),
-    rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(56, 189, 248, 0.22);
+  margin: 0 24px 30px;
+  padding: 0;
+  height: auto;
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+
   cursor: pointer;
-  transition: 0.2s ease;
 
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .logo-wrap:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.2);
+  transform: none;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .admin-side-logo {
   display: block;
-  width: 158px;
-  max-width: 100%;
+  width: 170px;
   height: auto;
   object-fit: contain;
 }
