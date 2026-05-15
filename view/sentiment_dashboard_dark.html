@@ -949,7 +949,7 @@
         원본 데이터는 삭제되지 않으며 재활성화가 가능합니다.
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" id="disable-modal-footer">
       <button class="btn" onclick="closeDisableModal()">취소</button>
       <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
     </div>
@@ -1998,7 +1998,11 @@ function openDisableModal() {
   if (rpCurrentArticle.is_disabled) { toast('이미 삭제된 아티클입니다.'); return; }
   text('disable-article-id', rpCurrentArticle.article_id || '—');
   text('disable-article-title', rpCurrentArticle.title || '—');
-  $('disable-submit-btn').disabled = false;
+  $('disable-submit-btn') && ($('disable-submit-btn').disabled = false);
+  html('disable-modal-footer', `
+    <button class="btn" onclick="closeDisableModal()">취소</button>
+    <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
+  `);
   $('disable-modal').classList.add('open');
 }
 
@@ -2021,7 +2025,8 @@ async function submitDisable() {
     const disableBtn = $('rp-disable-btn');
     disableBtn.disabled = true;
     disableBtn.textContent = '삭제됨';
-    closeDisableModal();
+    // 모달 푸터를 닫기 버튼만 남기도록 교체
+    html('disable-modal-footer', '<button class="btn btn-primary" onclick="closeDisableModal()">닫기</button>');
     toast('삭제 처리되었습니다.');
   } catch(e) {
     toast('오류: ' + e.message);
