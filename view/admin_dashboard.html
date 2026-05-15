@@ -34,6 +34,42 @@ select {
   font-family: inherit;
 }
 
+.search-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 8px 18px rgba(56, 189, 248, 0.16);
+
+  transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+  background: linear-gradient(135deg, #7dd3fc, #3b82f6);
+}
+
+.search-icon {
+  width: 16px;
+  height: 16px;
+
+  fill: none;
+  stroke: #06101f;
+
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  transition: transform 0.2s ease;
+}
+
 
 /* ==============================
    Layout
@@ -967,9 +1003,12 @@ td[title] {
 <input id="summaryStart" type="date"/>
 <span>~</span>
 <input id="summaryEnd" type="date"/>
-<button class="action-btn" onclick="searchSummary()" type="button">
-            조회
-          </button>
+<button class="search-btn" onclick="searchUsers()" type="button" aria-label="검색">
+  <svg viewBox="0 0 24 24" class="search-icon">
+    <circle cx="11" cy="11" r="7"></circle>
+    <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
+  </svg>
+</button>
 <button id="manualCollectBtn" class="outline-btn" onclick="runManualCollect()" type="button">
             수동 수집 실행
           </button>
@@ -1041,9 +1080,12 @@ td[title] {
 <input id="analysisStart" type="date"/>
 <span>~</span>
 <input id="analysisEnd" type="date"/>
-<button class="action-btn" onclick="searchAnalysis()" type="button">
-            조회
-          </button>
+<button class="search-btn" onclick="searchUsers()" type="button" aria-label="검색">
+  <svg viewBox="0 0 24 24" class="search-icon">
+    <circle cx="11" cy="11" r="7"></circle>
+    <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
+  </svg>
+</button>
 </div>
 <div class="table-box">
 <table class="analysis-table">
