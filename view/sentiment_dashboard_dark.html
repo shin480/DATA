@@ -944,9 +944,12 @@
         <div class="modal-label">제목</div>
         <div id="disable-article-title" style="font-size:13px;color:var(--text2);line-height:1.5;"></div>
       </div>
-      <div style="background:var(--red-bg);border:1px solid rgba(239,68,68,.25);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--red);line-height:1.6;">
-        이 아티클을 비활성화(<code style="font-size:11px;background:rgba(239,68,68,.15);padding:1px 5px;border-radius:3px;">is_disabled: true</code>)하면 파이프라인 재처리·감성 분류 대상에서 제외됩니다.<br>
-        원본 데이터는 삭제되지 않으며 재활성화가 가능합니다.
+      <div id="disable-warning" style="background:var(--red-bg);border:1px solid rgba(239,68,68,.25);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--red);line-height:1.6;">
+        삭제하면 파이프라인 재처리·감성 분류 대상에서 제외됩니다.<br>
+        원본 데이터는 유지되며 재처리 탭에서 언제든 재조회할 수 있습니다.
+      </div>
+      <div id="disable-result" style="display:none;background:var(--green-bg);border:1px solid rgba(34,197,94,.25);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--green);line-height:1.6;">
+        ✓ 삭제 처리가 완료되었습니다.
       </div>
     </div>
     <div class="modal-footer" id="disable-modal-footer">
@@ -1998,7 +2001,8 @@ function openDisableModal() {
   if (rpCurrentArticle.is_disabled) { toast('이미 삭제된 아티클입니다.'); return; }
   text('disable-article-id', rpCurrentArticle.article_id || '—');
   text('disable-article-title', rpCurrentArticle.title || '—');
-  $('disable-submit-btn') && ($('disable-submit-btn').disabled = false);
+  show('disable-warning');
+  hide('disable-result');
   html('disable-modal-footer', `
     <button class="btn" onclick="closeDisableModal()">취소</button>
     <button class="btn btn-danger" id="disable-submit-btn" onclick="submitDisable()" style="font-weight:600;">삭제 확인</button>
@@ -2025,13 +2029,14 @@ async function submitDisable() {
     const disableBtn = $('rp-disable-btn');
     disableBtn.disabled = true;
     disableBtn.textContent = '삭제됨';
-    // 모달 푸터를 닫기 버튼만 남기도록 교체
+    // 모달: 경고 → 완료 메시지, 푸터 → 닫기만
+    hide('disable-warning');
+    show('disable-result');
     html('disable-modal-footer', '<button class="btn btn-primary" onclick="closeDisableModal()">닫기</button>');
-    toast('삭제 처리되었습니다.');
   } catch(e) {
     toast('오류: ' + e.message);
     btn.disabled = false;
-    btn.textContent = '비활성화 확인';
+    btn.textContent = '삭제 확인';
   }
 }
 
