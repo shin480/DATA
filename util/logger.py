@@ -310,3 +310,70 @@ def update_batch_job(job_id: int):
 
     finally:
         db.close()
+
+# 기사 처리 로그
+def save_article_process_log(code_id: str, article_id: str = None, status: str = "success"):
+    """
+    article_process_logs 기록
+    - 가장 최근 batch_jobs.job_id 자동 조회
+    """
+
+    conn = None
+
+    try:
+        conn = get_engine()
+        # 1. 가장 최근 job_id 조회
+        job_sql = text("""
+            SELECT job_id
+            FROM batch_jobs
+            ORDER BY job_id DESC
+            LIMIT 1
+        """)
+
+        latest_job = conn.execute(job_sql).fetchone()
+
+        if not latest_job:
+            logger.error("🚨 batch_jobs에 job_id 없음")
+            return
+
+        job_id = latest_job.job_id
+
+        # 2. 로그 저장
+        log_sql = text("""
+            INSERT INTO article_process_logs (
+                job_id,
+                code_id,
+                article_id,
+                status,
+                occurred_at
+            )
+            VALUES (
+                :job_id,
+                :code_id,
+                :article_id,
+                :status,
+                NOW()
+            )
+        """)
+
+        conn.execute(
+            log_sql,
+            {
+                "job_id": job_id,
+                "code_id": code_id,
+                "article_id": article_id,
+                "status": status
+            }
+        )
+
+        conn.commit()
+
+    except Exception as e:
+        logger.error(
+            f"🚨 ARTICLE PROCESS LOG 저장 실패 | "
+            f"code_id={code_id}, article_id={article_id}, status={status} | error={e}"
+        )
+        conn.rollback()
+
+    finally:
+        conn.close()
