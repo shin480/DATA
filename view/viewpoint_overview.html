@@ -14,16 +14,6 @@
   crossorigin
 >
 
-<script>
-(function () {
-  const savedTheme = localStorage.getItem("theme_mode");
-
-  if (savedTheme === "light") {
-    document.write('<style>body{background:#edf2ee;color:#1f2937;}</style>');
-  }
-})();
-</script>
-
 <style>
 /* =========================================================
    0. 기본 설정
@@ -492,7 +482,6 @@ body.light-mode .article-category {
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: none !important;
 }
 
 .info-icon {
@@ -930,6 +919,7 @@ body.light-mode .article-category {
 body,
 .header,
 .hero-panel,
+.info-panel,
 .group-section,
 .view-card,
 .summary-card,
@@ -1544,13 +1534,13 @@ function applyThemeMode() {
   const themeBtn = document.getElementById("themeToggleBtn");
 
   if (savedTheme === "light") {
-    document.documentElement.classList.add("light-mode");
+    document.body.classList.add("light-mode");
 
     if (themeBtn) {
       themeBtn.innerText = "☀️";
     }
   } else {
-    document.documentElement.classList.remove("light-mode");
+    document.body.classList.remove("light-mode");
 
     if (themeBtn) {
       themeBtn.innerText = "🌙";
@@ -1559,18 +1549,18 @@ function applyThemeMode() {
 }
 
 function toggleThemeMode() {
-  const isLight = document.documentElement.classList.contains("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
   const themeBtn = document.getElementById("themeToggleBtn");
 
   if (isLight) {
-    document.documentElement.classList.remove("light-mode");
+    document.body.classList.remove("light-mode");
     localStorage.setItem("theme_mode", "dark");
 
     if (themeBtn) {
       themeBtn.innerText = "🌙";
     }
   } else {
-    document.documentElement.classList.add("light-mode");
+    document.body.classList.add("light-mode");
     localStorage.setItem("theme_mode", "light");
 
     if (themeBtn) {
