@@ -1144,7 +1144,10 @@ if (totalArticleCount >= 1000) {
 
   const html = newArticles.map(function (item) {
     return `
-      <article class="article-card">
+      <article class="article-card"
+          type="button"
+          onclick="openArticleDetail('${item.article_id}')"
+        >
         <div>
           <div class="article-source">
             ${item.source || item.press || ""}
