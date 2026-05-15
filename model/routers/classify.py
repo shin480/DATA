@@ -12,11 +12,11 @@ from model.database import get_es
 from model.services.classifier import run_classification_pipeline
 from model.services.scope_title import run_scope_title_batch, enqueue_missing_scope_titles
 from model.services.scope_summarizer import run_scope_summary_batch
+from model.services.scope_sentiment import run_scope_sentiment_batch
 from model.services.sentiment import run_sentiment_pipeline, classify_single_article
 from model.services.summarizer import run_summary_pipeline, summarize_single_article
 from model.services.keyword_extractor import run_keyword_pipeline, extract_keywords_single
 from model.services.scope_keywords import run_scope_keywords_batch
-from model.services.scope_sentiment import run_scope_sentiment_batch
 from model.services.embedding_generator import run_embedding_pipeline
 
 logger = logging.getLogger(__name__)
