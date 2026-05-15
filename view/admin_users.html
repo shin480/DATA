@@ -34,6 +34,39 @@ select {
   font-family: inherit;
 }
 
+.search-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s ease;
+}
+
+.search-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.search-icon {
+  width: 16px;
+  height: 16px;
+
+  fill: none;
+  stroke: #06101f;
+
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  display: block;
+}
+
 
 /* ==============================
    Layout
@@ -782,7 +815,12 @@ td select {
     <option value="관리자">관리자</option>
     <option value="최고관리자">최고관리자</option>
   </select>
-  <button class="search-btn" onclick="searchUsers()" type="button">⌕</button>
+  <button class="search-btn" onclick="searchUsers()" type="button" aria-label="검색">
+  <svg viewBox="0 0 24 24" class="search-icon">
+    <circle cx="10.5" cy="10.5" r="6.5"></circle>
+    <path d="M15.5 15.5L20 20"></path>
+  </svg>
+</button>
 </div>
 <div class="table-box">
 <table>
@@ -878,7 +916,12 @@ td select {
     <option value="USER_STATUS_UPDATE">회원 상태 변경</option>
   </select>
   <input id="logDate" type="date"/>
-  <button class="search-btn" onclick="searchLogs()" type="button">⌕</button>
+  <button class="search-btn" onclick="searchUsers()" type="button" aria-label="검색">
+  <svg viewBox="0 0 24 24" class="search-icon">
+    <circle cx="10.5" cy="10.5" r="6.5"></circle>
+    <path d="M15.5 15.5L20 20"></path>
+  </svg>
+</button>
 </div>
 <div class="table-box large">
 <table>
