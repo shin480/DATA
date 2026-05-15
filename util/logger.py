@@ -1,7 +1,10 @@
 import logging
 from sqlalchemy import text
 from util.db import get_engine  # 기존에 사용하시던 DB 연결 함수
+from util.es import get_es, NEWS_ECONOMY_INDEX
+
 from fastapi import Request
+from datetime import datetime
 
 class Logger:
     logging.basicConfig(
@@ -144,3 +147,166 @@ def log_admin_activity(admin_id: str,action_code: str,action_detail: str = ""):
         if conn:
             conn.close()
 
+def get_fail_count_from_es(start_at, end_at):
+    es = get_es()
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {
+                        "range": {
+                            "collected_at": {
+                                "gte": start_at.isoformat(),
+                                "lte": end_at.isoformat()
+                            }
+                        }
+                    }
+                ],
+                "should": [
+                    {"bool": {"must_not": {"exists": {"field": "sentiment"}}}},
+                    {"bool": {"must_not": {"exists": {"field": "sentiment_score"}}}},
+                    {"bool": {"must_not": {"exists": {"field": "keywords"}}}},
+                    {"bool": {"must_not": {"exists": {"field": "scopeID"}}}},
+                    {"bool": {"must_not": {"exists": {"field": "summary"}}}},
+
+                    # perspective nested 값이 없거나 불완전한 경우
+                    {
+                        "bool": {
+                            "must_not": {
+                                "nested": {
+                                    "path": "perspective",
+                                    "query": {
+                                        "bool": {
+                                            "must": [
+                                                {"exists": {"field": "perspective.category"}},
+                                                {"exists": {"field": "perspective.rank"}},
+                                                {"exists": {"field": "perspective.score"}}
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "minimum_should_match": 1
+            }
+        }
+    }
+
+    result = es.count(
+        index="news_economy",
+        body=query
+    )
+
+    return result.get("count", 0)
+
+def create_batch_job(code_id: str):
+    """
+    배치 시작 기록 생성
+    - start_at만 먼저 저장
+    - job_id 반환
+    """
+
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        query = text("""
+            INSERT INTO batch_jobs (
+                code_id,
+                start_at,
+                total_count,
+                fail_count
+            )
+            VALUES (
+                :code_id,
+                :start_at,
+                0,
+                0
+            )
+        """)
+
+        result = conn.execute(
+            query,
+            {
+                "code_id": code_id,
+                "start_at": datetime.now()
+            }
+        )
+
+        conn.commit()
+
+        return result.lastrowid
+
+    except Exception as e:
+        logger.error(f"🚨 BATCH JOB 생성 실패: {e}")
+        return None
+
+    finally:
+        if conn:
+            conn.close()
+
+def update_batch_job(job_id: int):
+    db = get_engine()
+
+    try:
+        # 1. 배치 시작 시간 조회
+        batch_sql = text("""
+            SELECT start_at
+            FROM batch_jobs
+            WHERE job_id = :job_id
+        """)
+
+        batch = db.execute(batch_sql, {"job_id": job_id}).fetchone()
+
+        if not batch:
+            logger.error(f"🚨 batch_jobs에 job_id={job_id} 없음")
+            return
+
+        start_at = batch.start_at
+        end_at = datetime.now()
+
+        # 2. total_count 계산
+        total_sql = text("""
+            SELECT COUNT(DISTINCT article_id)
+            FROM article_meta
+            WHERE created_at BETWEEN :start_at AND :end_at
+        """)
+
+        total_count = db.execute(
+            total_sql,
+            {
+                "start_at": start_at,
+                "end_at": end_at
+            }
+        ).scalar() or 0
+
+        # 3. ES에서 fail_count 계산
+        fail_count = get_fail_count_from_es(start_at, end_at)
+
+        # 4. batch_jobs 업데이트
+        update_sql = text("""
+            UPDATE batch_jobs
+            SET
+                end_at = :end_at,
+                total_count = :total_count,
+                fail_count = :fail_count
+            WHERE job_id = :job_id
+        """)
+
+        db.execute(
+            update_sql,
+            {
+                "job_id": job_id,
+                "end_at": end_at,
+                "total_count": total_count,
+                "fail_count": fail_count
+            }
+        )
+
+        db.commit()
+
+    finally:
+        db.close()

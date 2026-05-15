@@ -1,12 +1,11 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import asyncio
 
 from util.es import get_es, NEWS_ECONOMY_INDEX
-from util.logger import log_admin_activity
+from util.logger import log_admin_activity, create_batch_job, update_batch_job
 
 from starlette.requests import Request
 from collections import Counter
-from datetime import date
+from datetime import date, datetime
 
 from crawling.crawler import run_crawling_job
 from datacleaning.cleaning import get_preprocessed_data
@@ -496,6 +495,7 @@ async def run_full_pipeline(req: Request):
     try:
         today = date.today().strftime("%Y-%m-%d")
         print(f"[FULL_PIPELINE] 시작 | target_date={today}")
+        job_id = create_batch_job("BM201")
 
         print("[FULL_PIPELINE] 1/6 크롤링 시작")
         await run_crawling_job(mode="manual")
@@ -526,6 +526,7 @@ async def run_full_pipeline(req: Request):
         top_issue_result = save_daily_top_issue_report(today, today)
         print(f"[FULL_PIPELINE] 6/6 TOP 이슈 리포트 완료 | result={top_issue_result}")
         results["daily_top_issue"] = "success"
+        update_batch_job(job_id)
 
         print("[FULL_PIPELINE] 전체 완료")
 
