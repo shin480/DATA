@@ -28,3 +28,4 @@ itsdangerous
 kiwipiepy
 
 bcrypt==3.2.2
+passlib
