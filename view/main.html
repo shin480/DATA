@@ -801,6 +801,21 @@ body.light-mode .opinion-text:hover {
   min-height: 320px;
 }
 
+.news-card:hover {
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.news-item-card:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
+}
+
+.view-card:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
+}
+
 .news-card-top {
   display: flex;
   justify-content: space-between;
@@ -2024,52 +2039,54 @@ body.light-mode .view-bar-bg {
           언론사별로 어떤 톤과 시각을 사용하는지 비교합니다.
         </div>
       </div>
+<div class="sentiment-grid">
 
-      <div class="sentiment-grid">
+  <!-- 긍정 -->
+  <div class="news-card" data-article-id="${article.id}">
+    <div class="news-card-top">
+      <span class="media-name"></span>
+      <span class="s-badge pos">긍정</span>
+    </div>
 
-        <div class="news-card">
-          <div class="news-card-top">
-            <span class="media-name"></span>
-            <span class="s-badge pos">긍정</span>
-          </div>
+    <h3></h3>
+    <p></p>
 
-          <h3></h3>
-          <p></p>
+    <button class="action-btn" type="button">
+      상세 보기
+    </button>
+  </div>
 
-          <button class="action-btn" type="button">
-            상세 보기
-          </button>
-        </div>
+  <!-- 부정 -->
+  <div class="news-card" data-article-id="${article.id}">
+    <div class="news-card-top">
+      <span class="media-name"></span>
+      <span class="s-badge neg">부정</span>
+    </div>
 
-        <div class="news-card">
-          <div class="news-card-top">
-            <span class="media-name"></span>
-            <span class="s-badge neg">부정</span>
-          </div>
+    <h3></h3>
+    <p></p>
 
-          <h3></h3>
-          <p></p>
+    <button class="action-btn" type="button">
+      상세 보기
+    </button>
+  </div>
 
-          <button class="action-btn" type="button">
-            상세 보기
-          </button>
-        </div>
+  <!-- 중립 -->
+  <div class="news-card" data-article-id="${article.id}">
+    <div class="news-card-top">
+      <span class="media-name"></span>
+      <span class="s-badge neu">중립</span>
+    </div>
 
-        <div class="news-card">
-          <div class="news-card-top">
-            <span class="media-name"></span>
-            <span class="s-badge neu">중립</span>
-          </div>
+    <h3></h3>
+    <p></p>
 
-          <h3></h3>
-          <p></p>
+    <button class="action-btn" type="button">
+      상세 보기
+    </button>
+  </div>
 
-          <button class="action-btn" type="button">
-            상세 보기
-          </button>
-        </div>
-
-      </div>
+</div>
     </section>
 
 
@@ -2311,47 +2328,101 @@ function loadFooter() {
     });
 }
 
+/* =======================
+ 5. 망했다 희희
+ ======================= */
 
-/* =========================================================
-   5. 전역 클릭 이벤트
-========================================================= */
 function bindGlobalClickEvents() {
   document.addEventListener("click", function (e) {
-    const loginBtn = e.target.closest("#loginBtn");
-    const joinBtn = e.target.closest("#joinBtn");
-    const primaryUserBtn = e.target.closest("#primaryUserBtn");
-    const logoutBtn = e.target.closest("#logoutBtn");
-    const themeToggleBtn = e.target.closest("#themeToggleBtn");
-    const loginRequiredLink = e.target.closest("[data-login-page]");
+    const el = e.target;
 
-    const heroTag = e.target.closest(".h-tag");
-    const chip = e.target.closest(".chip");
-    const topKeywordTitle = e.target.closest(".top-keyword-title");
-    const actionBtn = e.target.closest(".action-btn");
-    const newsFooterBtn = e.target.closest(".news-footer-btn");
-    const detailBtn = e.target.closest(".detail-btn");
-    const opinionTextClick = e.target.closest(".opinion-text");
+    const actionBtn = el.closest(".action-btn");
+    const newscard = el.closest(".news-card");
 
-    if (opinionTextClick) {
+    // =========================
+    // 1. ACTION BUTTON (기존 유지 + fallback 포함)
+    // =========================
+    if (actionBtn) {
       e.preventDefault();
 
-      const scopeId = opinionTextClick.dataset.scopeId;
+      const card = actionBtn.closest(".news-card");
 
-      if (!scopeId) return;
+      const articleId =
+        actionBtn.dataset.articleId ||
+        actionBtn.getAttribute("data-article-id") ||
+        card?.dataset.articleId ||
+        card?.getAttribute("data-article-id");
+
+      if (!articleId) return;
 
       goLoginRequiredPage(
-        `/view/scope_detail.html?scopeID=${encodeURIComponent(scopeId)}`
+        `/view/article_detail.html?article_id=${articleId}`
       );
 
       return;
     }
 
+    // =========================
+    // 2. NEWS CARD 클릭
+    // =========================
+    if (newscard && !el.closest(".action-btn")) {
+      e.preventDefault();
+
+      const articleId =
+        newscard.dataset.articleId ||
+        newscard.getAttribute("data-article-id") ||
+        newscard.querySelector(".action-btn")?.dataset.articleId ||
+        newscard.querySelector(".action-btn")?.getAttribute("data-article-id");
+
+      if (!articleId) return;
+
+      goLoginRequiredPage(
+        `/view/article_detail.html?article_id=${articleId}`
+      );
+
+      return;
+    }
+
+    // =========================
+    // 이하 기존 로직 그대로 유지
+    // =========================
+
+    const loginBtn = el.closest("#loginBtn");
+    const joinBtn = el.closest("#joinBtn");
+    const primaryUserBtn = el.closest("#primaryUserBtn");
+    const logoutBtn = el.closest("#logoutBtn");
+    const themeToggleBtn = el.closest("#themeToggleBtn");
+    const loginRequiredLink = el.closest("[data-login-page]");
+
+    const heroTag = el.closest(".h-tag");
+    const chip = el.closest(".chip");
+    const topKeywordTitle = el.closest(".top-keyword-title");
+
+    const newsFooterBtn = el.closest(".news-footer-btn");
+    const detailBtn = el.closest(".detail-btn");
+    const opinionTextClick = el.closest(".opinion-text");
+
+    // opinion
+    if (opinionTextClick) {
+      e.preventDefault();
+
+      const scopeId = opinionTextClick.dataset.scopeId;
+      if (!scopeId) return;
+
+      goLoginRequiredPage(
+        `/view/scope_detail.html?scopeID=${encodeURIComponent(scopeId)}`
+      );
+      return;
+    }
+
+    // theme
     if (themeToggleBtn) {
       e.preventDefault();
       toggleThemeMode();
       return;
     }
 
+    // auth
     if (loginBtn) {
       e.preventDefault();
       location.href = "/view/login.html";
@@ -2391,6 +2462,7 @@ function bindGlobalClickEvents() {
       return;
     }
 
+    // keywords
     if (heroTag) {
       e.preventDefault();
 
@@ -2399,7 +2471,6 @@ function bindGlobalClickEvents() {
       goLoginRequiredPage(
         `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
       );
-
       return;
     }
 
@@ -2411,7 +2482,6 @@ function bindGlobalClickEvents() {
       goLoginRequiredPage(
         `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
       );
-
       return;
     }
 
@@ -2419,48 +2489,45 @@ function bindGlobalClickEvents() {
       e.preventDefault();
 
       const keyword = topKeywordTitle.innerText.trim();
-
       if (!keyword) return;
 
       goLoginRequiredPage(
         `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
       );
-
       return;
     }
 
-    if (actionBtn) {
-      e.preventDefault();
+    const hotNewsCard = el.closest(".news-item-card");
 
-      const articleId = actionBtn.getAttribute("data-article-id");
+if (hotNewsCard) {
+  e.preventDefault();
 
-      if (articleId) {
-        goLoginRequiredPage(
-          `/view/article_detail.html?article_id=${articleId}`
-        );
-      } else {
-        goLoginRequiredPage("/view/article_detail.html");
-      }
+  const articleId = hotNewsCard.dataset.articleId;
 
-      return;
-    }
+  if (!articleId) return;
 
+  goLoginRequiredPage(
+    `/view/article_detail.html?article_id=${articleId}`
+  );
+
+  return;
+}
+
+    // footer
     if (newsFooterBtn) {
       e.preventDefault();
 
       const articleId = newsFooterBtn.dataset.articleId;
+      if (!articleId) return;
 
-      if (articleId) {
-        goLoginRequiredPage(
-          `/view/article_detail.html?article_id=${articleId}`
-        );
-      } else {
-        goLoginRequiredPage("/view/article_detail.html");
-      }
+      goLoginRequiredPage(
+        `/view/article_detail.html?article_id=${articleId}`
+      );
 
       return;
     }
 
+    // detail
     if (detailBtn) {
       e.preventDefault();
 
@@ -2483,11 +2550,10 @@ function bindGlobalClickEvents() {
       return;
     }
 
+    // login required link
     if (loginRequiredLink) {
       e.preventDefault();
-
-      const targetUrl = loginRequiredLink.dataset.loginPage;
-      goLoginRequiredPage(targetUrl);
+      goLoginRequiredPage(loginRequiredLink.dataset.loginPage);
       return;
     }
   });
@@ -2988,6 +3054,7 @@ async function loadSentimentCompare(keyword) {
 
       if (button) {
         button.setAttribute("data-article-id", item.article_id || "");
+        card.setAttribute("data-article-id", item.article_id || "");
       }
     });
 
@@ -3015,7 +3082,8 @@ async function loadHotNews() {
       const isLike = likeCount > hateCount;
 
       return `
-        <div class="news-item-card">
+        <div class="news-item-card" data-article-id="${item.article_id}">
+
 
           <div class="news-badge ${
             isTie
@@ -3271,7 +3339,9 @@ function renderViewGrid(data) {
       const percentText = item.percent_label || (percent + "%");
 
       htmlContent += `
-        <div class="view-card">
+<div class="view-card"
+  data-title="${item.detailTitle || item.title}"
+  data-percent="${percent}">
 
           <div class="view-top">
             <div class="view-icon-box c-${item.color}">
@@ -3434,6 +3504,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadHotNews();
   loadDominantOpinion();
 });
+
+document.addEventListener("click", function (e) {
+  const card = e.target.closest(".view-card");
+  if (!card) return;
+
+  // 버튼 클릭이면 카드 이벤트 막기
+  if (e.target.closest(".detail-btn")) return;
+
+  const btn = card.querySelector(".detail-btn");
+  if (!btn) return;
+
+  btn.click();
+});
+
 </script>
 </body>
 </html>
