@@ -14,6 +14,7 @@
 - Gemini 트리밍 제거: 규칙 기반 자연 절단으로 대체 (API 한도 절약)
 - 캡션 제거: [출처명] 패턴 전처리 추가
 - [2026-05] summarize_single_article 추가: 단건 재처리용 래퍼
+- [2026-05] 예외 시 summary 폴백 저장: es.update 실패 아티클이 배치마다 재조회되는 무한루프 방지
 """
 
 import logging
@@ -192,6 +193,14 @@ def run_summary_pipeline():
                     total_processed += 1
                 except Exception as e:
                     logger.error(f"요약 실패 article_id={article_id}: {e}")
+                    try:
+                        es.update(
+                            index=INDEX_NEWS,
+                            id=article_id,
+                            body={"doc": {"summary": ""}},
+                        )
+                    except Exception:
+                        pass
                     continue
 
             es.indices.refresh(index=INDEX_NEWS)

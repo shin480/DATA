@@ -15,6 +15,7 @@ KR-FinBert-SC 감성 분류 서비스
 - neutral 처리: gap 기반 후처리 유지 (NEUTRAL_GAP_THRESHOLD 기본값 0.2)
 - 토크나이저: ElectraTokenizer → BertTokenizer 변경
 - [2026-05] classify_single_article 추가: 단건 재처리용 래퍼
+- [2026-05] 예외 시 sentiment 폴백 저장: 추론 실패 아티클이 배치마다 재조회되는 무한루프 방지
 """
 
 import logging
@@ -226,6 +227,17 @@ def run_sentiment_pipeline():
                     total_processed += 1
                 except Exception as e:
                     logger.error(f"감성 분류 실패 article_id={article_id}: {e}")
+                    try:
+                        es.update(
+                            index=INDEX_NEWS,
+                            id=article_id,
+                            body={"doc": {
+                                "sentiment":       "neutral",
+                                "sentiment_score": 0.0,
+                            }},
+                        )
+                    except Exception:
+                        pass
                     continue
 
             es.indices.refresh(index=INDEX_NEWS)

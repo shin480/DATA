@@ -164,10 +164,39 @@ def _fetch_correction_data(conn) -> tuple[list[str], list[int], list[int]]:
 
 
 def _get_current_model_path() -> str:
+    """
+    가장 최근 파인튜닝 체크포인트를 반환.
+    필수 파일(config.json, model 가중치)이 없거나 용량이 비정상이면
+    BASE_MODEL_NAME으로 폴백 — 불완전 저장된 디렉토리로 인한
+    'header too small' 오류 방지.
+    """
     if not MODEL_SAVE_DIR.exists():
         return BASE_MODEL_NAME
-    subdirs = sorted(MODEL_SAVE_DIR.glob("krfinbert-finetuned-*"), reverse=True)
-    return str(subdirs[0]) if subdirs else BASE_MODEL_NAME
+
+    # 필수 파일: config.json + 가중치 파일(safetensors 우선, 없으면 bin)
+    REQUIRED_CONFIG   = "config.json"
+    WEIGHT_CANDIDATES = ["model.safetensors", "pytorch_model.bin"]
+    MIN_WEIGHT_BYTES  = 10 * 1024 * 1024  # 10 MB 미만이면 불완전 저장으로 판단
+
+    for subdir in sorted(MODEL_SAVE_DIR.glob("krfinbert-finetuned-*"), reverse=True):
+        config_ok  = (subdir / REQUIRED_CONFIG).exists()
+        weight_file = next(
+            (subdir / w for w in WEIGHT_CANDIDATES if (subdir / w).exists()), None
+        )
+        weight_ok  = weight_file is not None and weight_file.stat().st_size >= MIN_WEIGHT_BYTES
+
+        if config_ok and weight_ok:
+            logger.info(f"체크포인트 로드: {subdir}")
+            return str(subdir)
+        else:
+            logger.warning(
+                f"불완전 체크포인트 건너뜀: {subdir} "
+                f"(config={config_ok}, weight={weight_file}, "
+                f"size={weight_file.stat().st_size if weight_file else 0})"
+            )
+
+    logger.info("유효한 체크포인트 없음 → BASE_MODEL 사용")
+    return BASE_MODEL_NAME
 
 
 def run_finetune(trigger_type: str = "manual") -> dict:
@@ -192,7 +221,8 @@ def run_finetune(trigger_type: str = "manual") -> dict:
                 history_id = cur.lastrowid
 
         device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        tokenizer = BertTokenizer.from_pretrained(base_model)
+        # tokenizer는 항상 허깅페이스 원본에서 로드 (체크포인트 tokenizer 파일 불완전 대비)
+        tokenizer = BertTokenizer.from_pretrained(BASE_MODEL_NAME)
         model     = BertForSequenceClassification.from_pretrained(
             base_model, num_labels=3).to(device)
 
@@ -269,7 +299,7 @@ def run_finetune(trigger_type: str = "manual") -> dict:
 
 def _reload_sentiment_model(model_path: str, device: torch.device):
     import model.services.sentiment as svc
-    svc._tokenizer = BertTokenizer.from_pretrained(model_path)
+    svc._tokenizer = BertTokenizer.from_pretrained(BASE_MODEL_NAME)  # tokenizer는 원본 사용
     svc._model     = BertForSequenceClassification.from_pretrained(model_path).to(device)
     svc._model.eval()
     svc._device    = device

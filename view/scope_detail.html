@@ -72,7 +72,7 @@ body.light-mode .article-category {
 
 /* ==============================
    Header
-   main.html 기준 그대로
+   main.html 기준 통일
 ============================== */
 
 .header {
@@ -122,6 +122,7 @@ body.light-mode .article-category {
 }
 
 .nav a {
+  position: relative;
   text-decoration: none;
   color: inherit;
   transition: color 0.18s;
@@ -129,10 +130,6 @@ body.light-mode .article-category {
 
 .nav a:hover {
   color: #00e5ff;
-}
-
-.nav a {
-  position: relative;
 }
 
 .nav a.active {
@@ -169,7 +166,7 @@ body.light-mode .nav a.active::after {
 
 .main-search-wrap {
   position: relative;
-  width: 410px;
+  width: 370px;
   height: 40px;
   border-radius: 999px;
   background: #070b1a;
@@ -264,6 +261,20 @@ body.light-mode .nav a.active::after {
   color: #00e5ff;
 }
 
+.header-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
 /* ==============================
    Search Suggest Dropdown
 ============================== */
@@ -350,9 +361,11 @@ body.light-mode .nav a.active::after {
 
 #footer {
   width: 100vw;
+  margin-top: auto; /* 푸터를 페이지 최하단으로 밀기 */
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   overflow: visible;
+  flex-shrink: 0;
 }
 
 .footer {
@@ -474,12 +487,14 @@ body.light-mode .nav a.active::after {
    scope_detail 본문 CSS
 ============================== */
 
+.scope-detail-page {
+  flex: 1;
+}
+
 .wrap {
   width: 1040px;
   margin: 0 auto;
-  padding: 34px 0 100px;
-
-  flex: 1;
+  padding: 34px 0 80px;
 }
 
 .breadcrumb {
@@ -945,20 +960,20 @@ body.light-mode .nav {
 }
 
 body.light-mode .nav a:hover {
-  color: #00cfe8;
+  color: #4cb7d3;
 }
 
 body.light-mode .main-search-wrap {
   background: #f7faf7;
   border: 1px solid #d8e1d9;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 body.light-mode .main-search-wrap:focus-within {
   border-color: rgba(0, 207, 232, 0.45);
   box-shadow:
     0 0 0 4px rgba(0, 207, 232, 0.08),
-    inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 body.light-mode .search-box {
@@ -974,7 +989,7 @@ body.light-mode .search-icon-btn {
 }
 
 body.light-mode .search-icon-btn:hover {
-  color: #41BFE0;
+  color: #4cb7d3;
 }
 
 body.light-mode .theme-btn {
@@ -984,7 +999,7 @@ body.light-mode .theme-btn {
 }
 
 body.light-mode .theme-btn:hover {
-  border-color: #00cfe8;
+  border-color: #4cb7d3;
   background: #ffffff;
 }
 
@@ -995,20 +1010,24 @@ body.light-mode .header-btn.join {
 }
 
 body.light-mode .header-btn.join:hover {
-  border-color: #00cfe8;
-  color: #00cfe8;
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
 }
 
 body.light-mode .header-btn.login {
-  background: #00cfe8;
-  border-color: #00cfe8;
+  background: #00e5ff;
+  border-color: #00e5ff;
   color: #06262b;
-  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
 }
 
 body.light-mode .header-btn.login:hover {
   filter: brightness(1.04);
+}
+
+body.light-mode .header-user-name {
+  color: #55635c;
 }
 
 /* 자동완성 */
@@ -1459,10 +1478,8 @@ body.light-mode .random-scope-btn:hover {
 
   <div id="header"></div>
 
-  <div class="wrap">
-
-      <main class="scope-detail-page">
-    <div>
+  <main class="scope-detail-page">
+    <div class="wrap">
       <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
 
@@ -1543,7 +1560,8 @@ body.light-mode .random-scope-btn:hover {
       </div>
 
     </section>
-  </div>
+    </div>
+  </main>
 
   <div id="footer"></div>
 
@@ -1556,12 +1574,24 @@ document.addEventListener("DOMContentLoaded", function () {
   applyThemeMode();
   loadHeader();
   loadFooter();
+  moveFooterOutsideMain();
   bindGlobalClickEvents();
 
   fetchScopeData();
 
   window.addEventListener("scroll", handleColumnInfiniteScroll);
 });
+
+function moveFooterOutsideMain() {
+  const footer = document.getElementById("footer");
+  const page = document.querySelector(".page");
+
+  if (!footer || !page) return;
+
+  if (footer.parentElement !== page) {
+    page.appendChild(footer);
+  }
+}
 
 function applyThemeMode() {
   const savedTheme = localStorage.getItem("theme_mode");
@@ -1721,24 +1751,61 @@ function setHeaderLoginState() {
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
+  let headerUserName = document.getElementById("headerUserName");
+
+  // header.html이 구버전이어도 이름 영역 자동 생성
+  if (!headerUserName) {
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+    if (themeToggleBtn && themeToggleBtn.parentElement) {
+      headerUserName = document.createElement("span");
+      headerUserName.id = "headerUserName";
+      headerUserName.className = "header-user-name hidden";
+      themeToggleBtn.insertAdjacentElement("afterend", headerUserName);
+    }
+  }
+
+  if (
+    !loginBtn ||
+    !joinBtn ||
+    !primaryUserBtn ||
+    !logoutBtn ||
+    !headerUserName
+  ) {
+    return;
+  }
 
   const loginInfo = getLoginInfo();
   const token = loginInfo.token;
   const role = loginInfo.role;
+  const userName = loginInfo.userName;
 
   if (!token) {
     loginBtn.classList.remove("hidden");
     joinBtn.classList.remove("hidden");
+
     primaryUserBtn.classList.add("hidden");
     logoutBtn.classList.add("hidden");
+
+    headerUserName.textContent = "";
+    headerUserName.classList.add("hidden");
+
     return;
   }
 
   loginBtn.classList.add("hidden");
   joinBtn.classList.add("hidden");
+
   primaryUserBtn.classList.remove("hidden");
   logoutBtn.classList.remove("hidden");
+
+  if (userName) {
+    headerUserName.textContent = `${userName}님`;
+    headerUserName.classList.remove("hidden");
+  } else {
+    headerUserName.textContent = "";
+    headerUserName.classList.add("hidden");
+  }
 
   const isAdmin =
     role === "ADMIN" ||
@@ -1747,11 +1814,9 @@ function setHeaderLoginState() {
     role === "superadmin" ||
     token === "admin-test-token";
 
-  if (isAdmin) {
-    primaryUserBtn.innerText = "관리자 페이지";
-  } else {
-    primaryUserBtn.innerText = "마이페이지";
-  }
+  primaryUserBtn.innerText = isAdmin
+    ? "관리자 페이지"
+    : "마이페이지";
 }
 
 window.goLoginRequiredPage = function (targetUrl) {
@@ -2408,7 +2473,7 @@ function reloadRandomScope() {
   document.body.style.opacity = "0.72";
 
   setTimeout(function() {
-    location.href = "/view/scope_detail.html";
+    location.href = `/view/scope_detail.html?v=${Date.now()}`;
   }, 140);
 }
 </script>

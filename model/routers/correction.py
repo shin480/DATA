@@ -31,12 +31,15 @@ class CorrectionCreate(BaseModel):
 # ── 1. 정정 대상 뉴스 목록 ──────────────────────────────
 @router.get("/news")
 def list_news_for_correction(
-    mode:      str        = Query(default="low_confidence"),
-    query:     str | None = Query(default=None),
-    sentiment: str | None = Query(default=None),
-    threshold: float      = Query(default=0.55, ge=0.0, le=1.0),
-    page:      int        = Query(default=1,    ge=1),
-    page_size: int        = Query(default=20,   ge=1, le=100),
+    mode:            str        = Query(default="low_confidence"),
+    query:           str | None = Query(default=None),
+    sentiment:       str | None = Query(default=None),
+    threshold:       float      = Query(default=0.55, ge=0.0, le=1.0),
+    page:            int        = Query(default=1,    ge=1),
+    page_size:       int        = Query(default=20,   ge=1, le=100),
+    exclude_trained: bool       = Query(default=True, description="True면 correction_log에서 학습 완료된 newsID 제외"),
+    date_from:       str | None = Query(default=None, description="발행일 시작 (YYYY-MM-DD)"),
+    date_to:         str | None = Query(default=None, description="발행일 종료 (YYYY-MM-DD)"),
 ):
     if sentiment and sentiment not in VALID_SENTIMENTS:
         raise HTTPException(status_code=400, detail="유효하지 않은 sentiment 값")
@@ -56,7 +59,30 @@ def list_news_for_correction(
     if sentiment:
         must.append({"term": {"sentiment": sentiment}})
 
-    es_query = {"bool": {"must": must}}
+    # 발행일 범위 필터
+    if date_from or date_to:
+        date_range: dict = {}
+        if date_from:
+            date_range["gte"] = date_from
+        if date_to:
+            date_range["lte"] = date_to
+        must.append({"range": {"published_at": date_range}})
+
+    # 학습 완료 제외
+    if exclude_trained:
+        try:
+            with get_db() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT DISTINCT newsID FROM correction_log WHERE used_in_finetune = 1"
+                    )
+                    trained_ids = [r["newsID"] for r in cur.fetchall()]
+            if trained_ids:
+                must_not.append({"ids": {"values": trained_ids}})
+        except Exception as e:
+            logger.warning(f"학습 완료 ID 조회 실패 (무시하고 진행): {e}")
+
+    es_query = {"bool": {"must": must, "must_not": must_not}} if must_not else {"bool": {"must": must}}
     sort_asc  = (mode == "low_confidence")
 
     try:
@@ -76,7 +102,7 @@ def list_news_for_correction(
             },
         )
 
-        # correction_log에서 정정 이력 조회
+        # correction_log에서 정정 이력 조회 (최신 1건)
         article_ids = [h["_source"]["article_id"] for h in res["hits"]["hits"]]
         corrections = {}
         if article_ids:
@@ -353,16 +379,18 @@ def trigger_finetune(background_tasks: BackgroundTasks):
 # ── 8. 감성 정정 CSV 추출 ──────────────────────────────
 @router.get("/export")
 def export_corrections_csv(
-    sentiment:  str | None = Query(default=None,  description="positive | negative | neutral"),
-    mode:       str        = Query(default="all", description="all | low_confidence"),
-    threshold:  float      = Query(default=0.55,  ge=0.0, le=1.0),
-    exclude_trained: bool  = Query(default=True,  description="True면 이미 학습된 newsID 제외"),
+    sentiment:       str | None = Query(default=None,  description="positive | negative | neutral"),
+    mode:            str        = Query(default="all", description="all | low_confidence"),
+    threshold:       float      = Query(default=0.55,  ge=0.0, le=1.0),
+    exclude_trained: bool       = Query(default=True,  description="True면 이미 학습된 newsID 제외"),
+    date_from:       str | None = Query(default=None,  description="발행일 시작 (YYYY-MM-DD)"),
+    date_to:         str | None = Query(default=None,  description="발행일 종료 (YYYY-MM-DD)"),
 ):
     """
     현재 필터 조건에 해당하는 뉴스를 CSV로 추출합니다.
 
     - exclude_trained=True (기본): correction_log에서 used_in_finetune=1인 newsID를 제외합니다.
-      추출 → 일괄 업로드 → fine-tuning 사이클에서 중복 학습을 방지합니다.
+    - date_from / date_to: 발행일 범위 지정으로 추출 속도 향상
     - 건수 상한 없이 scroll API로 전체 추출합니다.
     - 형식: newsID, title, content, true_sentiment
     """
@@ -392,6 +420,13 @@ def export_corrections_csv(
             must.append({"term": {"sentiment": sentiment}})
         if mode == "low_confidence":
             must.append({"range": {"sentiment_score": {"lt": threshold}}})
+        if date_from or date_to:
+            date_range: dict = {}
+            if date_from:
+                date_range["gte"] = date_from
+            if date_to:
+                date_range["lte"] = date_to
+            must.append({"range": {"published_at": date_range}})
         if trained_ids:
             must_not.append({"ids": {"values": list(trained_ids)}})
 
@@ -444,10 +479,12 @@ def export_corrections_csv(
         es.close()
 
         output.seek(0)
-        from urllib.parse import quote
-        sent_label = sentiment or "all"
-        excl_label = "_untrained" if exclude_trained else ""
-        filename   = f"sentiment_export_{sent_label}{excl_label}.csv"
+        sent_label  = sentiment or "all"
+        excl_label  = "_untrained" if exclude_trained else ""
+        date_label  = ""
+        if date_from or date_to:
+            date_label = f"_{date_from or 'start'}~{date_to or 'end'}"
+        filename = f"sentiment_export_{sent_label}{excl_label}{date_label}.csv"
 
         return StreamingResponse(
             iter([output.getvalue()]),

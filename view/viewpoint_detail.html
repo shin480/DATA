@@ -37,21 +37,23 @@ body {
   flex-direction: column;
 }
 
-/* ==============================
-   HEADER
-============================== */
-
+/* =========================================================
+   1. 헤더
+========================================================= */
 .header {
   position: fixed;
   top: 0;
   left: 0;
   transform: none;
   z-index: 10000;
+
   width: 100%;
   height: 72px;
   padding: 0 56px;
+
   display: flex;
   align-items: center;
+
   background: #070b1a;
   border-bottom: 1px solid #111827;
 }
@@ -64,7 +66,6 @@ body {
   text-decoration: none;
   flex-shrink: 0;
   overflow: hidden;
-  cursor: pointer;
 }
 
 .header-logo-full {
@@ -88,7 +89,7 @@ body {
 .nav a {
   text-decoration: none;
   color: inherit;
-  transition: color 0.2s;
+  transition: color 0.18s;
 }
 
 .nav a:hover {
@@ -102,9 +103,11 @@ body {
   gap: 12px;
 }
 
+
+/* 검색창 */
 .main-search-wrap {
   position: relative;
-  width: 410px;
+  width: 370px;
   height: 40px;
   border-radius: 999px;
   background: #070b1a;
@@ -112,6 +115,10 @@ body {
   display: flex;
   align-items: center;
   padding: 0 14px 0 20px;
+}
+
+.main-search-wrap:focus-within {
+  border-color: #334155;
 }
 
 .search-box {
@@ -128,10 +135,6 @@ body {
 
 .search-box::placeholder {
   color: #7c8493;
-}
-
-.main-search-wrap:focus-within {
-  border-color: #334155;
 }
 
 .search-icon-btn {
@@ -152,6 +155,8 @@ body {
   color: #00e5ff;
 }
 
+
+/* 테마 버튼 */
 .theme-btn {
   width: 40px;
   height: 40px;
@@ -169,6 +174,8 @@ body {
   border-color: #334155;
 }
 
+
+/* 로그인 / 회원가입 버튼 */
 .header-btn {
   height: 40px;
   padding: 0 20px;
@@ -197,6 +204,23 @@ body {
 .header-btn.join:hover {
   border-color: #00e5ff;
   color: #00e5ff;
+}
+
+
+
+/* 로그인 유저 이름 */
+.header-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 /* ==============================
@@ -1018,60 +1042,95 @@ body {
 ============================== */
 
 body.light-mode {
-  background: #f8fafc;
-  color: #0f172a;
+  background: #edf2ee;
+  color: #1f2937;
 }
 
 body.light-mode .app {
-  background: #f8fafc;
+  background: #edf2ee;
 }
 
 body.light-mode .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f1f6f2;
+  border-bottom: 1px solid #d5ddd6;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 body.light-mode .nav {
-  color: #64748b;
+  color: #66756d;
 }
 
 body.light-mode .nav a:hover {
-  color: #0284c7;
+  color: #4cb7d3;
 }
 
 body.light-mode .main-search-wrap {
-  background: #ffffff;
-  border-color: #cbd5e1;
+  background: #f7faf7;
+  border: 1px solid #d8e1d9;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+body.light-mode .main-search-wrap:focus-within {
+  border-color: rgba(0, 207, 232, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(0, 207, 232, 0.08),
+    inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 body.light-mode .search-box {
-  color: #0f172a;
+  color: #41bfe0;
 }
 
 body.light-mode .search-box::placeholder {
-  color: #94a3b8;
+  color: #8b9a91;
 }
 
 body.light-mode .search-icon-btn {
-  color: #64748b;
+  color: #708177;
+}
+
+body.light-mode .search-icon-btn:hover {
+  color: #4cb7d3;
 }
 
 body.light-mode .theme-btn {
+  background: #f7faf7;
+  border: 1px solid #d7dfd8;
+  color: #4b5563;
+}
+
+body.light-mode .theme-btn:hover {
+  border-color: #4cb7d3;
   background: #ffffff;
-  border-color: #cbd5e1;
-  color: #334155;
 }
 
 body.light-mode .header-btn.join {
+  background: #f7faf7;
+  border: 1px solid #cfd8d0;
+  color: #55635c;
+}
+
+body.light-mode .header-btn.join:hover {
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
-  border-color: #94a3b8;
-  color: #334155;
 }
 
 body.light-mode .header-btn.login {
-  background: #00cfe8;
-  border-color: #00cfe8;
-  color: #020617;
+  background: #00e5ff;
+  border-color: #00e5ff;
+  color: #06262b;
+  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
+}
+
+body.light-mode .header-btn.login:hover {
+  filter: brightness(1.04);
+}
+
+
+body.light-mode .header-user-name {
+  color: #55635c;
 }
 
 body.light-mode .detail-page {
@@ -1365,6 +1424,12 @@ function getLoginInfo() {
       sessionStorage.getItem("token") ||
       localStorage.getItem("token"),
 
+    userName:
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName"),
+
     role:
       sessionStorage.getItem("user_role") ||
       localStorage.getItem("user_role") ||
@@ -1469,6 +1534,20 @@ function setHeaderLoginState() {
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
+  let headerUserName = document.getElementById("headerUserName");
+
+  // header.html이 예전 버전이어도 유저명 영역을 자동 생성
+  if (!headerUserName) {
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+    if (themeToggleBtn && themeToggleBtn.parentElement) {
+      headerUserName = document.createElement("span");
+      headerUserName.id = "headerUserName";
+      headerUserName.className = "header-user-name hidden";
+      themeToggleBtn.insertAdjacentElement("afterend", headerUserName);
+    }
+  }
+
   const loginInfo = getLoginInfo();
 
   if (!loginInfo.token) {
@@ -1476,6 +1555,12 @@ function setHeaderLoginState() {
     if (joinBtn) joinBtn.classList.remove("hidden");
     if (primaryUserBtn) primaryUserBtn.classList.add("hidden");
     if (logoutBtn) logoutBtn.classList.add("hidden");
+
+    if (headerUserName) {
+      headerUserName.textContent = "";
+      headerUserName.classList.add("hidden");
+    }
+
     return;
   }
 
@@ -1483,6 +1568,16 @@ function setHeaderLoginState() {
   if (joinBtn) joinBtn.classList.add("hidden");
   if (primaryUserBtn) primaryUserBtn.classList.remove("hidden");
   if (logoutBtn) logoutBtn.classList.remove("hidden");
+
+  if (headerUserName) {
+    if (loginInfo.userName) {
+      headerUserName.textContent = `${loginInfo.userName}님`;
+      headerUserName.classList.remove("hidden");
+    } else {
+      headerUserName.textContent = "";
+      headerUserName.classList.add("hidden");
+    }
+  }
 
   const isAdmin =
     loginInfo.role === "ADMIN" ||
