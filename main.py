@@ -314,6 +314,13 @@ def get_keyword_detail(keyword: str):
                                     "case_insensitive": True
                                 }
                             }
+                        },
+                        {
+                            "range": {
+                                "news_count": {
+                                    "gte": 5
+                                }
+                            }
                         }
                     ],
                     "should": [
@@ -414,9 +421,7 @@ def get_keyword_detail(keyword: str):
     # =========================
     # scope 개수: 전체 검색 결과 기준
     # =========================
-    ai_count = result.get("aggregations", {}) \
-        .get("scope_count", {}) \
-        .get("value", 0)
+    ai_count = len(analysis)
 
     # =========================
     # 기사 리스트 생성: 상위 50개만 표시
@@ -1871,6 +1876,13 @@ def get_dominant_opinions():
                                     "case_insensitive": True
                                 }
                             }
+                        },
+                        {
+                            "range": {
+                                "news_count": {
+                                    "gte": 5
+                                }
+                            }
                         }
                     ],
                     "should": [
@@ -3191,7 +3203,25 @@ def get_random_scope_detail():
             "query": {
                 "function_score": {
                     "query": {
-                        "match_all": {}
+                        "bool": {
+                            "must": [
+                                {
+                                    "range": {
+                                        "news_count": {
+                                            "gte": 5
+                                        }
+                                    }
+                                },
+                                {
+                                    "range": {
+                                        "created_at": {
+                                            "gte": "now-7d/d",
+                                            "lte": "now"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     },
                     "random_score": {}
                 }
