@@ -133,6 +133,11 @@ def create_daily_keyword_metrics(target_date: str = None):
                                 "term": {
                                     "keywords": ""
                                 }
+                            },
+                            {
+                                "term": {
+                                    "is_disabled": True
+                                }
                             }
                         ]
                     }
@@ -193,6 +198,11 @@ def create_daily_keyword_metrics(target_date: str = None):
                         {
                             "term": {
                                 "keywords": ""
+                            }
+                        },
+                        {
+                            "term": {
+                                "is_disabled": True
                             }
                         }
                     ]
