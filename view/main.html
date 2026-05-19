@@ -227,6 +227,25 @@ body {
   color: #00e5ff;
 }
 
+/* 로그인 유저 이름 */
+.header-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+body.light-mode .header-user-name {
+  color: #55635c;
+}
+
 
 /* =========================================================
    2. 검색 자동완성
@@ -2223,25 +2242,48 @@ function setHeaderLoginState() {
   const joinBtn = document.getElementById("joinBtn");
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const headerUserName = document.getElementById("headerUserName");
 
-  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
+  if (
+    !loginBtn ||
+    !joinBtn ||
+    !primaryUserBtn ||
+    !logoutBtn ||
+    !headerUserName
+  ) {
+    return;
+  }
 
   const loginInfo = getLoginInfo();
   const token = loginInfo.token;
   const role = loginInfo.role;
+  const userName = loginInfo.userName;
 
   if (!token) {
     loginBtn.classList.remove("hidden");
     joinBtn.classList.remove("hidden");
+
     primaryUserBtn.classList.add("hidden");
     logoutBtn.classList.add("hidden");
+
+    headerUserName.textContent = "";
+    headerUserName.classList.add("hidden");
     return;
   }
 
   loginBtn.classList.add("hidden");
   joinBtn.classList.add("hidden");
+
   primaryUserBtn.classList.remove("hidden");
   logoutBtn.classList.remove("hidden");
+
+  if (userName) {
+    headerUserName.textContent = `${userName}님`;
+    headerUserName.classList.remove("hidden");
+  } else {
+    headerUserName.textContent = "";
+    headerUserName.classList.add("hidden");
+  }
 
   const isAdmin =
     role === "ADMIN" ||
