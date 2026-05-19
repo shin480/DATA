@@ -115,38 +115,100 @@ def send_cert_email(email: str):
 # 3. 인증 확인 함수
 def verify_certification_number(email: str, user_code: str):
     conn = get_engine()
+
     try:
-        # 1. 가장 최근의 '미인증(0)' 상태인 로그만 조회
+        # 가장 최근의 미인증 인증 요청 조회
         query = text("""
-            SELECT verification_id, verification_code 
+            SELECT 
+                verification_id,
+                verification_code,
+                created_at
             FROM email_verifications 
-            WHERE email = :email AND is_verified = 0
-            ORDER BY created_at DESC LIMIT 1
+            WHERE email = :email 
+              AND is_verified = 0
+            ORDER BY created_at DESC 
+            LIMIT 1
         """)
+
         result = conn.execute(query, {"email": email}).fetchone()
 
         if not result:
-            return {"success": False, "message": "유효한 인증 요청이 없습니다. 다시 발송해주세요."}
+            return {
+                "success": False,
+                "message": "유효한 인증 요청이 없습니다. 다시 발송해주세요."
+            }
 
         v_id = result[0]
         db_code = result[1]
 
-        # 2. 번호 대조 후 상태 업데이트 (성공 시 1, 실패 시 2)
+        # DB 시간 기준으로 3분 만료 검사
+        expire_query = text("""
+            SELECT 
+                CASE 
+                    WHEN created_at < DATE_SUB(NOW(), INTERVAL 3 MINUTE)
+                    THEN 1
+                    ELSE 0
+                END
+            FROM email_verifications
+            WHERE verification_id = :id
+        """)
+
+        is_expired = conn.execute(
+            expire_query,
+            {"id": v_id}
+        ).scalar()
+
+        if is_expired == 1:
+            update_sql = text("""
+                UPDATE email_verifications 
+                SET is_verified = 2 
+                WHERE verification_id = :id
+            """)
+
+            conn.execute(update_sql, {"id": v_id})
+            conn.commit()
+
+            return {
+                "success": False,
+                "message": "인증번호가 만료되었습니다. 다시 발송해주세요."
+            }
+
         if db_code == user_code:
-            # 인증 성공 -> 1로 변경
-            update_sql = text("UPDATE email_verifications SET is_verified = 1 WHERE verification_id = :id")
+            update_sql = text("""
+                UPDATE email_verifications 
+                SET is_verified = 1 
+                WHERE verification_id = :id
+            """)
+
             conn.execute(update_sql, {"id": v_id})
             conn.commit()
-            return {"success": True}
+
+            return {
+                "success": True
+            }
+
         else:
-            # 인증 실패 -> 2로 변경 (이 번호는 이제 무효화됨)
-            update_sql = text("UPDATE email_verifications SET is_verified = 2 WHERE verification_id = :id")
+            update_sql = text("""
+                UPDATE email_verifications 
+                SET is_verified = 2 
+                WHERE verification_id = :id
+            """)
+
             conn.execute(update_sql, {"id": v_id})
             conn.commit()
-            return {"success": False, "message": "인증번호가 틀렸습니다. 보안을 위해 번호가 만료되었으니 다시 받아주세요."}
+
+            return {
+                "success": False,
+                "message": "인증번호가 틀렸습니다. 다시 받아주세요."
+            }
 
     except Exception as e:
         print(f"❌ 인증 처리 중 오류: {e}")
-        return {"success": False, "message": "서버 오류가 발생했습니다."}
+
+        return {
+            "success": False,
+            "message": "서버 오류가 발생했습니다."
+        }
+
     finally:
         conn.close()

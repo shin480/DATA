@@ -458,6 +458,13 @@
             modalOverlay.style.display = 'flex';
         }
 
+        function resetEmailButton() {
+            emailActionBtn.disabled = false;
+            emailActionBtn.textContent = "인증번호 받기";
+            emailActionBtn.classList.remove('btn-timer', 'btn-resend');
+            emailActionBtn.classList.add('btn-cyan');
+        }
+
         modalCloseBtn.addEventListener('click', () => {
 
             modalOverlay.style.display = 'none';
@@ -466,6 +473,9 @@
         function updateButtonTimer() {
 
             emailActionBtn.disabled = true;
+            document.getElementById('certNum').value = "";
+            document.getElementById('certNum').disabled = false;
+            btnVerifyCert.disabled = false; // 추가
 
             emailActionBtn.classList.remove(
                 'btn-cyan',
@@ -506,7 +516,7 @@
 
         function switchToResendMode() {
 
-            emailActionBtn.disabled = false;
+            resetEmailButton();
 
             clearInterval(timerInterval);
 
@@ -515,13 +525,16 @@
             emailActionBtn.classList.remove('btn-timer');
 
             emailActionBtn.classList.add('btn-resend');
-
+            document.getElementById('certNum').disabled = true;
             btnVerifyCert.disabled = true;
+
+            certInputArea.style.display = 'none';
+            document.getElementById('certNum').value = "";
         }
 
         function incorrectResendMode() {
 
-            emailActionBtn.disabled = false;
+            resetEmailButton();
 
             clearInterval(timerInterval);
 
@@ -536,14 +549,31 @@
 
         emailActionBtn.addEventListener('click', () => {
 
-            if (!userEmailInput.value)
+            if (!userEmailInput.value){
                 return showModal('이메일을 입력해주세요.');
+            }
+                
+
+            const emailRegex =
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(userEmailInput.value)) {
+
+                return showModal('올바른 이메일 형식을 입력해주세요.');
+            }
+
 
             emailActionBtn.disabled = true;
+            emailActionBtn.textContent = "발송 중...";
+            emailActionBtn.classList.remove('btn-resend', 'btn-timer');
+            emailActionBtn.classList.add('btn-cyan');
 
+            
             const params = {
                 "email": userEmailInput.value
             };
+
+
 
             axios.post('/send_cert', params)
 
@@ -553,7 +583,7 @@
 
                     emailError.style.display = 'block';
 
-                    emailActionBtn.disabled = false;
+                    resetEmailButton();
 
                     return;
                 }
@@ -570,7 +600,7 @@
 
                     showModal(data.message);
 
-                    emailActionBtn.disabled = false;
+                    resetEmailButton();
                 }
 
             })
@@ -579,7 +609,7 @@
 
                 showModal('서버 통신 중 오류가 발생했습니다.');
 
-                emailActionBtn.disabled = false;
+                resetEmailButton();
             });
 
         });
@@ -622,7 +652,8 @@
                     return;
                 }
 
-                showModal('인증번호가 일치하지 않습니다.');
+                const errorMsg = data.message || '인증번호가 일치하지 않습니다.';
+                showModal(errorMsg);
 
                 incorrectResendMode();
 
@@ -632,7 +663,7 @@
 
                 showModal('서버 통신 중 오류가 발생했습니다.');
 
-                emailActionBtn.disabled = false;
+                resetEmailButton();
             });
 
         });
