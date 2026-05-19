@@ -1074,7 +1074,7 @@ td[title] {
 <select id="analysisType">
 <option value="전체">전체</option>
 <option value="성공 데이터">성공 데이터</option>
-<option value="에러 데이터">에러 데이터</option>
+<option value="에러 데이터" selected>에러 데이터</option>
 </select>
 <input id="analysisStart" type="date"/>
 <span>~</span>
@@ -1694,8 +1694,39 @@ function renderBanner() {
 // ==============================
 
 async function searchSummary() {
-  const start = document.getElementById("summaryStart").value;
-  const end = document.getElementById("summaryEnd").value;
+  const startInput = document.getElementById("summaryStart");
+  const endInput = document.getElementById("summaryEnd");
+
+  let start = startInput.value;
+  let end = endInput.value;
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+
+  const todayText = `${yyyy}-${mm}-${dd}`;
+
+  // 둘 다 비어있으면 기본값
+  if (!start && !end) {
+    start = "2026-05-01";
+    end = todayText;
+
+    startInput.value = start;
+    endInput.value = end;
+  }
+
+  // 시작일만 없으면 종료일로 맞춤
+  if (!start && end) {
+    start = end;
+    startInput.value = start;
+  }
+
+  // 종료일만 없으면 시작일로 맞춤
+  if (start && !end) {
+    end = start;
+    endInput.value = end;
+  }
 
   try {
     // 1. 서버로 GET 요청 전송 (쿼리 스트링으로 날짜 전달)
