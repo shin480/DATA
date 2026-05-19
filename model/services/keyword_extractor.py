@@ -15,6 +15,7 @@
 - [2026-05] 동적 불용어: ES keyword_stopwords 인덱스에서 배치 시작 시 로드해 STOPWORDS에 병합
 - [2026-05] 명사 필터: 동사 어간 패턴으로 끝나는 토큰 제거 (_is_noun_like)
 - [2026-05] 제목 가중치 완전 제거: tokens에 없는 단어가 키워드로 생성되는 문제 수정
+- [2026-05] 예외 시 keywords="" 저장: es.update 실패 아티클이 배치마다 재조회되는 무한루프 방지
 """
 
 import logging
@@ -380,6 +381,14 @@ def run_keyword_pipeline():
                     total_processed += 1
                 except Exception as e:
                     logger.error(f"키워드 추출 실패 article_id={article_id}: {e}")
+                    try:
+                        es.update(
+                            index=INDEX_NEWS,
+                            id=article_id,
+                            body={"doc": {"keywords": ""}},
+                        )
+                    except Exception:
+                        pass
                     continue
 
             es.indices.refresh(index=INDEX_NEWS)

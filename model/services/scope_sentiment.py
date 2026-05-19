@@ -11,6 +11,9 @@ scope 단위 감성 집계 서비스
   · sentiment_score: 전체 기사 sentiment_score 평균
   · sentiment_dist:  전체 기사의 레이블 분포 비율 (positive/negative/neutral)
 - 배치 조건 변경: must_not exists sentiment → must_not exists sentiment_dist
+- 배치 조건 변경: must_not exists sentiment_dist → must_not exists sentiment_score
+  · sentiment_dist는 object 타입으로 ES 인덱싱이 되지 않아 exists 쿼리가 항상 false 반환
+  · 동일 배치를 무한 반복하는 버그 수정: sentiment_score(float, 정상 인덱싱)로 조건 교체
 """
 
 import logging
@@ -95,7 +98,7 @@ def run_scope_sentiment_batch():
                             "must": [
                                 {"range": {"news_count": {"gte": MIN_NEWS_COUNT}}}
                             ],
-                            "must_not": {"exists": {"field": "sentiment_dist"}},
+                            "must_not": {"exists": {"field": "sentiment_score"}},
                         }
                     },
                     "_source": ["scopeID"],
