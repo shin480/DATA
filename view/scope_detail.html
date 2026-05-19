@@ -361,9 +361,11 @@ body.light-mode .nav a.active::after {
 
 #footer {
   width: 100vw;
+  margin-top: auto; /* 푸터를 페이지 최하단으로 밀기 */
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   overflow: visible;
+  flex-shrink: 0;
 }
 
 .footer {
@@ -485,12 +487,14 @@ body.light-mode .nav a.active::after {
    scope_detail 본문 CSS
 ============================== */
 
+.scope-detail-page {
+  flex: 1;
+}
+
 .wrap {
   width: 1040px;
   margin: 0 auto;
-  padding: 34px 0 100px;
-
-  flex: 1;
+  padding: 34px 0 80px;
 }
 
 .breadcrumb {
@@ -1474,10 +1478,8 @@ body.light-mode .random-scope-btn:hover {
 
   <div id="header"></div>
 
-  <div class="wrap">
-
-      <main class="scope-detail-page">
-    <div>
+  <main class="scope-detail-page">
+    <div class="wrap">
       <a class="back-btn" href="javascript:history.back()">← 이전페이지로</a>
 
 
@@ -1558,7 +1560,8 @@ body.light-mode .random-scope-btn:hover {
       </div>
 
     </section>
-  </div>
+    </div>
+  </main>
 
   <div id="footer"></div>
 
@@ -1571,12 +1574,24 @@ document.addEventListener("DOMContentLoaded", function () {
   applyThemeMode();
   loadHeader();
   loadFooter();
+  moveFooterOutsideMain();
   bindGlobalClickEvents();
 
   fetchScopeData();
 
   window.addEventListener("scroll", handleColumnInfiniteScroll);
 });
+
+function moveFooterOutsideMain() {
+  const footer = document.getElementById("footer");
+  const page = document.querySelector(".page");
+
+  if (!footer || !page) return;
+
+  if (footer.parentElement !== page) {
+    page.appendChild(footer);
+  }
+}
 
 function applyThemeMode() {
   const savedTheme = localStorage.getItem("theme_mode");
@@ -2458,7 +2473,7 @@ function reloadRandomScope() {
   document.body.style.opacity = "0.72";
 
   setTimeout(function() {
-    location.href = "/view/scope_detail.html";
+    location.href = `/view/scope_detail.html?v=${Date.now()}`;
   }, 140);
 }
 </script>
