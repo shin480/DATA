@@ -14,6 +14,9 @@ scope 단위 감성 집계 서비스
 - 배치 조건 변경: must_not exists sentiment_dist → must_not exists sentiment_score
   · sentiment_dist는 object 타입으로 ES 인덱싱이 되지 않아 exists 쿼리가 항상 false 반환
   · 동일 배치를 무한 반복하는 버그 수정: sentiment_score(float, 정상 인덱싱)로 조건 교체
+- MIN_NEWS_COUNT 미달 시 sentiment_score=0.0 마킹
+  · 기사 수 부족 스코프도 저장 없이 return None하면 배치마다 재조회되는 무한루프 발생
+  · 조건 미달이어도 sentiment_score=0.0 upsert하여 다음 배치에서 제외
 """
 
 import logging
@@ -51,6 +54,15 @@ def aggregate_scope_sentiment(es, scope_id: str):
     rows = [h["_source"] for h in res["hits"]["hits"]]
 
     if len(rows) < MIN_NEWS_COUNT:
+        # 뉴스 수 부족 시에도 sentiment_score 마킹 — 미저장 시 배치마다 재조회되는 무한루프 방지
+        es.update(
+            index=INDEX_SCOPES,
+            id=scope_id,
+            body={"doc": {
+                "sentiment_score": 0.0,
+                "updated_at":      datetime.now(timezone.utc).isoformat(),
+            }},
+        )
         return None
 
     score_count = defaultdict(int)
