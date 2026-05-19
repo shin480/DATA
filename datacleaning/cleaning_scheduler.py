@@ -1,78 +1,99 @@
-from cleaning import get_preprocessed_data
 import logging
-import os
+from pathlib import Path
 from logging.handlers import RotatingFileHandler
+
 from apscheduler.schedulers.blocking import BlockingScheduler
+
+from cleaning import get_preprocessed_data
 
 
 def setup_logger():
-    # log 폴더 생성
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
+    Path("logs").mkdir(exist_ok=True)
 
     logger = logging.getLogger("NewsPipeline")
     logger.setLevel(logging.INFO)
+    logger.propagate = False
 
-    # 1. 콘솔 출력 핸들러
-    stream_handler = logging.StreamHandler()
+    # setup_logger가 여러 번 호출될 때 핸들러 중복 추가 방지
+    if logger.handlers:
+        return logger
 
-    # 2. 파일 출력 핸들러 (파일당 10MB, 최대 5개까지 유지 후 덮어쓰기)
-    file_handler = RotatingFileHandler(
-        'logs/pipeline.log', maxBytes=10 * 1024 * 1024, backupCount=5, encoding='utf-8'
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
     )
 
-    # 로그 포맷 설정
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(logging.INFO)
+
+    file_handler = RotatingFileHandler(
+        "logs/pipeline.log",
+        maxBytes=10 * 1024 * 1024,
+        backupCount=5,
+        encoding="utf-8",
+    )
     file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
 
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
+
     return logger
 
 
 logger = setup_logger()
 
 
-def get_preprocess_scheduler():
-    # 스케줄러 생성
-    # max_instances=1: 동일한 작업이 이미 실행 중이면 다음 작업을 건너뜁니다.
-    # coalesce=True: 시스템이 일시적으로 중단되었다가 복구되었을 때,
-    #                밀린 작업들을 한 번만 실행합니다.
-
-    job_defaults = {
-        'max_instances': 1,
-        'coalesce': True
-    }
-
-    sch = BlockingScheduler(timezone='Asia/Seoul', job_defaults=job_defaults)
-
-    # --- 스케줄 설정 예시 ---
-
-    # 매일 새벽 12시 30분에 전처리
-    sch.add_job(
-        get_preprocessed_data,
-        'cron',
-        hour=0,
-        minute=30,
-        id='daily_preprocess'
-    )
-
-    logger.info("🚀 스케줄러가 시작되었습니다. (로그 관리 및 중복 방지 활성화)")
+def run_preprocess_job():
+    logger.info("전처리 작업을 시작합니다.")
 
     try:
-        sch.start()
-        return sch
+        get_preprocessed_data()
+        logger.info("전처리 작업이 완료되었습니다.")
+    except Exception:
+        logger.exception("전처리 작업 중 예외가 발생했습니다.")
+        raise
+
+
+def create_preprocess_scheduler():
+    job_defaults = {
+        "max_instances": 1,
+        "coalesce": True,
+        "misfire_grace_time": 60 * 60,
+    }
+
+    scheduler = BlockingScheduler(
+        timezone="Asia/Seoul",
+        job_defaults=job_defaults,
+    )
+
+    scheduler.add_job(
+        run_preprocess_job,
+        "cron",
+        hour=0,
+        minute=30,
+        id="daily_preprocess",
+        replace_existing=True,
+    )
+
+    return scheduler
+
+
+def run_preprocess_scheduler():
+    scheduler = create_preprocess_scheduler()
+
+    logger.info("스케줄러가 시작되었습니다.")
+
+    try:
+        scheduler.start()
     except (KeyboardInterrupt, SystemExit):
-        logger.info("👋 스케줄러가 정상적으로 종료되었습니다.")
+        logger.info("스케줄러 종료 신호를 받았습니다.")
+    finally:
+        if scheduler.running:
+            scheduler.shutdown(wait=False)
+
+        logger.info("스케줄러가 종료되었습니다.")
+
 
 if __name__ == "__main__":
-    get_preprocess_scheduler()
-
-
-
-
-
-
-
-
+    run_preprocess_scheduler()
