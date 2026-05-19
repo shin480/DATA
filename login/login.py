@@ -1,4 +1,5 @@
-from fastapi import Request
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
 from typing import Any, Dict
 from sqlalchemy import text
 from util.db import get_engine
@@ -108,17 +109,21 @@ def logout_user(req: Request):
         # 세션 전체 삭제
         req.session.clear()
 
-        # 혹시 특정 키만 제거하고 싶다면:
-        # req.session.pop("user", None)
-
-        return {
+        response = JSONResponse({
             "success": True,
             "message": "로그아웃되었습니다."
-        }
+        })
+
+        response.delete_cookie(
+            key="session",
+            path="/"
+        )
+
+        return response
 
     except Exception as e:
         print(f"🚨 로그아웃 로직 에러: {e}")
-        return {
+        return JSONResponse({
             "success": False,
             "message": "로그아웃 중 서버 오류가 발생했습니다."
-        }
+        })

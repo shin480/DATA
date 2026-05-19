@@ -2157,6 +2157,8 @@ body.light-mode .view-bar-bg {
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
+
+
 /* =========================================================
    1. 페이지 초기 공통 실행
 ========================================================= */
@@ -2244,6 +2246,7 @@ function setHeaderLoginState() {
   const logoutBtn = document.getElementById("logoutBtn");
   const headerUserName = document.getElementById("headerUserName");
 
+
   if (
     !loginBtn ||
     !joinBtn ||
@@ -2268,6 +2271,7 @@ function setHeaderLoginState() {
 
     headerUserName.textContent = "";
     headerUserName.classList.add("hidden");
+    
     return;
   }
 
@@ -2276,6 +2280,7 @@ function setHeaderLoginState() {
 
   primaryUserBtn.classList.remove("hidden");
   logoutBtn.classList.remove("hidden");
+
 
   if (userName) {
     headerUserName.textContent = `${userName}님`;
@@ -2295,6 +2300,7 @@ function setHeaderLoginState() {
   primaryUserBtn.innerText = isAdmin
     ? "관리자 페이지"
     : "마이페이지";
+
 }
 
 window.goLoginRequiredPage = function (targetUrl) {
@@ -2325,7 +2331,7 @@ function loadHeader() {
     return;
   }
 
-  fetch("/view/header.html?v=999")
+  fetch("/view/header.html?v="+ Date.now())
     .then(function (res) {
       if (!res.ok) {
         throw new Error("header.html 경로 오류");

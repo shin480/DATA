@@ -1996,6 +1996,7 @@ async function pwconfirm() {
     });
 
     if (data.success) {
+
       showCustomAlert("본인 인증에 성공하였습니다.");
 
       setTimeout(() => {
@@ -2173,7 +2174,7 @@ async function pwconfirm() {
     modal.classList.add("hidden");
   };
 
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", async function (e) {
     const primaryUserBtn = e.target.closest("#primaryUserBtn");
     const logoutBtn = e.target.closest("#logoutBtn");
     const themeToggleBtn = e.target.closest("#themeToggleBtn");
@@ -2239,7 +2240,11 @@ if (accountPageBtn) {
       sessionStorage.removeItem("role");
       sessionStorage.removeItem("userName");
 
-      axios.post("/logout");
+      try {
+        await axios.post("/logout");
+      } catch (e) {
+        console.error("로그아웃 실패:", e);
+      }
 
       location.href = "/view/main.html";
       return;
