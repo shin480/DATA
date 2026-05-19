@@ -72,7 +72,7 @@ body.light-mode .article-category {
 
 /* ==============================
    Header
-   main.html 기준 그대로
+   main.html 기준 통일
 ============================== */
 
 .header {
@@ -122,6 +122,7 @@ body.light-mode .article-category {
 }
 
 .nav a {
+  position: relative;
   text-decoration: none;
   color: inherit;
   transition: color 0.18s;
@@ -129,10 +130,6 @@ body.light-mode .article-category {
 
 .nav a:hover {
   color: #00e5ff;
-}
-
-.nav a {
-  position: relative;
 }
 
 .nav a.active {
@@ -169,7 +166,7 @@ body.light-mode .nav a.active::after {
 
 .main-search-wrap {
   position: relative;
-  width: 410px;
+  width: 370px;
   height: 40px;
   border-radius: 999px;
   background: #070b1a;
@@ -262,6 +259,20 @@ body.light-mode .nav a.active::after {
 .header-btn.join:hover {
   border-color: #00e5ff;
   color: #00e5ff;
+}
+
+.header-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 /* ==============================
@@ -945,20 +956,20 @@ body.light-mode .nav {
 }
 
 body.light-mode .nav a:hover {
-  color: #00cfe8;
+  color: #4cb7d3;
 }
 
 body.light-mode .main-search-wrap {
   background: #f7faf7;
   border: 1px solid #d8e1d9;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 body.light-mode .main-search-wrap:focus-within {
   border-color: rgba(0, 207, 232, 0.45);
   box-shadow:
     0 0 0 4px rgba(0, 207, 232, 0.08),
-    inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 body.light-mode .search-box {
@@ -974,7 +985,7 @@ body.light-mode .search-icon-btn {
 }
 
 body.light-mode .search-icon-btn:hover {
-  color: #41BFE0;
+  color: #4cb7d3;
 }
 
 body.light-mode .theme-btn {
@@ -984,7 +995,7 @@ body.light-mode .theme-btn {
 }
 
 body.light-mode .theme-btn:hover {
-  border-color: #00cfe8;
+  border-color: #4cb7d3;
   background: #ffffff;
 }
 
@@ -995,20 +1006,24 @@ body.light-mode .header-btn.join {
 }
 
 body.light-mode .header-btn.join:hover {
-  border-color: #00cfe8;
-  color: #00cfe8;
+  border-color: #4cb7d3;
+  color: #4cb7d3;
   background: #ffffff;
 }
 
 body.light-mode .header-btn.login {
-  background: #00cfe8;
-  border-color: #00cfe8;
+  background: #00e5ff;
+  border-color: #00e5ff;
   color: #06262b;
-  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
 }
 
 body.light-mode .header-btn.login:hover {
   filter: brightness(1.04);
+}
+
+body.light-mode .header-user-name {
+  color: #55635c;
 }
 
 /* 자동완성 */
@@ -1721,24 +1736,61 @@ function setHeaderLoginState() {
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  if (!loginBtn || !joinBtn || !primaryUserBtn || !logoutBtn) return;
+  let headerUserName = document.getElementById("headerUserName");
+
+  // header.html이 구버전이어도 이름 영역 자동 생성
+  if (!headerUserName) {
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+    if (themeToggleBtn && themeToggleBtn.parentElement) {
+      headerUserName = document.createElement("span");
+      headerUserName.id = "headerUserName";
+      headerUserName.className = "header-user-name hidden";
+      themeToggleBtn.insertAdjacentElement("afterend", headerUserName);
+    }
+  }
+
+  if (
+    !loginBtn ||
+    !joinBtn ||
+    !primaryUserBtn ||
+    !logoutBtn ||
+    !headerUserName
+  ) {
+    return;
+  }
 
   const loginInfo = getLoginInfo();
   const token = loginInfo.token;
   const role = loginInfo.role;
+  const userName = loginInfo.userName;
 
   if (!token) {
     loginBtn.classList.remove("hidden");
     joinBtn.classList.remove("hidden");
+
     primaryUserBtn.classList.add("hidden");
     logoutBtn.classList.add("hidden");
+
+    headerUserName.textContent = "";
+    headerUserName.classList.add("hidden");
+
     return;
   }
 
   loginBtn.classList.add("hidden");
   joinBtn.classList.add("hidden");
+
   primaryUserBtn.classList.remove("hidden");
   logoutBtn.classList.remove("hidden");
+
+  if (userName) {
+    headerUserName.textContent = `${userName}님`;
+    headerUserName.classList.remove("hidden");
+  } else {
+    headerUserName.textContent = "";
+    headerUserName.classList.add("hidden");
+  }
 
   const isAdmin =
     role === "ADMIN" ||
@@ -1747,11 +1799,9 @@ function setHeaderLoginState() {
     role === "superadmin" ||
     token === "admin-test-token";
 
-  if (isAdmin) {
-    primaryUserBtn.innerText = "관리자 페이지";
-  } else {
-    primaryUserBtn.innerText = "마이페이지";
-  }
+  primaryUserBtn.innerText = isAdmin
+    ? "관리자 페이지"
+    : "마이페이지";
 }
 
 window.goLoginRequiredPage = function (targetUrl) {
