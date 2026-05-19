@@ -250,11 +250,24 @@ def get_keyword_detail(keyword: str):
     body = {
         "size": 50,
         "query": {
-            "wildcard": {
-                "keywords": {
-                    "value": f"*{keyword}*",
-                    "case_insensitive": True
-                }
+            "bool": {
+                "must": [
+                    {
+                        "wildcard": {
+                            "keywords": {
+                                "value": f"*{keyword}*",
+                                "case_insensitive": True
+                            }
+                        }
+                    }
+                ],
+                "must_not": [
+                    {
+                        "term": {
+                            "is_disabled": True
+                        }
+                    }
+                ]
             }
         },
         "aggs": {
@@ -648,7 +661,14 @@ def search_suggest(q: str):
 
                 ],
 
-                "minimum_should_match": 1
+                "minimum_should_match": 1,
+                "must_not": [
+                    {
+                        "term": {
+                            "is_disabled": True
+                        }
+                    }
+                ]
             }
         }
     }
@@ -765,13 +785,28 @@ def get_article_list(
             })
 
         query = {
-            "match_all": {}
+            "bool": {
+                "must_not": [
+                    {
+                        "term": {
+                            "is_disabled": True
+                        }
+                    }
+                ]
+    }
         }
 
         if must_conditions:
             query = {
                 "bool": {
-                    "must": must_conditions
+                    "must": must_conditions,
+                    "must_not": [
+                        {
+                            "term": {
+                                "is_disabled": True
+                            }
+                        }
+                    ]
                 }
             }
 
@@ -1038,6 +1073,24 @@ def get_article_detail(article_id: str, req: Request):
 
     source = result["_source"]
 
+    if source.get("is_disabled") is True:
+        return {
+            "article_id": "",
+            "title": "삭제되었거나 비활성화된 기사입니다.",
+            "date": "",
+            "press": "",
+            "reporter": "",
+            "content": "이 기사는 더 이상 제공되지 않습니다.",
+            "summary": "",
+            "sourceUrl": "",
+            "sentiment": "",
+            "viewpoint": "관점 정보 없음",
+            "likeCount": 0,
+            "dislikeCount": 0,
+            "currentVote": "",
+            "deepNews": []
+        }
+
     current_scope_id = source.get("scopeID", "")
     current_sentiment = source.get("sentiment", "neutral")
 
@@ -1073,6 +1126,11 @@ def get_article_detail(article_id: str, req: Request):
                             {
                                 "term": {
                                     "article_id": article_id
+                                }
+                            },
+                            {
+                                "term": {
+                                    "is_disabled": True
                                 }
                             }
                         ]
@@ -1230,6 +1288,9 @@ def get_viewed_news(
 
                 source = es_doc["_source"]
 
+                if source.get("is_disabled") is True:
+                    continue
+
                 articles.append({
                     "article_id": article_id,
                     "title": source.get("title") or "제목 없음",
@@ -1317,6 +1378,9 @@ def get_my_reactions(
                 )
 
                 source = es_doc["_source"]
+
+                if source.get("is_disabled") is True:
+                    continue
 
                 articles.append({
                     "article_id": article_id,
@@ -1418,6 +1482,13 @@ def get_top_keyword():
                         {
                             "exists": {
                                 "field": "scopeID"
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "term": {
+                                "is_disabled": True
                             }
                         }
                     ]
@@ -1592,6 +1663,9 @@ def get_hot_news():
 
             source = result["_source"]
 
+            if source.get("is_disabled") is True:
+                continue
+
             articles.append({
                 "article_id": article_id,
                 "title": source.get("title", "제목 없음"),
@@ -1651,8 +1725,21 @@ def get_scope_sentiment_distribution(es, scope_id: str):
         body={
             "size": 0,
             "query": {
-                "term": {
-                    "scopeID": scope_id
+                "bool": {
+                    "must": [
+                        {
+                            "term": {
+                                "scopeID": scope_id
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "term": {
+                                "is_disabled": True
+                            }
+                        }
+                    ]
                 }
             },
             "aggs": {
@@ -2042,6 +2129,13 @@ def get_sentiment_compare(keyword: str):
                             {
                                 "term": {
                                     "sentiment": sentiment
+                                }
+                            }
+                        ],
+                        "must_not": [
+                            {
+                                "term": {
+                                    "is_disabled": True
                                 }
                             }
                         ]
@@ -2644,7 +2738,15 @@ def get_rank1_count_map(es, keyword: str = ""):
     # 전체 기사 기준 집계
     # =========================
     query = {
-        "match_all": {}
+        "bool": {
+            "must_not": [
+                {
+                    "term": {
+                        "is_disabled": True
+                    }
+                }
+            ]
+        }
     }
 
     if keyword:
@@ -2660,6 +2762,13 @@ def get_rank1_count_map(es, keyword: str = ""):
                                 "keywords",
                                 "clean_text"
                             ]
+                        }
+                    }
+                ],
+                "must_not": [
+                    {
+                        "term": {
+                            "is_disabled": True
                         }
                     }
                 ]
@@ -2912,7 +3021,14 @@ def get_articles_by_perspective(
         })
 
     bool_query = {
-        "filter": filter_query
+        "filter": filter_query,
+        "must_not": [
+            {
+                "term": {
+                    "is_disabled": True
+                }
+            }
+        ]
     }
 
     if must_query:
@@ -3280,8 +3396,21 @@ def get_scope_detail(scope_id: str):
         body={
             "size": 100,
             "query": {
-                "term": {
-                    "scopeID": scope_id
+                "bool": {
+                    "must": [
+                        {
+                            "term": {
+                                "scopeID": scope_id
+                            }
+                        }
+                    ],
+                    "must_not": [
+                        {
+                            "term": {
+                                "is_disabled": True
+                            }
+                        }
+                    ]
                 }
             },
             "sort": [
@@ -3400,7 +3529,7 @@ def get_scope_detail(scope_id: str):
             }
             for item in top_viewpoints
         ],
-        "articleCount": scope_source.get("news_count") or total,
+        "articleCount": total,
         "lastUpdated": updated_at[11:16] if len(updated_at) >= 16 else "-",
         "articles": articles
     }
@@ -3514,6 +3643,11 @@ def create_daily_keyword_metrics(target_date: str = None):
                                 "term": {
                                     "keywords": ""
                                 }
+                            },
+                            {
+                                "term": {
+                                    "is_disabled": True
+                                }
                             }
                         ]
                     }
@@ -3574,6 +3708,11 @@ def create_daily_keyword_metrics(target_date: str = None):
                         {
                             "term": {
                                 "keywords": ""
+                            }
+                        },
+                        {
+                            "term": {
+                                "is_disabled": True
                             }
                         }
                     ]

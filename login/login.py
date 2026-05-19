@@ -44,7 +44,7 @@ def login_user(info: Dict[str, Any], req: Request):
             fail_count = fetched_fail_count if fetched_fail_count is not None else 0
 
             if fail_count >= 5:
-                return {"success": False, "message": "로그인 시도 가능 횟수(5회)를 초가했습니다."}
+                return {"success": False, "message": "로그인 시도 가능 횟수(5회)를 초과했습니다."}
 
 
             db_hashed_password = result.password  # DB에 저장된 암호화된 비번

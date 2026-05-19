@@ -701,14 +701,15 @@
   <!-- ══════════════════════════════════════════════ -->
   <div id="panel-correction" class="panel">
 
-    <!-- 필터 -->
+    <!-- 필터 1행: 모드 + 감성 + 페이지크기 + 조회 -->
     <div class="filter-row">
       <select id="corr-mode" onchange="corrModeChange()">
         <option value="low_confidence">낮은 확신도 우선</option>
         <option value="search">제목 검색</option>
         <option value="all">전체</option>
       </select>
-      <input type="text" id="corr-search" placeholder="검색어 입력..." style="display:none">
+      <input type="text" id="corr-search" placeholder="검색어 입력..." style="display:none"
+             onkeydown="if(event.key==='Enter') loadCorrection(1)">
       <select id="corr-sentiment">
         <option value="">감성 전체</option>
         <option value="positive">positive</option>
@@ -720,7 +721,7 @@
         <option value="20" selected>20건</option>
         <option value="50">50건</option>
       </select>
-      <button class="btn" onclick="loadCorrection(1)">조회</button>
+      <button class="btn btn-primary" onclick="loadCorrection(1)">조회</button>
       <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
         <label class="check-label" style="font-size:12px;color:var(--text2);">
           <input type="checkbox" id="corr-exclude-trained" checked>
@@ -728,6 +729,24 @@
         </label>
         <button class="btn btn-sm" id="corr-export" onclick="exportCorrectionsCsv()" style="color:var(--blue)">📥 CSV 추출</button>
       </div>
+    </div>
+    <!-- 필터 2행: 발행일 범위 -->
+    <div class="filter-row" style="margin-top:-4px;margin-bottom:1rem;">
+      <span class="filter-label" style="font-size:12px;">발행일</span>
+      <input type="date" id="corr-date-from"
+             style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius);padding:4px 8px;font-size:12px;">
+      <span class="filter-label" style="font-size:12px;">~</span>
+      <input type="date" id="corr-date-to"
+             style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius);padding:4px 8px;font-size:12px;">
+      <button class="btn btn-sm" onclick="document.getElementById('corr-date-from').value='';document.getElementById('corr-date-to').value='';"
+              style="color:var(--text3);font-size:12px;">초기화</button>
+      <span style="font-size:11px;color:var(--text3);margin-left:6px;">※ 4만 건 이상 — 날짜 범위를 지정하면 빠릅니다</span>
+    </div>
+
+    <!-- 초기 안내 (조회 전) -->
+    <div id="corr-hint" class="state-msg" style="display:block;color:var(--text3);">
+      🔍 필터를 선택한 후 <strong style="color:var(--text2);">조회</strong> 버튼을 눌러주세요.<br>
+      <span style="font-size:12px;">발행일 범위를 지정하면 응답 속도가 크게 향상됩니다.</span>
     </div>
 
     <div id="corr-loading" class="state-msg" style="display:none">불러오는 중...</div>
@@ -1142,9 +1161,13 @@ function exportCorrectionsCsv() {
   const sentiment      = document.getElementById('corr-sentiment').value;
   const excludeTrained = document.getElementById('corr-exclude-trained').checked;
   const threshold      = 0.55;
+  const dateFrom       = document.getElementById('corr-date-from').value;
+  const dateTo         = document.getElementById('corr-date-to').value;
 
   const params = new URLSearchParams({ mode, threshold, exclude_trained: excludeTrained });
   if (sentiment) params.set('sentiment', sentiment);
+  if (dateFrom)  params.set('date_from', dateFrom);
+  if (dateTo)    params.set('date_to', dateTo);
 
   const btn = document.getElementById('corr-export');
   btn.disabled    = true;
@@ -1253,7 +1276,7 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
     const tab = btn.dataset.tab;
     if (tab === 'samples'    && !samplesLoaded)    loadSamples();
-    if (tab === 'correction' && !correctionLoaded) loadCorrection(1);
+    if (tab === 'correction' && !correctionLoaded) { show('corr-hint'); }
     if (tab === 'finetune'   && !finetuneLoaded)   loadFinetune();
     if (tab === 'stopwords') loadStopwords();
     if (tab === 'reprocess' && !rpCurrentArticle) { hide('rp-result'); show('rp-empty'); }
@@ -1497,16 +1520,21 @@ function corrModeChange() {
 async function loadCorrection(page=1) {
   correctionLoaded = true;
   corrCurrentPage  = page;
-  hide('corr-error'); hide('corr-content'); show('corr-loading');
+  hide('corr-error'); hide('corr-content'); hide('corr-hint'); show('corr-loading');
 
   const mode      = document.getElementById('corr-mode').value;
   const sentiment = document.getElementById('corr-sentiment').value;
   const pageSize  = document.getElementById('corr-page-size').value;
   const query     = document.getElementById('corr-search').value.trim();
+  const excludeTrained = document.getElementById('corr-exclude-trained').checked;
+  const dateFrom  = document.getElementById('corr-date-from').value;
+  const dateTo    = document.getElementById('corr-date-to').value;
 
-  let url = `/admin/corrections/news?mode=${mode}&page=${page}&page_size=${pageSize}`;
+  let url = `/admin/corrections/news?mode=${mode}&page=${page}&page_size=${pageSize}&exclude_trained=${excludeTrained}`;
   if (sentiment) url += `&sentiment=${sentiment}`;
   if (mode === 'search' && query) url += `&query=${encodeURIComponent(query)}`;
+  if (dateFrom) url += `&date_from=${encodeURIComponent(dateFrom)}`;
+  if (dateTo)   url += `&date_to=${encodeURIComponent(dateTo)}`;
 
   try {
     const d = await apiFetch(url);
@@ -1519,6 +1547,7 @@ async function loadCorrection(page=1) {
 }
 
 function renderCorrectionList(d) {
+  hide('corr-hint');
   text('corr-count', `총 ${d.total.toLocaleString()}건 — ${d.page}/${corrTotalPages} 페이지`);
 
   if (!d.items.length) {
