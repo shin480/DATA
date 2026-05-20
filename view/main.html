@@ -622,11 +622,11 @@ body.light-mode .header-user-name {
 }
 
 .gauge-circle.pos {
-  --gauge-color: #00e5ff;
+  --gauge-color: #34d6cc;
 }
 
 .gauge-circle.neg {
-  --gauge-color: #f47272;
+  --gauge-color: #ff6578;
 }
 
 .gauge-circle.neu {
@@ -711,9 +711,7 @@ body.light-mode .header-user-name {
   line-height: 1.6;
   color: #e2e8f0;
   font-weight: 500;
-}
 
-.opinion-text {
   cursor: pointer;
   transition: color 0.18s ease;
 }
@@ -740,6 +738,31 @@ body.light-mode .opinion-text:hover {
   background: #1e293b;
   color: #94a3b8;
   font-size: 11px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 버튼형 키워드 태그 */
+.keyword-btn {
+  all: unset;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.keyword-btn:hover {
+  color: #ffffff;
+}
+
+body.light-mode .keyword-btn:hover {
+  color: #0f172a;
 }
 
 .nav-btns {
@@ -857,12 +880,12 @@ body.light-mode .opinion-text:hover {
 
 .s-badge.pos {
   background: rgba(0, 229, 255, 0.1);
-  color: #00e5ff;
+  color: #34d6cc;
 }
 
 .s-badge.neg {
   background: rgba(244, 114, 114, 0.1);
-  color: #f47272;
+  color: #ff6578;
 }
 
 .s-badge.neu {
@@ -2020,10 +2043,11 @@ body.light-mode .view-bar-bg {
 
           <div class="quote-icon" style="text-align:right">”</div>
 
-          <div class="opinion-tags">
-            <span class="o-tag"></span>
-            <span class="o-tag"></span>
-          </div>
+          <div class="opinion-tags"></div>
+
+<div class="opinion-sentiment">
+  <o-tag class="o-tag sentiment-tag"></o-tag>
+</div>
 
           <div class="nav-btns">
             <div class="nav-btn" onclick="prevOpinion()">
@@ -2988,7 +3012,8 @@ async function loadDominantOpinion() {
 
 function renderOpinion() {
   const opinionText = document.querySelector(".opinion-text");
-  const tags = document.querySelectorAll(".opinion-tags .o-tag");
+  const tagsWrap = document.querySelector(".opinion-tags");
+  const sentimentTag = document.querySelector(".sentiment-tag");
   const pageText = document.querySelector(".opinion-page");
 
   if (!opinionText) return;
@@ -2998,12 +3023,36 @@ function renderOpinion() {
   opinionText.innerText = item.title || "";
   opinionText.dataset.scopeId = item.scope_id || "";
 
-  if (tags[0]) {
-    tags[0].innerText = item.keyword || "";
+  if (tagsWrap) {
+    // ✅ 핵심: 최대 3개 고정
+    let keywords = [];
+
+    if (Array.isArray(item.chips)) {
+      keywords = item.chips;
+    } else if (item.keyword) {
+      keywords = [item.keyword];
+    }
+
+    keywords = keywords.slice(0, 3); // 👈 무조건 3개 제한
+
+    tagsWrap.innerHTML = keywords
+      .map(keyword => `
+        <o-tag class="o-tag">
+          <button
+            type="button"
+            class="keyword-btn"
+            onclick="location.href='/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}'"
+            title="${keyword}"
+          >
+            ${keyword}
+          </button>
+        </o-tag>
+      `)
+      .join("");
   }
 
-  if (tags[1]) {
-    tags[1].innerText = convertSentimentText(item.sentiment);
+  if (sentimentTag) {
+    sentimentTag.innerText = convertSentimentText(item.sentiment);
   }
 
   if (pageText) {
