@@ -3468,7 +3468,7 @@ def get_scope_detail(scope_id: str):
             "article_id": article_id,
             "sentiment": sentiment,
             "press": source.get("press", "언론사 없음"),
-            "time": source.get("published_at", "")[11:16],
+            "time": source.get("published_at", "")[:10],
             "title": source.get("title", "제목 없음"),
             "summary": source.get("summary") or source.get("content", "")[:120],
             "keywords": keyword_list[:3],

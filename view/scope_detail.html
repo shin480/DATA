@@ -2342,6 +2342,7 @@ function renderArticleList(targetId, articles, sentiment) {
   );
 
   visibleArticles.forEach(function(article) {
+    console.log(article);
     const tags = (article.keywords || [])
       .map(function(tag) {
         return `
