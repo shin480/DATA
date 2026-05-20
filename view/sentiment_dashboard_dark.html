@@ -1374,7 +1374,7 @@ function renderConfidence(d) {
         },
         y:{
           type:'logarithmic',
-          ticks:{font:{size:11},color:'#555c6e',callback:v=>v===0?'0':v.toLocaleString()},
+          ticks:{font:{size:11},color:'#555c6e',maxTicksLimit:6,callback:v=>v===0?'0':v.toLocaleString()},
           grid:{color:'#1a1d24'},
           border:{color:'#272b35'}
         }
