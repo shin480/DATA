@@ -1015,19 +1015,17 @@
     /* ==============================
        Mobile LNB Hamburger
     ============================== */
-    .mobile-lnb-bar {
-      display: none !important;
-    }
-    .mobile-menu-dropdown {
-      display: none !important;
+    @media (min-width: 769px) {
+      .mobile-lnb-bar    { display: none; }
+      .mobile-menu-dropdown { display: none; }
     }
 
     @media (max-width: 768px) {
       .layout { flex-direction: column; }
-      aside { display: none !important; }
+      aside   { display: none !important; }
 
       .mobile-lnb-bar {
-        display: flex !important;
+        display: flex;
         align-items: center;
         justify-content: flex-start;
         gap: 12px;
@@ -1061,11 +1059,16 @@
       .hamburger-btn.open span:nth-child(2) { opacity: 0; }
       .hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-      .mobile-menu-dropdown.open {
-        display: block;
+      .mobile-menu-dropdown {
+        display: none;
         background: #0b1020;
         border-bottom: 1px solid #1a2540;
-        position: sticky; top: 120px; z-index: 199;
+        position: sticky;
+        top: 120px;
+        z-index: 199;
+      }
+      .mobile-menu-dropdown.open {
+        display: block;
         animation: mobileMenuDown 0.22s ease;
       }
       @keyframes mobileMenuDown {
@@ -1076,7 +1079,8 @@
       .mobile-menu-dropdown li {
         height: 46px; display: flex; align-items: center;
         padding-left: 24px; color: #6f7d98; font-size: 14px;
-        border-left: 4px solid transparent; cursor: pointer; transition: background 0.15s;
+        border-left: 4px solid transparent; cursor: pointer;
+        transition: background 0.15s;
       }
       .mobile-menu-dropdown li:hover { background: #10192b; }
       .mobile-menu-dropdown li.active {
@@ -1084,13 +1088,10 @@
         border-left-color: #24bfff; font-weight: 700;
       }
       main { padding: 24px 16px 60px; }
-      .account-wrap { width: 100%; padding-top: 8px; }
     }
 
-    body.light-mode .mobile-lnb-bar,
-    body.light-mode .mobile-menu-dropdown.open {
-      background: #ffffff; border-color: #e2e8f0;
-    }
+    body.light-mode .mobile-lnb-bar { background: #ffffff; border-color: #e2e8f0; }
+    body.light-mode .mobile-menu-dropdown { background: #ffffff; border-color: #e2e8f0; }
     body.light-mode .mobile-lnb-title { color: #64748b; }
     body.light-mode .hamburger-btn span { background: #334155; }
     body.light-mode .hamburger-btn:hover { background: #e2e8f0; }
@@ -1110,14 +1111,13 @@
 <div class="page">
   <div id="header"></div>
 
-  <!-- 모바일 LNB 바 -->
-  <div class="mobile-lnb-bar" id="mobileLnbBar">
+  <!-- 모바일 LNB -->
+  <div class="mobile-lnb-bar">
     <button class="hamburger-btn" id="hamburgerBtn" aria-label="메뉴 열기" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
     <span class="mobile-lnb-title">마이페이지</span>
   </div>
-  <!-- 모바일 드롭다운 -->
   <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
     <ul>
       <li onclick="location.href='/view/mypage_home.html'">마이페이지 홈</li>
@@ -1908,10 +1908,10 @@
     });
   }
 
-  /* 모바일 햄버거 메뉴 */
+  /* ── 모바일 햄버거 ── */
   window.closeMobileMenu = function() {
     var btn = document.getElementById("hamburgerBtn");
-    var dd = document.getElementById("mobileMenuDropdown");
+    var dd  = document.getElementById("mobileMenuDropdown");
     if (!dd) return;
     dd.classList.remove("open");
     if (btn) { btn.classList.remove("open"); btn.setAttribute("aria-expanded","false"); }
@@ -1919,24 +1919,21 @@
 
   function initHamburger() {
     var btn = document.getElementById("hamburgerBtn");
-    var dd = document.getElementById("mobileMenuDropdown");
-    if (!btn || !dd) return;
-    // 중복 바인딩 방지
-    if (btn.dataset.hamburgerInit) return;
-    btn.dataset.hamburgerInit = "1";
+    var dd  = document.getElementById("mobileMenuDropdown");
+    if (!btn || !dd || btn.dataset.init) return;
+    btn.dataset.init = "1";
     btn.addEventListener("click", function(e) {
       e.stopPropagation();
       if (dd.classList.contains("open")) { window.closeMobileMenu(); }
       else { dd.classList.add("open"); btn.classList.add("open"); btn.setAttribute("aria-expanded","true"); }
     });
     document.addEventListener("click", function(e) {
-      if (dd.classList.contains("open") && !dd.contains(e.target) && !btn.contains(e.target)) {
+      if (dd.classList.contains("open") &&
+          !dd.contains(e.target) && !btn.contains(e.target)) {
         window.closeMobileMenu();
       }
     });
   }
-
-  // 즉시 실행 + DOMContentLoaded 둘 다 시도
   initHamburger();
   document.addEventListener("DOMContentLoaded", initHamburger);
 
