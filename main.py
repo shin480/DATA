@@ -2123,13 +2123,47 @@ def get_sentiment_compare(keyword: str):
                     "bool": {
                         "must": [
                             {
-                                "match": {
-                                    "title": keyword
+                                "bool": {
+                                    "should": [
+                                        {
+                                            "match_phrase": {
+                                                "title": {
+                                                    "query": keyword,
+                                                    "boost": 5
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "wildcard": {
+                                                "keywords": {
+                                                    "value": f"*{keyword}*",
+                                                    "case_insensitive": True,
+                                                    "boost": 8
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "match_phrase": {
+                                                "summary": {
+                                                    "query": keyword,
+                                                    "boost": 2
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "minimum_should_match": 1
                                 }
                             },
                             {
                                 "term": {
                                     "sentiment": sentiment
+                                }
+                            },
+                            {
+                                "range": {
+                                    "published_at": {
+                                        "gte": "now-3d/d"
+                                    }
                                 }
                             }
                         ],
@@ -2145,6 +2179,11 @@ def get_sentiment_compare(keyword: str):
                 "sort": [
                     {
                         "published_at": {
+                            "order": "desc"
+                        }
+                    },
+                    {
+                        "_score": {
                             "order": "desc"
                         }
                     }
