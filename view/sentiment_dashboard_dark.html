@@ -1715,7 +1715,7 @@ function renderStopwords(data) {
     return '<tr>' +
       '<td style="font-weight:500;color:var(--text)">'  + escHtml(item.word)           + '</td>' +
       '<td style="color:var(--text2)">'                 + escHtml(item.reason || '-')  + '</td>' +
-      '<td style="color:var(--text3)">'                 + (item.added_at ? item.added_at.slice(0,19).replace('T',' ') : '-') + '</td>' +
+      '<td style="color:var(--text3)">'                 + (item.added_at ? item.added_at.slice(0,10) : '-') + '</td>' +
       '<td style="text-align:center;">' +
         '<button class="btn btn-sm btn-danger" onclick="deleteStopword(\'' + escHtml(item.word) + '\')">삭제</button>' +
       '</td></tr>';
@@ -1746,7 +1746,7 @@ async function addStopword() {
     setTimeout(function() { html('sw-add-msg', ''); }, 3000);
 
     // 목록 깜빡임 없이 즉시 반영: swAllData 앞에 추가 후 바로 렌더링
-    const now = new Date().toISOString();
+    const now = new Date().toISOString().slice(0,10);
     swAllData.unshift({ word: word, reason: reason || null, added_at: now });
     renderStopwords(swAllData);
     show('sw-content');
