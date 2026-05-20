@@ -1130,7 +1130,11 @@ async function apiFetch(path, opts={}) {
   const res = await fetch(apiBase() + path, opts);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || res.statusText);
+    const msg = typeof err.detail === 'string' ? err.detail
+              : Array.isArray(err.detail)       ? err.detail.map(e=>e.msg||JSON.stringify(e)).join(', ')
+              : err.detail                      ? JSON.stringify(err.detail)
+              : res.statusText;
+    throw new Error(`${res.status} ${msg}`);
   }
   return res.json();
 }
@@ -1403,7 +1407,7 @@ async function loadSamples() {
   samplesLoaded = true;
   const threshold = document.getElementById('thresh').value;
   const sentiment = document.getElementById('sent-filter').value;
-  let url = `/eval/sentiment/low-confidence?threshold=${threshold}&limit=9999`;
+  let url = `/eval/sentiment/low-confidence?threshold=${threshold}&limit=1000`;
   if (sentiment) url += `&sentiment=${sentiment}`;
   try {
     const d = await apiFetch(url);
