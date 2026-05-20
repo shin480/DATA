@@ -627,6 +627,11 @@ body.light-mode .article-category {
   flex-direction: column;
 }
 
+.view-card:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
+}
+
 .view-top {
   display: flex;
   align-items: center;
@@ -2217,6 +2222,21 @@ function renderOverviewGroups(groups) {
     });
   });
 }
+
+  document.addEventListener("click", function (e) {
+  const card = e.target.closest(".view-card");
+  if (!card) return;
+
+  // 버튼 클릭이면 카드 이벤트 막기
+  if (e.target.closest(".detail-btn")) return;
+
+  const btn = card.querySelector(".detail-btn");
+  if (!btn) return;
+
+  btn.click();
+});
+
+
 </script>
 </body>
 </html>
