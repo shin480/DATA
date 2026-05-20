@@ -33,7 +33,8 @@
     }
 
     .page {
-      width: 1440px;
+      width: 100%;
+      max-width: 1440px;
       min-height: 100vh;
       margin: 0 auto;
       padding-top: 72px;
@@ -856,6 +857,224 @@ body {
   }
 }
 
+/* ==============================
+   Mobile LNB Hamburger
+============================== */
+
+.mobile-lnb-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  /* ── 전체 레이아웃 ── */
+  .page {
+    padding-top: 72px;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
+  /* ── PC LNB aside 숨기기 ── */
+  aside {
+    display: none !important;
+  }
+
+  /* ── 모바일 LNB 바 ── */
+  .mobile-lnb-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 18px;
+    height: 48px;
+    background: #0b1020;
+    border-bottom: 1px solid #1a2540;
+    position: sticky;
+    top: 72px;
+    z-index: 200;
+  }
+
+  .mobile-lnb-title {
+    font-size: 13px;
+    color: #6e7c98;
+    font-weight: 700;
+  }
+
+  .hamburger-btn {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .hamburger-btn:hover {
+    background: #132137;
+  }
+
+  .hamburger-btn span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #6e7c98;
+    border-radius: 2px;
+    transition: transform 0.25s, opacity 0.25s;
+  }
+
+  .hamburger-btn.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .hamburger-btn.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger-btn.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* ── 드롭다운 메뉴 ── */
+  .mobile-menu-dropdown {
+    display: none;
+    background: #0b1020;
+    border-bottom: 1px solid #1a2540;
+    position: sticky;
+    top: 120px;
+    z-index: 199;
+    overflow: hidden;
+  }
+
+  .mobile-menu-dropdown.open {
+    display: block;
+    animation: mobileMenuDown 0.22s ease;
+  }
+
+  @keyframes mobileMenuDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .mobile-menu-dropdown ul {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+  }
+
+  .mobile-menu-dropdown li {
+    height: 46px;
+    display: flex;
+    align-items: center;
+    padding-left: 24px;
+    color: #6f7d98;
+    font-size: 14px;
+    border-left: 4px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .mobile-menu-dropdown li:hover {
+    background: #10192b;
+  }
+
+  .mobile-menu-dropdown li.active {
+    background: #132137;
+    color: #42bfff;
+    border-left-color: #24bfff;
+    font-weight: 700;
+  }
+
+  /* ── main 패딩 ── */
+  main {
+    padding: 24px 16px 60px;
+  }
+
+  /* ── 내가 본 뉴스: news-item 컬럼 조정 ── */
+  .news-item {
+    grid-template-columns: 28px 1fr;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  /* 카테고리 배지는 모바일에서 숨기거나 아래 줄로 */
+  .news-item .category {
+    display: none;
+  }
+
+  /* ── 선호/비선호 카드: 2열 → 1열 ── */
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: unset;
+    max-height: unset;
+  }
+
+  /* ── 배너 ── */
+  .notice-box {
+    margin-top: 28px;
+  }
+
+  .notice-title {
+    max-width: 200px;
+  }
+
+  /* ── section 간격 ── */
+  section {
+    margin-bottom: 28px;
+  }
+
+  /* ── hint 텍스트 줄바꿈 ── */
+  .section-head {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .hint {
+    width: 100%;
+    margin-left: 0;
+    font-size: 11px;
+  }
+}
+
+/* ── light mode: mobile lnb bar ── */
+body.light-mode .mobile-lnb-bar,
+body.light-mode .mobile-menu-dropdown {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+body.light-mode .mobile-menu-dropdown li {
+  color: #64748b;
+}
+
+body.light-mode .mobile-menu-dropdown li:hover {
+  background: #f1f5f9;
+}
+
+body.light-mode .mobile-menu-dropdown li.active {
+  background: #e0f7ff;
+  color: #0284c7;
+  border-left-color: #00cfe8;
+}
+
+body.light-mode .hamburger-btn span {
+  background: #64748b;
+}
+
+body.light-mode .mobile-lnb-title {
+  color: #64748b;
+}
+
 @media (max-width: 640px) {
   .search-suggest-box {
     left: 18px !important;
@@ -1223,6 +1442,24 @@ body.light-mode .custom-alert-btn {
 <div class="page">
   <div id="header"></div>
 
+  <!-- 모바일 LNB 바 (768px 이하에서만 보임) -->
+  <div class="mobile-lnb-bar" id="mobileLnbBar">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <span class="mobile-lnb-title">마이페이지</span>
+  </div>
+
+  <!-- 모바일 드롭다운 메뉴 -->
+  <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+    <ul>
+      <li class="active" onclick="selectMenu(this, 'home'); closeMobileMenu();">마이페이지 홈</li>
+      <li id="mobileAccountPageBtn" onclick="closeMobileMenu();">회원정보 관리 &amp; 탈퇴</li>
+    </ul>
+  </div>
+
   <div class="layout">
     <aside>
       <div class="side-title-wrap">
@@ -1235,11 +1472,12 @@ body.light-mode .custom-alert-btn {
   마이페이지 홈
 </li>
 
-        <li id="accountPageBtn">회원정보 관리 & 탈퇴</li>
+        <li id="accountPageBtn">회원정보 관리 &amp; 탈퇴</li>
       </ul>
     </aside>
 
     <main>
+      <!-- 1. 내가 본 뉴스 -->
       <section>
         <div class="section-head">
           <h2>내가 본 뉴스</h2>
@@ -1346,54 +1584,59 @@ body.light-mode .custom-alert-btn {
         </div>
       </section>
 
+      <!-- 2. 선호 뉴스 -->
       <section>
         <div class="section-head">
-          <h2>나의 선호·비선호 뉴스</h2>
+          <h2>선호 뉴스</h2>
         </div>
-
-        <div class="cards">
-          <div class="card">
-            <div class="card-head">
-              <span class="like">👍 동의해요</span>
-              <span class="count">총 0건</span>
-            </div>
-
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-
-            <div class="pagination" id="likePagination"></div>
+        <div class="card">
+          <div class="card-head">
+            <span class="like">👍 동의해요</span>
+            <span class="count">총 0건</span>
           </div>
 
-          <div class="card">
-            <div class="card-head">
-              <span class="dislike">👎 반대해요</span>
-              <span class="count">총 0건</span>
-            </div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
 
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-            <div class="mini-news"><span></span><span class="date"></span></div>
-
-            <div class="pagination" id="dislikePagination"></div>
-          </div>
+          <div class="pagination" id="likePagination"></div>
         </div>
       </section>
 
+      <!-- 3. 비선호 뉴스 -->
+      <section>
+        <div class="section-head">
+          <h2>비선호 뉴스</h2>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <span class="dislike">👎 반대해요</span>
+            <span class="count">총 0건</span>
+          </div>
+
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+          <div class="mini-news"><span></span><span class="date"></span></div>
+
+          <div class="pagination" id="dislikePagination"></div>
+        </div>
+      </section>
+
+      <!-- 4. 배너 -->
       <div class="notice-box" id="noticeBannerBox">
         공지사항 배너 영역
       </div>
@@ -2299,6 +2542,80 @@ if (pwModal) {
     }
   });
 }
+
+  /* ==============================
+     모바일 햄버거 메뉴
+  ============================== */
+  (function () {
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const dropdown = document.getElementById("mobileMenuDropdown");
+    const mobileAccountBtn = document.getElementById("mobileAccountPageBtn");
+
+    if (!hamburgerBtn || !dropdown) return;
+
+    hamburgerBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const isOpen = dropdown.classList.contains("open");
+
+      if (isOpen) {
+        closeMobileMenu();
+      } else {
+        dropdown.classList.add("open");
+        hamburgerBtn.classList.add("open");
+        hamburgerBtn.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    // 외부 클릭 시 닫기
+    document.addEventListener("click", function (e) {
+      if (
+        dropdown.classList.contains("open") &&
+        !dropdown.contains(e.target) &&
+        !hamburgerBtn.contains(e.target)
+      ) {
+        closeMobileMenu();
+      }
+    });
+
+    // 모바일 회원정보 메뉴 → 기존 accountPageBtn 로직 위임
+    if (mobileAccountBtn) {
+      mobileAccountBtn.addEventListener("click", async function () {
+        try {
+          const { data } = await axios.post("/pw_check_time");
+
+          if (data.is_authenticated) {
+            location.href = "/view/mypage_account.html";
+          } else {
+            const modal = document.getElementById("pwModal");
+            const input = document.getElementById("pwInput");
+
+            modal.classList.remove("hidden");
+
+            setTimeout(() => {
+              input.focus();
+            }, 50);
+          }
+        } catch (err) {
+          console.error("인증 상태 확인 에러:", err);
+          showCustomAlert("서버 통신 중 오류가 발생했습니다.");
+        }
+      });
+    }
+  })();
+
+  window.closeMobileMenu = function () {
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const dropdown = document.getElementById("mobileMenuDropdown");
+
+    if (!dropdown) return;
+
+    dropdown.classList.remove("open");
+
+    if (hamburgerBtn) {
+      hamburgerBtn.classList.remove("open");
+      hamburgerBtn.setAttribute("aria-expanded", "false");
+    }
+  };
 
   function showCustomAlert(message, errorText = "") {
   const modal = document.getElementById("customAlert");
