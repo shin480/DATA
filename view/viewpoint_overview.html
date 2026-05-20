@@ -112,35 +112,6 @@ body {
   color: #00e5ff;
 }
 
-.nav a {
-  position: relative;
-}
-
-.nav a.active {
-  color: #00e5ff !important;
-  font-weight: 900 !important;
-}
-
-.nav a.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -26px;
-  height: 3px;
-  border-radius: 999px;
-  background: #00e5ff;
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.65);
-}
-
-body.light-mode .nav a.active {
-  color: #41BFE0 !important;
-}
-
-body.light-mode .nav a.active::after {
-  background: #41BFE0;
-}
-
 .header-right {
   margin-left: auto;
   display: flex;
@@ -152,7 +123,7 @@ body.light-mode .nav a.active::after {
 /* 검색창 */
 .main-search-wrap {
   position: relative;
-  width: 410px;
+  width: 370px;
   height: 40px;
   border-radius: 999px;
   background: #070b1a;
@@ -249,6 +220,25 @@ body.light-mode .nav a.active::after {
 .header-btn.join:hover {
   border-color: #00e5ff;
   color: #00e5ff;
+}
+
+/* 로그인 유저 이름 */
+.header-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+body.light-mode .header-user-name {
+  color: #55635c;
 }
 
 
@@ -1036,6 +1026,10 @@ body.light-mode .theme-btn:hover {
   background: #ffffff;
 }
 
+body.light-mode .header-user-name {
+  color: #55635c;
+}
+
 body.light-mode .header-btn.join {
   background: #f7faf7;
   border: 1px solid #cfd8d0;
@@ -1592,6 +1586,7 @@ function setHeaderLoginState() {
     headerUserName.innerText = loginInfo.userName
       ? `${loginInfo.userName}님`
       : "";
+
     headerUserName.classList.toggle("hidden", !loginInfo.userName);
   }
 
@@ -2186,7 +2181,8 @@ function renderOverviewGroups(groups) {
   });
 }
 
-  document.addEventListener("click", function (e) {
+
+document.addEventListener("click", function (e) {
   const card = e.target.closest(".view-card");
   if (!card) return;
 
@@ -2198,8 +2194,6 @@ function renderOverviewGroups(groups) {
 
   btn.click();
 });
-
-
 </script>
 </body>
 </html>
