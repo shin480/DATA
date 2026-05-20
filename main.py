@@ -2064,17 +2064,19 @@ def get_dominant_opinions():
         negative = sentiment_dist["negative"]
         dominant = sentiment_dist["dominant"]
 
-        opinion_sentence = make_dominant_opinion_sentence(
-            topic=display_scope_title,
-            positive=positive,
-            neutral=neutral,
-            negative=negative
+        scope_summary = (
+                scope_source.get("scope_summary")
+                or "이슈 요약 정보가 아직 생성되지 않았습니다."
         )
+
+        keywords = scope_keywords[:5]
 
         opinions.append({
             "scope_id": scope_id,
-            "title": opinion_sentence,
-            "keyword": scope_keywords[0] if scope_keywords else top_keyword,
+            "title": display_scope_title,
+            "summary": scope_summary,
+            "keywords": keywords,
+            "keyword": keywords[0] if keywords else top_keyword,
             "sentiment": dominant
         })
 
