@@ -1466,7 +1466,13 @@ function getLoginInfo() {
       sessionStorage.getItem("user_role") ||
       localStorage.getItem("user_role") ||
       sessionStorage.getItem("role") ||
-      localStorage.getItem("role")
+      localStorage.getItem("role"),
+
+    userName:
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName")
   };
 }
 
@@ -1564,6 +1570,7 @@ function setHeaderLoginState() {
   const joinBtn = document.getElementById("joinBtn");
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const headerUserName = document.getElementById("headerUserName");
 
   const loginInfo = getLoginInfo();
 
@@ -1572,6 +1579,7 @@ function setHeaderLoginState() {
     if (joinBtn) joinBtn.classList.remove("hidden");
     if (primaryUserBtn) primaryUserBtn.classList.add("hidden");
     if (logoutBtn) logoutBtn.classList.add("hidden");
+    if (headerUserName) headerUserName.classList.add("hidden");
     return;
   }
 
@@ -1579,6 +1587,13 @@ function setHeaderLoginState() {
   if (joinBtn) joinBtn.classList.add("hidden");
   if (primaryUserBtn) primaryUserBtn.classList.remove("hidden");
   if (logoutBtn) logoutBtn.classList.remove("hidden");
+
+  if (headerUserName) {
+    headerUserName.innerText = loginInfo.userName
+      ? `${loginInfo.userName}님`
+      : "";
+    headerUserName.classList.toggle("hidden", !loginInfo.userName);
+  }
 
   const isAdmin =
     loginInfo.role === "ADMIN" ||
