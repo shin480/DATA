@@ -1362,7 +1362,7 @@ function showToast(message) {
   }, 2200);
 }
 
-function updateBannerImageFileUI() {
+function updateBannerImageFileUI(existingImageUrl = "") {
   const imageInput = document.getElementById("bannerImage");
   const uploadBox = document.getElementById("bannerUploadBox");
   const uploadTitle = document.getElementById("bannerUploadTitle");
@@ -1381,17 +1381,31 @@ function updateBannerImageFileUI() {
 
   const file = imageInput.files[0];
 
+  // 1. 사용자가 새 이미지를 선택한 경우
   if (file) {
     uploadBox.classList.add("file-selected");
-    uploadTitle.textContent = "이미지 선택 완료";
+    uploadTitle.textContent = "새 이미지 선택 완료";
     uploadText.textContent = file.name;
-    uploadGuide.textContent = "등록하기를 누르면 이미지가 업로드됩니다.";
-  } else {
-    uploadBox.classList.remove("file-selected");
-    uploadTitle.textContent = "이미지 업로드";
-    uploadText.textContent = "PNG / JPG / JPEG / WEBP 파일 선택";
-    uploadGuide.textContent = "화면에는 약 960 × 110px 비율로 표시됩니다.";
+    uploadGuide.textContent = "수정하기를 누르면 이 이미지로 교체됩니다.";
+    return;
   }
+
+  // 2. 수정 모드이며 기존 이미지가 있는 경우
+  if (existingImageUrl) {
+    const existingFileName = existingImageUrl.split("/").pop();
+
+    uploadBox.classList.add("file-selected");
+    uploadTitle.textContent = "현재 등록된 이미지";
+    uploadText.textContent = existingFileName;
+    uploadGuide.textContent = "이미지를 새로 선택하지 않으면 기존 이미지가 유지됩니다.";
+    return;
+  }
+
+  // 3. 신규 등록이거나 기존 이미지가 없는 경우
+  uploadBox.classList.remove("file-selected");
+  uploadTitle.textContent = "이미지 업로드";
+  uploadText.textContent = "PNG / JPG / JPEG / WEBP 파일 선택";
+  uploadGuide.textContent = "화면에는 약 960 × 110px 비율로 표시됩니다.";
 }
 
 function validateDateRange(start, end) {
@@ -2068,7 +2082,7 @@ function editBanner(id) {
   document.getElementById("bannerEnd").value = target.end_at || "";
   document.getElementById("bannerImage").value = "";
 
-  updateBannerImageFileUI();
+  updateBannerImageFileUI(target.image_url || "");
 
   document.getElementById("bannerModal").classList.add("show");
 }
@@ -2170,7 +2184,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const bannerImageInput = document.getElementById("bannerImage");
 
   if (bannerImageInput) {
-    bannerImageInput.addEventListener("change", updateBannerImageFileUI);
+    bannerImageInput.addEventListener("change", function () {
+      const currentBanner = bannerData.find(
+        item => item.banner_id === editBannerId
+    );
+
+      updateBannerImageFileUI(currentBanner?.image_url || "");
+    });
   }
 
   const modal = document.getElementById("bannerModal");
