@@ -480,7 +480,11 @@ body {
 }
 
 .main-search-wrap:focus-within {
-  border-color: #334155;
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.18),
+    0 0 14px rgba(0, 229, 255, 0.32),
+    0 0 28px rgba(0, 229, 255, 0.14);
 }
 
 .search-box {
@@ -2402,6 +2406,977 @@ html.light-mode .news-card,
 html.light-mode .main-search-wrap,
 html.light-mode .search-suggest-box {
   transition: none !important;
+}
+
+/* =========================================================
+   키워드 상세 페이지 반응형 CSS 최종본
+   - 데스크톱 / 태블릿 / 모바일 대응
+   - 메인과 동일한 모바일 상단바 구조
+   - 검색창 넓게 중앙 정렬
+   - 메뉴 탭 가운데 정렬
+   - 키워드 제목 / 다른 키워드 버튼 정리
+   - CORE SUMMARY 통계 3칸 모바일에서도 가로 유지
+   - 요약 카드 / 감성 카드 / 관점 카드 / 기사 카드 모바일 최적화
+   - Footer 안정화
+========================================================= */
+
+
+/* =========================================================
+   0. 공통 안정화
+========================================================= */
+.page {
+  width: 100%;
+}
+
+.keyword-detail-page {
+  width: min(1060px, 100%);
+}
+
+.keyword-card,
+.news-card,
+.article-card,
+.stat-box,
+.news-title-roller {
+  min-width: 0;
+}
+
+.keyword-title,
+.summary-title,
+.perspective-title,
+.article-title,
+.article-desc,
+.news-title-text {
+  overflow-wrap: break-word;
+}
+
+
+/* 다크모드 검색창 반짝임 */
+.main-search-wrap:focus-within {
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.18),
+    0 0 14px rgba(0, 229, 255, 0.32),
+    0 0 28px rgba(0, 229, 255, 0.14);
+}
+
+
+/* 고정 높이 제거 */
+.keyword-desc {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.perspective-card {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.title-row {
+  height: auto !important;
+}
+
+
+/* =========================================================
+   1. 1300px 이하
+========================================================= */
+@media (max-width: 1300px) {
+  .header {
+    padding: 0 38px;
+  }
+
+  .nav {
+    gap: 24px;
+    margin-left: 18px;
+  }
+
+  .main-search-wrap {
+    width: 320px;
+  }
+}
+
+
+/* =========================================================
+   2. 1180px 이하
+========================================================= */
+@media (max-width: 1180px) {
+  .header {
+    padding: 0 28px;
+  }
+
+  .logo {
+    width: 144px;
+  }
+
+  .header-logo-full {
+    height: 50px;
+  }
+
+  .nav {
+    gap: 18px;
+    margin-left: 16px;
+    font-size: 14px;
+  }
+
+  .main-search-wrap {
+    width: 260px;
+  }
+
+  .header-btn {
+    padding: 0 16px;
+  }
+
+  .keyword-detail-page {
+    padding: 38px 28px 110px;
+  }
+}
+
+
+/* =========================================================
+   3. 980px 이하
+   - 태블릿 상단바 2단
+   - 상단 요약 영역 1열
+========================================================= */
+@media (max-width: 980px) {
+  .header {
+    width: 100%;
+    height: 112px;
+    padding: 0 24px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 64px 48px;
+    align-items: center;
+    column-gap: 16px;
+  }
+
+  .page {
+    padding-top: 112px;
+  }
+
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 145px;
+    height: 48px;
+    overflow: visible;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 48px;
+    max-width: none;
+  }
+
+  .header-right {
+    grid-column: 2;
+    grid-row: 1;
+
+    margin-left: 0;
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .main-search-wrap {
+    width: 250px;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .nav a.active::after {
+    bottom: -17px;
+  }
+
+  .keyword-detail-page {
+    padding: 34px 24px 96px;
+  }
+
+  .keyword-title {
+    font-size: 35px;
+  }
+
+  .top-grid,
+  .perspective-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-title {
+    font-size: 22px;
+  }
+
+  .perspective-card {
+    padding-bottom: 26px;
+  }
+
+  .article-card {
+    gap: 18px;
+  }
+
+  .footer-inner {
+    padding: 18px 26px;
+    min-height: 88px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+
+/* =========================================================
+   4. 760px 이하
+========================================================= */
+@media (max-width: 760px) {
+  .header {
+    padding: 0 18px;
+    column-gap: 12px;
+  }
+
+  .logo {
+    width: 132px;
+    height: 46px;
+  }
+
+  .header-logo-full {
+    height: 46px;
+  }
+
+  .main-search-wrap {
+    width: 190px;
+    height: 38px;
+  }
+
+  .theme-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-btn {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .nav {
+    gap: 22px;
+  }
+
+  .keyword-detail-page {
+    padding: 30px 18px 84px;
+  }
+
+  .back-btn {
+    margin-bottom: 22px;
+  }
+
+  .keyword-badge {
+    margin-bottom: 16px;
+  }
+
+  .title-row {
+    gap: 12px;
+  }
+
+  .keyword-title {
+    font-size: 31px;
+    line-height: 1.25;
+    margin-bottom: 0;
+  }
+
+  .random-keyword-btn {
+    padding: 9px 13px;
+  }
+
+  .keyword-desc {
+    margin-top: 14px;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .keyword-card {
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  .top-grid {
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .summary-title {
+    font-size: 21px;
+    margin-bottom: 20px;
+  }
+
+  .sentiment-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 22px;
+  }
+
+  .sentiment-list {
+    width: 100%;
+    align-items: flex-start;
+    gap: 16px;
+    padding-left: 0;
+  }
+
+  .sentiment-item {
+    font-size: 19px;
+  }
+
+  .donut {
+    width: 158px;
+    height: 158px;
+  }
+
+  .donut::after {
+    inset: 39px;
+  }
+
+  .sentiment-guide {
+    margin-top: 18px;
+    padding-top: 18px;
+  }
+
+  .perspective-title {
+    font-size: 22px;
+    margin-bottom: 22px;
+  }
+
+  .news-card {
+    padding: 18px;
+  }
+
+  .article-header-row {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-bottom: 8px;
+  }
+
+  .article-tab-bar {
+    margin-bottom: 0;
+  }
+
+  .article-card {
+    flex-direction: column;
+    padding: 20px 18px;
+  }
+
+  .original-btn {
+    width: 100%;
+    height: 42px;
+    align-self: stretch;
+  }
+
+  .footer-inner {
+    padding: 18px;
+  }
+}
+
+
+/* =========================================================
+   5. 620px 이하
+   모바일 최종 상단바
+   - 1줄: 로고 / 테마 / 마이페이지·로그인 / 로그아웃·회원가입
+   - 2줄: 검색창 넓게 중앙
+   - 3줄: 메뉴 탭 중앙
+========================================================= */
+@media (max-width: 620px) {
+  .header {
+    width: 100%;
+    height: 164px;
+    padding: 0 10px;
+
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) auto auto auto;
+    grid-template-rows: 60px 56px 48px;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 0;
+  }
+
+  .page {
+    padding-top: 164px;
+  }
+
+  /* 로고 */
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 132px;
+    height: 44px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    align-self: center;
+
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 44px;
+    max-width: none;
+    display: block;
+    object-fit: contain;
+  }
+
+  /* header-right 해체 */
+  .header-right {
+    display: contents;
+  }
+
+  /* 오른쪽 위 버튼 */
+  .theme-btn {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    justify-self: end;
+  }
+
+  #loginBtn,
+  #primaryUserBtn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  #joinBtn,
+  #logoutBtn {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .header-btn {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  /* 검색창 */
+  .main-search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: calc(100vw - 20px);
+    max-width: none;
+    height: 42px;
+    margin: 0 auto;
+    justify-self: center;
+
+    padding: 0 14px 0 18px;
+  }
+
+  .search-box {
+    font-size: 14px;
+  }
+
+  /* 검색 자동완성 */
+  .search-suggest-box {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* 메뉴 탭 */
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    overflow: visible;
+    white-space: nowrap;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .nav a.active::after {
+    bottom: -17px;
+    height: 2px;
+  }
+
+  /* 본문 */
+  .keyword-detail-page {
+    padding: 26px 16px 72px;
+  }
+
+  .back-btn {
+    margin-bottom: 20px;
+    font-size: 11px;
+  }
+
+  .keyword-badge {
+    font-size: 11px;
+    padding: 6px 12px;
+    margin-bottom: 14px;
+  }
+
+  .title-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .keyword-title {
+    font-size: 28px;
+    line-height: 1.3;
+    letter-spacing: -0.6px;
+  }
+
+  .random-keyword-btn {
+    margin-left: 0;
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+
+  .keyword-desc {
+    font-size: 13px;
+    line-height: 1.65;
+    margin-top: 14px;
+    margin-bottom: 24px;
+  }
+
+  .top-grid {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .keyword-card {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+
+  .section-label {
+    font-size: 13px;
+    letter-spacing: 1.2px;
+    margin-bottom: 14px;
+  }
+
+  .summary-title {
+    font-size: 19px;
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+
+  /* CORE SUMMARY 통계 3칸 가로 유지 */
+  .summary-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-box {
+    padding: 12px 8px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    margin-bottom: 7px;
+    white-space: nowrap;
+  }
+
+  .stat-value {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .sentiment-card {
+    min-height: 0;
+  }
+
+  .sentiment-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 20px;
+    min-height: 0;
+  }
+
+  .sentiment-list {
+    width: 100%;
+    gap: 14px;
+  }
+
+  .sentiment-item {
+    font-size: 18px;
+    gap: 10px;
+  }
+
+  .sentiment-item .dot {
+    width: 14px;
+    height: 14px;
+  }
+
+  .donut {
+    width: 150px;
+    height: 150px;
+  }
+
+  .donut::after {
+    inset: 38px;
+  }
+
+  .sentiment-guide {
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .perspective-card {
+    margin-bottom: 18px;
+  }
+
+  .perspective-title {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  .perspective-grid {
+    gap: 14px;
+  }
+
+  .news-card {
+    padding: 16px;
+    border-radius: 14px;
+    min-height: 0;
+  }
+
+  .news-type {
+    margin-bottom: 14px;
+  }
+
+  .news-meta-wrap {
+    margin-bottom: 14px;
+  }
+
+  .meta-pill {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+
+  .news-title-roller {
+    height: 44px;
+    margin-bottom: 14px;
+  }
+
+  .news-title-item {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .score-bar {
+    margin-bottom: 8px;
+  }
+
+  .article-header-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-bottom: 12px;
+  }
+
+  .article-tab-bar {
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .article-tab {
+    font-size: 13px;
+    padding: 8px 4px;
+  }
+
+  .article-list {
+    gap: 12px;
+  }
+
+  .article-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    padding: 18px 16px;
+    border-radius: 16px;
+    min-height: 0;
+  }
+
+  .article-source {
+    margin-bottom: 12px;
+  }
+
+  .article-title {
+    font-size: 15px;
+    line-height: 1.45;
+    margin-bottom: 9px;
+  }
+
+  .article-desc {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .original-btn {
+    width: 100%;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .toast {
+    left: 14px;
+    right: 14px;
+    bottom: 18px;
+    text-align: center;
+  }
+
+  .footer-inner {
+    min-height: 88px;
+    padding: 18px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+
+  .footer-copy {
+    width: 100%;
+    line-height: 1.5;
+  }
+}
+
+
+/* =========================================================
+   6. 430px 이하
+========================================================= */
+@media (max-width: 430px) {
+  .header {
+    height: 164px;
+    padding: 0 8px;
+    grid-template-columns: minmax(100px, 1fr) auto auto auto;
+    column-gap: 5px;
+  }
+
+  .page {
+    padding-top: 164px;
+  }
+
+  .logo {
+    width: 116px;
+    height: 40px;
+  }
+
+  .header-logo-full {
+    height: 40px;
+  }
+
+  .theme-btn {
+    width: 33px;
+    height: 33px;
+  }
+
+  .header-btn {
+    height: 33px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .main-search-wrap {
+    width: calc(100vw - 16px);
+    height: 40px;
+  }
+
+  .search-box {
+    font-size: 13px;
+  }
+
+  .search-suggest-box {
+    left: 8px !important;
+    right: 8px !important;
+  }
+
+  .nav {
+    gap: 15px;
+    font-size: 12px;
+  }
+
+  .keyword-detail-page {
+    padding: 24px 12px 66px;
+  }
+
+  .keyword-title {
+    font-size: 25px;
+  }
+
+  .keyword-desc {
+    font-size: 12px;
+  }
+
+  .keyword-card {
+    padding: 18px 14px;
+  }
+
+  .summary-title {
+    font-size: 18px;
+  }
+
+  /* CORE SUMMARY 초소형 모바일 보정 */
+  .summary-stats {
+    gap: 6px;
+  }
+
+  .stat-box {
+    padding: 11px 6px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+
+  .sentiment-item {
+    font-size: 17px;
+  }
+
+  .donut {
+    width: 140px;
+    height: 140px;
+  }
+
+  .donut::after {
+    inset: 35px;
+  }
+
+  .perspective-title {
+    font-size: 19px;
+  }
+
+  .article-title {
+    font-size: 14px;
+  }
+
+  .article-desc {
+    font-size: 11px;
+  }
+}
+
+
+/* =========================================================
+   7. 390px 이하
+========================================================= */
+@media (max-width: 390px) {
+  .nav {
+    gap: 13px;
+    font-size: 11px;
+  }
+
+  .keyword-title {
+    font-size: 23px;
+  }
+
+  .random-keyword-btn {
+    font-size: 11px;
+    padding: 8px 11px;
+  }
+
+  .summary-title {
+    font-size: 17px;
+  }
+
+  .summary-stats {
+    gap: 5px;
+  }
+
+  .stat-box {
+    padding: 10px 5px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 12px;
+  }
+
+  .sentiment-item {
+    font-size: 16px;
+  }
+
+  .donut {
+    width: 132px;
+    height: 132px;
+  }
+
+  .donut::after {
+    inset: 33px;
+  }
+
+  .article-card {
+    padding: 16px 13px;
+  }
+
+  .original-btn {
+    height: 40px;
+    font-size: 12px;
+  }
 }
 
 </style>
