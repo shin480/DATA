@@ -44,7 +44,13 @@ def _build_engine():
     port     = os.getenv("DB_PORT",     "3306")
     db       = os.getenv("DB_NAME",     "news_db")
     url = f"mysql+pymysql://{user}:{password}@{host}:{port}/{db}"
-    return create_engine(url=url, echo=True, pool_size=1)
+    return create_engine(
+        url=url,
+        echo=True,
+        pool_size=5,
+        pool_pre_ping=True,   # 쿼리 전 연결 유효성 자동 확인 → stale 연결 방지
+        pool_recycle=1800,    # 30분마다 연결 재생성 → MySQL wait_timeout 대비
+    )
 
 
 _engine       = None
