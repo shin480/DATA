@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>공지사항 상세 | DATA 다타</title>
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
@@ -353,27 +354,80 @@
     }
 
     @media (max-width: 720px) {
-      .notice-detail-wrap {
-        width: calc(100% - 28px);
-        padding-top: 36px;
-      }
 
-      .detail-head,
-      .detail-body,
-      .detail-actions {
-        padding-left: 22px;
-        padding-right: 22px;
-      }
+  .notice-detail-wrap {
+    width: 100%;
+    padding: 24px 16px 70px;
+  }
 
-      .detail-title {
-        font-size: 23px;
-      }
+  .top-bar {
+    margin-bottom: 28px;
+  }
 
-      .notice-link-box {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-    }
+  .notice-logo-img {
+    height: 42px;
+  }
+
+  .back-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .detail-label {
+    margin-bottom: 12px;
+    font-size: 11px;
+  }
+
+  .detail-panel {
+    border-radius: 16px;
+  }
+
+  .detail-head {
+    padding: 24px 18px 20px;
+  }
+
+  .detail-body {
+    padding: 24px 18px;
+  }
+
+  .detail-actions {
+    padding: 20px 18px 26px;
+  }
+
+  .detail-title {
+    font-size: 22px;
+    line-height: 1.45;
+  }
+
+  .detail-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .notice-content-text {
+    font-size: 14px;
+    line-height: 1.85;
+    word-break: break-word;
+  }
+
+  .list-btn {
+    width: 100%;
+    padding: 13px;
+  }
+
+  .notice-link-box {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .footer-inner {
+    min-height: auto;
+    padding: 22px 18px;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+}
   </style>
 </head>
 
