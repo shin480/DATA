@@ -139,7 +139,11 @@ body {
 }
 
 .main-search-wrap:focus-within {
-  border-color: #334155;
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.18),
+    0 0 14px rgba(0, 229, 255, 0.32),
+    0 0 28px rgba(0, 229, 255, 0.14);
 }
 
 .search-box {
@@ -752,16 +756,13 @@ body.light-mode .opinion-text:hover {
   padding: 6px 12px;
   border-radius: 6px;
   background: #1e293b;
-  color: #fff;
+  color: #94a3b8;
   font-size: 11px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
-.opinion-sentiment {
-  color: #94a3b8;
-  }
 
 /* 버튼형 키워드 태그 */
 .keyword-btn {
@@ -777,12 +778,7 @@ body.light-mode .opinion-text:hover {
 }
 
 .keyword-btn:hover {
-  color: #00e5ff;
-}
-
-.o-tag.o-tag:hover {
-  color: #00e5ff;
-  background: rgba(0, 229, 255, 0.14);
+  color: #ffffff;
 }
 
 body.light-mode .keyword-btn:hover {
