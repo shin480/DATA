@@ -2071,9 +2071,16 @@ def get_dominant_opinions():
 
         keywords = scope_keywords[:5]
 
+        opinion_sentence = make_dominant_opinion_sentence(
+            topic=display_scope_title,
+            positive=positive,
+            neutral=neutral,
+            negative=negative
+        )
+
         opinions.append({
             "scope_id": scope_id,
-            "title": display_scope_title,
+            "title": opinion_sentence,
             "summary": scope_summary,
             "keywords": keywords,
             "keyword": keywords[0] if keywords else top_keyword,
