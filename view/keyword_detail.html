@@ -3379,6 +3379,48 @@ html.light-mode .search-suggest-box {
   }
 }
 
+/* =========================================================
+   모바일 REFERENCE + ARTICLE 탭 세로 정렬 보정
+========================================================= */
+@media (max-width: 620px) {
+  .article-header-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: nowrap;
+    margin-bottom: 16px;
+  }
+
+  .article-header-row .section-label {
+    margin-bottom: 0 !important;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    white-space: nowrap;
+  }
+
+  .article-tab-bar {
+    height: 36px;
+    margin-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .article-tab {
+    height: 36px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .article-tab::after {
+    bottom: 0;
+  }
+}
+
 </style>
 </head>
 
