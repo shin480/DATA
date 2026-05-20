@@ -1450,6 +1450,16 @@ body.light-mode .footer-modal-btn {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+  // 로그인 체크
+  const loginInfo = getLoginInfo();
+
+  if (!loginInfo.token) {
+    alert("로그인이 필요한 서비스입니다.");
+    location.replace("/view/login.html");
+    return;
+  }
+
   applyThemeMode();
   loadHeader();
   loadFooter();
