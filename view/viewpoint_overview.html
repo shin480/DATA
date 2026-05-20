@@ -134,11 +134,11 @@ body {
 }
 
 body.light-mode .nav a.active {
-  color: #41BFE0 !important;
+  color: #4cb7d3 !important;
 }
 
 body.light-mode .nav a.active::after {
-  background: #41BFE0;
+  background: #4cb7d3;
 }
 
 .header-right {
@@ -152,7 +152,7 @@ body.light-mode .nav a.active::after {
 /* 검색창 */
 .main-search-wrap {
   position: relative;
-  width: 410px;
+  width: 370px;
   height: 40px;
   border-radius: 999px;
   background: #070b1a;
@@ -163,7 +163,11 @@ body.light-mode .nav a.active::after {
 }
 
 .main-search-wrap:focus-within {
-  border-color: #334155;
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.18),
+    0 0 14px rgba(0, 229, 255, 0.32),
+    0 0 28px rgba(0, 229, 255, 0.14);
 }
 
 .search-box {
@@ -249,6 +253,25 @@ body.light-mode .nav a.active::after {
 .header-btn.join:hover {
   border-color: #00e5ff;
   color: #00e5ff;
+}
+
+/* 로그인 유저 이름 */
+.header-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+body.light-mode .header-user-name {
+  color: #55635c;
 }
 
 
@@ -1036,6 +1059,10 @@ body.light-mode .theme-btn:hover {
   background: #ffffff;
 }
 
+body.light-mode .header-user-name {
+  color: #55635c;
+}
+
 body.light-mode .header-btn.join {
   background: #f7faf7;
   border: 1px solid #cfd8d0;
@@ -1466,7 +1493,13 @@ function getLoginInfo() {
       sessionStorage.getItem("user_role") ||
       localStorage.getItem("user_role") ||
       sessionStorage.getItem("role") ||
-      localStorage.getItem("role")
+      localStorage.getItem("role"),
+
+    userName:
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName")
   };
 }
 
@@ -1564,6 +1597,7 @@ function setHeaderLoginState() {
   const joinBtn = document.getElementById("joinBtn");
   const primaryUserBtn = document.getElementById("primaryUserBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const headerUserName = document.getElementById("headerUserName");
 
   const loginInfo = getLoginInfo();
 
@@ -1572,6 +1606,7 @@ function setHeaderLoginState() {
     if (joinBtn) joinBtn.classList.remove("hidden");
     if (primaryUserBtn) primaryUserBtn.classList.add("hidden");
     if (logoutBtn) logoutBtn.classList.add("hidden");
+    if (headerUserName) headerUserName.classList.add("hidden");
     return;
   }
 
@@ -1579,6 +1614,14 @@ function setHeaderLoginState() {
   if (joinBtn) joinBtn.classList.add("hidden");
   if (primaryUserBtn) primaryUserBtn.classList.remove("hidden");
   if (logoutBtn) logoutBtn.classList.remove("hidden");
+
+  if (headerUserName) {
+    headerUserName.innerText = loginInfo.userName
+      ? `${loginInfo.userName}님`
+      : "";
+
+    headerUserName.classList.toggle("hidden", !loginInfo.userName);
+  }
 
   const isAdmin =
     loginInfo.role === "ADMIN" ||
@@ -2171,7 +2214,8 @@ function renderOverviewGroups(groups) {
   });
 }
 
-  document.addEventListener("click", function (e) {
+
+document.addEventListener("click", function (e) {
   const card = e.target.closest(".view-card");
   if (!card) return;
 
@@ -2183,8 +2227,6 @@ function renderOverviewGroups(groups) {
 
   btn.click();
 });
-
-
 </script>
 </body>
 </html>
