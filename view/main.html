@@ -686,6 +686,19 @@ body.light-mode .header-user-name {
   background: rgba(0, 229, 255, 0.14);
 }
 
+o-tag.sentiment-tag {
+  pointer-events: none;
+  color: inherit;
+}
+
+o-tag.sentiment-tag:hover {
+  transform: none !important;
+  background: inherit !important;
+  color: inherit !important;
+  box-shadow: none !important;
+  cursor: default !important;
+}
+
 
 /* =========================================================
    6. 오늘의 지배적 여론 카드
@@ -702,7 +715,7 @@ body.light-mode .header-user-name {
 .quote-icon {
   font-size: 45px;
   color: #38bdf8;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   opacity: 0.5;
 }
 
@@ -711,6 +724,9 @@ body.light-mode .header-user-name {
   line-height: 1.6;
   color: #e2e8f0;
   font-weight: 500;
+  min-height: 110px;   /* 핵심 */
+  max-height: 72px;   /* 핵심 (완전 고정) */
+  overflow: hidden;
 
   cursor: pointer;
   transition: color 0.18s ease;
@@ -736,13 +752,16 @@ body.light-mode .opinion-text:hover {
   padding: 6px 12px;
   border-radius: 6px;
   background: #1e293b;
-  color: #94a3b8;
+  color: #fff;
   font-size: 11px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
+.opinion-sentiment {
+  color: #94a3b8;
+  }
 
 /* 버튼형 키워드 태그 */
 .keyword-btn {
@@ -758,7 +777,12 @@ body.light-mode .opinion-text:hover {
 }
 
 .keyword-btn:hover {
-  color: #ffffff;
+  color: #00e5ff;
+}
+
+.o-tag.o-tag:hover {
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.14);
 }
 
 body.light-mode .keyword-btn:hover {
@@ -1950,8 +1974,7 @@ body.light-mode .view-bar-bg {
       </h1>
 
       <p>
-        키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설,
-        실생활 영향까지 한 번에 보여줍니다.
+        키워드를 검색하면 핵심 요약, 관점 차이, 쉬운 해설까지 한 번에 보여줍니다.
       </p>
 
       <div class="hero-tags">
@@ -2043,24 +2066,23 @@ body.light-mode .view-bar-bg {
 
           <div class="quote-icon" style="text-align:right">”</div>
 
-          <div class="opinion-tags"></div>
+  <!-- TAG + SENTIMENT -->
+  <div class="opinion-meta">
 
-<div class="opinion-sentiment">
-  <o-tag class="o-tag sentiment-tag"></o-tag>
-</div>
+    <div class="opinion-tags"></div>
 
-          <div class="nav-btns">
-            <div class="nav-btn" onclick="prevOpinion()">
-              &lt;
-            </div>
+    <div class="opinion-sentiment">
+      <o-tag class="o-tag sentiment-tag"></o-tag>
+    </div>
 
-            <div class="opinion-page">
-              - / -
-            </div>
+<!-- NAV BUTTON (절대 위치 안정화 대상) -->
+           <div class="nav-btns">
 
-            <div class="nav-btn" onclick="nextOpinion()">
-              &gt;
-            </div>
+    <div class="nav-btn" onclick="prevOpinion()">&lt;</div>
+
+    <div class="opinion-page">- / -</div>
+
+    <div class="nav-btn" onclick="nextOpinion()">&gt;</div>
           </div>
         </div>
       </div>
