@@ -112,6 +112,35 @@ body {
   color: #00e5ff;
 }
 
+.nav a {
+  position: relative;
+}
+
+.nav a.active {
+  color: #00e5ff !important;
+  font-weight: 900 !important;
+}
+
+.nav a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -26px;
+  height: 3px;
+  border-radius: 999px;
+  background: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.65);
+}
+
+body.light-mode .nav a.active {
+  color: #4cb7d3 !important;
+}
+
+body.light-mode .nav a.active::after {
+  background: #4cb7d3;
+}
+
 .header-right {
   margin-left: auto;
   display: flex;
