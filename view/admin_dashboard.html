@@ -83,7 +83,7 @@ select {
 
 
 /* ==============================
-   Sidebar
+   Sidebar — 관리자 페이지 공통 최종본
 ============================== */
 
 .sidebar {
@@ -120,15 +120,21 @@ select {
 
 .logo-wrap:hover {
   transform: none;
-  border-color: transparent;
+  border: none;
   box-shadow: none;
 }
 
 .admin-side-logo {
   display: block;
   width: 170px;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+.logo-small,
+.logo-main {
+  display: none;
 }
 
 .side-title-wrap {
