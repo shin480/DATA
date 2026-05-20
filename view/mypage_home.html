@@ -862,7 +862,7 @@ body {
 ============================== */
 
 .mobile-lnb-bar {
-  display: none;
+  display: none !important;
 }
 
 @media (max-width: 768px) {
@@ -883,7 +883,7 @@ body {
 
   /* ── 모바일 LNB 바 ── */
   .mobile-lnb-bar {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
@@ -2554,12 +2554,14 @@ if (pwModal) {
   /* ==============================
      모바일 햄버거 메뉴
   ============================== */
-  (function () {
+  function initHamburger() {
     const hamburgerBtn = document.getElementById("hamburgerBtn");
     const dropdown = document.getElementById("mobileMenuDropdown");
     const mobileAccountBtn = document.getElementById("mobileAccountPageBtn");
 
     if (!hamburgerBtn || !dropdown) return;
+    if (hamburgerBtn.dataset.hamburgerInit) return;
+    hamburgerBtn.dataset.hamburgerInit = "1";
 
     hamburgerBtn.addEventListener("click", function (e) {
       e.stopPropagation();
@@ -2574,7 +2576,6 @@ if (pwModal) {
       }
     });
 
-    // 외부 클릭 시 닫기
     document.addEventListener("click", function (e) {
       if (
         dropdown.classList.contains("open") &&
@@ -2609,7 +2610,10 @@ if (pwModal) {
         }
       });
     }
-  })();
+  }
+
+  initHamburger();
+  document.addEventListener("DOMContentLoaded", initHamburger);
 
   window.closeMobileMenu = function () {
     const hamburgerBtn = document.getElementById("hamburgerBtn");

@@ -23,8 +23,18 @@ def clean_and_normalize(text):
 # 2. [스마트 딕셔너리] 중의적 단어 제거 + 핵심 단어/짧은 N-gram 혼합
 category_keywords = {
     # [책임 소재 그룹]
-    "정부 책임": ["당국 책임", "정책 실패", "정부 무능", "실책", "늑장 대응", "관리 부실"],
-    "기업 책임": ["경영진 책임", "도덕적 해이", "불법", "방만 경영", "기업 과실"],
+    "정부 책임": [
+        "정부 책임", "정부 책임론", "당국 책임", "정책 실패", "정부 무능",
+        "행정 실패", "감독 부실", "관리 감독 부실", "관리 실패",
+        "늑장 대응", "정책 혼선", "정책 부작용", "규제 실패",
+        "제도 미비", "허술한 관리", "당국의 관리", "당국의 감독",
+        "정부 탓", "당국 탓", "정부가 방치", "당국이 방치"
+    ],
+    "기업 책임": ["경영진 책임","경영 실패","의사 결정 실패","책임 전가",
+        "현장을 외면","대응 실패","실력 부족","총체적 난국","관리 부실",
+        "부실 경영","기업 과실","방만 경영","도덕적 해이","불법 영업",
+        "불법 대출", "불법 사채", "불법 유통", "불법 반입", "불법 조업",
+        "불법 도박장 출입", "불법 촬영", "불법 행위"],
     "개인 책임": ["개인 과실", "투자자 책임", "본인 부주의", "개인 탓"],
     "외부 책임": ["외생 변수", "불가항력", "외부 충격", "어쩔 수 없는"],
     "복합 책임": ["공동 책임", "복합적", "상호 작용", "맞물려"],
@@ -100,6 +110,22 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
             scores["결과 분석"] += c_title.count(kw) * 1.5
             scores["결과 분석"] += c_content.count(kw) * 0.4
 
+    # =========================
+    # 4. 단순 전달 (정책/행사 발표)
+    # =========================
+    info_words = ["개최", "신설", "추진", "토론회", "설명회", "체결", "수주", "용역"]
+    # 안내성 단어가 2개 이상 중복해서 나오면 단순 기사일 확률이 높음
+    info_hit_count = sum(f"{c_title} {c_content}".count(w) for w in info_words)
+
+    # 기사 내에 명백한 비판/부정적 단어가 있는지 확인
+    has_critique = any(w in c_title + c_content for w in ["비판", "논란", "지적", "규탄", "부당", "의혹", "갈등", "실패", "부실", "공백"])
+
+    if info_hit_count >= 2:
+        scores["단순 전달"] += 2.0
+        # 비판/부정적 문맥이 전혀 없을 때만(진짜 단순 전달/홍보일 때만) 정부 책임 점수 삭감
+        if not has_critique:
+            scores["정부 책임"] -= 1.0
+
 
     # =========================
     # 우려 키워드 문맥 보정
@@ -124,13 +150,405 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "사후조정", "교섭", "협상", "대화 제안", "재협상"
     ]
 
-    if any(w in c_title or w in c_content for w in labor_policy_words):
+    if any(w in (c_title + c_content) for w in labor_policy_words):
         scores["정책 요인(국내)"] += 1.5
         scores["대응 분석"] += 1.2
 
         # 단순 갈등 기사라고 무조건 비판으로 쏠리는 것 방지
         if "비판" not in c_title and "의혹" not in c_title and "불법" not in c_title:
             scores["비판적 태도"] *= 0.75
+
+    # =========================
+    # 기업/경영진
+    # =========================
+    company_blame_words = [
+        "경영 실패",
+        "의사 결정 실패",
+        "책임 전가",
+        "관리 부실",
+        "대응 실패"
+    ]
+
+    if any(w in (c_title + c_content) for w in company_blame_words):
+        scores["기업 책임"] += 3.0
+
+    company_failure_words = [
+        "내부통제 부실",
+        "개인정보 유출",
+        "불완전판매",
+        "담합",
+        "갑질",
+        "횡령",
+        "배임",
+        "허위 공시",
+        "조작",
+        "리콜 은폐",
+        "불법 영업",
+        "부당거래",
+        "분식회계",
+        "전산 장애",
+        "오지급 사고",
+        "부실 대응",
+        "노동권 침해",
+        "하도급 갑질",
+        "임금 체불",
+        "불법 대출",
+        "불법 사채",
+        "토큰 갈취",
+        "사기 행위"
+    ]
+
+    company_subject_words = [
+        "기업",
+        "회사",
+        "거래소",
+        "은행",
+        "보험사",
+        "카드사",
+        "플랫폼",
+        "쿠팡",
+        "빗썸",
+        "업체",
+        "사업자",
+        "프랜차이즈"
+    ]
+
+    if (
+            any(s in c_title + c_content for s in company_subject_words)
+            and
+            any(w in c_title + c_content for w in company_failure_words)
+    ):
+        scores["기업 책임"] += 3.5
+
+    company_exclude_words = [
+        "캠페인",
+        "동참",
+        "예방",
+        "근절",
+        "사회공헌",
+        "후원",
+        "공익",
+        "강화",
+        "대응 촉구",
+        "단속",
+        "규제",
+        "정부",
+        "경찰청",
+        "문체부",
+        "농식품부",
+        "해수부"
+    ]
+
+    if any(x in c_title + c_content for x in company_exclude_words):
+        scores["기업 책임"] *= 0.3
+
+    # =========================
+    # 정부 책임 강조
+    # =========================
+    government_blamed_patterns = [
+        "정부 책임론",
+        "당국 책임론",
+        "금융당국 책임론",
+        "정부 책임",
+        "당국 책임",
+        "정부를 비판",
+        "당국을 비판",
+        "정부에 책임",
+        "당국에 책임",
+        "정부 책임을 묻",
+        "당국 책임을 묻",
+        "정부가 책임져야",
+        "정부가 함께 책임져야",
+        "책임을 방기",
+        "정책 실패를 인정",
+        "정책 실패를 자백"
+    ]
+
+    if any(w in c_title + c_content for w in government_blamed_patterns):
+        scores["정부 책임"] += 4.0
+
+    government_actor_patterns = [
+        "정부가 지원",
+        "정부가 추진",
+        "정부가 발표",
+        "정부가 도입",
+        "정부가 확대",
+        "정부가 공급",
+        "정부가 출범",
+        "정부가 질타",
+        "국토부가 질타",
+        "금감원이 질타",
+        "금융당국이 점검",
+        "금감원이 검사",
+        "노동부는 조사",
+        "국세청은 징수",
+        "공정위 고발",
+        "금감원 제재",
+        "금융당국 긴급 대응",
+        "노동부가",
+        "고용노동부가",
+        "금융감독원이",
+        "금융위원회",
+        "FIU",
+        "국세청은",
+        "금감원은",
+        "공정위는",
+        "입건",
+        "조사에 착수",
+        "검사에 착수",
+        "영업정지",
+        "과태료",
+        "제재",
+        "처분",
+        "점검",
+        "시정 조치",
+        "고발 조치"
+    ]
+
+    if any(w in c_title + c_content for w in government_actor_patterns):
+        scores["정부 책임"] -= 1.0
+        scores["정책 요인(국내)"] += 1.5
+        scores["대응 분석"] += 1.5
+
+    political_debate_words = [
+        "여야 공방",
+        "정치권 공방",
+        "정치적 공세",
+        "정치 이벤트",
+        "후보",
+        "선거",
+        "국민의힘",
+        "더불어민주당",
+        "민주당",
+        "대통령실",
+        "논평",
+        "원내대변인"
+    ]
+
+    if any(w in c_title + c_content for w in political_debate_words):
+        scores["정부 책임"] -= 2.0
+        scores["비판적 태도"] += 1.5
+        scores["정책 요인(국내)"] += 1.0
+
+
+    strict_government_subject_words = [
+        "정부", "당국", "국토부", "금융당국", "공정위", "금감원",
+    "기재부", "복지부", "노동부", "환경부", "대통령실", "지자체", "당정"
+    ]
+
+    loose_government_subject_words = [
+        "공정위","금융당국","금감원","국토부"
+    ]
+
+    government_failure_words = [
+        "정책 실패", "행정 실패", "감독 부실", "관리 실패",
+        "늑장 대응", "부실 대응", "정책 혼선",
+        "규제 실패", "규제 공백", "제도 허점", "허술한 관리",
+        "관리 소홀", "감독 소홀", "대응 미흡", "대책 부재",
+        "예산 삭감", "전액 삭감", "사업 무산", "감사 적발",
+
+        "성과 부실", "규제 논란", "규제 잣대", "법적 허점",
+        "관리 체계 문제", "구조조정 대상", "폐지 등급",
+
+        "책임론",
+        "금융당국 책임론",
+        "정부 책임론",
+        "감독 책임",
+        "관리 책임",
+        "책임 공방",
+        "늑장 대응 책임",
+        "관리 감독 부실",
+        "관리 공백",
+        "단속 관리는 공백",
+        "강하게 질타",
+        "부실했던 업무체계",
+        "정책 실패를 자백",
+        "정책 실패라는 평가",
+
+        "책임을 방기",
+        "정책 실패를 인정",
+        "정부 책임론",
+        "관리 감독 부실",
+        "방치한 결과",
+        "감독 책임",
+        "부담을 떠안고",
+        "현실을 반영하지 못",
+
+        "관리 감독은 허술",
+        "전력망 관리 실패",
+        "관리 감독 기능이 약",
+        "책임을 방기",
+        "공백이 도마",
+        "공백이 드러",
+        "문책"
+    ]
+
+    risky_government_failure_words = [
+        "허점",
+        "구조적 문제",
+        "부정수급",
+        "실질적 조치",
+        "근본 대책"
+    ]
+
+    government_loose_failure_words = [
+        "실패","허점","혼선","방치"
+    ]
+
+    policy_promo_words = [
+        "신설", "출범", "확대", "추진", "공급",
+        "도입", "개최", "토론회", "설명회"
+    ]
+
+    government_victim_patterns = [
+        "정부 지원",
+        "정부 추진",
+        "정부 발표",
+        "정부 확대",
+        "정부 도입",
+        "정부 출범"
+    ]
+
+    negative_context_words = [
+        "실패", "부실", "허술", "질타",
+        "책임 공방", "문제", "책임", "공백",
+        "방치", "미흡", "논란", "한계",
+        "불가능", "지적", "비판"
+    ]
+
+    official_blame_words = [
+        "질타",
+        "문책",
+        "감사 적발",
+        "책임론",
+        "책임 공방",
+        "도덕적 해이",
+        "관리 부실",
+        "감독 부실",
+        "운영 부실",
+        "부실 대응",
+        "늑장 대응"
+    ]
+
+    if (
+            any(w in c_title for w in policy_promo_words)
+            and
+            not any(w in c_title + c_content for w in negative_context_words)
+    ):
+        scores["정부 책임"] *= 0.6
+        scores["정책 요인(국내)"] += 1.5
+
+    gov_loose_title_hit = (
+            any(s in c_title for s in loose_government_subject_words)
+            and
+            any(w in c_title for w in government_loose_failure_words)
+    )
+
+    gov_title_hit = (
+            any(s in c_title for s in strict_government_subject_words)
+            and
+            any(f in c_title for f in government_failure_words)
+    )
+
+    gov_content_hit = (
+            any(s in c_content for s in strict_government_subject_words)
+            and
+            any(f in c_content for f in government_failure_words)
+    )
+
+    gov_risky_context_hit = (
+            any(s in c_title + c_content for s in strict_government_subject_words)
+            and
+            any(w in c_title + c_content for w in risky_government_failure_words)
+    )
+
+    if (
+            any(s in c_title + c_content for s in strict_government_subject_words)
+            and
+            any(w in c_title + c_content for w in official_blame_words)
+    ):
+        scores["정부 책임"] += 2.5
+
+    if gov_risky_context_hit:
+        scores["정부 책임"] += 1.2
+
+    if gov_title_hit:
+        scores["정부 책임"] += 3.5
+    elif gov_loose_title_hit:
+        scores["정부 책임"] += 2.8
+    elif gov_content_hit:
+        scores["정부 책임"] += 2.2
+
+    policy_announcement_patterns = [
+        "신설 본격화",
+        "출범",
+        "공급 확대",
+        "도입",
+        "추진한다",
+        "추진 중",
+        "발표했다",
+        "검토하고 있다",
+        "토론회",
+        "협의체",
+        "공모사업",
+        "지원 확대",
+        "전용 펀드",
+        "기금 가입",
+        "후속 조치"
+    ]
+
+    strong_blame_context = [
+        "책임론",
+        "정책 실패",
+        "감독 부실",
+        "관리 감독 부실",
+        "늑장 대응",
+        "책임 공방",
+        "문책",
+        "감사 적발",
+        "방치",
+        "질타를 받",
+        "비판을 받"
+    ]
+
+    non_government_blame_context = [
+        "정부와 갈등",
+        "정부 상대",
+        "대관 업무",
+        "국정감사에서",
+        "의원들의 질타"
+    ]
+
+    if any(w in c_title + c_content for w in non_government_blame_context):
+        scores["정부 책임"] -= 2.0
+        scores["기업 책임"] += 1.0
+
+    if (
+            any(w in c_title + c_content for w in policy_announcement_patterns)
+            and not any(w in c_title + c_content for w in strong_blame_context)
+    ):
+        scores["정부 책임"] -= 2.0
+        scores["정책 요인(국내)"] += 2.0
+        scores["대응 분석"] += 1.0
+
+    if any(w in c_title + c_content for w in government_victim_patterns):
+        scores["정부 책임"] -= 1.5
+        scores["정책 요인(국내)"] += 1.0
+
+    if any(w in c_title for w in ["정부 책임론", "금융당국 책임론", "당국 책임론"]):
+        scores["정부 책임"] += 6
+
+    # =========================
+    # 5. 예외 규칙 (오분류 방지)
+    # =========================
+    # 정부가 사기를 당했거나 주체가 국민연금 등 제3자인 경우 '정부 책임' 점수 차감
+    gov_victim_words = ["정부가 사기", "정부 기관이 사기", "정부를 믿고"]
+    if any(w in (c_title + c_content) for w in gov_victim_words):
+        scores["정부 책임"] -= 1.0
+        scores["기업 책임"] += 2.0  # 보통 이런 류는 기업의 비위인 경우가 많음
+
+    if "국민연금" in c_title + c_content and any(w in c_title + c_content for w in ["개인정보 유출", "책임 투자", "ESG", "쿠팡"]):
+        scores["기업 책임"] += 1.5
 
     # 단순 전달 penalty
     scores["단순 전달"] *= 0.25
