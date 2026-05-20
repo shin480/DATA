@@ -187,7 +187,11 @@ main {
     }
 
     .main-search-wrap:focus-within {
-      border-color: #334155;
+      border-color: rgba(0, 229, 255, 0.85);
+      box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.18),
+        0 0 14px rgba(0, 229, 255, 0.32),
+        0 0 28px rgba(0, 229, 255, 0.14);
     }
 
     .search-icon-btn {
@@ -891,6 +895,662 @@ body.light-mode .nav a.active {
 
 body.light-mode .nav a.active::after {
   background: #41BFE0;
+}
+
+/* =========================================================
+   반응형 최종본
+   - 데스크톱 / 노트북 / 태블릿 / 모바일 대응
+   - 메인 페이지와 동일한 모바일 상단바 구조
+   - 기사 목록 폭 / 카드 / 버튼 모바일 최적화
+   - 검색창 넓게 중앙 배치
+   - 하단 탭 중앙 정렬
+   - Footer 전체 폭 안정화
+========================================================= */
+
+
+/* =========================================================
+   0. 공통 반응형 안정화
+========================================================= */
+.page {
+  width: min(1440px, 100%);
+}
+
+.article-wrap {
+  width: min(900px, 100%);
+}
+
+.article-card,
+.article-card > div,
+.article-title,
+.article-summary {
+  min-width: 0;
+}
+
+
+/* Footer 전체 폭 안정화 */
+#footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+
+/* =========================================================
+   1. 1300px 이하
+========================================================= */
+@media (max-width: 1300px) {
+  .header {
+    padding: 0 38px;
+  }
+
+  .nav {
+    gap: 24px;
+    margin-left: 18px;
+  }
+
+  .main-search-wrap {
+    width: 320px;
+  }
+
+  .article-page {
+    padding: 52px 0 112px;
+  }
+
+  .article-wrap {
+    width: min(900px, calc(100% - 72px));
+    margin: 0 auto;
+  }
+}
+
+
+/* =========================================================
+   2. 1180px 이하
+========================================================= */
+@media (max-width: 1180px) {
+  .header {
+    padding: 0 28px;
+  }
+
+  .logo {
+    width: 144px;
+  }
+
+  .header-logo-full {
+    height: 50px;
+  }
+
+  .nav {
+    gap: 18px;
+    margin-left: 16px;
+    font-size: 14px;
+  }
+
+  .main-search-wrap {
+    width: 260px;
+  }
+
+  .header-btn {
+    padding: 0 16px;
+  }
+
+  .article-wrap {
+    width: min(900px, calc(100% - 56px));
+  }
+}
+
+
+/* =========================================================
+   3. 980px 이하
+   - 태블릿 상단바 2단형
+   - 기사 영역 폭 전체 대응
+========================================================= */
+@media (max-width: 980px) {
+  .header {
+    width: 100%;
+    height: 112px;
+    padding: 0 24px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 64px 48px;
+    align-items: center;
+    column-gap: 16px;
+  }
+
+  .page {
+    padding-top: 112px;
+  }
+
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 145px;
+    height: 48px;
+    overflow: visible;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 48px;
+    max-width: none;
+  }
+
+  .header-right {
+    grid-column: 2;
+    grid-row: 1;
+
+    margin-left: 0;
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .main-search-wrap {
+    width: 250px;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .nav a.active::after {
+    bottom: -17px;
+  }
+
+  .article-page {
+    padding: 42px 0 96px;
+  }
+
+  .article-wrap {
+    width: calc(100% - 48px);
+    margin: 0 auto;
+  }
+
+  .article-card {
+    height: auto;
+    min-height: 136px;
+  }
+
+  .article-summary {
+    max-width: 100%;
+  }
+
+  .footer-inner {
+    padding: 18px 26px;
+    min-height: 88px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+
+/* =========================================================
+   4. 760px 이하
+========================================================= */
+@media (max-width: 760px) {
+  .header {
+    padding: 0 18px;
+    column-gap: 12px;
+  }
+
+  .logo {
+    width: 132px;
+    height: 46px;
+  }
+
+  .header-logo-full {
+    height: 46px;
+  }
+
+  .main-search-wrap {
+    width: 190px;
+    height: 38px;
+  }
+
+  .theme-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-btn {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .nav {
+    gap: 22px;
+  }
+
+  .article-page {
+    padding: 36px 0 84px;
+  }
+
+  .article-wrap {
+    width: calc(100% - 36px);
+  }
+
+  .back-link {
+    margin-bottom: 22px;
+  }
+
+  .section-label {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .article-count {
+    font-size: 19px;
+    margin-bottom: 20px;
+  }
+
+  .article-list {
+    gap: 12px;
+  }
+
+  .article-card {
+    min-height: 132px;
+    padding: 22px;
+    gap: 18px;
+  }
+
+  .article-source {
+    margin-bottom: 14px;
+  }
+
+  .article-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .article-summary {
+    font-size: 12px;
+  }
+
+  .footer-inner {
+    padding: 18px;
+  }
+}
+
+
+/* =========================================================
+   5. 620px 이하
+   모바일 최종 상단바
+   - 1줄: 로고 / 테마 / 로그인·마이페이지 / 회원가입·로그아웃
+   - 2줄: 검색창 넓게 중앙
+   - 3줄: 메뉴 탭 중앙
+========================================================= */
+@media (max-width: 620px) {
+  .header {
+    width: 100%;
+    height: 164px;
+    padding: 0 10px;
+
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) auto auto auto;
+    grid-template-rows: 60px 56px 48px;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 0;
+  }
+
+  .page {
+    padding-top: 164px;
+  }
+
+  /* 로고 */
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 132px;
+    height: 44px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    align-self: center;
+
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 44px;
+    max-width: none;
+    display: block;
+    object-fit: contain;
+  }
+
+  /* header-right 해체 */
+  .header-right {
+    display: contents;
+  }
+
+  /* 오른쪽 위 버튼 */
+  .theme-btn {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    justify-self: end;
+  }
+
+  #loginBtn,
+  #primaryUserBtn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  #joinBtn,
+  #logoutBtn {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .header-btn {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  /* 검색창 */
+  .main-search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: calc(100vw - 20px);
+    max-width: none;
+    height: 42px;
+    margin: 0 auto;
+    justify-self: center;
+
+    padding: 0 14px 0 18px;
+  }
+
+  .search-box {
+    font-size: 14px;
+  }
+
+  /* 검색 자동완성 */
+  .search-suggest-box {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* 메뉴 탭 */
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    overflow: visible;
+    white-space: nowrap;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .nav a.active::after {
+    bottom: -17px;
+    height: 2px;
+  }
+
+  /* 본문 */
+  .article-page {
+    padding: 30px 0 72px;
+  }
+
+  .article-wrap {
+    width: calc(100% - 28px);
+    margin: 0 auto;
+  }
+
+  .back-link {
+    margin-bottom: 20px;
+    font-size: 11px;
+  }
+
+  .section-label {
+    font-size: 13px;
+    margin-bottom: 9px;
+  }
+
+  .article-count {
+    font-size: 18px;
+    margin-bottom: 18px;
+  }
+
+  .article-list {
+    gap: 12px;
+  }
+
+  .article-card {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+
+    padding: 20px 18px;
+    border-radius: 18px;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .article-source {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .article-title {
+    font-size: 16px;
+    line-height: 1.45;
+    margin-bottom: 10px;
+    letter-spacing: -0.25px;
+  }
+
+  .article-summary {
+    max-width: 100%;
+    white-space: normal;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .origin-btn {
+    width: 100%;
+    height: 42px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .footer-inner {
+    min-height: 88px;
+    padding: 18px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+
+  .footer-copy {
+    width: 100%;
+    line-height: 1.5;
+  }
+}
+
+
+/* =========================================================
+   6. 430px 이하
+========================================================= */
+@media (max-width: 430px) {
+  .header {
+    height: 164px;
+    padding: 0 8px;
+    grid-template-columns: minmax(100px, 1fr) auto auto auto;
+    column-gap: 5px;
+  }
+
+  .page {
+    padding-top: 164px;
+  }
+
+  .logo {
+    width: 116px;
+    height: 40px;
+  }
+
+  .header-logo-full {
+    height: 40px;
+  }
+
+  .theme-btn {
+    width: 33px;
+    height: 33px;
+  }
+
+  .header-btn {
+    height: 33px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .main-search-wrap {
+    width: calc(100vw - 16px);
+    height: 40px;
+  }
+
+  .search-box {
+    font-size: 13px;
+  }
+
+  .search-suggest-box {
+    left: 8px !important;
+    right: 8px !important;
+  }
+
+  .nav {
+    gap: 15px;
+    font-size: 12px;
+  }
+
+  .article-wrap {
+    width: calc(100% - 24px);
+  }
+
+  .article-card {
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .article-title {
+    font-size: 15px;
+  }
+
+  .origin-btn {
+    height: 40px;
+  }
+}
+
+/* =========================================================
+   7. 390px 이하
+========================================================= */
+@media (max-width: 390px) {
+  .article-page {
+    padding: 26px 0 64px;
+  }
+
+  .article-wrap {
+    width: calc(100% - 20px);
+  }
+
+  .section-label {
+    font-size: 12px;
+  }
+
+  .article-count {
+    font-size: 17px;
+  }
+
+  .article-card {
+    padding: 17px 14px;
+  }
+
+  .article-title {
+    font-size: 14px;
+  }
+
+  .article-summary {
+    font-size: 11px;
+  }
+
+  .origin-btn {
+    height: 38px;
+    font-size: 12px;
+  }
 }
 
   </style>
