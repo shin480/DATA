@@ -627,12 +627,6 @@
         <option value="negative">negative</option>
         <option value="neutral">neutral</option>
       </select>
-      <select id="limit-select">
-        <option value="10">10건</option>
-        <option value="20" selected>20건</option>
-        <option value="50">50건</option>
-        <option value="100">100건</option>
-      </select>
       <button class="btn" id="samples-refresh">새로고침</button>
     </div>
     <div id="samples-loading" class="state-msg">불러오는 중...</div>
@@ -640,6 +634,7 @@
     <div id="samples-content" style="display:none">
       <div class="count-label" id="samples-count"></div>
       <div id="samples-list"></div>
+      <div class="pagination" id="samples-pagination" style="display:none"></div>
     </div>
   </div>
 
@@ -1399,43 +1394,82 @@ function renderConfidence(d) {
 // 패널 2: 낮은 확신도 샘플
 // ══════════════════════════════════════════════════════
 let samplesLoaded = false;
+let samplesAllData = [];
+let samplesPage    = 1;
+const SAMPLES_PAGE_SIZE = 100;
 
 async function loadSamples() {
   hide('samples-error'); hide('samples-content'); show('samples-loading');
   samplesLoaded = true;
   const threshold = document.getElementById('thresh').value;
   const sentiment = document.getElementById('sent-filter').value;
-  const limit     = document.getElementById('limit-select').value;
-  let url = `/eval/sentiment/low-confidence?threshold=${threshold}&limit=${limit}`;
+  let url = `/eval/sentiment/low-confidence?threshold=${threshold}&limit=9999`;
   if (sentiment) url += `&sentiment=${sentiment}`;
   try {
     const d = await apiFetch(url);
-    text('samples-count', `총 ${d.total_low_confidence.toLocaleString()}건 (confidence < ${parseFloat(threshold).toFixed(2)}) — ${d.samples.length}건 표시`);
-    html('samples-list', d.samples.length ? d.samples.map(s => {
-      const pct = (s.sentiment_score*100).toFixed(1);
-      const col = scoreHex(s.sentiment_score);
-      return `<div class="card">
-        <div class="card-title">${s.title}</div>
-        <div class="card-meta">${badge(s.sentiment)}<span>newsID: ${s.newsID}</span>${s.published_at?`<span>${s.published_at}</span>`:''}</div>
-        <div class="score-bar-wrap">
-          <span style="font-size:11px;color:var(--text3);width:64px">confidence</span>
-          <div class="score-bar-outer"><div class="score-bar-inner" style="width:${pct}%;background:${col}"></div></div>
-          <span style="font-size:12px;font-weight:500;color:${col};width:40px">${s.sentiment_score.toFixed(3)}</span>
-        </div>
-      </div>`;
-    }).join('') : '<div class="empty-msg">해당 조건의 기사가 없습니다.</div>');
+    samplesAllData = d.samples || [];
+    renderSamplesPage();
     show('samples-content');
   } catch(e) {
-    samplesLoaded = false;  // 실패 시 재시도 가능하도록 초기화
+    samplesLoaded = false;
     html('samples-error','오류: '+e.message); show('samples-error');
   } finally { hide('samples-loading'); }
+}
+
+function renderSamplesPage() {
+  const total     = samplesAllData.length;
+  const totalPages = Math.ceil(total / SAMPLES_PAGE_SIZE) || 1;
+  if (samplesPage > totalPages) samplesPage = totalPages;
+  const start = (samplesPage - 1) * SAMPLES_PAGE_SIZE;
+  const slice = samplesAllData.slice(start, start + SAMPLES_PAGE_SIZE);
+  const threshold = document.getElementById('thresh').value;
+
+  text('samples-count', `총 ${total.toLocaleString()}건 (confidence < ${parseFloat(threshold).toFixed(2)}) — ${samplesPage}/${totalPages} 페이지`);
+
+  html('samples-list', slice.length ? slice.map(s => {
+    const pct = (s.sentiment_score*100).toFixed(1);
+    const col = scoreHex(s.sentiment_score);
+    return `<div class="card">
+      <div class="card-title">${s.title}</div>
+      <div class="card-meta">${badge(s.sentiment)}<span>newsID: ${s.newsID}</span>${s.published_at?`<span>${s.published_at}</span>`:''}</div>
+      <div class="score-bar-wrap">
+        <span style="font-size:11px;color:var(--text3);width:64px">confidence</span>
+        <div class="score-bar-outer"><div class="score-bar-inner" style="width:${pct}%;background:${col}"></div></div>
+        <span style="font-size:12px;font-weight:500;color:${col};width:40px">${s.sentiment_score.toFixed(3)}</span>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty-msg">해당 조건의 기사가 없습니다.</div>');
+
+  // 페이지네이션 버튼
+  if (totalPages <= 1) { hide('samples-pagination'); return; }
+  show('samples-pagination');
+  let pages = '';
+  pages += `<button class="btn btn-sm" onclick="gotoSamplesPage(${samplesPage-1})" ${samplesPage<=1?'disabled':''}>이전</button>`;
+  const delta = 2;
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= samplesPage - delta && i <= samplesPage + delta)) {
+      pages += `<button class="btn btn-sm ${i===samplesPage?'btn-primary':''}" onclick="gotoSamplesPage(${i})">${i}</button>`;
+    } else if (i === samplesPage - delta - 1 || i === samplesPage + delta + 1) {
+      pages += `<span style="color:var(--text3);padding:0 4px">…</span>`;
+    }
+  }
+  pages += `<button class="btn btn-sm" onclick="gotoSamplesPage(${samplesPage+1})" ${samplesPage>=totalPages?'disabled':''}>다음</button>`;
+  html('samples-pagination', pages);
+}
+
+function gotoSamplesPage(p) {
+  const totalPages = Math.ceil(samplesAllData.length / SAMPLES_PAGE_SIZE) || 1;
+  if (p < 1 || p > totalPages) return;
+  samplesPage = p;
+  renderSamplesPage();
+  document.getElementById('panel-samples').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 document.getElementById('thresh').addEventListener('input', function() {
   document.getElementById('thresh-val').textContent = parseFloat(this.value).toFixed(2);
 });
-document.getElementById('thresh').addEventListener('change', () => { samplesLoaded=false; loadSamples(); });
-document.getElementById('samples-refresh').addEventListener('click', () => { samplesLoaded=false; loadSamples(); });
+document.getElementById('thresh').addEventListener('change', () => { samplesPage=1; samplesLoaded=false; loadSamples(); });
+document.getElementById('samples-refresh').addEventListener('click', () => { samplesPage=1; samplesLoaded=false; loadSamples(); });
 
 // ══════════════════════════════════════════════════════
 // 패널 3: 정답 레이블 평가
@@ -1781,7 +1815,7 @@ async function loadFinetune() {
     renderFinetune(d);
     show('ft-content');
   } catch(e) {
-    finetuneLoaded = false;  // 실패 시 재시도 가능하도록 초기화
+    finetuneLoaded = false;
     html('ft-error','오류: '+e.message); show('ft-error');
   } finally { hide('ft-loading'); }
 }
