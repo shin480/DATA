@@ -2345,7 +2345,7 @@ function renderFinetune(d) {
   const runBtn = document.getElementById('ft-run-btn');
   if (running) {
     const runningJob = d.history.find(h => h.status === 'running');
-    show('ft-running-box');
+    document.getElementById('ft-running-box').style.display = 'block';
     text('ft-mon-count', (runningJob?.correction_count || 0).toLocaleString() + '건');
     text('ft-mon-started', (runningJob?.started_at || '-').slice(0,19).replace('T',' '));
     _startFtTimers(runningJob?.started_at);
