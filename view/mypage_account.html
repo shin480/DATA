@@ -6,14 +6,11 @@
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
   <style>
-
+    /* =========================================================
+       0. 기본 설정
+    ========================================================= */
     html {
-  overflow-y: scroll;
-}
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      overflow-y: scroll;
     }
 
     html,
@@ -21,42 +18,51 @@
       overflow-x: hidden;
     }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     .hidden {
       display: none !important;
     }
 
     body {
-      background: #050916;
+      background: #050816;
       color: #d9e7ff;
       font-family: "Pretendard", "Noto Sans KR", sans-serif;
     }
 
     .page {
       width: 100%;
+      min-height: 100vh;
       margin: 0 auto;
       padding-top: 72px;
       background: #050816;
 
       display: flex;
       flex-direction: column;
-
-      min-height: 100vh;
     }
 
-.layout {
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  display: flex;
-  flex: 1;
-  align-items: stretch;
-}
+    .layout {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex: 1;
+      align-items: stretch;
+    }
 
+    /* =========================================================
+       1. 사이드바
+    ========================================================= */
     aside {
       width: 230px;
       background: #0b1020;
       padding-top: 45px;
       border-right: 1px solid #121a2d;
+      flex-shrink: 0;
     }
 
     .side-title-wrap {
@@ -99,8 +105,11 @@
       font-weight: 700;
     }
 
+    /* =========================================================
+       2. 회원정보 관리 본문
+    ========================================================= */
     main {
-    min-width: 0;
+      min-width: 0;
       flex: 1;
       padding: 42px 28px 80px;
     }
@@ -117,10 +126,17 @@
     }
 
     .account-title .brand {
-      color: #10d9ff;
-      font-size: 24px;
-      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 6px;
+    }
+
+    .account-brand-logo {
+      height: 38px;
+      width: auto;
+      display: block;
+      object-fit: contain;
     }
 
     .account-title h2 {
@@ -177,6 +193,13 @@
 
     .input::placeholder {
       color: #52637c;
+    }
+
+    .input:focus {
+      border-color: rgba(0, 229, 255, 0.72);
+      box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.14),
+        0 0 12px rgba(0, 229, 255, 0.16);
     }
 
     .error {
@@ -239,8 +262,9 @@
       background: #251010;
     }
 
-    /* ===== HEADER ===== */
-
+    /* =========================================================
+       3. 헤더 - main.html과 통일
+    ========================================================= */
     .header {
       position: fixed;
       top: 0;
@@ -260,10 +284,10 @@
     }
 
     .header-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  width: 100%;
-}
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+    }
 
     .logo {
       width: 155px;
@@ -296,7 +320,7 @@
     .nav a {
       text-decoration: none;
       color: inherit;
-      transition: color 0.2s;
+      transition: color 0.18s;
     }
 
     .nav a:hover {
@@ -312,7 +336,7 @@
 
     .main-search-wrap {
       position: relative;
-      width: 410px;
+      width: 370px;
       height: 40px;
       border-radius: 999px;
       background: #070b1a;
@@ -320,6 +344,14 @@
       display: flex;
       align-items: center;
       padding: 0 14px 0 20px;
+    }
+
+    .main-search-wrap:focus-within {
+      border-color: rgba(0, 229, 255, 0.85);
+      box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.18),
+        0 0 14px rgba(0, 229, 255, 0.32),
+        0 0 28px rgba(0, 229, 255, 0.14);
     }
 
     .search-box {
@@ -336,10 +368,6 @@
 
     .search-box::placeholder {
       color: #7c8493;
-    }
-
-    .main-search-wrap:focus-within {
-      border-color: #334155;
     }
 
     .search-icon-btn {
@@ -407,6 +435,21 @@
       color: #00e5ff;
     }
 
+    .header-user-name {
+      display: inline-flex;
+      align-items: center;
+      height: 40px;
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+      margin-left: 2px;
+      margin-right: 2px;
+    }
+
+    /* =========================================================
+       4. 검색 자동완성 - main.html과 통일
+    ========================================================= */
     .search-suggest-box {
       position: fixed;
       width: 410px;
@@ -415,7 +458,7 @@
       border: 1px solid #1e293b;
       border-radius: 18px;
       background: #050b1c;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
       z-index: 20000;
       overflow: hidden;
     }
@@ -427,245 +470,284 @@
 
     .search-suggest-item {
       width: 100%;
+      height: 38px;
+      padding: 0 16px;
       border: 0;
       background: transparent;
+      color: #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
+      gap: 12px;
       cursor: pointer;
-      color: #dbeafe;
-      transition: 0.2s;
+      font-size: 15px;
+      text-align: left;
     }
 
     .search-suggest-item:hover {
-      background: #0f172a;
+      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
     }
 
     .search-suggest-left {
       display: flex;
       align-items: center;
       gap: 10px;
+      min-width: 0;
     }
 
     .search-suggest-icon {
-      color: #38bdf8;
-      font-size: 13px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #94a3b8;
+      color: #020817;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
     }
 
     .search-suggest-keyword {
-      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .search-suggest-arrow {
-      color: #64748b;
-      font-size: 12px;
+      color: #94a3b8;
+      font-size: 18px;
+      flex-shrink: 0;
     }
 
     .search-highlight {
       color: #41bfe0;
-      font-weight: 700;
+      font-weight: 900;
     }
 
-/* ==============================
-   Footer
-============================== */
+    /* =========================================================
+       5. Footer - main.html과 통일
+    ========================================================= */
+    #footer {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      flex-shrink: 0;
+    }
 
-/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
-#footer {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  flex-shrink: 0;
-}
+    .footer {
+      width: 100%;
+      background: #020617;
+      color: #fff;
+      box-sizing: border-box;
+    }
 
-/* 실제 footer */
-.footer {
-  width: 100%;
-  background: #020617;
-  color: #fff;
-  box-sizing: border-box;
-}
+    .footer-inner {
+      width: 100%;
+      min-height: 88px;
+      padding: 0 70px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
 
-/* footer 안쪽 내용 */
-.footer-inner {
-  width: 100%;
-  min-height: 88px;
-  padding: 0 70px;
-  box-sizing: border-box;
+    .footer-logo-white {
+      width: 34px;
+      height: 34px;
+      background-color: #ffffff;
 
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
+      -webkit-mask-image: url("/view/img/favicon.png");
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
 
-html,
-body {
-  overflow-x: hidden;
-}
+      mask-image: url("/view/img/favicon.png");
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
 
-.footer-logo-white {
-  width: 34px;
-  height: 34px;
-  background-color: #ffffff;
+      flex-shrink: 0;
+    }
 
-  -webkit-mask-image: url("/view/img/favicon.png");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
+    .footer-link {
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 12px;
+      text-decoration: none;
+    }
 
-  mask-image: url("/view/img/favicon.png");
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
+    .footer-link:hover {
+      color: #00e5ff;
+    }
 
-  flex-shrink: 0;
-}
+    .footer-divider {
+      width: 1px;
+      height: 12px;
+      background: #334155;
+    }
 
-.footer-link {
-  border: 0;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 12px;
-  text-decoration: none;
-}
+    .footer-copy {
+      margin: 0;
+      color: #64748b;
+    }
 
-.footer-link:hover {
-  color: #00e5ff;
-}
+    .footer-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 8, 23, 0.75);
+    }
 
-.footer-divider {
-  width: 1px;
-  height: 12px;
-  background: #334155;
-}
+    .footer-modal.hidden {
+      display: none !important;
+    }
 
-.footer-copy {
-  margin: 0;
-  color: #64748b;
-}
+    .footer-modal-box {
+      width: 520px;
+      max-width: calc(100% - 32px);
+      max-height: 70vh;
+      overflow-y: auto;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+    }
 
+    .footer-modal-content {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 14px;
+      white-space: pre-line;
+    }
 
-/* ==============================
-   Footer Modal
-============================== */
+    .footer-modal-content h3 {
+      margin: 0 0 16px;
+      color: #f8fafc;
+    }
 
-/* 모달은 화면 중앙 고정 */
-.footer-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 30000;
+    .footer-modal-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #00e5ff;
+      color: #020617;
+      font-weight: 900;
+      cursor: pointer;
+    }
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    /* =========================================================
+       6. 커스텀 알림 / 확인 모달
+    ========================================================= */
+    .custom-alert {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+    }
 
-  background: rgba(2, 8, 23, 0.75);
-}
+    .custom-alert.hidden {
+      display: none !important;
+    }
 
-.footer-modal.hidden {
-  display: none !important;
-}
+    .custom-alert-content {
+      width: 320px;
+      padding: 24px;
+      border-radius: 16px;
+      background: #1f2330;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
 
-.footer-modal-box {
-  width: 520px;
-  max-width: calc(100% - 32px);
-  max-height: 70vh;
-  overflow-y: auto;
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 18px;
-  padding: 28px;
-}
+    .custom-alert-message {
+      font-size: 16px;
+      margin-bottom: 10px;
+      white-space: pre-line;
+    }
 
-.footer-modal-content {
-  color: #cbd5e1;
-  line-height: 1.8;
-  font-size: 14px;
-  white-space: pre-line;
-}
+    .custom-alert-error {
+      display: none;
+      color: #ff4d4d;
+      font-size: 14px;
+      margin-bottom: 18px;
+      font-weight: 700;
+      white-space: pre-line;
+    }
 
-.footer-modal-content h3 {
-  margin: 0 0 16px;
-  color: #f8fafc;
-}
+    .custom-alert-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
 
-.footer-modal-btn {
-  width: 100%;
-  margin-top: 24px;
-  padding: 13px;
-  border: 0;
-  border-radius: 10px;
-  background: #00e5ff;
-  color: #020617;
-  font-weight: 900;
-  cursor: pointer;
-}
+    .custom-alert-btn {
+      width: 140px;
+      min-height: 40px;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 999px;
+      background: #00cfff;
+      color: #001018;
+      font-weight: 800;
+      cursor: pointer;
+    }
 
-/* ==============================
-   Responsive
-============================== */
+    .custom-alert-btn.secondary {
+      background: #334155;
+      color: #fff;
+    }
 
-@media (max-width: 980px) {
-  .footer-inner {
-    padding: 0 24px;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 640px) {
-  .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
-  }
-
-  .footer-inner {
-    padding: 0 18px;
-  }
-  }
-
-
-    /* ==============================
-       Light Mode
-    ============================== */
-
+    /* =========================================================
+       7. Light Mode
+    ========================================================= */
     body.light-mode {
-      background: #f8fafc;
+      background: #edf2ee;
       color: #0f172a;
     }
 
     body.light-mode .page {
-      background: #f8fafc;
+      background: #edf2ee;
     }
 
     body.light-mode .header {
-      background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
+      background: #f1f6f2;
+      border-bottom: 1px solid #d5ddd6;
+      box-shadow: none;
+      backdrop-filter: none;
     }
 
     body.light-mode .nav {
-      color: #64748b;
+      color: #66756d;
     }
 
     body.light-mode .nav a:hover {
-      color: #0284c7;
-    }
-
-    body.light-mode .account-title .brand {
-      color: #41BFE0;
-    }
-
-    body.light-mode .submit-btn {
-      color: #00131f;
-      background: #41BFE0;
+      color: #4cb7d3;
     }
 
     body.light-mode .main-search-wrap {
-      background: #ffffff;
-      border-color: #cbd5e1;
+      background: #f7faf7;
+      border: 1px solid #d8e1d9;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    body.light-mode .main-search-wrap:focus-within {
+      border-color: rgba(0, 207, 232, 0.45);
+      box-shadow:
+        0 0 0 4px rgba(0, 207, 232, 0.08),
+        inset 0 1px 2px rgba(15, 23, 42, 0.08);
     }
 
     body.light-mode .search-box {
@@ -673,29 +755,53 @@ body {
     }
 
     body.light-mode .search-box::placeholder {
-      color: #94a3b8;
+      color: #8b9a91;
     }
 
     body.light-mode .search-icon-btn {
-      color: #64748b;
+      color: #708177;
+    }
+
+    body.light-mode .search-icon-btn:hover {
+      color: #4cb7d3;
     }
 
     body.light-mode .theme-btn {
+      background: #f7faf7;
+      border: 1px solid #d7dfd8;
+      color: #4b5563;
+    }
+
+    body.light-mode .theme-btn:hover {
+      border-color: #4cb7d3;
       background: #ffffff;
-      border-color: #cbd5e1;
-      color: #334155;
     }
 
     body.light-mode .header-btn.join {
+      background: #f7faf7;
+      border: 1px solid #cfd8d0;
+      color: #55635c;
+    }
+
+    body.light-mode .header-btn.join:hover {
+      border-color: #4cb7d3;
+      color: #4cb7d3;
       background: #ffffff;
-      border-color: #94a3b8;
-      color: #334155;
     }
 
     body.light-mode .header-btn.login {
-      background: #00cfe8;
-      border-color: #00cfe8;
-      color: #020617;
+      background: #00e5ff;
+      border-color: #00e5ff;
+      color: #06262b;
+      box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
+    }
+
+    body.light-mode .header-btn.login:hover {
+      filter: brightness(1.04);
+    }
+
+    body.light-mode .header-user-name {
+      color: #55635c;
     }
 
     body.light-mode aside {
@@ -725,6 +831,10 @@ body {
       border-left-color: #00cfe8;
     }
 
+    body.light-mode .account-title .brand {
+      color: #41bfe0;
+    }
+
     body.light-mode .account-title h2,
     body.light-mode .value {
       color: #0f172a;
@@ -750,6 +860,16 @@ body {
       color: #94a3b8;
     }
 
+    body.light-mode .input:focus {
+      border-color: rgba(0, 207, 232, 0.45);
+      box-shadow: 0 0 0 4px rgba(0, 207, 232, 0.08);
+    }
+
+    body.light-mode .submit-btn {
+      color: #00131f;
+      background: #41bfe0;
+    }
+
     body.light-mode .delete-box {
       background: #fff7f7;
       border-color: #fecaca;
@@ -760,100 +880,137 @@ body {
     }
 
     body.light-mode .search-suggest-box {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+      background: #f8fbf8;
+      border: 1px solid #d7dfd8;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
     }
 
     body.light-mode .search-suggest-item {
-      color: #334155;
+      color: #3f4c45;
     }
 
     body.light-mode .search-suggest-item:hover {
-      background: #e0f7ff;
-      color: #0284c7;
+      background: #ebf8fb;
+      color: #4cb7d3;
+    }
+
+    body.light-mode .search-suggest-icon {
+      background: #dfe7e0;
+      color: #607066;
+    }
+
+    body.light-mode .search-suggest-arrow {
+      color: #839188;
     }
 
     body.light-mode .footer {
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    body.light-mode .footer-logo-white {
-      background-color: #020617;
+      background: linear-gradient(
+        180deg,
+        #eef4ef 0%,
+        #e7efe8 100%
+      );
+      border-top: 1px solid #d8e0d9;
     }
 
     body.light-mode .footer-link {
-      color: #475569;
+      color: #607066;
     }
 
     body.light-mode .footer-link:hover {
-      color: #0284c7;
+      color: #4cb7d3;
     }
 
     body.light-mode .footer-copy {
-      color: #64748b;
+      color: #7d8b83;
+    }
+
+    body.light-mode .footer-divider {
+      background: #cfd8d0;
+    }
+
+    body.light-mode .footer-logo-white {
+      background-color: #111827;
+    }
+
+    body.light-mode .footer-modal {
+      background: rgba(110, 128, 116, 0.18);
+      backdrop-filter: blur(4px);
     }
 
     body.light-mode .footer-modal-box {
-      background: #ffffff;
-      border-color: #cbd5e1;
+      background: #f8fbf8;
+      border: 1px solid #d9e2da;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     }
 
     body.light-mode .footer-modal-content {
-      color: #334155;
+      color: #4b5563;
     }
 
     body.light-mode .footer-modal-content h3 {
+      color: #1f2937;
+    }
+
+    body.light-mode .footer-modal-btn {
+      background: #4cb7d3;
+      color: #06262b;
+    }
+
+    body.light-mode .custom-alert-content {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+    }
+
+    body.light-mode .custom-alert-message {
       color: #0f172a;
     }
 
-    .custom-alert {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
+    body.light-mode .custom-alert-error {
+      color: #ef4444;
+    }
 
-.custom-alert.hidden {
-  display: none;
-}
+    body.light-mode .custom-alert-btn {
+      background: #00cfe8;
+      color: #020617;
+    }
 
-.custom-alert-content {
-  background: #1f2330;
-  padding: 24px;
-  border-radius: 16px;
-  width: 320px;
-  text-align: center;
-  color: #fff;
-}
+    body.light-mode .custom-alert-btn.secondary {
+      background: #64748b;
+      color: #ffffff;
+    }
 
-.custom-alert-message {
-  font-size: 16px;
-  margin-bottom: 10px;
-}
+    /* =========================================================
+       8. Responsive
+    ========================================================= */
+    @media (max-width: 980px) {
+      .footer-inner {
+        padding: 0 24px;
+        flex-wrap: wrap;
+      }
+    }
 
-.custom-alert-error {
-  color: #ff4d4d;
-  font-size: 14px;
-  margin-bottom: 18px;
-}
+    @media (max-width: 640px) {
+      .search-suggest-box {
+        left: 18px !important;
+        right: 18px !important;
+        width: auto !important;
+        max-width: none;
+      }
 
-.custom-alert-btn {
-  background: #00cfff;
-  border: none;
-  padding: 10px 28px;
-  border-radius: 999px;
-  font-weight: bold;
-  cursor: pointer;
-}
+      .footer-inner {
+        padding: 0 18px;
+      }
 
+      .account-wrap {
+        width: 100%;
+      }
+
+      main {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -861,7 +1018,6 @@ body {
 
 <body>
 <div class="page">
-
   <div id="header"></div>
 
   <div class="layout">
@@ -879,7 +1035,13 @@ body {
     <main>
       <div class="account-wrap">
         <div class="account-title">
-          <div class="brand">DATA</div>
+          <div class="brand">
+            <img
+              class="account-brand-logo"
+              src="/view/img/logo.png"
+              alt="DATA 로고"
+            >
+          </div>
           <h2>회원정보 관리</h2>
           <p>정보를 수정하고 계정 비밀번호를 관리하세요</p>
         </div>
@@ -947,43 +1109,48 @@ body {
   </div>
 
   <div id="footer"></div>
-
 </div>
 
 <div id="customAlert" class="custom-alert hidden">
   <div class="custom-alert-content">
     <div id="customAlertMsg" class="custom-alert-message"></div>
     <div id="customAlertError" class="custom-alert-error"></div>
-    <button id="customAlertBtn" class="custom-alert-btn">확인</button>
-    <button id="customAlertNo" class="custom-alert-btn" style="background:#334155; color:#fff; margin-top:8px;">취소</button>
+
+    <div class="custom-alert-actions">
+      <button id="customAlertBtn" class="custom-alert-btn">확인</button>
+      <button id="customAlertNo" class="custom-alert-btn secondary hidden">취소</button>
+    </div>
   </div>
 </div>
 
 <script>
-
-  let isConfirmMode = false;
-
   function loadUserInfo() {
-    const name = sessionStorage.getItem("user_name");
-    const email = sessionStorage.getItem("user_id") || sessionStorage.getItem("email");
-    const birth = sessionStorage.getItem("user_birth") || "정보 없음";
-    const gender = sessionStorage.getItem("user_gender") || "정보 없음";
+    const name = sessionStorage.getItem("user_name") || localStorage.getItem("user_name");
+    const email =
+      sessionStorage.getItem("user_id") ||
+      sessionStorage.getItem("email") ||
+      localStorage.getItem("user_id") ||
+      localStorage.getItem("email");
 
-    if (document.getElementById("userName")) {
-      document.getElementById("userName").innerText = name || "미인증 사용자";
-    }
+    const birth =
+      sessionStorage.getItem("user_birth") ||
+      localStorage.getItem("user_birth") ||
+      "정보 없음";
 
-    if (document.getElementById("userBirth")) {
-      document.getElementById("userBirth").innerText = birth;
-    }
+    const gender =
+      sessionStorage.getItem("user_gender") ||
+      localStorage.getItem("user_gender") ||
+      "정보 없음";
 
-    if (document.getElementById("userGender")) {
-      document.getElementById("userGender").innerText = gender;
-    }
+    const userNameEl = document.getElementById("userName");
+    const userBirthEl = document.getElementById("userBirth");
+    const userGenderEl = document.getElementById("userGender");
+    const userEmailEl = document.getElementById("userEmail");
 
-    if (document.getElementById("userEmail")) {
-      document.getElementById("userEmail").innerText = email || "이메일 정보 없음";
-    }
+    if (userNameEl) userNameEl.innerText = name || "미인증 사용자";
+    if (userBirthEl) userBirthEl.innerText = birth;
+    if (userGenderEl) userGenderEl.innerText = gender;
+    if (userEmailEl) userEmailEl.innerText = email || "이메일 정보 없음";
   }
 
   function validatePasswordInput(input) {
@@ -997,8 +1164,8 @@ body {
   }
 
   function checkPasswordMatch() {
-    const pw1 = document.getElementById("password1").value;
-    const pw2 = document.getElementById("passwordCheck").value;
+    const pw1 = document.getElementById("password1")?.value || "";
+    const pw2 = document.getElementById("passwordCheck")?.value || "";
     const error = document.getElementById("passwordError");
 
     if (!error) return;
@@ -1083,10 +1250,7 @@ body {
     }
 
     try {
-      const res = await axios.get(
-        `/api/search/suggest?q=${encodeURIComponent(value)}`
-      );
-
+      const res = await axios.get(`/api/search/suggest?q=${encodeURIComponent(value)}`);
       const results = res.data || [];
 
       if (results.length === 0) {
@@ -1103,12 +1267,10 @@ body {
           >
             <span class="search-suggest-left">
               <span class="search-suggest-icon">⌕</span>
-
               <span class="search-suggest-keyword">
                 ${highlightKeyword(item, value)}
               </span>
             </span>
-
             <span class="search-suggest-arrow">↖</span>
           </button>
         `;
@@ -1116,14 +1278,12 @@ body {
 
       document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          const keyword = btn.dataset.suggestKeyword;
-          selectSearchSuggestion(keyword);
+          selectSearchSuggestion(btn.dataset.suggestKeyword);
         });
       });
 
       positionSearchSuggestBox();
       suggestBox.classList.remove("hidden");
-
     } catch (error) {
       console.error("검색 자동완성 실패:", error);
       hideSearchSuggestions();
@@ -1159,7 +1319,6 @@ body {
     }
 
     hideSearchSuggestions();
-
     goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
   }
 
@@ -1169,7 +1328,6 @@ body {
     if (!value) return;
 
     hideSearchSuggestions();
-
     goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
   }
 
@@ -1178,8 +1336,8 @@ body {
   }
 
   async function updateUserInfo() {
-    const pw1 = document.getElementById("password1").value;
-    const pw2 = document.getElementById("passwordCheck").value;
+    const pw1 = document.getElementById("password1")?.value || "";
+    const pw2 = document.getElementById("passwordCheck")?.value || "";
 
     if (pw1 === "" && pw2 === "") {
       showCustomAlert("변경 사항이 없습니다.");
@@ -1206,7 +1364,9 @@ body {
       return;
     }
 
-    const email = sessionStorage.getItem("user_id");
+    const email =
+      sessionStorage.getItem("user_id") ||
+      localStorage.getItem("user_id");
 
     if (!email) {
       showCustomAlert("로그인 정보가 없습니다. 다시 로그인해주세요.");
@@ -1221,9 +1381,13 @@ body {
       });
 
       if (response.data.success) {
-        document.getElementById("password1").value = "";
-        document.getElementById("passwordCheck").value = "";
-        document.getElementById("passwordError").style.display = "none";
+        const pw1El = document.getElementById("password1");
+        const pw2El = document.getElementById("passwordCheck");
+        const passwordError = document.getElementById("passwordError");
+
+        if (pw1El) pw1El.value = "";
+        if (pw2El) pw2El.value = "";
+        if (passwordError) passwordError.style.display = "none";
 
         showCustomAlert("회원정보 수정이 완료되었습니다.");
       } else {
@@ -1235,14 +1399,16 @@ body {
     }
   }
 
-async function deleteUser() {
-  const confirmDelete = await showCustomConfirm(
-    "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 정보가 삭제됩니다."
-  );
+  async function deleteUser() {
+    const confirmDelete = await showCustomConfirm(
+      "정말 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 정보가 삭제됩니다."
+    );
 
-  if (!confirmDelete) return;
+    if (!confirmDelete) return;
 
-    const user_id = sessionStorage.getItem("user_id");
+    const user_id =
+      sessionStorage.getItem("user_id") ||
+      localStorage.getItem("user_id");
 
     if (!user_id) {
       showCustomAlert("로그인 정보가 없습니다. 다시 로그인해주세요.");
@@ -1261,7 +1427,9 @@ async function deleteUser() {
         sessionStorage.clear();
         localStorage.clear();
 
-        location.href = "/view/main.html";
+        setTimeout(() => {
+          location.href = "/view/main.html";
+        }, 250);
       } else {
         showCustomAlert("탈퇴 실패: " + response.data.message);
       }
@@ -1308,6 +1476,7 @@ async function deleteUser() {
     const joinBtn = document.getElementById("joinBtn");
     const primaryUserBtn = document.getElementById("primaryUserBtn");
     const logoutBtn = document.getElementById("logoutBtn");
+    const headerUserName = document.getElementById("headerUserName");
 
     if (!primaryUserBtn || !logoutBtn) return;
 
@@ -1317,6 +1486,22 @@ async function deleteUser() {
     primaryUserBtn.classList.remove("hidden");
     logoutBtn.classList.remove("hidden");
     primaryUserBtn.innerText = "마이페이지";
+
+    const userName =
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName");
+
+    if (headerUserName) {
+      if (userName) {
+        headerUserName.textContent = `${userName}님`;
+        headerUserName.classList.remove("hidden");
+      } else {
+        headerUserName.textContent = "";
+        headerUserName.classList.add("hidden");
+      }
+    }
   }
 
   function loadFooter() {
@@ -1324,9 +1509,7 @@ async function deleteUser() {
 
     if (!footerArea) return;
 
-    if (footerArea.innerHTML.trim()) {
-      return;
-    }
+    if (footerArea.innerHTML.trim()) return;
 
     fetch("/view/footer.html?v=999")
       .then(function (res) {
@@ -1462,8 +1645,8 @@ async function deleteUser() {
 
       try {
         await axios.post("/logout");
-      } catch (e) {
-        console.error("로그아웃 실패:", e);
+      } catch (err) {
+        console.error("로그아웃 실패:", err);
       }
 
       location.href = "/view/main.html";
@@ -1488,13 +1671,10 @@ async function deleteUser() {
 
     if (footerModalCloseBtn) {
       closeFooterModal();
-      return;
     }
   });
 
   document.addEventListener("DOMContentLoaded", async function () {
-
-    // 인증한지 10분 안쪽이면 정상 진입
     try {
       const { data } = await axios.post("/pw_check_time");
 
@@ -1502,7 +1682,6 @@ async function deleteUser() {
         location.replace("/view/mypage_home.html");
         return;
       }
-
     } catch (err) {
       console.error("인증 상태 확인 에러:", err);
       location.replace("/view/mypage_home.html");
@@ -1522,71 +1701,107 @@ async function deleteUser() {
   });
 
   function handleEnter(e) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    updateUserInfo();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      updateUserInfo();
+    }
   }
-}
 
-function showCustomAlert(message, error = "") {
-  const modal = document.getElementById("customAlert");
-  const msg = document.getElementById("customAlertMsg");
-  const err = document.getElementById("customAlertError");
-  const btn = document.getElementById("customAlertBtn");
-
-  msg.innerText = message;
-  err.innerText = error;
-
-  modal.classList.remove("hidden");
-
-  btn.onclick = function () {
-    modal.classList.add("hidden");
-  };
-}
-
-document.addEventListener("click", function (e) {
-  const modal = document.getElementById("customAlert");
-
-  if (!modal || modal.classList.contains("hidden")) return;
-
-  const content = modal.querySelector(".custom-alert-content");
-
-  // 배경 클릭이면 닫기
-  if (!content.contains(e.target)) {
-    closeCustomAlert();
-  }
-});
-
-  document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") {
-    const modal = document.getElementById("customAlert");
-    if (modal) modal.classList.add("hidden");
-  }
-});
-
-function showCustomConfirm(message) {
-  return new Promise((resolve) => {
-    const modal = document.getElementById("customAlert");
-    const msg = document.getElementById("customAlertMsg");
+  function resetCustomAlertButtons() {
     const yesBtn = document.getElementById("customAlertBtn");
     const noBtn = document.getElementById("customAlertNo");
 
+    if (yesBtn) yesBtn.classList.remove("hidden");
+    if (noBtn) noBtn.classList.add("hidden");
+  }
+
+  function showCustomAlert(message, error = "") {
+    const modal = document.getElementById("customAlert");
+    const msg = document.getElementById("customAlertMsg");
+    const err = document.getElementById("customAlertError");
+    const btn = document.getElementById("customAlertBtn");
+
+    if (!modal || !msg || !err || !btn) return;
+
+    resetCustomAlertButtons();
+
     msg.innerText = message;
+    err.innerText = error;
+
+    if (error) {
+      err.style.display = "block";
+    } else {
+      err.style.display = "none";
+    }
+
     modal.classList.remove("hidden");
 
-    yesBtn.onclick = () => {
+    btn.onclick = function () {
       modal.classList.add("hidden");
-      resolve(true);
     };
+  }
 
-    noBtn.onclick = () => {
-      modal.classList.add("hidden");
-      resolve(false);
-    };
+  function closeCustomAlert() {
+    const modal = document.getElementById("customAlert");
+
+    if (!modal) return;
+
+    modal.classList.add("hidden");
+  }
+
+  document.addEventListener("click", function (e) {
+    const modal = document.getElementById("customAlert");
+
+    if (!modal || modal.classList.contains("hidden")) return;
+
+    const content = modal.querySelector(".custom-alert-content");
+
+    if (content && !content.contains(e.target)) {
+      closeCustomAlert();
+    }
   });
-}
 
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeCustomAlert();
+    }
+  });
 
+  function showCustomConfirm(message) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById("customAlert");
+      const msg = document.getElementById("customAlertMsg");
+      const err = document.getElementById("customAlertError");
+      const yesBtn = document.getElementById("customAlertBtn");
+      const noBtn = document.getElementById("customAlertNo");
+
+      if (!modal || !msg || !err || !yesBtn || !noBtn) {
+        resolve(false);
+        return;
+      }
+
+      msg.innerText = message;
+      err.innerText = "";
+      err.style.display = "none";
+
+      yesBtn.classList.remove("hidden");
+      noBtn.classList.remove("hidden");
+
+      modal.classList.remove("hidden");
+
+      yesBtn.onclick = () => {
+        modal.classList.add("hidden");
+        noBtn.classList.add("hidden");
+        resolve(true);
+      };
+
+      noBtn.onclick = () => {
+        modal.classList.add("hidden");
+        noBtn.classList.add("hidden");
+        resolve(false);
+      };
+    });
+  }
 </script>
 </body>
 </html>
