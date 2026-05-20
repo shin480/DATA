@@ -6,10 +6,9 @@
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
   <style>
-
     html {
-  overflow-y: scroll;
-}
+      overflow-y: scroll;
+    }
 
     * {
       box-sizing: border-box;
@@ -43,14 +42,14 @@
       flex-direction: column;
     }
 
-.layout {
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  display: flex;
-  flex: 1;
-  align-items: stretch;
-}
+    .layout {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex: 1;
+      align-items: stretch;
+    }
 
     aside {
       width: 230px;
@@ -85,17 +84,16 @@
       font-size: 14px;
       border-left: 4px solid transparent;
       cursor: pointer;
-
     }
 
     .menu-link {
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 14px 18px;
-  color: inherit;
-  text-decoration: none;
-}
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 14px 18px;
+      color: inherit;
+      text-decoration: none;
+    }
 
     .side-menu li:hover {
       background: #10192b;
@@ -109,7 +107,7 @@
     }
 
     main {
-    min-width: 0;
+      min-width: 0;
       flex: 1;
       padding: 42px 28px 80px;
     }
@@ -163,10 +161,10 @@
     }
 
     .news-item .title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .news-item:hover {
       background: #111a33;
@@ -247,8 +245,8 @@
       min-height: 530px;
       max-height: 530px;
       width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .card-head {
@@ -272,19 +270,19 @@
       font-size: 12px;
     }
 
-.mini-news {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 9px 10px;
-  border-bottom: 1px solid #121c31;
-  font-size: 13px;
-  color: #b8c8e6;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  border-radius: 6px;
-  overflow: hidden;
-}
+    .mini-news {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 10px;
+      border-bottom: 1px solid #121c31;
+      font-size: 13px;
+      color: #b8c8e6;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-radius: 6px;
+      overflow: hidden;
+    }
 
     .mini-news:hover {
       background: #131d36;
@@ -298,7 +296,7 @@
     .mini-news span:first-child {
       width: 82%;
       flex: 1;
-  min-width: 0;
+      min-width: 0;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -406,6 +404,11 @@
     }
 
     .notice-title {
+      display: inline-block;
+      max-width: 680px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
       font-size: 15px;
     }
 
@@ -422,14 +425,6 @@
     .notice-page {
       font-size: 12px;
       opacity: 0.82;
-    }
-
-    .notice-title {
-      display: inline-block;
-      max-width: 680px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
     }
 
     .notice-slide {
@@ -481,8 +476,9 @@
       }
     }
 
-    /* ===== HEADER ===== */
-
+    /* =========================================================
+       HEADER
+    ========================================================= */
     .header {
       position: fixed;
       top: 0;
@@ -500,12 +496,6 @@
       background: #070b1a;
       border-bottom: 1px solid #111827;
     }
-
-    .header-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  width: 100%;
-}
 
     .logo {
       width: 155px;
@@ -538,7 +528,7 @@
     .nav a {
       text-decoration: none;
       color: inherit;
-      transition: color 0.2s;
+      transition: color 0.18s;
     }
 
     .nav a:hover {
@@ -554,7 +544,7 @@
 
     .main-search-wrap {
       position: relative;
-      width: 410px;
+      width: 370px;
       height: 40px;
       border-radius: 999px;
       background: #070b1a;
@@ -562,6 +552,14 @@
       display: flex;
       align-items: center;
       padding: 0 14px 0 20px;
+    }
+
+    .main-search-wrap:focus-within {
+      border-color: rgba(0, 229, 255, 0.85);
+      box-shadow:
+        0 0 0 1px rgba(0, 229, 255, 0.18),
+        0 0 14px rgba(0, 229, 255, 0.32),
+        0 0 28px rgba(0, 229, 255, 0.14);
     }
 
     .search-box {
@@ -578,14 +576,6 @@
 
     .search-box::placeholder {
       color: #7c8493;
-    }
-
-    .main-search-wrap:focus-within {
-      border-color: rgba(0, 229, 255, 0.85);
-      box-shadow:
-        0 0 0 1px rgba(0, 229, 255, 0.18),
-        0 0 14px rgba(0, 229, 255, 0.32),
-        0 0 28px rgba(0, 229, 255, 0.14);
     }
 
     .search-icon-btn {
@@ -653,6 +643,27 @@
       color: #00e5ff;
     }
 
+    .header-user-name {
+      display: inline-flex;
+      align-items: center;
+      height: 40px;
+
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+
+      margin-left: 2px;
+      margin-right: 2px;
+    }
+
+    body.light-mode .header-user-name {
+      color: #55635c;
+    }
+
+    /* =========================================================
+       검색 자동완성
+    ========================================================= */
     .search-suggest-box {
       position: fixed;
       width: 410px;
@@ -661,7 +672,7 @@
       border: 1px solid #1e293b;
       border-radius: 18px;
       background: #050b1c;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
       z-index: 20000;
       overflow: hidden;
     }
@@ -673,207 +684,182 @@
 
     .search-suggest-item {
       width: 100%;
+      height: 38px;
+      padding: 0 16px;
       border: 0;
       background: transparent;
+      color: #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
+      gap: 12px;
       cursor: pointer;
-      color: #dbeafe;
-      transition: 0.2s;
+      font-size: 15px;
+      text-align: left;
     }
 
     .search-suggest-item:hover {
-      background: #0f172a;
+      background: rgba(56, 189, 248, 0.1);
+      color: #ffffff;
     }
 
     .search-suggest-left {
       display: flex;
       align-items: center;
       gap: 10px;
+      min-width: 0;
     }
 
     .search-suggest-icon {
-      color: #38bdf8;
-      font-size: 13px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #94a3b8;
+      color: #020817;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
     }
 
     .search-suggest-keyword {
-      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .search-suggest-arrow {
-      color: #64748b;
-      font-size: 12px;
+      color: #94a3b8;
+      font-size: 18px;
+      flex-shrink: 0;
     }
 
     .search-highlight {
-      color: #00e5ff;
-      font-weight: 700;
+      color: #41bfe0;
+      font-weight: 900;
     }
 
-/* ==============================
-   Footer
-============================== */
+    /* =========================================================
+       Footer
+    ========================================================= */
+    #footer {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      flex-shrink: 0;
+    }
 
-/* footer가 .page 안에 있어도 화면 전체 폭으로 빼기 */
-#footer {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  flex-shrink: 0;
-}
+    .footer {
+      width: 100%;
+      background: #020617;
+      color: #fff;
+      box-sizing: border-box;
+    }
 
-/* 실제 footer */
-.footer {
-  width: 100%;
-  background: #020617;
-  color: #fff;
-  box-sizing: border-box;
-}
+    .footer-inner {
+      width: 100%;
+      min-height: 88px;
+      padding: 0 70px;
+      box-sizing: border-box;
 
-/* footer 안쪽 내용 */
-.footer-inner {
-  width: 100%;
-  min-height: 88px;
-  padding: 0 70px;
-  box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
 
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
+    .footer-logo-white {
+      width: 34px;
+      height: 34px;
+      background-color: #ffffff;
 
-html,
-body {
-  overflow-x: hidden;
-}
+      -webkit-mask-image: url("/view/img/favicon.png");
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
 
-.footer-logo-white {
-  width: 34px;
-  height: 34px;
-  background-color: #ffffff;
+      mask-image: url("/view/img/favicon.png");
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
 
-  -webkit-mask-image: url("/view/img/favicon.png");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
+      flex-shrink: 0;
+    }
 
-  mask-image: url("/view/img/favicon.png");
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
+    .footer-link {
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 12px;
+      text-decoration: none;
+    }
 
-  flex-shrink: 0;
-}
+    .footer-link:hover {
+      color: #00e5ff;
+    }
 
-.footer-link {
-  border: 0;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 12px;
-  text-decoration: none;
-}
+    .footer-divider {
+      width: 1px;
+      height: 12px;
+      background: #334155;
+    }
 
-.footer-link:hover {
-  color: #00e5ff;
-}
+    .footer-copy {
+      margin: 0;
+      color: #64748b;
+    }
 
-.footer-divider {
-  width: 1px;
-  height: 12px;
-  background: #334155;
-}
+    .footer-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30000;
 
-.footer-copy {
-  margin: 0;
-  color: #64748b;
-}
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
+      background: rgba(2, 8, 23, 0.75);
+    }
 
-/* ==============================
-   Footer Modal
-============================== */
+    .footer-modal.hidden {
+      display: none !important;
+    }
 
-/* 모달은 화면 중앙 고정 */
-.footer-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 30000;
+    .footer-modal-box {
+      width: 520px;
+      max-width: calc(100% - 32px);
+      max-height: 70vh;
+      overflow-y: auto;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 28px;
+    }
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    .footer-modal-content {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 14px;
+      white-space: pre-line;
+    }
 
-  background: rgba(2, 8, 23, 0.75);
-}
+    .footer-modal-content h3 {
+      margin: 0 0 16px;
+      color: #f8fafc;
+    }
 
-.footer-modal.hidden {
-  display: none !important;
-}
-
-.footer-modal-box {
-  width: 520px;
-  max-width: calc(100% - 32px);
-  max-height: 70vh;
-  overflow-y: auto;
-  background: #111827;
-  border: 1px solid #334155;
-  border-radius: 18px;
-  padding: 28px;
-}
-
-.footer-modal-content {
-  color: #cbd5e1;
-  line-height: 1.8;
-  font-size: 14px;
-  white-space: pre-line;
-}
-
-.footer-modal-content h3 {
-  margin: 0 0 16px;
-  color: #f8fafc;
-}
-
-.footer-modal-btn {
-  width: 100%;
-  margin-top: 24px;
-  padding: 13px;
-  border: 0;
-  border-radius: 10px;
-  background: #00e5ff;
-  color: #020617;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-/* ==============================
-   Responsive
-============================== */
-
-@media (max-width: 980px) {
-  .footer-inner {
-    padding: 0 24px;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 640px) {
-  .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
-  }
-
-  .footer-inner {
-    padding: 0 18px;
-  }
-}
-
-    /* ===== PW MODAL ===== */
+    .footer-modal-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      border: 0;
+      border-radius: 10px;
+      background: #00e5ff;
+      color: #020617;
+      font-weight: 900;
+      cursor: pointer;
+    }
 
     .pw-modal {
       position: fixed;
@@ -942,84 +928,166 @@ body {
       color: #73829d;
     }
 
-    /* ==============================
-       Light Mode
-    ============================== */
+    .custom-alert {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
 
-    body.light-mode .pagination span {
-  color: #64748b;
-}
+    .custom-alert-box {
+      width: 420px;
+      padding: 26px;
+      border-radius: 18px;
+      background: #1b2133;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
 
-body.light-mode .pagination span:hover {
-  background: #e0f7ff;
-  color: #0284c7;
-}
+    .custom-alert-msg {
+      font-size: 15px;
+      color: #d9e7ff;
+      margin-bottom: 12px;
+    }
 
-body.light-mode .pagination b {
-  background: #dbeafe;
-  color: #0284c7;
-}
+    .custom-alert-error {
+      font-size: 14px;
+      color: #ff4e5f;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
 
+    .custom-alert-btn {
+      width: 140px;
+      height: 42px;
+      border-radius: 999px;
+      border: none;
+      background: #2dd4ff;
+      color: #001018;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       라이트 모드
+    ========================================================= */
     body.light-mode {
-      background: #f8fafc;
-      color: #0f172a;
+      background: #edf2ee;
+      color: #1f2937;
     }
 
     body.light-mode .page {
-      background: #f8fafc;
+      background: #edf2ee;
     }
 
     body.light-mode .header {
-      background: #ffffff;
-      border-bottom: 1px solid #f8fafc;
+      background: #f1f6f2;
+      border-bottom: 1px solid #d5ddd6;
+      box-shadow: none;
+      backdrop-filter: none;
     }
 
     body.light-mode .nav {
-      color: #64748b;
+      color: #66756d;
     }
 
     body.light-mode .nav a:hover {
-      color: #0284c7;
+      color: #4cb7d3;
     }
 
     body.light-mode .main-search-wrap {
-      background: #ffffff;
-      border-color: #cbd5e1;
+      background: #f7faf7;
+      border: 1px solid #d8e1d9;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    body.light-mode .main-search-wrap:focus-within {
+      border-color: rgba(0, 207, 232, 0.45);
+      box-shadow:
+        0 0 0 4px rgba(0, 207, 232, 0.08),
+        inset 0 1px 2px rgba(15, 23, 42, 0.08);
     }
 
     body.light-mode .search-box {
-      color: #0f172a;
+      color: #41bfe0;
     }
 
     body.light-mode .search-box::placeholder {
-      color: #94a3b8;
+      color: #8b9a91;
     }
 
     body.light-mode .search-icon-btn {
-      color: #64748b;
+      color: #708177;
+    }
+
+    body.light-mode .search-icon-btn:hover {
+      color: #4cb7d3;
     }
 
     body.light-mode .theme-btn {
+      background: #f7faf7;
+      border: 1px solid #d7dfd8;
+      color: #4b5563;
+    }
+
+    body.light-mode .theme-btn:hover {
+      border-color: #4cb7d3;
       background: #ffffff;
-      border-color: #cbd5e1;
-      color: #334155;
     }
 
     body.light-mode .header-btn.join {
+      background: #f7faf7;
+      border: 1px solid #cfd8d0;
+      color: #55635c;
+    }
+
+    body.light-mode .header-btn.join:hover {
+      border-color: #4cb7d3;
+      color: #4cb7d3;
       background: #ffffff;
-      border-color: #94a3b8;
-      color: #334155;
     }
 
     body.light-mode .header-btn.login {
-      background: #00cfe8;
-      border-color: #00cfe8;
-      color: #020617;
+      background: #00e5ff;
+      border-color: #00e5ff;
+      color: #06262b;
+      box-shadow: 0 4px 14px rgba(0, 207, 232, 0.08);
+    }
+
+    body.light-mode .header-btn.login:hover {
+      filter: brightness(1.04);
+    }
+
+    body.light-mode .search-suggest-box {
+      background: #f8fbf8;
+      border: 1px solid #d7dfd8;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    body.light-mode .search-suggest-item {
+      color: #3f4c45;
+    }
+
+    body.light-mode .search-suggest-item:hover {
+      background: #ebf8fb;
+      color: #4cb7d3;
+    }
+
+    body.light-mode .search-suggest-icon {
+      background: #dfe7e0;
+      color: #607066;
+    }
+
+    body.light-mode .search-suggest-arrow {
+      color: #839188;
     }
 
     body.light-mode aside {
       background: #ffffff;
-      border-right: 1px solid #f8fafc;
+      border-right: 1px solid #d9e1da;
     }
 
     body.light-mode .side-title {
@@ -1027,7 +1095,7 @@ body.light-mode .pagination b {
     }
 
     body.light-mode .side-title-wrap {
-      border-bottom: 1px solid #f8fafc;
+      border-bottom: 1px solid #d9e1da;
     }
 
     body.light-mode .side-menu li {
@@ -1044,8 +1112,6 @@ body.light-mode .pagination b {
       border-left-color: #00cfe8;
     }
 
-
-
     body.light-mode h2,
     body.light-mode .title,
     body.light-mode .card-head,
@@ -1061,8 +1127,8 @@ body.light-mode .pagination b {
     }
 
     body.light-mode .news-list {
-      border-top: 1px solid #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
+      border-top: 1px solid #d9e1da;
+      border-bottom: 1px solid #d9e1da;
     }
 
     body.light-mode .news-item {
@@ -1090,51 +1156,58 @@ body.light-mode .pagination b {
     }
 
     body.light-mode .category {
-  background: #f8fafc;
-  color: #0284c7;
-  border: 1px solid #7dd3fc;
-}
-
-body.light-mode .badge {
-  background: #f8fafc;
-  color: #0284c7;
-  border: 1px solid #7dd3fc;
-}
-
-    body.light-mode .search-suggest-box {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+      background: #f8fafc;
+      color: #0284c7;
+      border: 1px solid #7dd3fc;
     }
 
-    body.light-mode .search-suggest-item {
-      color: #334155;
+    body.light-mode .badge {
+      background: #f8fafc;
+      color: #0284c7;
+      border: 1px solid #7dd3fc;
     }
 
-    body.light-mode .search-suggest-item:hover {
+    body.light-mode .pagination span {
+      color: #64748b;
+    }
+
+    body.light-mode .pagination span:hover {
       background: #e0f7ff;
       color: #0284c7;
     }
 
-    body.light-mode .footer {
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    body.light-mode .footer-logo-white {
-      background-color: #020617;
-    }
-
-    body.light-mode .footer-link {
-      color: #475569;
-    }
-
-    body.light-mode .footer-link:hover {
+    body.light-mode .pagination b {
+      background: #dbeafe;
       color: #0284c7;
     }
 
+    body.light-mode .footer {
+      background: linear-gradient(
+        180deg,
+        #eef4ef 0%,
+        #e7efe8 100%
+      );
+      border-top: 1px solid #d8e0d9;
+    }
+
+    body.light-mode .footer-logo-white {
+      background-color: #111827;
+    }
+
+    body.light-mode .footer-link {
+      color: #607066;
+    }
+
+    body.light-mode .footer-link:hover {
+      color: #4cb7d3;
+    }
+
     body.light-mode .footer-copy {
-      color: #64748b;
+      color: #7d8b83;
+    }
+
+    body.light-mode .footer-divider {
+      background: #cfd8d0;
     }
 
     body.light-mode .footer-modal-box,
@@ -1156,68 +1229,43 @@ body.light-mode .badge {
       color: #0f172a;
     }
 
-    .custom-alert {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-}
-
-.custom-alert-box {
-  width: 420px;
-  padding: 26px;
-  border-radius: 18px;
-  background: #1b2133;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-}
-
-.custom-alert-msg {
-  font-size: 15px;
-  color: #d9e7ff;
-  margin-bottom: 12px;
-}
-
-.custom-alert-error {
-  font-size: 14px;
-  color: #ff4e5f;
-  margin-bottom: 18px;
-  font-weight: 700;
-}
-
-.custom-alert-btn {
-  width: 140px;
-  height: 42px;
-  border-radius: 999px;
-  border: none;
-  background: #2dd4ff;
-  color: #001018;
-  font-weight: 800;
-  cursor: pointer;
-}
-
     body.light-mode .custom-alert-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-}
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+    }
 
-body.light-mode .custom-alert-msg {
-  color: #0f172a;
-}
+    body.light-mode .custom-alert-msg {
+      color: #0f172a;
+    }
 
-body.light-mode .custom-alert-error {
-  color: #ef4444;
-}
+    body.light-mode .custom-alert-error {
+      color: #ef4444;
+    }
 
-body.light-mode .custom-alert-btn {
-  background: #00cfe8;
-  color: #020617;
-}
+    body.light-mode .custom-alert-btn {
+      background: #00cfe8;
+      color: #020617;
+    }
 
+    @media (max-width: 980px) {
+      .footer-inner {
+        padding: 0 24px;
+        flex-wrap: wrap;
+      }
+    }
 
+    @media (max-width: 640px) {
+      .search-suggest-box {
+        left: 18px !important;
+        right: 18px !important;
+        width: auto !important;
+        max-width: none;
+      }
+
+      .footer-inner {
+        padding: 0 18px;
+      }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -1234,10 +1282,9 @@ body.light-mode .custom-alert-btn {
       </div>
 
       <ul class="side-menu">
-
-<li class="active" id="homeMenu">
-  마이페이지 홈
-</li>
+        <li class="active" id="homeMenu">
+          마이페이지 홈
+        </li>
 
         <li id="accountPageBtn">회원정보 관리 & 탈퇴</li>
       </ul>
@@ -1251,103 +1298,9 @@ body.light-mode .custom-alert-btn {
           <span class="hint">최근 본 뉴스 30개까지 조회됩니다 · 페이지당 10건</span>
         </div>
 
-        <div class="news-list">
-          <div class="news-item">
-            <div class="num">01</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
+        <div class="news-list"></div>
 
-          <div class="news-item">
-            <div class="num">02</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">03</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">04</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">05</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">06</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">07</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">08</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">09</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-
-          <div class="news-item">
-            <div class="num">10</div>
-            <div>
-              <div class="title"></div>
-              <div class="desc"></div>
-            </div>
-            <span class="category"></span>
-          </div>
-        </div>
-
-        <div class="dots">
-          <span class="dot active" onclick="showPage(1)"></span>
-          <span class="dot" onclick="showPage(2)"></span>
-          <span class="dot" onclick="showPage(3)"></span>
-        </div>
+        <div class="dots"></div>
       </section>
 
       <section>
@@ -1438,56 +1391,15 @@ body.light-mode .custom-alert-btn {
       메시지
     </div>
 
+    <div class="custom-alert-error" id="customAlertError"></div>
+
     <button class="custom-alert-btn" id="customAlertBtn">
       확인
     </button>
   </div>
 </div>
 
-<div class="custom-alert-error" id="customAlertError"></div>
-
 <script>
-  /* =========================
-     페이지 이탈 감지
-  // ========================= */
-  // let isInternalNavigation = false;
-
-  // // 1. 사이트 내 링크를 클릭했을 때
-  // document.addEventListener('click', (e) => {
-  //     const target = e.target.closest('a');
-  //     if (target && target.href && target.href.includes(window.location.origin)) {
-  //         isInternalNavigation = true;
-  //     }
-  // });
-
-  // // 2. 폼(로그인, 검색 등)을 제출했을 때
-  // document.addEventListener('submit', () => {
-  //     isInternalNavigation = true;
-  // });
-
-  // // 3. 페이지가 언로드(종료/이동)될 때 실행
-  // window.addEventListener('beforeunload', () => {
-  //     // 내부 이동이 아닐 때만 로그아웃 요청 전송
-  //     if (!isInternalNavigation) {
-  //         navigator.sendBeacon('/logout');
-  //     }
-  // });
-  function selectMenu(element, pageType) {
-    document.querySelectorAll(".side-menu li").forEach(li => {
-      li.classList.remove("active");
-    });
-
-    element.classList.add("active");
-
-    if (pageType === "home") {
-      window.location.href = "mypage_home.html";
-    }
-
-    if (pageType === "account") {
-      window.location.href = "mypage_account.html";
-    }
-  }
-
   function bindCommonSearch() {
     const input = document.getElementById("commonSearchInput");
     const searchBtn = document.getElementById("commonSearchBtn");
@@ -1589,18 +1501,15 @@ body.light-mode .custom-alert-btn {
       document.querySelectorAll(".search-suggest-item").forEach(function (btn) {
         btn.addEventListener("click", function () {
           const keyword = btn.dataset.suggestKeyword;
-
           selectSearchSuggestion(keyword);
         });
       });
 
       positionSearchSuggestBox();
-
       suggestBox.classList.remove("hidden");
 
     } catch (error) {
       console.error("검색 자동완성 실패:", error);
-
       hideSearchSuggestions();
     }
   }
@@ -1635,7 +1544,9 @@ body.light-mode .custom-alert-btn {
 
     hideSearchSuggestions();
 
-    goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`);
+    goLoginRequiredPage(
+      `/view/keyword_detail.html?keyword=${encodeURIComponent(keyword)}`
+    );
   }
 
   function moveSearch(keyword) {
@@ -1645,381 +1556,382 @@ body.light-mode .custom-alert-btn {
 
     hideSearchSuggestions();
 
-    goLoginRequiredPage(`/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`);
+    goLoginRequiredPage(
+      `/view/keyword_detail.html?keyword=${encodeURIComponent(value)}`
+    );
   }
 
   const pageSize = 10;
 
-function moveNewsDetail(articleId) {
-  if (!articleId) return;
-  location.href = `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-
-  const date = new Date(dateStr);
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-
-  return `${mm}.${dd}`;
-}
-
-function renderMiniNewsFromServer(selector, list) {
-  const rows = document.querySelectorAll(selector + " .mini-news");
-
-  rows.forEach((row, index) => {
-    const item = list[index];
-    const titleEl = row.querySelector("span:first-child");
-    const dateEl = row.querySelector(".date");
-
-    if (item) {
-      titleEl.textContent = item.title || "제목 없음";
-      dateEl.textContent = formatDate(item.created_at || item.date);
-      row.onclick = () => moveNewsDetail(item.article_id);
-    } else {
-      titleEl.textContent = "";
-      dateEl.textContent = "";
-      row.onclick = null;
-    }
-  });
-}
-
-function renderReactionPagination(targetId, totalCount, currentPage, type) {
-  const totalPage = Math.ceil(totalCount / pageSize);
-  const el = document.getElementById(targetId);
-
-  if (!el || totalPage <= 1) {
-    if (el) el.innerHTML = "";
-    return;
+  function moveNewsDetail(articleId) {
+    if (!articleId) return;
+    location.href = `/view/article_detail.html?article_id=${encodeURIComponent(articleId)}`;
   }
 
-  let html = "";
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
 
-  html += `<span onclick="loadReactionNews('${type}', 1)"><<</span> `;
-  html += `<span onclick="loadReactionNews('${type}', ${Math.max(1, currentPage - 1)})"><</span> `;
+    const date = new Date(dateStr);
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
 
-  for (let i = 1; i <= totalPage; i++) {
-    html += i === currentPage
-      ? `<b>${i}</b> `
-      : `<span onclick="loadReactionNews('${type}', ${i})">${i}</span> `;
+    return `${mm}.${dd}`;
   }
 
-  html += `<span onclick="loadReactionNews('${type}', ${Math.min(totalPage, currentPage + 1)})">></span> `;
-  html += `<span onclick="loadReactionNews('${type}', ${totalPage})">>></span>`;
+  function renderMiniNewsFromServer(selector, list) {
+    const rows = document.querySelectorAll(selector + " .mini-news");
 
-  el.innerHTML = html;
-}
+    rows.forEach((row, index) => {
+      const item = list[index];
+      const titleEl = row.querySelector("span:first-child");
+      const dateEl = row.querySelector(".date");
 
-async function loadReactionNews(type, page = 1) {
-  try {
-    const { data } = await axios.get("/api/mypage/reactions", {
-      params: { type, page, size: pageSize }
-    });
-
-    const isLike = type === "like";
-
-    const selector = isLike
-      ? ".cards .card:first-child"
-      : ".cards .card:last-child";
-
-    const paginationId = isLike
-      ? "likePagination"
-      : "dislikePagination";
-
-    const countEl = isLike
-      ? document.querySelector(".like").nextElementSibling
-      : document.querySelector(".dislike").nextElementSibling;
-
-    countEl.innerText = `총 ${data.total_count || 0}건`;
-
-    renderMiniNewsFromServer(selector, data.articles || []);
-    renderReactionPagination(paginationId, data.total_count || 0, page, type);
-
-  } catch (err) {
-    console.error("선호/비선호 뉴스 로드 실패:", err);
-  }
-}
-
-function loadLikePage(page = 1) {
-  loadReactionNews("like", page);
-}
-
-function loadDislikePage(page = 1) {
-  loadReactionNews("dislike", page);
-}
-
-async function loadViewedNews(page = 1) {
-  try {
-    const { data } = await axios.get("/api/mypage/viewed-news", {
-      params: {
-        page,
-        size: 10
+      if (item) {
+        titleEl.textContent = item.title || "제목 없음";
+        dateEl.textContent = formatDate(item.created_at || item.date);
+        row.onclick = () => moveNewsDetail(item.article_id);
+      } else {
+        titleEl.textContent = "";
+        dateEl.textContent = "";
+        row.onclick = null;
       }
     });
+  }
 
-    const newsList = document.querySelector(".news-list");
+  function renderReactionPagination(targetId, totalCount, currentPage, type) {
+    const totalPage = Math.ceil(totalCount / pageSize);
+    const el = document.getElementById(targetId);
 
-    if (!newsList) return;
+    if (!el || totalPage <= 1) {
+      if (el) el.innerHTML = "";
+      return;
+    }
 
-    newsList.innerHTML = "";
+    let html = "";
 
-    const articles = data.articles || [];
+    html += `<span onclick="loadReactionNews('${type}', 1)"><<</span> `;
+    html += `<span onclick="loadReactionNews('${type}', ${Math.max(1, currentPage - 1)})"><</span> `;
 
-    articles.forEach((item, index) => {
-      newsList.innerHTML += `
-        <div class="news-item"
-             onclick="moveNewsDetail('${item.article_id}')">
+    for (let i = 1; i <= totalPage; i++) {
+      html += i === currentPage
+        ? `<b>${i}</b> `
+        : `<span onclick="loadReactionNews('${type}', ${i})">${i}</span> `;
+    }
 
-          <div class="num">
-            ${String(index + 1).padStart(2, "0")}
-          </div>
+    html += `<span onclick="loadReactionNews('${type}', ${Math.min(totalPage, currentPage + 1)})">></span> `;
+    html += `<span onclick="loadReactionNews('${type}', ${totalPage})">>></span>`;
 
-          <div>
-            <div class="title">
-              ${item.title || "제목 없음"}
+    el.innerHTML = html;
+  }
+
+  async function loadReactionNews(type, page = 1) {
+    try {
+      const { data } = await axios.get("/api/mypage/reactions", {
+        params: { type, page, size: pageSize }
+      });
+
+      const isLike = type === "like";
+
+      const selector = isLike
+        ? ".cards .card:first-child"
+        : ".cards .card:last-child";
+
+      const paginationId = isLike
+        ? "likePagination"
+        : "dislikePagination";
+
+      const countEl = isLike
+        ? document.querySelector(".like").nextElementSibling
+        : document.querySelector(".dislike").nextElementSibling;
+
+      countEl.innerText = `총 ${data.total_count || 0}건`;
+
+      renderMiniNewsFromServer(selector, data.articles || []);
+      renderReactionPagination(paginationId, data.total_count || 0, page, type);
+
+    } catch (err) {
+      console.error("선호/비선호 뉴스 로드 실패:", err);
+    }
+  }
+
+  function loadLikePage(page = 1) {
+    loadReactionNews("like", page);
+  }
+
+  function loadDislikePage(page = 1) {
+    loadReactionNews("dislike", page);
+  }
+
+  async function loadViewedNews(page = 1) {
+    try {
+      const { data } = await axios.get("/api/mypage/viewed-news", {
+        params: {
+          page,
+          size: 10
+        }
+      });
+
+      const newsList = document.querySelector(".news-list");
+
+      if (!newsList) return;
+
+      newsList.innerHTML = "";
+
+      const articles = data.articles || [];
+
+      articles.forEach((item, index) => {
+        newsList.innerHTML += `
+          <div class="news-item"
+               onclick="moveNewsDetail('${item.article_id}')">
+
+            <div class="num">
+              ${String(index + 1).padStart(2, "0")}
             </div>
 
-            <div class="desc">
-              ${item.description || ""}
+            <div>
+              <div class="title">
+                ${item.title || "제목 없음"}
+              </div>
+
+              <div class="desc">
+                ${item.description || ""}
+              </div>
             </div>
-          </div>
 
-          <span class="category">
-            ${item.category || "경제"}
-          </span>
-        </div>
-      `;
-    });
-
-    const badge = document.querySelector(".badge");
-
-    if (badge) {
-      badge.innerText = `${data.total_count || 0}개`;
-    }
-
-    renderViewedPagination(
-      data.total_count || 0,
-      page
-    );
-
-  } catch (err) {
-    console.error("내가 본 뉴스 로딩 실패:", err);
-  }
-}
-
-function renderViewedPagination(totalCount, currentPage) {
-  const dots = document.querySelector(".dots");
-
-  if (!dots) return;
-
-  const totalPage = Math.ceil(totalCount / 10);
-
-  let html = "";
-
-  for (let i = 1; i <= totalPage; i++) {
-    html += `
-      <span
-        class="dot ${i === currentPage ? "active" : ""}"
-        onclick="loadViewedNews(${i})">
-      </span>
-    `;
-  }
-
-  dots.innerHTML = html;
-}
-
-let noticeBanners = [];
-let adBanners = [];
-
-let currentNoticeIndex = 0;
-let currentAdIndex = 0;
-
-let noticeTimer = null;
-let adTimer = null;
-
-async function loadNotice() {
-  try {
-    const { data } = await axios.get("/api/banner/active-list");
-
-    const banners = data.banners || [];
-
-    noticeBanners = banners.filter(item => item.banner_type === "notice");
-    adBanners = banners.filter(item => item.banner_type === "image");
-
-    currentNoticeIndex = 0;
-    currentAdIndex = 0;
-
-    if (noticeTimer) {
-      clearInterval(noticeTimer);
-      noticeTimer = null;
-    }
-
-    if (adTimer) {
-      clearInterval(adTimer);
-      adTimer = null;
-    }
-
-    renderNoticeBanner();
-    renderAdBanner();
-
-    if (noticeBanners.length > 1) {
-      noticeTimer = setInterval(function () {
-        currentNoticeIndex++;
-
-        if (currentNoticeIndex >= noticeBanners.length) {
-          currentNoticeIndex = 0;
-        }
-
-        renderNoticeBanner();
-      }, 4000);
-    }
-
-    if (adBanners.length > 1) {
-      adTimer = setInterval(function () {
-        currentAdIndex++;
-
-        if (currentAdIndex >= adBanners.length) {
-          currentAdIndex = 0;
-        }
-
-        renderAdBanner();
-      }, 5000);
-    }
-
-  } catch (err) {
-    console.error("배너 로드 실패:", err);
-
-    const noticeBox = document.getElementById("noticeBannerBox");
-    const adBox = document.getElementById("adBannerBox");
-
-    if (noticeBox) noticeBox.classList.add("hidden");
-    if (adBox) adBox.classList.add("hidden");
-  }
-}
-
-function renderNoticeBanner() {
-  const box = document.getElementById("noticeBannerBox");
-
-  if (!box) return;
-
-  const banner = noticeBanners[currentNoticeIndex];
-
-  if (!banner) {
-    box.classList.add("hidden");
-    box.onclick = null;
-    return;
-  }
-
-  box.classList.remove("hidden");
-  box.classList.remove("notice-slide");
-
-  box.innerHTML = `
-    <div class="notice-left">
-      <span class="notice-badge">공지사항</span>
-      <span class="notice-title">${banner.title || "공지사항"}</span>
-    </div>
-
-    <div class="notice-right">
-      <span class="notice-page">
-        ${currentNoticeIndex + 1} / ${noticeBanners.length}
-      </span>
-      <span class="notice-arrow">→</span>
-    </div>
-  `;
-
-  void box.offsetWidth;
-  box.classList.add("notice-slide");
-
-  box.onclick = function () {
-    location.href = "/view/notice_list.html";
-  };
-}
-
-function renderAdBanner() {
-  const box = document.getElementById("adBannerBox");
-
-  if (!box) return;
-
-  const banner = adBanners[currentAdIndex];
-
-  if (!banner || !banner.image_url) {
-    box.classList.add("hidden");
-    box.onclick = null;
-    return;
-  }
-
-  box.classList.add("active");
-  box.classList.remove("hidden");
-  box.classList.remove("notice-slide");
-
-  box.innerHTML = `
-    <img
-      class="notice-banner-img"
-      src="${banner.image_url}"
-      alt="${banner.title || "광고 배너"}"
-    >
-
-    ${
-      adBanners.length > 1
-        ? `
-          <div class="notice-right notice-right-over">
-            <span class="notice-page">
-              ${currentAdIndex + 1} / ${adBanners.length}
+            <span class="category">
+              ${item.category || "경제"}
             </span>
           </div>
-        `
-        : ""
+        `;
+      });
+
+      const badge = document.querySelector(".badge");
+
+      if (badge) {
+        badge.innerText = `${data.total_count || 0}개`;
+      }
+
+      renderViewedPagination(
+        data.total_count || 0,
+        page
+      );
+
+    } catch (err) {
+      console.error("내가 본 뉴스 로딩 실패:", err);
     }
-  `;
-
-  void box.offsetWidth;
-  box.classList.add("notice-slide");
-
-box.onclick = function () {
-  if (!banner.landing_url) return;
-
-  let url = banner.landing_url;
-
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
   }
 
-  window.open(url, "_blank");
-};
-}
+  function renderViewedPagination(totalCount, currentPage) {
+    const dots = document.querySelector(".dots");
 
-async function pwconfirm() {
-  const password = document.getElementById("pwInput").value.trim();
-  const user_id = sessionStorage.getItem("user_id");
+    if (!dots) return;
 
-  try {
-    const { data } = await axios.post("/pw_check", {
-      user_id,
-      password
-    });
+    const totalPage = Math.ceil(totalCount / 10);
 
-    if (data.success) {
+    let html = "";
 
-      showCustomAlert("본인 인증에 성공하였습니다.");
-
-      setTimeout(() => {
-        location.href = "/view/mypage_account.html";
-      }, 300);
-
-    } else {
-      showCustomAlert("실패: " + data.message);
-
-      const input = document.getElementById("pwInput");
-      input.value = "";
-      input.focus();
+    for (let i = 1; i <= totalPage; i++) {
+      html += `
+        <span
+          class="dot ${i === currentPage ? "active" : ""}"
+          onclick="loadViewedNews(${i})">
+        </span>
+      `;
     }
 
-  } catch (err) {
-    console.error("비밀번호 확인 중 에러:", err);
-    showCustomAlert("서버 통신 중 오류가 발생했습니다.");
+    dots.innerHTML = html;
   }
-}
+
+  let noticeBanners = [];
+  let adBanners = [];
+
+  let currentNoticeIndex = 0;
+  let currentAdIndex = 0;
+
+  let noticeTimer = null;
+  let adTimer = null;
+
+  async function loadNotice() {
+    try {
+      const { data } = await axios.get("/api/banner/active-list");
+
+      const banners = data.banners || [];
+
+      noticeBanners = banners.filter(item => item.banner_type === "notice");
+      adBanners = banners.filter(item => item.banner_type === "image");
+
+      currentNoticeIndex = 0;
+      currentAdIndex = 0;
+
+      if (noticeTimer) {
+        clearInterval(noticeTimer);
+        noticeTimer = null;
+      }
+
+      if (adTimer) {
+        clearInterval(adTimer);
+        adTimer = null;
+      }
+
+      renderNoticeBanner();
+      renderAdBanner();
+
+      if (noticeBanners.length > 1) {
+        noticeTimer = setInterval(function () {
+          currentNoticeIndex++;
+
+          if (currentNoticeIndex >= noticeBanners.length) {
+            currentNoticeIndex = 0;
+          }
+
+          renderNoticeBanner();
+        }, 4000);
+      }
+
+      if (adBanners.length > 1) {
+        adTimer = setInterval(function () {
+          currentAdIndex++;
+
+          if (currentAdIndex >= adBanners.length) {
+            currentAdIndex = 0;
+          }
+
+          renderAdBanner();
+        }, 5000);
+      }
+
+    } catch (err) {
+      console.error("배너 로드 실패:", err);
+
+      const noticeBox = document.getElementById("noticeBannerBox");
+      const adBox = document.getElementById("adBannerBox");
+
+      if (noticeBox) noticeBox.classList.add("hidden");
+      if (adBox) adBox.classList.add("hidden");
+    }
+  }
+
+  function renderNoticeBanner() {
+    const box = document.getElementById("noticeBannerBox");
+
+    if (!box) return;
+
+    const banner = noticeBanners[currentNoticeIndex];
+
+    if (!banner) {
+      box.classList.add("hidden");
+      box.onclick = null;
+      return;
+    }
+
+    box.classList.remove("hidden");
+    box.classList.remove("notice-slide");
+
+    box.innerHTML = `
+      <div class="notice-left">
+        <span class="notice-badge">공지사항</span>
+        <span class="notice-title">${banner.title || "공지사항"}</span>
+      </div>
+
+      <div class="notice-right">
+        <span class="notice-page">
+          ${currentNoticeIndex + 1} / ${noticeBanners.length}
+        </span>
+        <span class="notice-arrow">→</span>
+      </div>
+    `;
+
+    void box.offsetWidth;
+    box.classList.add("notice-slide");
+
+    box.onclick = function () {
+      location.href = "/view/notice_list.html";
+    };
+  }
+
+  function renderAdBanner() {
+    const box = document.getElementById("adBannerBox");
+
+    if (!box) return;
+
+    const banner = adBanners[currentAdIndex];
+
+    if (!banner || !banner.image_url) {
+      box.classList.add("hidden");
+      box.onclick = null;
+      return;
+    }
+
+    box.classList.add("active");
+    box.classList.remove("hidden");
+    box.classList.remove("notice-slide");
+
+    box.innerHTML = `
+      <img
+        class="notice-banner-img"
+        src="${banner.image_url}"
+        alt="${banner.title || "광고 배너"}"
+      >
+
+      ${
+        adBanners.length > 1
+          ? `
+            <div class="notice-right notice-right-over">
+              <span class="notice-page">
+                ${currentAdIndex + 1} / ${adBanners.length}
+              </span>
+            </div>
+          `
+          : ""
+      }
+    `;
+
+    void box.offsetWidth;
+    box.classList.add("notice-slide");
+
+    box.onclick = function () {
+      if (!banner.landing_url) return;
+
+      let url = banner.landing_url;
+
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = "https://" + url;
+      }
+
+      window.open(url, "_blank");
+    };
+  }
+
+  async function pwconfirm() {
+    const password = document.getElementById("pwInput").value.trim();
+    const user_id = sessionStorage.getItem("user_id");
+
+    try {
+      const { data } = await axios.post("/pw_check", {
+        user_id,
+        password
+      });
+
+      if (data.success) {
+        showCustomAlert("본인 인증에 성공하였습니다.");
+
+        setTimeout(() => {
+          location.href = "/view/mypage_account.html";
+        }, 300);
+
+      } else {
+        showCustomAlert("실패: " + data.message);
+
+        const input = document.getElementById("pwInput");
+        input.value = "";
+        input.focus();
+      }
+
+    } catch (err) {
+      console.error("비밀번호 확인 중 에러:", err);
+      showCustomAlert("서버 통신 중 오류가 발생했습니다.");
+    }
+  }
 
   function loadHeader() {
     const headerArea = document.getElementById("header");
@@ -2033,7 +1945,7 @@ async function pwconfirm() {
       return;
     }
 
-    fetch("/view/header.html?v=999")
+    fetch("/view/header.html?v=" + Date.now())
       .then(function (res) {
         if (!res.ok) {
           throw new Error("header.html 경로 오류");
@@ -2058,8 +1970,21 @@ async function pwconfirm() {
     const joinBtn = document.getElementById("joinBtn");
     const primaryUserBtn = document.getElementById("primaryUserBtn");
     const logoutBtn = document.getElementById("logoutBtn");
+    const headerUserName = document.getElementById("headerUserName");
 
-    if (!primaryUserBtn || !logoutBtn) return;
+    if (
+      !primaryUserBtn ||
+      !logoutBtn ||
+      !headerUserName
+    ) {
+      return;
+    }
+
+    const userName =
+      sessionStorage.getItem("user_name") ||
+      localStorage.getItem("user_name") ||
+      sessionStorage.getItem("userName") ||
+      localStorage.getItem("userName");
 
     if (loginBtn) loginBtn.classList.add("hidden");
     if (joinBtn) joinBtn.classList.add("hidden");
@@ -2067,6 +1992,14 @@ async function pwconfirm() {
     primaryUserBtn.classList.remove("hidden");
     logoutBtn.classList.remove("hidden");
     primaryUserBtn.innerText = "마이페이지";
+
+    if (userName) {
+      headerUserName.textContent = `${userName}님`;
+      headerUserName.classList.remove("hidden");
+    } else {
+      headerUserName.textContent = "";
+      headerUserName.classList.add("hidden");
+    }
   }
 
   function applyThemeMode() {
@@ -2192,31 +2125,29 @@ async function pwconfirm() {
       return;
     }
 
-if (accountPageBtn) {
-  (async () => {
-    try {
-      const { data } = await axios.post("/pw_check_time");
+    if (accountPageBtn) {
+      try {
+        const { data } = await axios.post("/pw_check_time");
 
-      if (data.is_authenticated) {
-        location.href = "/view/mypage_account.html";
-      } else {
-        const modal = document.getElementById("pwModal");
-        const input = document.getElementById("pwInput");
+        if (data.is_authenticated) {
+          location.href = "/view/mypage_account.html";
+        } else {
+          const modal = document.getElementById("pwModal");
+          const input = document.getElementById("pwInput");
 
-        modal.classList.remove("hidden");
+          modal.classList.remove("hidden");
 
-        setTimeout(() => {
-          input.focus();
-        }, 50);
+          setTimeout(() => {
+            input.focus();
+          }, 50);
+        }
+      } catch (err) {
+        console.error("인증 상태 확인 에러:", err);
+        showCustomAlert("서버 통신 중 오류가 발생했습니다.");
       }
-    } catch (err) {
-      console.error("인증 상태 확인 에러:", err);
-      showCustomAlert("서버 통신 중 오류가 발생했습니다.");
-    }
-  })();
 
-  return;
-}
+      return;
+    }
 
     if (pwCancelBtn) {
       document.getElementById("pwModal").classList.add("hidden");
@@ -2282,50 +2213,50 @@ if (accountPageBtn) {
   });
 
   document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
-    const modal = document.getElementById("pwModal");
-    const input = document.getElementById("pwInput");
+    if (e.key === "Escape") {
+      const modal = document.getElementById("pwModal");
+      const input = document.getElementById("pwInput");
 
-    if (!modal.classList.contains("hidden")) {
-      modal.classList.add("hidden");
-      input.value = "";
-    }
-  }
-});
-
-const pwModal = document.getElementById("pwModal");
-
-if (pwModal) {
-  pwModal.addEventListener("click", function (e) {
-    if (e.target === this) {
-      this.classList.add("hidden");
-      document.getElementById("pwInput").value = "";
+      if (modal && !modal.classList.contains("hidden")) {
+        modal.classList.add("hidden");
+        input.value = "";
+      }
     }
   });
-}
 
-  function showCustomAlert(message, errorText = "") {
-  const modal = document.getElementById("customAlert");
-  const msg = document.getElementById("customAlertMsg");
-  const error = document.getElementById("customAlertError");
-  const btn = document.getElementById("customAlertBtn");
+  const pwModal = document.getElementById("pwModal");
 
-  msg.textContent = message;
-
-  if (errorText) {
-    error.textContent = errorText;
-    error.style.display = "block";
-  } else {
-    error.style.display = "none";
+  if (pwModal) {
+    pwModal.addEventListener("click", function (e) {
+      if (e.target === this) {
+        this.classList.add("hidden");
+        document.getElementById("pwInput").value = "";
+      }
+    });
   }
 
-  modal.classList.remove("hidden");
+  function showCustomAlert(message, errorText = "") {
+    const modal = document.getElementById("customAlert");
+    const msg = document.getElementById("customAlertMsg");
+    const error = document.getElementById("customAlertError");
+    const btn = document.getElementById("customAlertBtn");
 
-  btn.onclick = function () {
-    modal.classList.add("hidden");
-  };
-}
+    msg.textContent = message;
 
+    if (errorText) {
+      error.textContent = errorText;
+      error.style.display = "block";
+    } else {
+      error.textContent = "";
+      error.style.display = "none";
+    }
+
+    modal.classList.remove("hidden");
+
+    btn.onclick = function () {
+      modal.classList.add("hidden");
+    };
+  }
 </script>
 </body>
 </html>
