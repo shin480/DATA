@@ -990,6 +990,185 @@
       }
     }
 
+    /* ==============================
+       Mobile LNB Hamburger
+    ============================== */
+
+    .mobile-lnb-bar {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+
+      /* ── 레이아웃 ── */
+      .layout {
+        flex-direction: column;
+      }
+
+      /* ── PC aside 숨기기 ── */
+      aside {
+        display: none !important;
+      }
+
+      /* ── 모바일 LNB 바 ── */
+      .mobile-lnb-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 0 18px;
+        height: 48px;
+        background: #0b1020;
+        border-bottom: 1px solid #1a2540;
+        position: sticky;
+        top: 72px;
+        z-index: 200;
+      }
+
+      .mobile-lnb-title {
+        font-size: 13px;
+        color: #6e7c98;
+        font-weight: 700;
+      }
+
+      .hamburger-btn {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+
+      .hamburger-btn:hover {
+        background: #132137;
+      }
+
+      .hamburger-btn span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: #6e7c98;
+        border-radius: 2px;
+        transition: transform 0.25s, opacity 0.25s;
+      }
+
+      .hamburger-btn.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .hamburger-btn.open span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .hamburger-btn.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      /* ── 드롭다운 메뉴 ── */
+      .mobile-menu-dropdown {
+        display: none;
+        background: #0b1020;
+        border-bottom: 1px solid #1a2540;
+        position: sticky;
+        top: 120px;
+        z-index: 199;
+        overflow: hidden;
+      }
+
+      .mobile-menu-dropdown.open {
+        display: block;
+        animation: mobileMenuDown 0.22s ease;
+      }
+
+      @keyframes mobileMenuDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .mobile-menu-dropdown ul {
+        list-style: none;
+        padding: 8px 0;
+        margin: 0;
+      }
+
+      .mobile-menu-dropdown li {
+        height: 46px;
+        display: flex;
+        align-items: center;
+        padding-left: 24px;
+        color: #6f7d98;
+        font-size: 14px;
+        border-left: 4px solid transparent;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .mobile-menu-dropdown li:hover {
+        background: #10192b;
+      }
+
+      .mobile-menu-dropdown li.active {
+        background: #132137;
+        color: #42bfff;
+        border-left-color: #24bfff;
+        font-weight: 700;
+      }
+
+      /* ── main / account-wrap ── */
+      main {
+        padding: 24px 16px 60px;
+      }
+
+      .account-wrap {
+        width: 100%;
+        padding-top: 8px;
+      }
+    }
+
+    /* ── light mode: mobile lnb ── */
+    body.light-mode .mobile-lnb-bar,
+    body.light-mode .mobile-menu-dropdown {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+
+    body.light-mode .mobile-lnb-title {
+      color: #64748b;
+    }
+
+    body.light-mode .hamburger-btn span {
+      background: #334155;
+    }
+
+    body.light-mode .hamburger-btn:hover {
+      background: #e2e8f0;
+    }
+
+    body.light-mode .hamburger-btn.open span {
+      background: #0f172a;
+    }
+
+    body.light-mode .mobile-menu-dropdown li {
+      color: #64748b;
+    }
+
+    body.light-mode .mobile-menu-dropdown li:hover {
+      background: #f1f5f9;
+    }
+
+    body.light-mode .mobile-menu-dropdown li.active {
+      background: #e0f7ff;
+      color: #0284c7;
+      border-left-color: #00cfe8;
+    }
+
     @media (max-width: 640px) {
       .search-suggest-box {
         left: 18px !important;
@@ -1019,6 +1198,24 @@
 <body>
 <div class="page">
   <div id="header"></div>
+
+  <!-- 모바일 LNB 바 (768px 이하에서만 보임) -->
+  <div class="mobile-lnb-bar" id="mobileLnbBar">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <span class="mobile-lnb-title">마이페이지</span>
+  </div>
+
+  <!-- 모바일 드롭다운 메뉴 -->
+  <div class="mobile-menu-dropdown" id="mobileMenuDropdown">
+    <ul>
+      <li onclick="location.href='/view/mypage_home.html'; closeMobileMenu();">마이페이지 홈</li>
+      <li class="active">회원정보 관리 &amp; 탈퇴</li>
+    </ul>
+  </div>
 
   <div class="layout">
     <aside>
@@ -1124,7 +1321,54 @@
 </div>
 
 <script>
-  function loadUserInfo() {
+  /* ==============================
+     모바일 햄버거 메뉴
+  ============================== */
+  (function () {
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const dropdown = document.getElementById("mobileMenuDropdown");
+
+    if (!hamburgerBtn || !dropdown) return;
+
+    hamburgerBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const isOpen = dropdown.classList.contains("open");
+
+      if (isOpen) {
+        closeMobileMenu();
+      } else {
+        dropdown.classList.add("open");
+        hamburgerBtn.classList.add("open");
+        hamburgerBtn.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      if (
+        dropdown.classList.contains("open") &&
+        !dropdown.contains(e.target) &&
+        !hamburgerBtn.contains(e.target)
+      ) {
+        closeMobileMenu();
+      }
+    });
+  })();
+
+  window.closeMobileMenu = function () {
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const dropdown = document.getElementById("mobileMenuDropdown");
+
+    if (!dropdown) return;
+
+    dropdown.classList.remove("open");
+
+    if (hamburgerBtn) {
+      hamburgerBtn.classList.remove("open");
+      hamburgerBtn.setAttribute("aria-expanded", "false");
+    }
+  };
+
+
     const name = sessionStorage.getItem("user_name") || localStorage.getItem("user_name");
     const email =
       sessionStorage.getItem("user_id") ||
