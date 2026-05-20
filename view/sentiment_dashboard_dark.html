@@ -1432,6 +1432,7 @@ async function loadSamples() {
 document.getElementById('thresh').addEventListener('input', function() {
   document.getElementById('thresh-val').textContent = parseFloat(this.value).toFixed(2);
 });
+document.getElementById('thresh').addEventListener('change', () => { samplesLoaded=false; loadSamples(); });
 document.getElementById('samples-refresh').addEventListener('click', () => { samplesLoaded=false; loadSamples(); });
 
 // ══════════════════════════════════════════════════════
