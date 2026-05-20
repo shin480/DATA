@@ -136,7 +136,8 @@ def get_confidence_stats(
 
 
 def _fetch_low_confidence(threshold: float, limit: int, sentiment: str | None,
-                          date_from: str | None = None, date_to: str | None = None) -> dict:
+                          date_from: str | None = None, date_to: str | None = None,
+                          offset: int = 0) -> dict:
     must = [
         {"range":  {"sentiment_score": {"lt": threshold}}},
         {"exists": {"field": "sentiment"}},
@@ -166,6 +167,7 @@ def _fetch_low_confidence(threshold: float, limit: int, sentiment: str | None,
             "_source": ["article_id", "title", "sentiment", "sentiment_score",
                         "published_at", "scopeID"],
             "sort":    [{"sentiment_score": "asc"}],
+            "from":    offset,
             "size":    limit,
         },
     )
@@ -187,11 +189,13 @@ def _fetch_low_confidence(threshold: float, limit: int, sentiment: str | None,
 @router.get("/low-confidence")
 def get_low_confidence_samples(
     threshold: float      = Query(default=LOW_CONF_THRESHOLD, ge=0.0, le=1.0),
-    limit:     int        = Query(default=20, ge=1, le=100),
+    limit:     int        = Query(default=100, ge=1, le=100),
+    page:      int        = Query(default=1, ge=1),
     sentiment: str | None = Query(default=None),
 ):
+    offset = (page - 1) * limit
     try:
-        return _fetch_low_confidence(threshold, limit, sentiment)
+        return _fetch_low_confidence(threshold, limit, sentiment, offset=offset)
     except HTTPException:
         raise
     except Exception as e:
