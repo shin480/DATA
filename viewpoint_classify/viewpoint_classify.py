@@ -33,7 +33,7 @@ category_keywords = {
     "비판적 태도": ["비판", "논란", "지적", "규탄", "부당", "소송", "반발", "의혹", "갈등"],
     "우려": ["우려", "위기", "타격", "침체", "불확실성", "경고", "악화", "부담", "리스크"],
     "기대": ["기대", "호재", "회복", "활기", "수혜", "낙관", "모멘텀", "흥행", "인기", "품절", "운집", "몰린", "열풍","품절대란", "완판", "흥행몰이", "매진"],
-    "성과 예찬": ["성과" "달성", "최고등급", "최우수", "입증", "우수성", "쾌거", "성공적", "완판", "호실적", "최대", "돌파"],
+    "성과 예찬": ["성과", "달성", "최고등급", "최우수", "입증", "우수성", "쾌거", "성공적", "완판", "호실적", "최대", "돌파"],
 
     # [정보 전달 및 분석 관점 그룹] (팩트는 이쪽으로 모입니다)
     "단순 전달": [
@@ -49,12 +49,9 @@ category_keywords = {
         "선정", "판매", "할인", "개편", "도입"
     ],
     "원인 분석": ["원인", "배경", "기인", "때문에"],
-    "결과 분석": ["결과", "집계", "나타났다", "분석됨", "수치", "통계",
-                "증가", "감소", "상승률", "하락률", "변동률",
-                "기록했다", "오르며", "내렸다", "상승세", "하락세",
-                "보합", "강보합", "반등", "하락 반전", "급등", "급락",
-                "생산", "소비", "수출", "수입", "무역수지",
-                "흑자", "적자", "상승", "하락", "인상", "인하", "가격 인상", "가격 인하"],
+    "결과 분석": ["집계", "나타났다", "통계", "변동률",
+                "기록했다", "상승률", "하락률",
+                "흑자", "적자", "급등", "급락", "반등"],
     "대응 분석": ["대응책", "해법", "대안", "방안", "강구", "준비", "대책", "TF"],
     "전망 분석": ["전망", "예상", "할 것으로", "될 듯", "향후"],
 
@@ -87,8 +84,58 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
             scores[cat] += c_title.count(kw) * TITLE_W
             scores[cat] += c_content.count(kw) * CONTENT_W
 
+    # =========================
+    # 결과 분석 약한 키워드 보정
+    # =========================
+    weak_result_keywords = ["상승", "하락", "증가", "감소", "인상", "인하"]
+
+    for kw in weak_result_keywords:
+        scores["결과 분석"] += c_title.count(kw) * 1.0
+        scores["결과 분석"] += c_content.count(kw) * 0.2
+
+    result_context_words = ["전년", "전월", "대비", "%", "집계", "통계", "기록", "수치"]
+
+    if any(w in c_content for w in result_context_words):
+        for kw in weak_result_keywords:
+            scores["결과 분석"] += c_title.count(kw) * 1.5
+            scores["결과 분석"] += c_content.count(kw) * 0.4
+
+
+    # =========================
+    # 우려 키워드 문맥 보정
+    # =========================
+    if "부담 완화" in c_content or "부담을 줄" in c_content or "비용 부담을 줄" in c_content:
+        scores["우려"] -= 2
+
+    # =========================
+    # 홍보성 기사 키워드 보정
+    # =========================
+    promo_words = ["출시", "선보", "공개", "도입", "확대", "개선", "혜택", "지원"]
+
+    if any(w in c_title for w in promo_words):
+        scores["기대"] += 0.8
+        scores["성과 예찬"] += 0.3
+
+    # =========================
+    # 노사/조정/협상 기사 보정
+    # =========================
+    labor_policy_words = [
+        "노사", "노조", "사측", "중노위", "중앙노동위원회",
+        "사후조정", "교섭", "협상", "대화 제안", "재협상"
+    ]
+
+    if any(w in c_title or w in c_content for w in labor_policy_words):
+        scores["정책 요인(국내)"] += 1.5
+        scores["대응 분석"] += 1.2
+
+        # 단순 갈등 기사라고 무조건 비판으로 쏠리는 것 방지
+        if "비판" not in c_title and "의혹" not in c_title and "불법" not in c_title:
+            scores["비판적 태도"] *= 0.75
+
     # 단순 전달 penalty
-    scores["단순 전달"] *= 0.4
+    scores["단순 전달"] *= 0.25
+    if scores["단순 전달"] < 2:
+        scores["단순 전달"] = 0
 
     # 감성 confidence 과신 방지
     conf = min(float(sentiment_score or 0), 0.85)
@@ -97,20 +144,16 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
     if sentiment == "negative":
         scores["비판적 태도"] += bias
         scores["우려"] += bias
-        scores["정부 책임"] += bias * 0.5
-        scores["기업 책임"] += bias * 0.5
+        scores["정부 책임"] += bias * 0.2
+        scores["기업 책임"] += bias * 0.2
         scores["기대"] -= bias * 0.5
         scores["성과 예찬"] -= bias
-
     elif sentiment == "positive":
         scores["기대"] += bias
         scores["성과 예찬"] += bias
         scores["비판적 태도"] -= bias * 0.5
         scores["우려"] -= bias * 0.5
 
-    elif sentiment == "neutral":
-        scores["단순 전달"] += bias * 0.5
-        scores["결과 분석"] += bias * 0.5
 
     # 음수 방지
     for cat in scores:

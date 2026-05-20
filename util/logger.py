@@ -356,7 +356,7 @@ def save_article_process_log(code_id: str, article_id: str = None, status: str =
             )
         """)
 
-        conn.execute(
+        result = conn.execute(
             log_sql,
             {
                 "job_id": job_id,
@@ -368,6 +368,8 @@ def save_article_process_log(code_id: str, article_id: str = None, status: str =
 
         conn.commit()
 
+        return result.lastrowid
+
     except Exception as e:
         logger.error(
             f"🚨 ARTICLE PROCESS LOG 저장 실패 | "
@@ -377,3 +379,52 @@ def save_article_process_log(code_id: str, article_id: str = None, status: str =
 
     finally:
         conn.close()
+
+def save_article_error_log(
+    history_id: int,
+    error_code: str,
+    error_message: str
+):
+    """
+    article_error_logs 기록
+    - article_process_logs.history_id 기준으로 에러 상세 저장
+    """
+
+    conn = None
+
+    try:
+        conn = get_engine()
+
+        sql = text("""
+            INSERT INTO article_error_logs (
+                history_id,
+                error_code,
+                error_message
+            )
+            VALUES (
+                :history_id,
+                :error_code,
+                :error_message
+            )
+        """)
+
+        conn.execute(sql, {
+            "history_id": history_id,
+            "error_code": error_code,
+            "error_message": error_message
+        })
+
+        conn.commit()
+
+    except Exception as e:
+        logger.error(
+            f"🚨 ARTICLE ERROR LOG 저장 실패 | "
+            f"history_id={history_id}, error_code={error_code} | error={e}"
+        )
+
+        if conn:
+            conn.rollback()
+
+    finally:
+        if conn:
+            conn.close()
