@@ -1373,7 +1373,8 @@ function renderConfidence(d) {
           border:{color:'#272b35'}
         },
         y:{
-          ticks:{font:{size:11},color:'#555c6e'},
+          type:'logarithmic',
+          ticks:{font:{size:11},color:'#555c6e',callback:v=>v===0?'0':v.toLocaleString()},
           grid:{color:'#1a1d24'},
           border:{color:'#272b35'}
         }
@@ -1425,6 +1426,7 @@ async function loadSamples() {
     }).join('') : '<div class="empty-msg">해당 조건의 기사가 없습니다.</div>');
     show('samples-content');
   } catch(e) {
+    samplesLoaded = false;  // 실패 시 재시도 가능하도록 초기화
     html('samples-error','오류: '+e.message); show('samples-error');
   } finally { hide('samples-loading'); }
 }
@@ -1779,6 +1781,7 @@ async function loadFinetune() {
     renderFinetune(d);
     show('ft-content');
   } catch(e) {
+    finetuneLoaded = false;  // 실패 시 재시도 가능하도록 초기화
     html('ft-error','오류: '+e.message); show('ft-error');
   } finally { hide('ft-loading'); }
 }
