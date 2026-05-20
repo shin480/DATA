@@ -1916,10 +1916,14 @@
     dd.classList.remove("open");
     if (btn) { btn.classList.remove("open"); btn.setAttribute("aria-expanded","false"); }
   };
-  document.addEventListener("DOMContentLoaded", function() {
+
+  function initHamburger() {
     var btn = document.getElementById("hamburgerBtn");
     var dd = document.getElementById("mobileMenuDropdown");
     if (!btn || !dd) return;
+    // 중복 바인딩 방지
+    if (btn.dataset.hamburgerInit) return;
+    btn.dataset.hamburgerInit = "1";
     btn.addEventListener("click", function(e) {
       e.stopPropagation();
       if (dd.classList.contains("open")) { window.closeMobileMenu(); }
@@ -1930,7 +1934,11 @@
         window.closeMobileMenu();
       }
     });
-  });
+  }
+
+  // 즉시 실행 + DOMContentLoaded 둘 다 시도
+  initHamburger();
+  document.addEventListener("DOMContentLoaded", initHamburger);
 
 </script>
 </body>
