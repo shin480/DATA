@@ -1933,25 +1933,1078 @@ body.light-mode .view-bar-bg {
 }
 
 /* =========================================================
-   14. 반응형
+   14. 반응형 최종본
+   - 데스크톱 / 노트북 / 태블릿 / 모바일 전부 대응
+   - 기존 디자인 톤은 유지
+   - 카드, 헤더, 그리드, 게이지, 뉴스 영역 균형 보정
 ========================================================= */
-@media (max-width: 980px) {
-  .footer-inner {
-    padding: 0 24px;
-    flex-wrap: wrap;
+
+
+/* =========================================================
+   14-0. 반응형 기본 안정화
+========================================================= */
+.page {
+  width: min(1300px, 100%);
+}
+
+.main {
+  width: 100%;
+}
+
+.hero,
+.card,
+.sentiment-compare,
+.viewpoint-box,
+.news-section,
+.news-card,
+.view-card,
+.news-item-card {
+  min-width: 0;
+}
+
+.news-title,
+.news-card h3,
+.view-reason,
+.opinion-text,
+.hero p {
+  overflow-wrap: break-word;
+}
+
+
+/* =========================================================
+   14-1. 대형 노트북 / 1300px 이하
+========================================================= */
+@media (max-width: 1300px) {
+  .main {
+    padding: 38px 48px 76px;
+  }
+
+  .header {
+    padding: 0 38px;
+  }
+
+  .nav {
+    gap: 24px;
+    margin-left: 18px;
+  }
+
+  .main-search-wrap {
+    width: 320px;
+  }
+
+  .grid-2 {
+    gap: 22px;
+  }
+
+  .card {
+    padding: 36px;
+  }
+
+  .view-grid,
+  .news-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .gauge-circle {
+    width: 128px;
+    height: 128px;
+  }
+
+  .gauge-circle::before {
+    width: 108px;
+    height: 108px;
+  }
+
+  .gauge-circle .percent {
+    font-size: 24px;
   }
 }
 
-@media (max-width: 640px) {
+
+/* =========================================================
+   14-2. 일반 노트북 / 1180px 이하
+========================================================= */
+@media (max-width: 1180px) {
+  .main {
+    padding: 34px 36px 72px;
+  }
+
+  .header {
+    padding: 0 28px;
+  }
+
+  .logo {
+    width: 144px;
+  }
+
+  .header-logo-full {
+    height: 50px;
+  }
+
+  .nav {
+    gap: 18px;
+    margin-left: 16px;
+    font-size: 14px;
+  }
+
+  .main-search-wrap {
+    width: 260px;
+  }
+
+  .header-btn {
+    padding: 0 16px;
+  }
+
+  .hero {
+    height: 380px;
+  }
+
+  .hero h1 {
+    font-size: 44px;
+  }
+
+  .section-title-wrap h2 {
+    font-size: 30px;
+  }
+
+  .card {
+    padding: 34px;
+  }
+
+  .view-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .news-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+
+/* =========================================================
+   14-3. 태블릿 가로 / 1050px 이하
+   - 상단 2열 카드 → 1열
+   - 카드 높이 고정 해제
+========================================================= */
+@media (max-width: 1050px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .card {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+
+  .opinion-card {
+    min-height: 360px;
+  }
+
+  .gauge-container {
+    justify-content: center;
+    gap: 42px;
+  }
+
+  .sentiment-grid {
+    gap: 20px;
+  }
+
+  .viewpoint-box,
+  .sentiment-compare,
+  .news-section {
+    padding: 36px;
+  }
+
+  .news-item-card {
+    padding: 26px 20px;
+  }
+}
+
+
+/* =========================================================
+   14-4. 태블릿 세로 / 980px 이하
+   - 헤더 2단 구성
+   - 본문 상단 여백 보정
+========================================================= */
+@media (max-width: 980px) {
+  .header {
+    height: auto;
+    min-height: 108px;
+    padding: 10px 24px 12px;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .page {
+    padding-top: 118px;
+  }
+
+  .logo {
+    width: 145px;
+    height: 48px;
+  }
+
+  .header-logo-full {
+    height: 48px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+    gap: 28px;
+    font-size: 14px;
+  }
+
+  .header-right {
+    margin-left: auto;
+  }
+
+  .main-search-wrap {
+    width: 280px;
+  }
+
+  .main {
+    padding: 30px 26px 64px;
+  }
+
+  .hero {
+    height: auto;
+    min-height: 350px;
+    padding: 46px 32px;
+    border-radius: 34px;
+  }
+
+  .hero h1 {
+    font-size: 40px;
+  }
+
+  .hero p {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .hero-tags {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .section-title-wrap h2 {
+    font-size: 28px;
+  }
+
+  .sentiment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .sentiment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news-card {
+    min-height: 250px;
+  }
+
+  .view-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-height: 880px;
+  }
+
+  .news-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .keyword-info-tooltip {
+    left: 0;
+    transform: translateY(-4px);
+    width: min(360px, calc(100vw - 56px));
+  }
+
+  .keyword-info-wrap:hover .keyword-info-tooltip,
+  .keyword-info-wrap:focus-within .keyword-info-tooltip {
+    transform: translateY(0);
+  }
+
+  .footer-inner {
+    padding: 18px 26px;
+    min-height: 88px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+
+/* =========================================================
+   14-5. 모바일 가로 / 760px 이하
+   - 헤더 요소 간격 축소
+   - 카드 패딩 축소
+========================================================= */
+@media (max-width: 760px) {
+  .header {
+    padding: 10px 18px 12px;
+  }
+
+  .page {
+    padding-top: 120px;
+  }
+
+  .logo {
+    width: 128px;
+    height: 44px;
+  }
+
+  .header-logo-full {
+    height: 44px;
+  }
+
+  .nav {
+    gap: 20px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .main-search-wrap {
+    width: 210px;
+    height: 38px;
+  }
+
+  .theme-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-btn {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .header-user-name {
+    display: none;
+  }
+
+  .main {
+    padding: 24px 18px 54px;
+  }
+
+  .hero {
+    min-height: 320px;
+    padding: 38px 22px;
+    border-radius: 28px;
+    margin-bottom: 24px;
+  }
+
+  .hero-badge {
+    font-size: 12px;
+    padding: 7px 14px;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+    line-height: 1.38;
+    margin-bottom: 16px;
+  }
+
+  .hero p {
+    margin-bottom: 26px;
+  }
+
+  .h-tag {
+    padding: 7px 14px;
+    font-size: 13px;
+  }
+
+  .grid-2 {
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .card,
+  .sentiment-compare,
+  .viewpoint-box,
+  .news-section {
+    padding: 26px 22px;
+    border-radius: 24px;
+  }
+
+  .section-title-wrap span {
+    font-size: 14px;
+  }
+
+  .section-title-wrap h2,
+  .news-header h2 {
+    font-size: 25px;
+    line-height: 1.38;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .status-badge {
+    margin-top: 13px;
+  }
+
+  .gauge-container {
+    gap: 18px;
+    margin: 30px 0;
+  }
+
+  .gauge-circle {
+    width: 108px;
+    height: 108px;
+  }
+
+  .gauge-circle::before {
+    width: 91px;
+    height: 91px;
+  }
+
+  .gauge-circle .percent {
+    font-size: 21px;
+  }
+
+  .keyword-box {
+    padding: 20px;
+    margin-top: 18px;
+  }
+
+  .chip-group {
+    gap: 8px;
+  }
+
+  .chip {
+    font-size: 12px;
+    padding: 7px 13px;
+  }
+
+  .opinion-card {
+    padding: 26px 22px;
+    min-height: 330px;
+  }
+
+  .quote-icon {
+    font-size: 40px;
+  }
+
+  .opinion-text {
+    font-size: 18px;
+    line-height: 1.7;
+    min-height: 96px;
+  }
+
+  .opinion-tags {
+    left: 22px;
+    bottom: 78px;
+    max-width: calc(100% - 44px);
+    flex-wrap: wrap;
+  }
+
+  .nav-btns {
+    left: 22px;
+    right: 22px;
+    bottom: 22px;
+    justify-content: space-between;
+  }
+
+  .nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .news-card {
+    padding: 24px 20px;
+  }
+
+  .news-card h3 {
+    font-size: 20px;
+  }
+
+  .view-grid {
+    gap: 16px;
+    max-height: 1260px;
+  }
+
+  .view-card {
+    padding: 22px;
+  }
+
+  .view-title-group .vp {
+    font-size: 22px;
+  }
+
+  .toggle-btn {
+    height: 50px;
+    margin-top: 22px;
+  }
+
+  .news-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .news-item-card {
+    padding: 24px 20px;
+  }
+
+  .news-main-row {
+    margin-bottom: 16px;
+  }
+
+  .news-title {
+    font-size: 15px;
+  }
+
+  .news-quote {
+    margin-bottom: 20px;
+  }
+
+  .reaction-row {
+    margin-bottom: 18px;
+  }
+
+  .footer-inner {
+    padding: 18px;
+  }
+
   .search-suggest-box {
     left: 18px !important;
     right: 18px !important;
     width: auto !important;
     max-width: none;
   }
+}
+
+
+/* =========================================================
+   14-6. 일반 모바일 / 640px 이하
+   - 관점/뉴스 카드 1열
+   - 게이지 3개는 한 줄 유지하되 크기 조절
+========================================================= */
+@media (max-width: 640px) {
+  .main {
+    padding: 22px 16px 48px;
+  }
+
+  .hero {
+    min-height: 300px;
+    padding: 34px 18px;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .hero p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .hero-tags {
+    gap: 8px;
+  }
+
+  .card,
+  .sentiment-compare,
+  .viewpoint-box,
+  .news-section {
+    padding: 22px 18px;
+    border-radius: 22px;
+  }
+
+  .section-title-wrap h2,
+  .news-header h2 {
+    font-size: 23px;
+  }
+
+  .gauge-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: start;
+    justify-items: center;
+  }
+
+  .gauge-circle {
+    width: 92px;
+    height: 92px;
+  }
+
+  .gauge-circle::before {
+    width: 77px;
+    height: 77px;
+  }
+
+  .gauge-circle .percent {
+    font-size: 18px;
+  }
+
+  .gauge-label {
+    font-size: 11px;
+  }
+
+  .keyword-info-tooltip {
+    width: calc(100vw - 36px);
+  }
+
+  .opinion-card {
+    min-height: 336px;
+    padding: 22px 18px;
+  }
+
+  .opinion-text {
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .opinion-tags {
+    left: 18px;
+    right: 18px;
+    bottom: 80px;
+    max-width: none;
+  }
+
+  .nav-btns {
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+  }
+
+  .view-grid {
+    grid-template-columns: 1fr;
+    max-height: 1800px;
+  }
+
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news-card h3 {
+    font-size: 19px;
+  }
+
+  .news-item-card {
+    padding: 22px 18px;
+  }
+
+  .news-rank-circle {
+    min-width: 38px;
+    height: 38px;
+    font-size: 17px;
+  }
+
+  .news-footer-btn {
+    height: 42px;
+  }
 
   .footer-inner {
-    padding: 0 18px;
+    gap: 12px;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+
+  .footer-copy {
+    width: 100%;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+
+/* =========================================================
+   14-7. 작은 모바일 / 520px 이하
+   - 헤더 3단 안정화
+   - 검색창 전체 폭
+========================================================= */
+@media (max-width: 520px) {
+  .header {
+    justify-content: center;
+    padding: 12px 16px 14px;
+    row-gap: 10px;
+  }
+
+  .page {
+    padding-top: 188px;
+  }
+
+  .logo {
+    width: 136px;
+    height: 44px;
+    margin: 0 auto;
+  }
+
+  .header-logo-full {
+    height: 44px;
+  }
+
+  .header-right {
+    width: 100%;
+    margin-left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .main-search-wrap {
+    order: -1;
+    width: 100%;
+    height: 40px;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 18px;
+    font-size: 13px;
+  }
+
+  .hero {
+    min-height: 286px;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .hero-badge {
+    text-align: center;
+  }
+
+  .gauge-circle {
+    width: 84px;
+    height: 84px;
+  }
+
+  .gauge-circle::before {
+    width: 70px;
+    height: 70px;
+  }
+
+  .gauge-circle .percent {
+    font-size: 16px;
+  }
+
+  .opinion-card {
+    min-height: 350px;
+  }
+
+  .news-main-row {
+    gap: 10px;
+  }
+
+  .news-title {
+    font-size: 15px;
+  }
+}
+
+
+/* =========================================================
+   14-8. 초소형 모바일 / 390px 이하
+========================================================= */
+@media (max-width: 390px) {
+  .main {
+    padding: 18px 12px 42px;
+  }
+
+  .card,
+  .sentiment-compare,
+  .viewpoint-box,
+  .news-section {
+    padding: 20px 15px;
+  }
+
+  .hero {
+    padding: 30px 15px;
+    border-radius: 22px;
+  }
+
+  .hero h1 {
+    font-size: 25px;
+  }
+
+  .hero p {
+    font-size: 13px;
+  }
+
+  .h-tag {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+
+  .section-title-wrap h2,
+  .news-header h2 {
+    font-size: 21px;
+  }
+
+  .gauge-container {
+    gap: 6px;
+  }
+
+  .gauge-circle {
+    width: 78px;
+    height: 78px;
+  }
+
+  .gauge-circle::before {
+    width: 65px;
+    height: 65px;
+  }
+
+  .gauge-circle .percent {
+    font-size: 15px;
+  }
+
+  .keyword-box {
+    padding: 16px;
+  }
+
+  .opinion-card {
+    min-height: 362px;
+  }
+
+  .opinion-text {
+    font-size: 16px;
+  }
+
+  .view-card,
+  .news-card,
+  .news-item-card {
+    padding: 18px 15px;
+  }
+
+  .view-title-group .vt {
+    font-size: 13px;
+  }
+
+  .view-title-group .vp {
+    font-size: 20px;
+  }
+
+  .news-card h3 {
+    font-size: 18px;
+  }
+
+  .news-title {
+    font-size: 14px;
+  }
+
+  .news-quote {
+    font-size: 12px;
+  }
+
+  .reaction-row {
+    gap: 12px;
+  }
+
+  .react-item {
+    font-size: 14px;
+  }
+}
+
+/* =========================================================
+   모바일 상단바 최종 재배치
+   - 로고: 왼쪽 위
+   - 테마 / 마이페이지 / 로그아웃: 오른쪽 위
+   - 검색창: 그 아래 전체 폭
+   - 메뉴: 맨 아래
+========================================================= */
+@media (max-width: 620px) {
+  .header {
+    height: 158px;
+    padding: 0 16px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 58px 52px 48px;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 0;
+  }
+
+  .page {
+    padding-top: 158px;
+  }
+
+  /* 로고: 왼쪽 위 */
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 126px;
+    height: 44px;
+    margin: 0;
+
+    justify-self: start;
+    align-self: center;
+  }
+
+  .header-logo-full {
+    height: 44px;
+  }
+
+  /* 오른쪽 버튼 영역 */
+  .header-right {
+    grid-column: 2;
+    grid-row: 1 / 3;
+
+    width: 100%;
+    height: 110px;
+    margin-left: 0;
+
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    grid-template-rows: 58px 52px;
+    align-items: center;
+    column-gap: 8px;
+  }
+
+  /* 검색창: 두 번째 줄 전체 */
+  .main-search-wrap {
+    grid-column: 1 / 5;
+    grid-row: 2;
+
+    width: 100%;
+    height: 40px;
+    padding: 0 12px 0 16px;
+  }
+
+  /* 테마 버튼: 오른쪽 위 */
+  .theme-btn {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  /* 마이페이지 or 로그인 */
+  #primaryUserBtn,
+  #loginBtn {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  /* 로그아웃 or 회원가입 */
+  #logoutBtn,
+  #joinBtn {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .header-btn {
+    height: 36px;
+    padding: 0 11px;
+    border-radius: 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user-name {
+    display: none;
+  }
+
+  /* 메뉴: 맨 아래 */
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+    padding: 0 2px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 22px;
+
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+}
+
+
+/* =========================================================
+   초소형 모바일 보정
+========================================================= */
+@media (max-width: 430px) {
+  .header {
+    padding: 0 12px;
+    column-gap: 8px;
+  }
+
+  .page {
+    padding-top: 158px;
+  }
+
+  .logo {
+    width: 108px;
+    height: 40px;
+  }
+
+  .header-logo-full {
+    height: 40px;
+  }
+
+  .header-right {
+    grid-template-columns: 1fr auto auto auto;
+    column-gap: 5px;
+  }
+
+  .theme-btn {
+    width: 33px;
+    height: 33px;
+  }
+
+  .header-btn {
+    height: 33px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .main-search-wrap {
+    height: 38px;
+  }
+
+  .search-box {
+    font-size: 13px;
+  }
+
+  .nav {
+    gap: 18px;
+    font-size: 12px;
   }
 }
 </style>
