@@ -1407,12 +1407,11 @@ async function loadSamples() {
   samplesLoaded = true;
   const threshold = document.getElementById('thresh').value;
   const sentiment = document.getElementById('sent-filter').value;
-  let url = `/eval/sentiment/low-confidence?threshold=${threshold}&limit=1000`;
+  let url = `/eval/sentiment/low-confidence?threshold=${threshold}&limit=100&page=${samplesPage}`;
   if (sentiment) url += `&sentiment=${sentiment}`;
   try {
     const d = await apiFetch(url);
-    samplesAllData = d.samples || [];
-    renderSamplesPage();
+    renderSamplesPage(d);
     show('samples-content');
   } catch(e) {
     samplesLoaded = false;
@@ -1420,26 +1419,26 @@ async function loadSamples() {
   } finally { hide('samples-loading'); }
 }
 
-function renderSamplesPage() {
-  const total     = samplesAllData.length;
-  const totalPages = Math.ceil(total / SAMPLES_PAGE_SIZE) || 1;
-  if (samplesPage > totalPages) samplesPage = totalPages;
-  const start = (samplesPage - 1) * SAMPLES_PAGE_SIZE;
-  const slice = samplesAllData.slice(start, start + SAMPLES_PAGE_SIZE);
-  const threshold = document.getElementById('thresh').value;
+function renderSamplesPage(d) {
+  const total      = d.total_low_confidence || 0;
+  const pageSize   = 100;
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  const threshold  = document.getElementById('thresh').value;
+  const items      = d.samples || [];
 
   text('samples-count', `총 ${total.toLocaleString()}건 (confidence < ${parseFloat(threshold).toFixed(2)}) — ${samplesPage}/${totalPages} 페이지`);
 
-  html('samples-list', slice.length ? slice.map(s => {
-    const pct = (s.sentiment_score*100).toFixed(1);
-    const col = scoreHex(s.sentiment_score);
+  html('samples-list', items.length ? items.map(s => {
+    const score = s.sentiment_score ?? s.confidence ?? 0;
+    const pct = (score*100).toFixed(1);
+    const col = scoreHex(score);
     return `<div class="card">
       <div class="card-title">${s.title}</div>
-      <div class="card-meta">${badge(s.sentiment)}<span>newsID: ${s.newsID}</span>${s.published_at?`<span>${s.published_at}</span>`:''}</div>
+      <div class="card-meta">${badge(s.sentiment)}<span>newsID: ${s.newsID || s.article_id}</span>${s.published_at?`<span>${String(s.published_at).slice(0,10)}</span>`:''}</div>
       <div class="score-bar-wrap">
         <span style="font-size:11px;color:var(--text3);width:64px">confidence</span>
         <div class="score-bar-outer"><div class="score-bar-inner" style="width:${pct}%;background:${col}"></div></div>
-        <span style="font-size:12px;font-weight:500;color:${col};width:40px">${s.sentiment_score.toFixed(3)}</span>
+        <span style="font-size:12px;font-weight:500;color:${col};width:40px">${score.toFixed(3)}</span>
       </div>
     </div>`;
   }).join('') : '<div class="empty-msg">해당 조건의 기사가 없습니다.</div>');
@@ -1462,10 +1461,10 @@ function renderSamplesPage() {
 }
 
 function gotoSamplesPage(p) {
-  const totalPages = Math.ceil(samplesAllData.length / SAMPLES_PAGE_SIZE) || 1;
-  if (p < 1 || p > totalPages) return;
+  if (p < 1) return;
   samplesPage = p;
-  renderSamplesPage();
+  samplesLoaded = false;
+  loadSamples();
   document.getElementById('panel-samples').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
