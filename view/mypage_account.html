@@ -1424,7 +1424,7 @@ async function deleteUser() {
     modal.classList.add("hidden");
   };
 
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", async function (e) {
     const primaryUserBtn = e.target.closest("#primaryUserBtn");
     const logoutBtn = e.target.closest("#logoutBtn");
     const themeToggleBtn = e.target.closest("#themeToggleBtn");
@@ -1460,7 +1460,11 @@ async function deleteUser() {
       sessionStorage.removeItem("role");
       sessionStorage.removeItem("userName");
 
-      axios.post("/logout");
+      try {
+        await axios.post("/logout");
+      } catch (e) {
+        console.error("로그아웃 실패:", e);
+      }
 
       location.href = "/view/main.html";
       return;
@@ -1488,7 +1492,23 @@ async function deleteUser() {
     }
   });
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", async function () {
+
+    // 인증한지 10분 안쪽이면 정상 진입
+    try {
+      const { data } = await axios.post("/pw_check_time");
+
+      if (!data.is_authenticated) {
+        location.replace("/view/mypage_home.html");
+        return;
+      }
+
+    } catch (err) {
+      console.error("인증 상태 확인 에러:", err);
+      location.replace("/view/mypage_home.html");
+      return;
+    }
+
     applyThemeMode();
     loadUserInfo();
     loadHeader();

@@ -5,7 +5,7 @@ from util.es import get_es, bulk
 from elasticsearch.helpers import scan
 from sqlalchemy import text
 from util.db import get_engine
-from util.logger import Logger, save_article_process_log
+from util.logger import Logger, save_article_process_log, save_article_error_log
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -469,9 +469,51 @@ def get_preprocessed_data():
         for i in range(0, len(actions), batch_size):
             batch = actions[i:i + batch_size]
 
-            bulk(es, batch)
+            success, failed = bulk(
+                es,
+                batch,
+                raise_on_error=False
+            )
 
             print(f"[ES중간저장] news_economy {i + len(batch)}/{len(actions)}건 저장 완료")
+
+            failed_ids = set()
+
+            if failed:
+                for fail in failed:
+                    failed_id = (
+                            fail.get("index", {}).get("_id")
+                            or fail.get("create", {}).get("_id")
+                            or fail.get("update", {}).get("_id")
+                    )
+
+                    if failed_id:
+                        failed_ids.add(failed_id)
+
+            for action in batch:
+                doc_id = action.get("_id")
+                article_id = action["_source"].get("article_id")
+
+                if doc_id in failed_ids:
+                    history_id = save_article_process_log(
+                        code_id="P101",
+                        article_id=article_id,
+                        status="fail"
+                    )
+
+                    if history_id:
+                        save_article_error_log(
+                            history_id=history_id,
+                            error_code="E008",
+                            error_message="ES 저장 실패"
+                        )
+
+                else:
+                    save_article_process_log(
+                        code_id="P101",
+                        article_id=article_id,
+                        status="success"
+                    )
 
         print(f"[ES저장완료] news_economy에 총 {len(actions)}건 저장.")
 

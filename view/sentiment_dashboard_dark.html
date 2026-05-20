@@ -984,7 +984,7 @@
 
 <script>
 
-function logout(){
+async function logout(){
   localStorage.removeItem("access_token");
   localStorage.removeItem("user_name");
   localStorage.removeItem("user_role");
@@ -998,7 +998,11 @@ function logout(){
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("userName");
-  axios.post("/logout");
+  try {
+    await axios.post("/logout");
+  } catch (e) {
+    console.error("로그아웃 실패:", e);
+  }
   location.href='/view/main.html'
 }
 // ── 공통 유틸 ─────────────────────────────────────────
