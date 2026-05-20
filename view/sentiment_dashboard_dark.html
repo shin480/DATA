@@ -1840,12 +1840,54 @@ async function triggerFinetune() {
   try {
     const d = await apiFetch('/admin/corrections/finetune', { method:'POST' });
     toast(d.message || 'fine-tuning 시작됨');
-    setTimeout(loadFinetune, 800);
+    text('ft-run-msg', 'fine-tuning 실행 중...');
+    // POST 직후 renderFinetune이 버튼을 되살리지 못하도록
+    // running 상태가 확인될 때까지 폴링하며 버튼을 직접 잠근다
+    _pollFinetuneRunning();
   } catch(e) {
     toast('오류: ' + e.message);
     btn.disabled = false;
     text('ft-run-msg', '');
   }
+}
+
+async function _pollFinetuneRunning() {
+  const btn      = document.getElementById('ft-run-btn');
+  const MAX_WAIT = 30000;  // 최대 30초 대기
+  const INTERVAL = 2000;   // 2초마다 폴링
+  const started  = Date.now();
+
+  async function poll() {
+    try {
+      const d = await apiFetch('/admin/corrections/finetune/status');
+      const running = d.history.some(h => h.status === 'running');
+
+      if (running) {
+        // running 확인 → renderFinetune에 위임
+        renderFinetune(d);
+        show('ft-content');
+        return;
+      }
+
+      if (Date.now() - started >= MAX_WAIT) {
+        // 타임아웃: 더 이상 기다리지 않고 정상 렌더
+        renderFinetune(d);
+        show('ft-content');
+        return;
+      }
+
+      // 아직 running 아님 → 버튼 잠근 채 재폴링
+      btn.disabled = true;
+      text('ft-run-msg', 'fine-tuning 실행 중...');
+      setTimeout(poll, INTERVAL);
+    } catch(e) {
+      // 폴링 실패 시에도 버튼 복원
+      btn.disabled = false;
+      text('ft-run-msg', '상태 조회 실패: ' + e.message);
+    }
+  }
+
+  setTimeout(poll, INTERVAL);
 }
 
 // ══════════════════════════════════════════════════════
