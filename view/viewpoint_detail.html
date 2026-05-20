@@ -1981,6 +1981,107 @@ function getViewpointIcon(title) {
   return iconMap[title] || "/view/icons/news.svg";
 }
 
+function getViewpointMeta(title) {
+  const metaMap = {
+    // overview에서 넘어오는 이름
+    "정부 책임": { icon: "/view/icons/gov.svg", color: "teal" },
+    "기업 책임": { icon: "/view/icons/company.svg", color: "orange" },
+    "개인 책임": { icon: "/view/icons/person.svg", color: "purple" },
+    "외부 책임": { icon: "/view/icons/global.svg", color: "yellow" },
+    "복합 책임": { icon: "/view/icons/complex.svg", color: "blue" },
+
+    "비판": { icon: "/view/icons/chat.svg", color: "blue" },
+    "비판적 태도": { icon: "/view/icons/chat.svg", color: "blue" },
+    "우려": { icon: "/view/icons/warning.svg", color: "orange" },
+    "기대": { icon: "/view/icons/star.svg", color: "teal" },
+    "성과 예찬": { icon: "/view/icons/trophy.svg", color: "purple" },
+
+    "단순 전달": { icon: "/view/icons/news.svg", color: "blue" },
+    "원인 분석": { icon: "/view/icons/search.svg", color: "yellow" },
+    "결과 분석": { icon: "/view/icons/chart.svg", color: "teal" },
+    "대응 방안": { icon: "/view/icons/gear.svg", color: "orange" },
+    "대응 분석": { icon: "/view/icons/gear.svg", color: "orange" },
+    "전망": { icon: "/view/icons/graph.svg", color: "purple" },
+    "전망 분석": { icon: "/view/icons/graph.svg", color: "purple" },
+
+    "정부 개입": { icon: "/view/icons/building.svg", color: "purple" },
+    "정부 개입 강조": { icon: "/view/icons/building.svg", color: "purple" },
+    "시장 자율": { icon: "/view/icons/balance.svg", color: "teal" },
+    "시장 자율 강조": { icon: "/view/icons/balance.svg", color: "teal" },
+
+    "글로벌 환경": { icon: "/view/icons/global.svg", color: "yellow" },
+    "외부 요인(글로벌)": { icon: "/view/icons/global.svg", color: "yellow" },
+    "국내 정책": { icon: "/view/icons/location.svg", color: "blue" },
+    "정책 요인(국내)": { icon: "/view/icons/location.svg", color: "blue" },
+
+    // 기존 상세 페이지 이름
+    "정부 관점": { icon: "/view/icons/gov.svg", color: "teal" },
+    "기업 관점": { icon: "/view/icons/company.svg", color: "orange" },
+    "개인 관점": { icon: "/view/icons/person.svg", color: "purple" },
+    "외부 관점": { icon: "/view/icons/global.svg", color: "yellow" },
+    "복합 관점": { icon: "/view/icons/complex.svg", color: "blue" }
+  };
+
+  return metaMap[title] || {
+    icon: "/view/icons/news.svg",
+    color: "blue"
+  };
+}
+
+function applyViewpointThemeImmediately(title, percent) {
+  const meta = getViewpointMeta(title);
+
+  const mainIcon = document.querySelector(".main-icon");
+  const iconImg = document.getElementById("viewIconImg");
+  const viewTitleEl = document.getElementById("viewTitle");
+  const viewPercentEl = document.getElementById("viewPercent");
+  const analysisBox = document.querySelector(".analysis-box");
+
+  if (iconImg) {
+    iconImg.src = meta.icon;
+    iconImg.alt = `${title || "관점"} 아이콘`;
+  }
+
+  if (mainIcon) {
+    mainIcon.classList.remove(
+      "theme-teal",
+      "theme-purple",
+      "theme-blue",
+      "theme-orange",
+      "theme-yellow"
+    );
+    mainIcon.classList.add(`theme-${meta.color}`);
+  }
+
+  if (viewTitleEl && title) {
+    viewTitleEl.innerText = title;
+  }
+
+  if (viewPercentEl) {
+    viewPercentEl.innerText = percent ? `${percent}%` : "0%";
+
+    viewPercentEl.classList.remove(
+      "theme-teal",
+      "theme-purple",
+      "theme-blue",
+      "theme-orange",
+      "theme-yellow"
+    );
+    viewPercentEl.classList.add(`theme-${meta.color}`);
+  }
+
+  if (analysisBox) {
+    analysisBox.classList.remove(
+      "theme-teal",
+      "theme-purple",
+      "theme-blue",
+      "theme-orange",
+      "theme-yellow"
+    );
+    analysisBox.classList.add(`theme-${meta.color}`);
+  }
+}
+
 async function loadViewpointDetail(selectedTitle) {
   try {
     const requestParams = {};
@@ -2032,13 +2133,14 @@ function renderViewpointDetail(data) {
   const analysisTitleEl = document.querySelector(".analysis-box h3");
   const analysisDescEl = document.querySelector(".analysis-box p");
 
-  const colorKey = data.color_key || "teal";
+  const fallbackMeta = getViewpointMeta(data.title || viewTitle);
+  const colorKey = data.color_key || fallbackMeta.color || "teal";
 
   if (mainIcon) {
     const iconImg = document.getElementById("viewIconImg");
 
     if (iconImg) {
-      iconImg.src = data.icon_url || getViewpointIcon(data.title);
+      iconImg.src = data.icon_url || fallbackMeta.icon;
       iconImg.alt = `${data.title || "관점"} 아이콘`;
     }
 
@@ -2345,6 +2447,13 @@ function goArticleDetail(articleId) {
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+  const savedPercent =
+    viewpointParams.get("percent") ||
+    localStorage.getItem("viewpoint_percent") ||
+    "";
+
+  applyViewpointThemeImmediately(viewTitle, savedPercent);
+
   await loadPressLogoMap();
   loadViewpointDetail(viewTitle);
 });
