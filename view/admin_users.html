@@ -1577,6 +1577,107 @@ td {
     font-size: 10px !important;
   }
 }
+
+/* =========================================================
+   admin_users.html 실제 폰 date input 잘림 최종 보정
+   - 언론사 반응도 날짜 / 관리자 로그 날짜 대응
+========================================================= */
+
+@media (max-width: 640px) {
+  .admin-card .filter,
+  .reaction-card .filter-row,
+  #pressreaction {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-card .filter input[type="date"],
+  .reaction-card input[type="date"],
+  #reactionStart,
+  #reactionEnd,
+  #logDate {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+
+    display: block !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    height: 44px !important;
+    min-height: 44px !important;
+
+    box-sizing: border-box !important;
+
+    padding: 0 10px !important;
+    margin: 0 !important;
+
+    border-radius: 14px !important;
+
+    font-size: 13px !important;
+    line-height: 44px !important;
+
+    text-align: center !important;
+    text-align-last: center !important;
+
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  .admin-card .filter input[type="date"]::-webkit-date-and-time-value,
+  .reaction-card input[type="date"]::-webkit-date-and-time-value,
+  #reactionStart::-webkit-date-and-time-value,
+  #reactionEnd::-webkit-date-and-time-value,
+  #logDate::-webkit-date-and-time-value {
+    text-align: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .admin-card .filter input[type="date"]::-webkit-calendar-picker-indicator,
+  .reaction-card input[type="date"]::-webkit-calendar-picker-indicator,
+  #reactionStart::-webkit-calendar-picker-indicator,
+  #reactionEnd::-webkit-calendar-picker-indicator,
+  #logDate::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 10px;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .admin-card .filter input[type="date"],
+  .reaction-card input[type="date"],
+  #reactionStart,
+  #reactionEnd,
+  #logDate {
+    height: 42px !important;
+    min-height: 42px !important;
+    line-height: 42px !important;
+    font-size: 12px !important;
+    padding: 0 8px !important;
+  }
+
+  .admin-card .filter input[type="date"]::-webkit-calendar-picker-indicator,
+  .reaction-card input[type="date"]::-webkit-calendar-picker-indicator,
+  #reactionStart::-webkit-calendar-picker-indicator,
+  #reactionEnd::-webkit-calendar-picker-indicator,
+  #logDate::-webkit-calendar-picker-indicator {
+    right: 8px;
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
 </style>
 </head>
 <body>
