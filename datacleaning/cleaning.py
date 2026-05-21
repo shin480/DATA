@@ -194,6 +194,14 @@ def advanced_clean_text(text: str) -> str:
     if not text:
         return ""
 
+    # 방송사 리포트 엔딩부터 뒤 전부 제거
+    text = re.sub(
+        r'(YTN|KBS|SBS|MBC|JTBC|TV조선|채널A|MBN|연합뉴스TV)'
+        r'\s*[가-힣]{2,4}입니다\.?.*$',
+        ' ',
+        text
+    )
+
     # 기자명 / 앵커명 제거
     text = re.sub(
         r'([가-힣]{2,4})\s?(기자|앵커|특파원|리포터|캐스터)',
@@ -259,6 +267,20 @@ def advanced_clean_text(text: str) -> str:
         text
     )
 
+    # 제보 문구부터 뒤 전부 제거
+    text = re.sub(
+        r'※.*$',
+        ' ',
+        text
+    )
+
+    # 카카오톡/전화/메일부터 뒤 전부 제거
+    text = re.sub(
+        r'(\[?카카오톡\]?|\[?전화\]?|\[?메일\]?).*$',
+        ' ',
+        text
+    )
+
     # 제작진 제거
     text = re.sub(
         r'(영상\s*기자|영상\s*편집|영상\s*취재|촬영\s*기자|영상기자|영상편집|영상취재|촬영기자|그래픽|디자인|작가|편집|촬영)'
@@ -267,19 +289,6 @@ def advanced_clean_text(text: str) -> str:
         text
     )
 
-    # 제보문구 제거
-    text = re.sub(
-        r'※?\s*[\'"‘’“”]?\s*당신의\s*제보가\s*뉴스가\s*됩니다.*$',
-        ' ',
-        text
-    )
-
-    # 카카오톡 / 전화 / 메일 제거
-    text = re.sub(
-        r'(카카오톡|전화|메일)\s*.*$',
-        ' ',
-        text
-    )
 
     text = re.sub(r'<[^>]*>', ' ', text)
     text = re.sub(r'[^가-힣a-zA-Z0-9\s]', ' ', text)
@@ -808,9 +817,9 @@ def retokenize_news_economy(): # news_economy 전체 재토큰화
 
         try:
             source = doc.get("_source", {})
-            content = source.get("content", "")
+            clean_text = source.get("clean_text", "")
             author = source.get("author", "")
-            tokens = kiwi_noun_tokenizer(content, author)
+            tokens = kiwi_noun_tokenizer(clean_text, author)
 
             actions.append({
                 "_op_type": "update",
@@ -854,6 +863,86 @@ def retokenize_news_economy(): # news_economy 전체 재토큰화
         "failed": failed
     }
 
+def reclean_news_economy():
+    print(">>> news_economy clean_text 재정제 시작")
 
+    docs = scan(
+        es,
+        index=target_index,
+        query={
+            "query": {"match_all": {}},
+            "_source": ["title", "content"]
+        },
+        size=5000,
+        scroll="10m"
+    )
+
+    actions = []
+    total = 0
+    failed = 0
+    batch_size = 1000
+
+    for doc in docs:
+        total += 1
+        doc_id = doc["_id"]
+
+        try:
+            source = doc.get("_source", {})
+
+            title = source.get("title", "")
+            content = source.get("content", "")
+
+            # clean_text 다시 생성
+            clean_text = advanced_clean_text(
+                f"{title} {content}"
+            )
+
+            actions.append({
+                "_op_type": "update",
+                "_index": target_index,
+                "_id": doc_id,
+                "doc": {
+                    "clean_text": clean_text
+                }
+            })
+
+        except Exception as e:
+            failed += 1
+
+            actions.append({
+                "_op_type": "update",
+                "_index": target_index,
+                "_id": doc_id,
+                "doc": {
+                    "clean_text_error": str(e)
+                }
+            })
+
+        if len(actions) >= batch_size:
+            bulk(es, actions, raise_on_error=False)
+
+            print(
+                f"[clean_text 재정제 진행] "
+                f"{total}건 처리 완료 / 실패 {failed}건"
+            )
+
+            actions.clear()
+
+    if actions:
+        bulk(es, actions, raise_on_error=False)
+
+    es.indices.refresh(index=target_index)
+
+    print(
+        f">>> 완료: 총 {total}건 clean_text 재정제 "
+        f"/ 실패 {failed}건"
+    )
+
+    return {
+        "success": True,
+        "total": total,
+        "failed": failed
+    }
 if __name__ == "__main__":
+    reclean_news_economy()
     retokenize_news_economy()
