@@ -1787,6 +1787,219 @@ body.light-mode .footer-logo-white {
     transform: translateY(0);
   }
 }
+
+/* =========================================================
+   scope_detail.html 실제 폰 헤더 크기 강제 통일
+   - 기준 페이지 모바일 헤더와 동일
+   - active 하늘색 밑줄 유지
+========================================================= */
+
+@media (max-width: 620px) {
+  .header {
+    width: 100% !important;
+    height: 164px !important;
+    min-height: 164px !important;
+    max-height: 164px !important;
+
+    padding: 0 10px !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(110px, 1fr) auto auto auto !important;
+    grid-template-rows: 60px 56px 48px !important;
+    align-items: center !important;
+    column-gap: 6px !important;
+    row-gap: 0 !important;
+  }
+
+  .page {
+    padding-top: 164px !important;
+  }
+
+  .logo {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+
+    width: 132px !important;
+    height: 44px !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-self: start !important;
+    align-self: center !important;
+
+    overflow: visible !important;
+    flex-shrink: 0 !important;
+  }
+
+  .header-logo-full {
+    width: auto !important;
+    height: 44px !important;
+    max-width: none !important;
+    display: block !important;
+    object-fit: contain !important;
+  }
+
+  .header-right {
+    display: contents !important;
+  }
+
+  .theme-btn {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    justify-self: end !important;
+  }
+
+  #loginBtn,
+  #primaryUserBtn {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+  }
+
+  #joinBtn,
+  #logoutBtn {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+  }
+
+  .header-btn {
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 9px !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  .main-search-wrap {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: calc(100vw - 20px) !important;
+    max-width: none !important;
+    height: 42px !important;
+    margin: 0 auto !important;
+    justify-self: center !important;
+
+    padding: 0 14px 0 18px !important;
+  }
+
+  .search-box {
+    font-size: 14px !important;
+  }
+
+  .nav {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+
+    width: 100% !important;
+    height: 48px !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
+
+    overflow: visible !important;
+    white-space: nowrap !important;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04) !important;
+    font-size: 13px !important;
+  }
+
+  .nav a {
+    position: relative !important;
+  }
+
+  .nav a.active {
+    color: #00e5ff !important;
+  }
+
+  .nav a.active::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: -17px !important;
+
+    height: 2px !important;
+    border-radius: 999px !important;
+
+    background: #00e5ff !important;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.65) !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .header {
+    height: 164px !important;
+    min-height: 164px !important;
+    max-height: 164px !important;
+
+    padding: 0 8px !important;
+    grid-template-columns: minmax(100px, 1fr) auto auto auto !important;
+    column-gap: 5px !important;
+  }
+
+  .page {
+    padding-top: 164px !important;
+  }
+
+  .logo {
+    width: 116px !important;
+    height: 40px !important;
+  }
+
+  .header-logo-full {
+    height: 40px !important;
+  }
+
+  .theme-btn {
+    width: 33px !important;
+    height: 33px !important;
+  }
+
+  .header-btn {
+    height: 33px !important;
+    padding: 0 7px !important;
+    font-size: 11px !important;
+  }
+
+  .main-search-wrap {
+    width: calc(100vw - 16px) !important;
+    height: 40px !important;
+  }
+
+  .search-box {
+    font-size: 13px !important;
+  }
+
+  .nav {
+    gap: 15px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .nav {
+    gap: 13px !important;
+    font-size: 11px !important;
+  }
+}
+
 </style>
 </head>
 
