@@ -902,12 +902,6 @@ td[title] {
   text-align:center;
 }
 
-.analysis-table th:nth-child(9),
-.analysis-table td:nth-child(9){
-  width:160px;
-  text-align:center;
-  white-space:nowrap;
-}
 
 /* ==============================
    Responsive
@@ -1981,7 +1975,7 @@ td {
 <input id="analysisStart" type="date"/>
 <span>~</span>
 <input id="analysisEnd" type="date"/>
-<button class="search-btn" onclick="searchLog()" type="button" aria-label="검색">
+<button class="search-btn" onclick="loadAnalysisLogs()" type="button" aria-label="검색">
   <svg viewBox="0 0 24 24" class="search-icon">
     <circle cx="11" cy="11" r="7"></circle>
     <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
@@ -2000,7 +1994,6 @@ td {
 <th>코드</th>
 <th>메시지</th>
 <th>시간</th>
-<th>관리</th>
 </tr>
 </thead>
 <tbody id="analysisTable"></tbody>
@@ -2519,9 +2512,6 @@ function renderAnalysis(data = analysisData) {
         <td>${item.code}</td>
         <td title="${item.message}">${item.message}</td>
         <td>${item.time}</td>
-        <td>
-          <button class="btn-small btn-success" onclick="retryAnalysis('${item.id}')">재실행</button>
-        </td>
       </tr>
     `;
   }).join("");
@@ -3043,6 +3033,7 @@ async function adminDashboardLogout() {
 
 window.searchSummary = searchSummary;
 window.searchAnalysis = searchAnalysis;
+window.loadAnalysisLogs = loadAnalysisLogs;
 window.runManualCollect = runManualCollect;
 window.deleteAnalysis = deleteAnalysis;
 window.retryAnalysis = retryAnalysis;

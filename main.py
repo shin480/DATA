@@ -4061,8 +4061,8 @@ def change_role(info:Dict[str,str], req:Request):
 @app.get("/api/admin/analysis-logs")
 def get_analysis_logs(
     type: str = "전체",
-    start_date: str = "",
-    end_date: str = ""
+    start_date: str | None = None,
+    end_date: str | None = None
 ):
     db = get_engine()
 
