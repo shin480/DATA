@@ -1,153 +1,243 @@
 """
-scopeTitle 생성 서비스 (Gemini + 폴백)
+scopeTitle 생성 서비스 — 키워드 기반 문장형 타이틀 (Gemini 완전 제거)
 
-트리거 규칙:
-  - news_count < 10  : 최신 기사 제목 그대로 사용 (Gemini 호출 없음)
-  - news_count >= 10 : Gemini로 대표 제목 생성
-                       → 키 전부 소진 시 최신 기사 제목으로 폴백
+생성 전략:
+  1. 스콥 내 뉴스 제목들 수집
+  2. kiwipiepy 형태소 분석으로 명사/고유명사 추출
+  3. TF-IDF로 스콥 대표 키워드 3~5개 선별
+  4. 키워드 역할(주체/사건/상태) 분류 후 패턴 템플릿으로 자연스러운 문장 조합
 
 [수정 이력]
-- 모델 교체: gemini-2.0-flash → gemini-2.5-flash-lite
-- trigger_scope_title: 즉시 생성 실패 시 queue 자동 등록으로 변경 (유실 방지)
-- _enqueue: 중복 방지 queue 등록 함수 분리
-- enqueue_missing_scope_titles: scopeTitle 없는 scope 일괄 queue 등록 복구 함수 추가
-- API 키 로테이션: 7개 키 순환 사용 (429/일일 한도 초과 시 자동 교체)
-- SDK 교체: google.generativeai(deprecated) → google.genai
-- 예외 처리 보강: 403 포함 모든 API 오류 시 키 교체 후 재시도
-- 생성 전략 변경:
-    · news_count < 10  → 최신 제목 그대로 (Gemini 호출 없음)
-    · news_count >= 10 → Gemini 시도 → 실패 시 최신 제목 폴백
-    · 고유명사 절단 문제로 키워드 조합 방식 미사용
-- 배치 무한 반복 방지:
-    · retry_count 필드 추가 → MAX_RETRY 초과 시 failed 마킹 후 스킵
-    · generate_scope_title 내 예외를 폴백으로 흡수 → 배치에서 예외 미전파
-- _enqueue 중복 방지 강화:
-    · pending만 체크 → failed 제외 전체 상태 체크로 변경
-    · 동일 scope_id 중복 큐 등록 원천 차단
-- API 키 상태 모듈 레벨 영속 관리:
-    · 403 PERMISSION_DENIED → 해당 키 영구 차단 (프로세스 수명 동안)
-    · 429 RESOURCE_EXHAUSTED → 해당 키 1시간 쿨다운 후 자동 복구
-    · 스콥 간 키 상태 유지로 이미 실패한 키 반복 시도 제거
-    · 배치 시작 전 사용 가능한 키 없으면 즉시 전체 폴백
+- Gemini 의존도 완전 제거 (google.genai 삭제)
+- 타이틀 생성 엔진 교체: 최신 기사 제목 복사 → TF-IDF + 문장 패턴 조합
+- scope_refresh_queue / 배치 구조 유지 (운영 로직 변경 없음)
+- NEWS_COUNT_GEMINI 임계값 제거 → 기사 수 무관하게 동일 로직 적용
+- kiwipiepy Kiwi 인스턴스 모듈 레벨 싱글턴으로 관리
 """
 
 import logging
-import os
-import time
-from datetime import datetime, timedelta, timezone
+import math
+import re
+from collections import Counter, defaultdict
+from datetime import datetime, timezone
+from typing import Optional
 
-from google import genai
-from google.genai import types
+from kiwipiepy import Kiwi
 
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
 
 logger = logging.getLogger(__name__)
 
-BATCH_SIZE        = 10000
-NEWS_COUNT_GEMINI = 10      # 이 이상일 때만 Gemini 호출
-MAX_RETRY         = 3       # 큐 재시도 최대 횟수 초과 시 failed 처리
-INDEX_NEWS        = "news_economy"
-INDEX_SCOPES      = "news_scopes"
-INDEX_QUEUE       = "scope_refresh_queue"
-MODEL_NAME        = "gemini-2.5-flash-lite"
+BATCH_SIZE   = 10000
+MAX_RETRY    = 3
+INDEX_NEWS   = "news_economy"
+INDEX_SCOPES = "news_scopes"
+INDEX_QUEUE  = "scope_refresh_queue"
 
-# API 키 로테이션 (7개)
-_API_KEYS = [
-    os.getenv("GOOGLE_API_KEY_1"),
-    os.getenv("GOOGLE_API_KEY_2"),
-    os.getenv("GOOGLE_API_KEY_3"),
-    os.getenv("GOOGLE_API_KEY_4"),
-    os.getenv("GOOGLE_API_KEY_5"),
-    os.getenv("GOOGLE_API_KEY_6"),
-    os.getenv("GOOGLE_API_KEY_7"),
-]
-_key_index = 0
-_client    = None
+# ── kiwipiepy 싱글턴 ───────────────────────────────────────────────
+_kiwi: Optional[Kiwi] = None
 
-# 키별 차단 상태 (모듈 레벨 영속)
-# None      → 사용 가능
-# datetime  → 해당 시각까지 차단 (429 쿨다운)
-# "permanent" → 영구 차단 (403)
-_key_blocked_until: dict[int, datetime | str] = {}
+def _get_kiwi() -> Kiwi:
+    global _kiwi
+    if _kiwi is None:
+        _kiwi = Kiwi()
+        logger.info("Kiwi 형태소 분석기 초기화 완료")
+    return _kiwi
 
 
-# ── 키 상태 관리 헬퍼 ────────────────────────────────────────────
+# ── 추출 대상 품사 ─────────────────────────────────────────────────
+# NNG: 일반명사  NNP: 고유명사  SL: 외래어
+_TARGET_POS = {"NNG", "NNP", "SL"}
 
-def _is_key_available(idx: int) -> bool:
-    """해당 인덱스 키가 현재 사용 가능한지 반환"""
-    state = _key_blocked_until.get(idx)
-    if state is None:
-        return True
-    if state == "permanent":
-        return False
-    # datetime: 쿨다운 만료 여부 확인
-    if datetime.now() > state:
-        del _key_blocked_until[idx]  # 만료된 차단 해제
-        return True
-    return False
+# 타이틀에 불필요한 단일 일반 단어 필터 (너무 광범위한 단어)
+_STOPWORDS = {
+    "관련", "문제", "상황", "내용", "부분", "경우", "방안", "계획",
+    "결과", "이후", "현재", "최근", "지난", "올해", "이번", "해당",
+    "오늘", "어제", "지금", "당시", "전망", "분석", "발표", "보도",
+    "뉴스", "기자", "기사", "취재", "종합", "단독", "속보", "업데이트",
+}
 
 
-def _mark_key_failed(idx: int, err_str: str):
-    """오류 종류에 따라 키 차단 상태 기록"""
-    if "403" in err_str:
-        _key_blocked_until[idx] = "permanent"
-        logger.warning(f"키 {idx} 영구 차단 (403 PERMISSION_DENIED)")
-    else:
-        # 429, 500, 503 등 → 1시간 쿨다운
-        _key_blocked_until[idx] = datetime.now() + timedelta(hours=1)
-        logger.warning(f"키 {idx} 1시간 차단 (일시 오류: {err_str[:40]})")
+# ── 경제 도메인 키워드 역할 사전 ───────────────────────────────────
+# 주체(subject): 문장 앞에 오는 행위자
+# 사건(event):   핵심 동작/이슈
+# 상태(state):   결과/방향성을 나타내는 명사
+
+_SUBJECT_HINTS = {
+    "한국은행", "기재부", "금융위", "금감원", "정부", "국회", "청와대",
+    "삼성", "삼성전자", "현대", "SK", "LG", "롯데", "포스코", "카카오",
+    "네이버", "쿠팡", "하이닉스", "현대차", "기아", "셀트리온",
+    "연준", "Fed", "ECB", "IMF", "세계은행",
+    "미국", "중국", "일본", "유럽", "러시아", "중동",
+}
+
+_EVENT_HINTS = {
+    "금리", "기준금리", "금리인상", "금리인하",
+    "수출", "수입", "무역", "무역수지", "경상수지",
+    "물가", "인플레이션", "디플레이션", "CPI",
+    "환율", "달러", "원달러", "엔화", "위안화",
+    "주가", "코스피", "코스닥", "증시", "주식",
+    "부동산", "집값", "전세", "매매", "아파트",
+    "고용", "실업", "취업", "일자리",
+    "성장률", "GDP", "경기", "경제성장",
+    "반도체", "배터리", "전기차", "AI", "인공지능",
+    "유가", "원유", "에너지",
+    "회사채", "국채", "채권",
+    "공급망", "공급", "수요",
+}
+
+_STATE_HINTS = {
+    "상승", "하락", "급등", "급락", "하향", "상향",
+    "위기", "리스크", "불안", "불확실",
+    "호조", "부진", "침체", "회복", "반등",
+    "확대", "축소", "감소", "증가", "둔화", "가속",
+    "흑자", "적자", "손실", "이익",
+    "전망", "우려", "기대",
+}
 
 
-def _get_next_available_key() -> int | None:
-    """현재 인덱스 이후부터 순환하며 사용 가능한 키 인덱스 반환. 없으면 None."""
-    for i in range(len(_API_KEYS)):
-        idx = (_key_index + i) % len(_API_KEYS)
-        if _is_key_available(idx):
-            return idx
-    return None
+# ── 문장 패턴 템플릿 ───────────────────────────────────────────────
+# {S}: 주체  {E}: 사건  {T}: 상태/방향
+# 키워드 역할 조합에 따라 가장 자연스러운 패턴 선택
+
+def _build_title(subject: str, event: str, state: str) -> str:
+    """주체 / 사건 / 상태 키워드 조합으로 자연스러운 문장형 타이틀 반환"""
+    has_s = bool(subject)
+    has_e = bool(event)
+    has_t = bool(state)
+
+    if has_s and has_e and has_t:
+        return f"{subject} {event} {state} 동향"
+    if has_s and has_e:
+        return f"{subject} {event} 이슈 분석"
+    if has_s and has_t:
+        return f"{subject} 관련 {state} 흐름"
+    if has_e and has_t:
+        return f"{event} {state}과 시장 영향"
+    if has_e:
+        return f"{event} 관련 동향"
+    if has_s:
+        return f"{subject} 주요 경제 이슈"
+    if has_t:
+        return f"경제 {state} 흐름과 전망"
+    return "주요 경제 이슈 동향"
 
 
-# ── 클라이언트 관리 ──────────────────────────────────────────────
+# ── 핵심 함수: 타이틀 생성 ─────────────────────────────────────────
 
-def _get_client():
-    """현재 키 인덱스로 google.genai 클라이언트 반환 (캐시)"""
-    global _client, _key_index
-    if _client is None:
-        key = _API_KEYS[_key_index]
-        if not key:
-            raise RuntimeError(f"GOOGLE_API_KEY_{_key_index + 1} 환경변수 없음")
-        _client = genai.Client(api_key=key)
-        logger.info(f"Gemini 클라이언트 초기화 (key index: {_key_index})")
-    return _client
-
-
-def _rotate_key(failed_index: int, err_str: str):
-    """실패한 키를 상태 기록 후 다음 사용 가능한 키로 이동"""
-    global _key_index, _client
-    _mark_key_failed(failed_index, err_str)
-    next_idx = _get_next_available_key()
-    if next_idx is not None:
-        _key_index = next_idx
-        _client    = None
-        logger.warning(f"API 키 교체 → index {_key_index}")
-    else:
-        logger.error("사용 가능한 API 키 없음 (전체 차단 상태)")
+def _extract_nouns(titles: list[str]) -> list[list[str]]:
+    """각 제목에서 명사/고유명사 추출 → 문서별 토큰 리스트 반환"""
+    kiwi   = _get_kiwi()
+    result = []
+    for title in titles:
+        tokens = [
+            token.form
+            for token in kiwi.analyze(title)[0][0]
+            if token.tag in _TARGET_POS
+               and len(token.form) >= 2
+               and token.form not in _STOPWORDS
+        ]
+        result.append(tokens)
+    return result
 
 
-def _is_retryable(err_str: str) -> bool:
-    """키 교체 후 재시도할 오류인지 판단"""
-    err_lower = err_str.lower()
-    return any(code in err_str for code in ("429", "403", "500", "503")) \
-        or "quota" in err_lower \
-        or "rate" in err_lower \
-        or "limit" in err_lower
+def _tfidf_keywords(doc_tokens: list[list[str]], top_n: int = 5) -> list[str]:
+    """
+    TF-IDF 방식으로 스콥 대표 키워드 추출.
+
+    - TF  : 전체 스콥 제목을 하나의 문서로 보고 단어 빈도 계산
+    - IDF : 단어가 몇 개의 제목에 등장하는지로 역빈도 계산
+            → 모든 제목에 공통으로 나오는 단어 억제 (너무 일반적인 단어 제거)
+    """
+    if not doc_tokens:
+        return []
+
+    # TF: 전체 단어 빈도
+    total_counter: Counter = Counter()
+    for tokens in doc_tokens:
+        total_counter.update(tokens)
+
+    # IDF: 각 단어가 등장한 문서(제목) 수
+    doc_count = len(doc_tokens)
+    df: Counter = Counter()
+    for tokens in doc_tokens:
+        for word in set(tokens):
+            df[word] += 1
+
+    # TF-IDF 점수 계산
+    scores: dict[str, float] = {}
+    for word, tf in total_counter.items():
+        idf = math.log((doc_count + 1) / (df[word] + 1)) + 1.0
+        scores[word] = tf * idf
+
+    # 점수 상위 top_n 반환
+    return [w for w, _ in sorted(scores.items(), key=lambda x: -x[1])[:top_n]]
 
 
-# ── 핵심 로직 ────────────────────────────────────────────────────
+def _classify_keywords(keywords: list[str]) -> tuple[str, str, str]:
+    """
+    키워드를 주체 / 사건 / 상태로 분류.
+    사전 미등재 키워드는 등장 순서로 사건(event) 슬롯에 우선 배치.
+    """
+    subject = ""
+    event   = ""
+    state   = ""
+
+    for kw in keywords:
+        if not subject and kw in _SUBJECT_HINTS:
+            subject = kw
+        elif not state and kw in _STATE_HINTS:
+            state = kw
+        elif not event and kw in _EVENT_HINTS:
+            event = kw
+        elif not event:
+            # 사전 미등재 → 사건 슬롯에 배치 (도메인 고유명사일 가능성 높음)
+            event = kw
+
+    return subject, event, state
+
+
+def _make_scope_title(titles: list[str]) -> str:
+    """
+    뉴스 제목 리스트 → 문장형 스콥 타이틀 생성
+
+    단계:
+      1. kiwipiepy 명사 추출
+      2. TF-IDF 핵심 키워드 5개 선별
+      3. 역할 분류(주체/사건/상태)
+      4. 패턴 템플릿 조합
+    """
+    doc_tokens = _extract_nouns(titles)
+    keywords   = _tfidf_keywords(doc_tokens, top_n=5)
+
+    if not keywords:
+        # 형태소 추출 실패 시 — 제목 첫 단어 조합으로 최소 보장
+        fallback_words = []
+        for t in titles[:3]:
+            parts = t.split()
+            if parts:
+                fallback_words.append(parts[0])
+        return " ".join(dict.fromkeys(fallback_words))[:30] or "주요 경제 이슈"
+
+    subject, event, state = _classify_keywords(keywords)
+    title = _build_title(subject, event, state)
+
+    # 30자 초과 시 상태 키워드 제거 후 재생성
+    if len(title) > 30:
+        title = _build_title(subject, event, "")
+    if len(title) > 30:
+        title = _build_title("", event, state)
+    if len(title) > 30:
+        title = _build_title("", event, "")
+
+    return title[:30]
+
+
+# ── ES 헬퍼 ───────────────────────────────────────────────────────
 
 def _fetch_titles(es, scope_id: str) -> list[str]:
-    """scope에 속한 기사 제목 목록 반환 (최신순)"""
+    """scope에 속한 기사 제목 목록 반환 (최신순 최대 20개)"""
     res = es.search(
         index=INDEX_NEWS,
         body={
@@ -158,63 +248,6 @@ def _fetch_titles(es, scope_id: str) -> list[str]:
         },
     )
     return [h["_source"]["title"] for h in res["hits"]["hits"] if h["_source"].get("title")]
-
-
-def _gemini_generate(scope_id: str, titles: list[str]) -> str | None:
-    """Gemini로 대표 제목 생성. 키 전부 소진 시 None 반환.
-
-    - 호출 전 사용 가능한 키가 없으면 즉시 None 반환 (불필요한 루프 생략)
-    - 실패한 키는 모듈 레벨 상태에 기록 → 다음 스콥에서도 해당 키 스킵
-    - 403: 영구 차단 / 429·기타: 1시간 쿨다운
-    """
-    global _key_index, _client
-
-    prompt = (
-        "다음은 동일한 사건/이슈를 다룬 한국 경제 뉴스 기사 제목들입니다.\n"
-        "이 제목들을 대표하는 하나의 핵심 제목을 만들어주세요.\n\n"
-        "조건:\n- 30자 이내\n- 핵심 사실만 담을 것\n- 중립적인 톤\n- 제목만 출력\n\n"
-        "뉴스 제목들:\n" + "\n".join(f"- {t}" for t in titles)
-    )
-
-    for attempt in range(len(_API_KEYS)):
-        # 루프마다 사용 가능한 키 먼저 확인
-        available = _get_next_available_key()
-        if available is None:
-            logger.error(f"모든 키 차단 상태 → 즉시 폴백 (scope_id={scope_id})")
-            return None
-
-        # 사용 가능한 키로 전환
-        if _key_index != available:
-            _key_index = available
-            _client    = None
-
-        failed_index = _key_index  # 실패 시 마킹할 인덱스 고정
-        try:
-            response = _get_client().models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    max_output_tokens=60,
-                    temperature=0.3,
-                ),
-            )
-            return response.text.strip()
-
-        except Exception as e:
-            err_str = str(e)
-            if _is_retryable(err_str):
-                logger.warning(
-                    f"Gemini API 오류 (scope_id={scope_id}, attempt={attempt + 1}, "
-                    f"key_index={failed_index}): {err_str[:80]} → 키 교체"
-                )
-                _rotate_key(failed_index, err_str)
-                time.sleep(2)
-            else:
-                logger.error(f"Gemini 재시도 불가 오류 (scope_id={scope_id}): {e}")
-                return None
-
-    logger.error(f"모든 API 키 소진 (scope_id={scope_id}) → 최신 제목으로 폴백")
-    return None
 
 
 def _upsert_scope_title(es, scope_id: str, scope_title: str):
@@ -231,13 +264,14 @@ def _upsert_scope_title(es, scope_id: str, scope_title: str):
     logger.info(f"scopeTitle 저장: {scope_id} → {scope_title}")
 
 
+# ── 메인 생성 함수 ─────────────────────────────────────────────────
+
 def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> str | None:
     """
-    scopeTitle 생성 메인 함수. 내부 예외는 폴백으로 흡수.
+    scopeTitle 생성 메인 함수.
 
-    news_count < 10  : 최신 제목 그대로 (플랜 A)
-    news_count >= 10 : Gemini 시도 → 실패 시 최신 제목 폴백 (플랜 B → 플랜 C)
-    news_count=None  : titles 길이로 판단 (배치 처리 경로)
+    기사 수와 무관하게 동일한 TF-IDF 기반 로직 적용.
+    내부 예외는 흡수하여 None 반환 (배치 중단 방지).
     """
     try:
         titles = _fetch_titles(es, scope_id)
@@ -245,19 +279,7 @@ def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> st
             logger.warning(f"기사 제목 없음 (scope_id={scope_id})")
             return None
 
-        count = news_count if news_count is not None else len(titles)
-
-        if count >= NEWS_COUNT_GEMINI:
-            scope_title = _gemini_generate(scope_id, titles)
-            if scope_title is None:
-                # 플랜 C: 최신 제목 폴백
-                scope_title = titles[0]
-                logger.warning(f"Gemini 실패, 최신 제목 폴백: {scope_id} → {scope_title}")
-        else:
-            # 플랜 A: 최신 제목 그대로
-            scope_title = titles[0]
-            logger.info(f"최신 제목 사용 (news_count={count}): {scope_id} → {scope_title}")
-
+        scope_title = _make_scope_title(titles)
         _upsert_scope_title(es, scope_id, scope_title)
         return scope_title
 
@@ -266,12 +288,10 @@ def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> st
         return None
 
 
-def _enqueue(es, scope_id: str):
-    """scope_refresh_queue에 pending 항목 등록 (중복 방지)
+# ── 큐 관리 ───────────────────────────────────────────────────────
 
-    failed 제외한 모든 상태(pending/processing/done) 체크하여
-    같은 scope_id 중복 등록을 원천 차단.
-    """
+def _enqueue(es, scope_id: str):
+    """scope_refresh_queue에 pending 항목 등록 (중복 방지)"""
     existing = es.search(
         index=INDEX_QUEUE,
         body={
@@ -301,21 +321,17 @@ def _enqueue(es, scope_id: str):
 def trigger_scope_title(es, scope_id: str, news_count: int):
     """
     분류 파이프라인에서 scopeID 배정 직후 호출.
-
-    news_count < 10  : 즉시 최신 제목 배정 (Gemini 없음)
-    news_count >= 10 : scope_refresh_queue 등록 → 배치에서 Gemini 처리
+    기사 수 무관하게 즉시 생성 시도 → 실패 시 queue 등록.
     """
-    if news_count < NEWS_COUNT_GEMINI:
-        generate_scope_title(es, scope_id, news_count)
-    else:
+    result = generate_scope_title(es, scope_id, news_count)
+    if result is None:
         _enqueue(es, scope_id)
 
 
 def enqueue_missing_scope_titles():
     """
-    scopeTitle이 없는 scope를 전체 조회하여 처리.
-    news_count < 10  → 즉시 최신 제목 배정
-    news_count >= 10 → queue 등록 후 배치 처리
+    scopeTitle이 없는 scope를 전체 조회하여 즉시 생성 처리.
+    실패한 경우에만 queue 등록.
     """
     try:
         es = get_es()
@@ -337,13 +353,11 @@ def enqueue_missing_scope_titles():
 
         count = 0
         for hit in hits:
-            src      = hit["_source"]
-            scope_id = src["scopeID"]
-            nc       = src.get("news_count", 0)
-            if nc >= NEWS_COUNT_GEMINI:
+            scope_id = hit["_source"]["scopeID"]
+            nc       = hit["_source"].get("news_count", 0)
+            result   = generate_scope_title(es, scope_id, nc)
+            if result is None:
                 _enqueue(es, scope_id)
-            else:
-                generate_scope_title(es, scope_id, nc)
             count += 1
 
         es.close()
@@ -355,14 +369,16 @@ def enqueue_missing_scope_titles():
         raise
 
 
+# ── 배치 처리 ─────────────────────────────────────────────────────
+
 def run_scope_title_batch():
     """
-    scope_refresh_queue의 pending 항목 전체를 배치 루프로 처리합니다 — news_count >= 10 전용.
+    scope_refresh_queue의 pending 항목을 배치 처리.
 
     - generate_scope_title 성공(str 반환) → done
-    - generate_scope_title 실패(None 반환) → retry_count 증가
-      · retry_count < MAX_RETRY : pending 유지 (다음 배치에서 재시도)
-      · retry_count >= MAX_RETRY: failed 마킹 후 스킵 (무한 반복 방지)
+    - 실패(None 반환) → retry_count 증가
+      · retry_count < MAX_RETRY  : pending 유지 (다음 배치 재시도)
+      · retry_count >= MAX_RETRY : failed 마킹 후 스킵
     """
     try:
         es = get_es()
@@ -398,7 +414,7 @@ def run_scope_title_batch():
                 retry_count = hit["_source"].get("retry_count", 0)
                 now_utc     = datetime.now(timezone.utc).isoformat()
 
-                # MAX_RETRY 초과 시 failed 처리 후 스킵
+                # MAX_RETRY 초과 → failed 처리
                 if retry_count >= MAX_RETRY:
                     logger.error(
                         f"최대 재시도 초과, failed 처리: scopeID={scope_id} "
@@ -406,22 +422,6 @@ def run_scope_title_batch():
                     )
                     es.update(index=INDEX_QUEUE, id=doc_id,
                               body={"doc": {"status": "failed", "processed_at": now_utc}})
-                    continue
-
-                # 사용 가능한 키가 아예 없으면 Gemini 생략 → 최신 기사 제목으로 즉시 폴백
-                if _get_next_available_key() is None:
-                    logger.warning(
-                        f"모든 Gemini 키 차단 → 최신 기사 제목 폴백: scopeID={scope_id}"
-                    )
-                    fallback_result = generate_scope_title(es, scope_id, news_count=0)
-                    if fallback_result is not None:
-                        es.update(index=INDEX_QUEUE, id=doc_id,
-                                  body={"doc": {"status": "done", "processed_at": now_utc}})
-                        total_processed += 1
-                    else:
-                        # 기사 자체가 없는 경우 → failed
-                        es.update(index=INDEX_QUEUE, id=doc_id,
-                                  body={"doc": {"status": "failed", "processed_at": now_utc}})
                     continue
 
                 es.update(index=INDEX_QUEUE, id=doc_id,
@@ -453,8 +453,6 @@ def run_scope_title_batch():
                                       "status":      "pending",
                                       "retry_count": new_retry,
                                   }})
-
-                time.sleep(10)  # gemini-2.5-flash-lite RPM 대응
 
             es.indices.refresh(index=INDEX_QUEUE)
             logger.info(f"[배치 {batch_num}] 완료 | 누적 processed={total_processed}")
