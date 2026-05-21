@@ -1720,6 +1720,706 @@ td {
   }
 }
 
+/* =========================================================
+   실제 휴대폰 깨짐 방지 추가 보정 v2
+   - 관리자 3페이지 공통
+   - 실제 iPhone / Galaxy 폭 기준 보정
+   - 상단 메뉴 눌림 방지
+   - 버튼 줄바꿈 안정화
+   - 필터/테이블/모달 overflow 방지
+========================================================= */
+
+
+/* =========================================================
+   0. 전체 가로 튐 방지
+========================================================= */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+* {
+  min-width: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   1. 실제 모바일에서는 sticky 겹침을 줄이기 위해
+      관리자 상단바를 자연 흐름으로 변경
+========================================================= */
+@media (max-width: 640px) {
+  .sidebar {
+    position: relative !important;
+    top: auto !important;
+    min-height: auto !important;
+
+    padding: 14px 12px 12px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .logo-wrap {
+    width: 100%;
+    height: auto !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  .admin-side-logo {
+    width: 126px !important;
+    max-width: 126px !important;
+  }
+
+  .side-title-wrap {
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    justify-content: center !important;
+    border-bottom: 0 !important;
+  }
+
+  .side-title {
+    font-size: 11px !important;
+    text-align: center;
+  }
+
+  .side-menu {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .side-menu li {
+    width: 100%;
+    min-width: 0;
+    height: 40px !important;
+
+    padding: 0 4px !important;
+
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    position: relative !important;
+    top: auto !important;
+
+    height: auto !important;
+    min-height: 58px !important;
+
+    padding: 10px 12px !important;
+
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    width: 100% !important;
+    height: 38px !important;
+    padding: 0 8px !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    white-space: nowrap;
+  }
+}
+
+
+/* =========================================================
+   2. 콘텐츠 폭 / 카드 여백 실제 폰 기준 축소
+========================================================= */
+@media (max-width: 640px) {
+  .dashboard-content,
+  .admin-users-content,
+  .page {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 16px 10px 64px !important;
+  }
+
+  .dashboard-card,
+  .admin-card,
+  .chart-card,
+  .reaction-card,
+  .card,
+  .metric-card {
+    width: 100% !important;
+    padding: 16px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .section {
+    margin-top: 16px !important;
+  }
+
+  .dashboard-title,
+  .card-title,
+  .sub-title {
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 13px !important;
+  }
+}
+
+
+/* =========================================================
+   3. 필터 영역 실제 모바일 세로 정렬
+========================================================= */
+@media (max-width: 640px) {
+  .filter,
+  .filter-row {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+
+    align-items: stretch !important;
+  }
+
+  .filter > span,
+  .filter-row > span:not(.filter-label):not(.filter-val) {
+    display: none !important;
+  }
+
+  .filter label,
+  .filter-row label,
+  .filter-label {
+    width: 100%;
+    height: auto !important;
+    margin: 0 !important;
+
+    font-size: 12px !important;
+    line-height: 1.4;
+  }
+
+  input,
+  select,
+  textarea,
+  input[type="date"],
+  input[type="text"],
+  #summaryStart,
+  #summaryEnd,
+  #analysisStart,
+  #analysisEnd,
+  #reactionStart,
+  #reactionEnd,
+  #logDate,
+  #actionName,
+  #userKeyword,
+  #roleFilter,
+  #conf-date-from,
+  #conf-date-to,
+  #corr-date-from,
+  #corr-date-to,
+  #corr-search,
+  #corr-mode,
+  #corr-sentiment,
+  #corr-page-size {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    height: 40px !important;
+    border-radius: 12px !important;
+
+    font-size: 13px !important;
+  }
+
+  textarea {
+    height: auto !important;
+    min-height: 120px !important;
+  }
+
+  .search-btn,
+  .outline-btn,
+  .add-btn,
+  .action-btn,
+  .btn,
+  .btn-primary,
+  .btn-danger {
+    width: 100% !important;
+    min-height: 40px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 12px !important;
+    font-size: 13px !important;
+  }
+
+  .search-btn {
+    border-radius: 12px !important;
+  }
+
+  .search-icon {
+    width: 17px !important;
+    height: 17px !important;
+  }
+}
+
+
+/* =========================================================
+   4. 요약/통계 카드 실제 모바일 1열 고정
+========================================================= */
+@media (max-width: 640px) {
+  .summary-grid,
+  .stats-grid,
+  .metric-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .summary-box,
+  .stat-box,
+  .metric-card {
+    min-height: 92px !important;
+  }
+
+  .summary-box {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 7px !important;
+  }
+
+  .summary-box span,
+  .stat-box .label,
+  .metric-label {
+    font-size: 12px !important;
+  }
+
+  .summary-box strong,
+  .stat-box .value,
+  .metric-value {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+  }
+}
+
+
+/* =========================================================
+   5. 테이블은 카드화하지 않고 안전한 가로 스크롤로 고정
+      실제 폰에서 가장 안정적인 방식
+========================================================= */
+@media (max-width: 640px) {
+  .table-box,
+  .table-box.large {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 360px !important;
+
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+
+    -webkit-overflow-scrolling: touch;
+
+    border-radius: 14px !important;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(11, 20, 38, 0.42);
+  }
+
+  table,
+  .analysis-table,
+  .reaction-card table {
+    width: max-content !important;
+    min-width: 720px !important;
+    table-layout: auto !important;
+  }
+
+  .analysis-table {
+    min-width: 1180px !important;
+  }
+
+  .reaction-card table {
+    min-width: 520px !important;
+  }
+
+  th,
+  td {
+    padding: 9px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  td[title],
+  .analysis-table td:nth-child(2),
+  .banner-title-text,
+  .banner-url-text {
+    max-width: 220px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .table-box::after {
+    content: "← 좌우로 밀어서 확인";
+    display: block;
+
+    position: sticky;
+    left: 0;
+    bottom: 0;
+
+    width: 100%;
+    padding: 8px 10px;
+
+    background: rgba(2, 8, 23, 0.94);
+    color: #64748b;
+
+    font-size: 11px;
+    text-align: center;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+  }
+}
+
+
+/* =========================================================
+   6. 배너 / 버튼 / 상태칩 모바일 터치 안정화
+========================================================= */
+@media (max-width: 640px) {
+  .status {
+    min-width: 48px !important;
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .btn-small {
+    min-height: 30px !important;
+    padding: 6px 9px !important;
+    margin: 0 0 4px 0 !important;
+
+    font-size: 11px !important;
+    border-radius: 8px !important;
+  }
+
+  .preview {
+    width: 92px !important;
+    max-width: 92px !important;
+  }
+
+  .banner-info {
+    max-width: 220px !important;
+  }
+}
+
+
+/* =========================================================
+   7. 모델 보정 탭 실제 모바일 보정
+========================================================= */
+@media (max-width: 640px) {
+  .tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+
+    gap: 6px !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 16px !important;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    flex: 0 0 auto !important;
+
+    min-height: 36px !important;
+    padding: 0 13px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 999px !important;
+    border: 1px solid rgba(148, 163, 184, 0.14) !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  .tab.active {
+    border-color: rgba(56, 189, 248, 0.55) !important;
+    background: rgba(56, 189, 248, 0.14) !important;
+    color: #f8fafc !important;
+  }
+
+  .two-col {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .bar-row {
+    display: grid !important;
+    grid-template-columns: 54px 1fr 42px !important;
+    gap: 7px !important;
+  }
+
+  .bar-label {
+    width: auto !important;
+    text-align: left !important;
+    font-size: 11px !important;
+  }
+
+  .bar-val {
+    width: auto !important;
+    font-size: 11px !important;
+  }
+
+  .correct-btns {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  .correct-btns .btn {
+    width: 100% !important;
+  }
+}
+
+
+/* =========================================================
+   8. 그래프 / 도넛 모바일 사이즈
+========================================================= */
+@media (max-width: 640px) {
+  .donut {
+    width: 150px !important;
+    height: 150px !important;
+    margin: 8px auto 14px !important;
+  }
+
+  .donut::after {
+    inset: 34px !important;
+  }
+
+  .legend {
+    font-size: 12px !important;
+  }
+
+  .graph-box {
+    height: 205px !important;
+    padding: 8px !important;
+    overflow: hidden !important;
+  }
+
+  canvas {
+    max-width: 100% !important;
+  }
+}
+
+
+/* =========================================================
+   9. 모달 실제 모바일 화면 맞춤
+========================================================= */
+@media (max-width: 640px) {
+  .modal,
+  .modal-box {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 24px) !important;
+
+    padding: 20px 14px !important;
+    border-radius: 20px !important;
+
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-overlay,
+  .modal {
+    align-items: center !important;
+  }
+
+  .modal-top {
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .modal-title {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+  }
+
+  .close-btn {
+    font-size: 30px !important;
+    line-height: 1 !important;
+  }
+
+  .form-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .form-label strong {
+    font-size: 15px !important;
+    gap: 7px !important;
+  }
+
+  .form-label p {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .upload-box {
+    min-height: 120px !important;
+    padding: 22px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .help {
+    text-align: left !important;
+    font-size: 11px !important;
+    line-height: 1.5;
+  }
+
+  .modal-actions,
+  .modal-footer {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .cancel-btn,
+  .submit-btn,
+  .modal-footer .btn {
+    width: 100% !important;
+    min-height: 42px !important;
+  }
+}
+
+
+/* =========================================================
+   10. 430px 이하 추가 압축
+========================================================= */
+@media (max-width: 430px) {
+  .sidebar {
+    padding: 12px 10px !important;
+  }
+
+  .admin-side-logo {
+    width: 112px !important;
+    max-width: 112px !important;
+  }
+
+  .side-menu {
+    gap: 5px !important;
+  }
+
+  .side-menu li {
+    height: 38px !important;
+    font-size: 10.5px !important;
+    padding: 0 3px !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    padding: 9px 10px !important;
+    min-height: 56px !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    height: 36px !important;
+    font-size: 11px !important;
+  }
+
+  .dashboard-content,
+  .admin-users-content,
+  .page {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .dashboard-card,
+  .admin-card,
+  .chart-card,
+  .reaction-card,
+  .card {
+    padding: 15px 11px !important;
+  }
+
+  .dashboard-title,
+  .card-title,
+  .sub-title {
+    font-size: 16px !important;
+  }
+
+  .summary-box strong,
+  .stat-box .value,
+  .metric-value {
+    font-size: 22px !important;
+  }
+}
+
+
+/* =========================================================
+   11. 360px급 초소형 보정
+========================================================= */
+@media (max-width: 360px) {
+  .side-menu li {
+    font-size: 10px !important;
+    letter-spacing: -0.06em;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    font-size: 10.5px !important;
+    padding: 0 6px !important;
+  }
+
+  .dashboard-title,
+  .card-title,
+  .sub-title {
+    font-size: 15px !important;
+  }
+
+  .table-box::after {
+    font-size: 10px !important;
+  }
+}
+
 </style>
 </head>
 <body>
