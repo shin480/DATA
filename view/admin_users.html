@@ -1693,6 +1693,1521 @@ td {
     font-size: 15px !important;
   }
 }
+
+
+/* =========================================================
+   관리자 공통 헤더/사이드바 CSS - admin_dashboard.html 기준 통일본
+   적용 대상: admin_users.html / sentiment_dashboard_dark.html
+========================================================= */
+
+/* 데스크탑 사이드바: admin_dashboard.html과 동일 */
+.sidebar,
+.sidebar * {
+  font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+}
+
+.sidebar {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 270px !important;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
+    linear-gradient(180deg, #0b1020 0%, #020817 100%) !important;
+  border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-bottom: 0 !important;
+  padding-top: 28px !important;
+  z-index: 100 !important;
+  box-shadow: 18px 0 45px rgba(0, 0, 0, 0.22) !important;
+  line-height: normal !important;
+}
+
+.logo-wrap {
+  margin: 0 24px 30px !important;
+  padding: 0 !important;
+  height: auto !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.logo-wrap:hover {
+  transform: none !important;
+  border-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.admin-side-logo {
+  display: block !important;
+  width: 170px !important;
+  max-width: 170px !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+.logo-small,
+.logo-main {
+  display: none !important;
+}
+
+.side-title-wrap {
+  padding: 0 24px 14px !important;
+  margin-bottom: 18px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+}
+
+.side-title {
+  color: #64748b !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1.2 !important;
+}
+
+.side-menu {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.side-menu li {
+  height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding-left: 28px !important;
+  color: #94a3b8 !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  border-left: 4px solid transparent !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  transition: 0.2s ease !important;
+  background: transparent !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.side-menu li:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+  color: #e0f2fe !important;
+}
+
+.side-menu li.active {
+  background: linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.18),
+    rgba(139, 92, 246, 0.12)
+  ) !important;
+  color: #7dd3fc !important;
+  border-left-color: #38bdf8 !important;
+  font-weight: 800 !important;
+}
+
+/* 데스크탑 메인/상단 헤더: admin_dashboard.html과 동일 */
+.admin-users-main,
+.model-main {
+  width: calc(100% - 270px) !important;
+  margin-left: 270px !important;
+  min-height: 100vh !important;
+  background: #020817 !important;
+}
+
+.admin-users-header,
+.model-header {
+  height: 74px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 30px !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+  background: rgba(2, 8, 23, 0.86) !important;
+  backdrop-filter: blur(14px) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+}
+
+.main-btn,
+.logout-btn,
+.top-action-btn {
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  padding: 9px 16px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  line-height: normal !important;
+  transition: 0.2s ease !important;
+}
+
+.main-btn:hover,
+.logout-btn:hover,
+.top-action-btn:hover {
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  background: transparent !important;
+}
+
+/* =========================================================
+   admin_dashboard.html 반응형 헤더와 동일 적용
+========================================================= */
+
+@media (max-width: 1100px) {
+  .admin-users-layout,
+  .admin-model-layout {
+    flex-direction: column !important;
+  }
+
+  .sidebar {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 18px 22px 16px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+  }
+
+  .logo-wrap {
+    width: 100% !important;
+    margin: 0 !important;
+    justify-content: center !important;
+  }
+
+  .admin-side-logo {
+    width: 148px !important;
+    max-width: 148px !important;
+  }
+
+  .side-title-wrap {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    border-bottom: 0 !important;
+  }
+
+  .side-title {
+    font-size: 13px !important;
+    text-align: center !important;
+  }
+
+  .side-menu {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 44px !important;
+    padding: 0 10px !important;
+
+    justify-content: center !important;
+
+    border-left: 0 !important;
+    border-radius: 14px !important;
+    background: rgba(15, 23, 42, 0.58) !important;
+    border: 1px solid rgba(148, 163, 184, 0.12) !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .side-menu li.active {
+    border-left: 0 !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+  }
+
+  .admin-users-main,
+  .model-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .admin-users-header,
+  .model-header {
+    position: relative !important;
+    height: auto !important;
+    min-height: 62px !important;
+    padding: 10px 22px !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    height: 38px !important;
+    padding: 0 15px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    z-index: 300 !important;
+
+    width: 100% !important;
+    height: 104px !important;
+    min-height: 104px !important;
+
+    padding: 0 10px 10px !important;
+
+    display: grid !important;
+    grid-template-columns: auto minmax(84px, 1fr) auto !important;
+    grid-template-rows: 60px 42px !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 0 !important;
+  }
+
+  .logo-wrap {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    height: 60px !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+  }
+
+  .admin-side-logo {
+    width: 126px !important;
+    max-width: 126px !important;
+  }
+
+  .side-title-wrap {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    width: 100% !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 126px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .side-title {
+    color: #dbeafe !important;
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.02em !important;
+    white-space: nowrap !important;
+  }
+
+  .side-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 38px !important;
+    padding: 0 4px !important;
+
+    border-left: 0 !important;
+    border-radius: 13px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .admin-users-header,
+  .model-header {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 400 !important;
+
+    width: auto !important;
+    height: 60px !important;
+    min-height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    width: auto !important;
+    min-width: 58px !important;
+    height: 34px !important;
+
+    padding: 0 9px !important;
+
+    border-radius: 9px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+
+    background: rgba(2, 8, 23, 0.36) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  }
+
+  .admin-users-main,
+  .model-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 104px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .sidebar {
+    height: 100px !important;
+    min-height: 100px !important;
+
+    padding: 0 8px 9px !important;
+
+    grid-template-columns: auto minmax(70px, 1fr) auto !important;
+    grid-template-rows: 58px 40px !important;
+    column-gap: 6px !important;
+  }
+
+  .logo-wrap {
+    height: 58px !important;
+  }
+
+  .admin-side-logo {
+    width: 112px !important;
+    max-width: 112px !important;
+  }
+
+  .side-title-wrap {
+    height: 58px !important;
+    padding: 0 112px 0 0 !important;
+  }
+
+  .side-title {
+    font-size: 12.5px !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  .admin-users-header,
+  .model-header {
+    height: 58px !important;
+    min-height: 58px !important;
+    padding-right: 8px !important;
+    gap: 5px !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    min-width: 52px !important;
+    height: 32px !important;
+    padding: 0 7px !important;
+    font-size: 10.5px !important;
+    border-radius: 8px !important;
+  }
+
+  .side-menu {
+    gap: 5px !important;
+  }
+
+  .side-menu li {
+    height: 36px !important;
+    font-size: 10.5px !important;
+    padding: 0 3px !important;
+  }
+
+  .admin-users-main,
+  .model-main {
+    padding-top: 100px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-side-logo {
+    width: 100px !important;
+    max-width: 100px !important;
+  }
+
+  .side-title-wrap {
+    padding-right: 100px !important;
+  }
+
+  .side-title {
+    font-size: 11.5px !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    min-width: 46px !important;
+    height: 31px !important;
+    padding: 0 5px !important;
+    font-size: 9.8px !important;
+  }
+
+  .side-menu li {
+    font-size: 10px !important;
+    letter-spacing: -0.06em !important;
+  }
+}
+
+/* =========================================================
+   관리자 공통 사이드바 / 상단바 통일 최종본
+   기준: admin_dashboard.html 원본 그대로
+   적용: admin_users.html / sentiment_dashboard_dark.html
+========================================================= */
+
+/* ==============================
+   공통 레이아웃
+============================== */
+
+.admin-dashboard-layout,
+.admin-users-layout,
+.admin-model-layout {
+  display: flex !important;
+  min-height: 100vh !important;
+  background: #020817 !important;
+}
+
+/* ==============================
+   Sidebar - admin_dashboard.html 기준
+============================== */
+
+.sidebar,
+.sidebar * {
+  font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+  box-sizing: border-box !important;
+}
+
+.sidebar {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+
+  width: 270px !important;
+
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
+    linear-gradient(180deg, #0b1020 0%, #020817 100%) !important;
+
+  border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-bottom: 0 !important;
+
+  padding-top: 28px !important;
+
+  z-index: 100 !important;
+
+  box-shadow: 18px 0 45px rgba(0, 0, 0, 0.22) !important;
+  line-height: normal !important;
+}
+
+.logo-wrap {
+  margin: 0 24px 30px !important;
+  padding: 0 !important;
+
+  width: auto !important;
+  height: auto !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  cursor: pointer !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.logo-wrap:hover {
+  transform: none !important;
+  border-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.admin-side-logo {
+  display: block !important;
+
+  width: 170px !important;
+  max-width: 170px !important;
+  height: auto !important;
+
+  object-fit: contain !important;
+}
+
+.logo-small,
+.logo-main {
+  display: none !important;
+}
+
+.side-title-wrap {
+  padding: 0 24px 14px !important;
+  margin: 0 0 18px 0 !important;
+
+  display: block !important;
+
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+}
+
+.side-title {
+  color: #64748b !important;
+
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: normal !important;
+  letter-spacing: 0.04em !important;
+
+  text-align: left !important;
+  white-space: nowrap !important;
+}
+
+.side-menu {
+  list-style: none !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  display: block !important;
+  width: 100% !important;
+}
+
+.side-menu li {
+  height: 50px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  padding: 0 0 0 28px !important;
+  margin: 0 !important;
+
+  color: #94a3b8 !important;
+
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: normal !important;
+  letter-spacing: 0 !important;
+
+  border-left: 4px solid transparent !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+
+  cursor: pointer !important;
+  transition: 0.2s ease !important;
+
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.side-menu li:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+  color: #e0f2fe !important;
+}
+
+.side-menu li.active {
+  background: linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.18),
+    rgba(139, 92, 246, 0.12)
+  ) !important;
+
+  color: #7dd3fc !important;
+  border-left-color: #38bdf8 !important;
+  font-weight: 800 !important;
+}
+
+/* ==============================
+   Main - 클래스명 차이 흡수
+============================== */
+
+.dashboard-main,
+.admin-users-main,
+.model-main {
+  width: calc(100% - 270px) !important;
+  margin-left: 270px !important;
+  min-height: 100vh !important;
+
+  background: #020817 !important;
+}
+
+/* ==============================
+   Header - admin_dashboard.html 기준
+============================== */
+
+.dashboard-header,
+.admin-users-header,
+.model-header {
+  height: 74px !important;
+  min-height: 74px !important;
+
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+
+  gap: 10px !important;
+
+  padding: 0 30px !important;
+
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+  background: rgba(2, 8, 23, 0.86) !important;
+
+  backdrop-filter: blur(14px) !important;
+
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+}
+
+/* ==============================
+   Header Button - admin_dashboard.html 기준
+   고정폭 X / 기준 파일처럼 padding으로 크기 결정
+============================== */
+
+.dashboard-header .main-btn,
+.dashboard-header .logout-btn,
+.admin-users-header .main-btn,
+.admin-users-header .logout-btn,
+.model-header .main-btn,
+.model-header .logout-btn,
+.model-header .top-action-btn {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  padding: 9px 16px !important;
+  margin: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: transparent !important;
+  color: #cbd5e1 !important;
+
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  border-radius: 8px !important;
+
+  font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+  font-size: inherit !important;
+  font-weight: 700 !important;
+  line-height: normal !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: 0.2s ease !important;
+}
+
+.dashboard-header .main-btn:hover,
+.dashboard-header .logout-btn:hover,
+.admin-users-header .main-btn:hover,
+.admin-users-header .logout-btn:hover,
+.model-header .main-btn:hover,
+.model-header .logout-btn:hover,
+.model-header .top-action-btn:hover {
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  background: transparent !important;
+}
+
+/* =========================================================
+   1100px 이하 - admin_dashboard.html 반응형 기준
+========================================================= */
+
+@media (max-width: 1100px) {
+  .admin-dashboard-layout,
+  .admin-users-layout,
+  .admin-model-layout {
+    flex-direction: column !important;
+  }
+
+  .sidebar {
+    position: relative !important;
+
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+
+    padding: 18px 22px 16px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+
+    box-shadow: none !important;
+  }
+
+  .logo-wrap {
+    width: 100% !important;
+    margin: 0 !important;
+    justify-content: center !important;
+  }
+
+  .admin-side-logo {
+    width: 148px !important;
+    max-width: 148px !important;
+  }
+
+  .side-title-wrap {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    justify-content: center !important;
+
+    border-bottom: 0 !important;
+  }
+
+  .side-title {
+    font-size: 13px !important;
+    text-align: center !important;
+  }
+
+  .side-menu {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 44px !important;
+
+    padding: 0 10px !important;
+
+    justify-content: center !important;
+
+    border-left: 0 !important;
+    border-radius: 14px !important;
+
+    background: rgba(15, 23, 42, 0.58) !important;
+    border: 1px solid rgba(148, 163, 184, 0.12) !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+
+    text-align: center !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .side-menu li.active {
+    border-left: 0 !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+  }
+
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    position: relative !important;
+
+    height: auto !important;
+    min-height: 62px !important;
+
+    padding: 10px 22px !important;
+
+    justify-content: flex-end !important;
+    gap: 10px !important;
+  }
+
+  .dashboard-header .main-btn,
+  .dashboard-header .logout-btn,
+  .admin-users-header .main-btn,
+  .admin-users-header .logout-btn,
+  .model-header .main-btn,
+  .model-header .logout-btn,
+  .model-header .top-action-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: none !important;
+
+    padding: 0 15px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    font-size: 13px !important;
+    border-radius: 10px !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* =========================================================
+   640px 이하 모바일 - admin_dashboard.html 기준
+========================================================= */
+
+@media (max-width: 640px) {
+  .sidebar {
+    position: fixed !important;
+
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+
+    z-index: 300 !important;
+
+    width: 100% !important;
+    height: 104px !important;
+    min-height: 104px !important;
+
+    padding: 0 10px 10px !important;
+
+    display: grid !important;
+    grid-template-columns: auto minmax(84px, 1fr) auto !important;
+    grid-template-rows: 60px 42px !important;
+
+    align-items: center !important;
+
+    column-gap: 8px !important;
+    row-gap: 0 !important;
+
+    box-shadow: none !important;
+  }
+
+  .logo-wrap {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+
+    width: auto !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+
+    justify-content: flex-start !important;
+  }
+
+  .admin-side-logo {
+    width: 126px !important;
+    max-width: 126px !important;
+  }
+
+  .side-title-wrap {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    width: 100% !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 126px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .side-title {
+    color: #dbeafe !important;
+
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.02em !important;
+
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .side-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 38px !important;
+
+    padding: 0 4px !important;
+
+    border-left: 0 !important;
+    border-radius: 13px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    position: fixed !important;
+
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+
+    z-index: 400 !important;
+
+    width: auto !important;
+
+    height: 60px !important;
+    min-height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .dashboard-header .main-btn,
+  .dashboard-header .logout-btn,
+  .admin-users-header .main-btn,
+  .admin-users-header .logout-btn,
+  .model-header .main-btn,
+  .model-header .logout-btn,
+  .model-header .top-action-btn {
+    width: auto !important;
+    min-width: 58px !important;
+    max-width: none !important;
+
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: none !important;
+
+    padding: 0 9px !important;
+
+    border-radius: 9px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+
+    white-space: nowrap !important;
+
+    background: rgba(2, 8, 23, 0.36) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  }
+
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 104px !important;
+  }
+}
+
+/* =========================================================
+   430px 이하 - admin_dashboard.html 기준
+========================================================= */
+
+@media (max-width: 430px) {
+  .sidebar {
+    height: 100px !important;
+    min-height: 100px !important;
+
+    padding: 0 8px 9px !important;
+
+    grid-template-columns: auto minmax(70px, 1fr) auto !important;
+    grid-template-rows: 58px 40px !important;
+
+    column-gap: 6px !important;
+  }
+
+  .logo-wrap {
+    height: 58px !important;
+  }
+
+  .admin-side-logo {
+    width: 112px !important;
+    max-width: 112px !important;
+  }
+
+  .side-title-wrap {
+    height: 58px !important;
+    padding: 0 112px 0 0 !important;
+  }
+
+  .side-title {
+    font-size: 12.5px !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    height: 58px !important;
+    min-height: 58px !important;
+
+    padding-right: 8px !important;
+
+    gap: 5px !important;
+  }
+
+  .dashboard-header .main-btn,
+  .dashboard-header .logout-btn,
+  .admin-users-header .main-btn,
+  .admin-users-header .logout-btn,
+  .model-header .main-btn,
+  .model-header .logout-btn,
+  .model-header .top-action-btn {
+    width: auto !important;
+    min-width: 52px !important;
+    max-width: none !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: none !important;
+
+    padding: 0 7px !important;
+
+    font-size: 10.5px !important;
+    border-radius: 8px !important;
+  }
+
+  .side-menu {
+    gap: 5px !important;
+  }
+
+  .side-menu li {
+    height: 36px !important;
+
+    padding: 0 3px !important;
+
+    font-size: 10.5px !important;
+  }
+
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    padding-top: 100px !important;
+  }
+}
+
+/* =========================================================
+   360px 이하 - admin_dashboard.html 기준
+========================================================= */
+
+@media (max-width: 360px) {
+  .admin-side-logo {
+    width: 100px !important;
+    max-width: 100px !important;
+  }
+
+  .side-title-wrap {
+    padding-right: 100px !important;
+  }
+
+  .side-title {
+    font-size: 11.5px !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .dashboard-header .main-btn,
+  .dashboard-header .logout-btn,
+  .admin-users-header .main-btn,
+  .admin-users-header .logout-btn,
+  .model-header .main-btn,
+  .model-header .logout-btn,
+  .model-header .top-action-btn {
+    width: auto !important;
+    min-width: 46px !important;
+    max-width: none !important;
+
+    height: 31px !important;
+    min-height: 31px !important;
+    max-height: none !important;
+
+    padding: 0 5px !important;
+
+    font-size: 9.8px !important;
+  }
+
+  .side-menu li {
+    font-size: 10px !important;
+    letter-spacing: -0.06em !important;
+  }
+}
+
+/* =========================================================
+   데스크톱 관리자 사이드바 / 상단바 최종 보정
+   모바일은 이미 맞으므로 1101px 이상만 강제 적용
+========================================================= */
+
+@media (min-width: 1101px) {
+  .admin-dashboard-layout,
+  .admin-users-layout,
+  .admin-model-layout {
+    display: flex !important;
+    min-height: 100vh !important;
+    background: #020817 !important;
+  }
+
+  /* ==============================
+     Desktop Sidebar
+  ============================== */
+
+  .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+
+    width: 270px !important;
+    min-width: 270px !important;
+    max-width: 270px !important;
+
+    height: auto !important;
+    min-height: 100vh !important;
+
+    padding: 28px 0 0 0 !important;
+    margin: 0 !important;
+
+    display: block !important;
+
+    background:
+      radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
+      linear-gradient(180deg, #0b1020 0%, #020817 100%) !important;
+
+    border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+    border-bottom: 0 !important;
+
+    box-shadow: 18px 0 45px rgba(0, 0, 0, 0.22) !important;
+
+    z-index: 100 !important;
+  }
+
+  .logo-wrap {
+    width: auto !important;
+    height: auto !important;
+
+    margin: 0 24px 30px !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    transform: none !important;
+  }
+
+  .logo-wrap:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .admin-side-logo {
+    display: block !important;
+
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+
+    height: auto !important;
+
+    object-fit: contain !important;
+  }
+
+  .side-title-wrap {
+    width: auto !important;
+    height: auto !important;
+
+    margin: 0 0 18px 0 !important;
+    padding: 0 24px 14px !important;
+
+    display: block !important;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+  }
+
+  .side-title {
+    color: #64748b !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: normal !important;
+    letter-spacing: 0.04em !important;
+
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+
+  .side-menu {
+    width: 100% !important;
+
+    display: block !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    list-style: none !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 50px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    padding: 0 0 0 28px !important;
+    margin: 0 !important;
+
+    color: #94a3b8 !important;
+
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: normal !important;
+    letter-spacing: 0 !important;
+
+    text-align: left !important;
+
+    background: transparent !important;
+
+    border-left: 4px solid transparent !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+
+    cursor: pointer !important;
+    transition: 0.2s ease !important;
+  }
+
+  .side-menu li:hover {
+    background: rgba(56, 189, 248, 0.08) !important;
+    color: #e0f2fe !important;
+  }
+
+  .side-menu li.active {
+    background: linear-gradient(
+      90deg,
+      rgba(56, 189, 248, 0.18),
+      rgba(139, 92, 246, 0.12)
+    ) !important;
+
+    color: #7dd3fc !important;
+    border-left-color: #38bdf8 !important;
+    font-weight: 800 !important;
+  }
+
+  /* ==============================
+     Desktop Main / Header
+  ============================== */
+
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    width: calc(100% - 270px) !important;
+    margin-left: 270px !important;
+
+    min-height: 100vh !important;
+    padding-top: 0 !important;
+
+    background: #020817 !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    position: sticky !important;
+    top: 0 !important;
+
+    width: 100% !important;
+
+    height: 74px !important;
+    min-height: 74px !important;
+    max-height: 74px !important;
+
+    padding: 0 30px !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    background: rgba(2, 8, 23, 0.86) !important;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-top: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+
+    box-shadow: none !important;
+    backdrop-filter: blur(14px) !important;
+
+    z-index: 50 !important;
+  }
+
+  .dashboard-header .main-btn,
+  .dashboard-header .logout-btn,
+  .admin-users-header .main-btn,
+  .admin-users-header .logout-btn,
+  .model-header .main-btn,
+  .model-header .logout-btn,
+  .model-header .top-action-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    padding: 9px 16px !important;
+    margin: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: transparent !important;
+    color: #cbd5e1 !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    border-radius: 8px !important;
+
+    font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: normal !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+
+    cursor: pointer !important;
+    box-shadow: none !important;
+  }
+
+  .dashboard-header .main-btn:hover,
+  .dashboard-header .logout-btn:hover,
+  .admin-users-header .main-btn:hover,
+  .admin-users-header .logout-btn:hover,
+  .model-header .main-btn:hover,
+  .model-header .logout-btn:hover,
+  .model-header .top-action-btn:hover {
+    border-color: #38bdf8 !important;
+    color: #38bdf8 !important;
+    background: transparent !important;
+  }
+}
+
 </style>
 </head>
 <body>

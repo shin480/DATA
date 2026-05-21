@@ -1381,14 +1381,26 @@ body.light-mode .header-user-name {
 
 .sentiment-card {
   min-height: 250px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .sentiment-layout {
-  display: grid;
+  display: flex;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 24px;
+  gap: 6px;
   min-height: 170px;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.sentiment-layout > * {
+  flex: 1 1 0;
+
+
+  padding: clamp(10px, 1.5vw, 24px);
+  border-radius: clamp(10px, 1.2vw, 20px);
 }
 
 .sentiment-list {
@@ -2636,10 +2648,6 @@ html.light-mode .search-suggest-box {
     grid-template-columns: 1fr;
   }
 
-  .sentiment-card {
-    min-height: 0;
-  }
-
   .perspective-card {
     padding-bottom: 26px;
   }
@@ -2973,9 +2981,10 @@ html.light-mode .search-suggest-box {
   ========================= */
   .title-row {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
   }
 
   .keyword-title {
@@ -3046,9 +3055,6 @@ html.light-mode .search-suggest-box {
   /* =========================
      PUBLIC SENTIMENT
   ========================= */
-  .sentiment-card {
-    min-height: 0;
-  }
 
   .sentiment-layout {
     display: grid !important;
