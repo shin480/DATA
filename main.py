@@ -3408,7 +3408,8 @@ def get_random_scope_detail():
                 "doc": {
                     "news_count": len(detail.get("articles", []))
                 }
-            }
+            },
+            refresh=True
         )
 
 
