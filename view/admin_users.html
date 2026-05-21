@@ -817,18 +817,7 @@ td select {
 }
 
 /* =========================================================
-   관리자 페이지 공통 반응형 최종 보정
-   적용 파일:
-   - admin_dashboard.html
-   - admin_users.html
-   - sentiment_dashboard_dark.html
-
-   목적:
-   - 데스크톱: 기존 사이드바 + 본문 유지
-   - 태블릿/모바일: 사이드바를 상단 관리자 메뉴로 전환
-   - 관리자 로고 잘림 방지
-   - 상단 메인/로그아웃 버튼 정렬
-   - 카드/필터/테이블/모달 모바일 안정화
+   반응형 CSS 최종
 ========================================================= */
 
 
@@ -837,49 +826,40 @@ td select {
 ========================================================= */
 html,
 body {
-  overflow-x: hidden;
-}
-
-.admin-dashboard-layout,
-.admin-users-layout,
-.admin-model-layout {
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+* {
   min-width: 0;
 }
 
-.dashboard-main,
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+.admin-users-layout,
 .admin-users-main,
-.model-main {
-  min-width: 0;
-}
-
-.dashboard-content,
 .admin-users-content,
-.page {
-  min-width: 0;
-}
-
-.dashboard-card,
 .admin-card,
 .chart-card,
 .reaction-card,
-.card,
-.metric-card,
-.summary-box,
-.stat-box,
-.panel,
 .table-box,
-.modal-box,
-.modal {
+.stats-grid,
+.stat-box,
+.graph-box {
   min-width: 0;
 }
 
 .dashboard-title,
 .card-title,
 .sub-title,
-.header-title,
-.header-sub,
-.side-menu li,
+.stat-box .label,
+.stat-box .value,
 th,
 td {
   overflow-wrap: break-word;
@@ -890,28 +870,17 @@ td {
    1. 1280px 이하
 ========================================================= */
 @media (max-width: 1280px) {
-  .dashboard-content,
-  .admin-users-content,
-  .page {
+  .admin-users-content {
     max-width: none;
     width: 100%;
     padding-left: 24px;
     padding-right: 24px;
   }
 
-  .dashboard-card,
   .admin-card,
   .chart-card,
   .reaction-card {
     border-radius: 20px;
-  }
-
-  .summary-box {
-    padding: 22px;
-  }
-
-  .summary-box strong {
-    font-size: 29px;
   }
 
   .stats-grid {
@@ -925,119 +894,100 @@ td {
    - 사이드바를 상단 관리자 메뉴로 전환
 ========================================================= */
 @media (max-width: 1100px) {
-  .admin-dashboard-layout,
-  .admin-users-layout,
-  .admin-model-layout {
+  .admin-users-layout {
     display: flex;
     flex-direction: column;
   }
 
   .sidebar {
-    position: sticky !important;
-    top: 0;
-    left: auto;
-    right: auto;
-    bottom: auto;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
 
     width: 100% !important;
     height: auto !important;
-    min-height: 118px;
+    min-height: auto !important;
 
-    padding: 18px 22px 16px;
+    padding: 18px 22px 16px !important;
 
-    z-index: 300;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
 
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 18px;
-    row-gap: 14px;
-
-    background:
-      radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
-      linear-gradient(180deg, #0b1020 0%, #020817 100%);
-
-    border-right: 0;
+    border-right: 0 !important;
     border-bottom: 1px solid rgba(148, 163, 184, 0.16);
     box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
   }
 
   .logo-wrap {
-    grid-column: 1;
-    grid-row: 1;
-    margin: 0;
-    height: 42px;
+    width: 100%;
+    height: auto !important;
+    margin: 0 !important;
 
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .admin-side-logo {
-    width: 142px;
-    max-width: 142px;
-    height: auto;
-    display: block;
-    object-fit: contain;
+    width: 148px !important;
+    max-width: 148px !important;
+    height: auto !important;
+    object-fit: contain !important;
   }
 
   .side-title-wrap {
-    grid-column: 2;
-    grid-row: 1;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
 
-    margin: 0;
-    padding: 0;
+    display: flex !important;
+    justify-content: center !important;
 
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    border-bottom: 0;
+    border-bottom: 0 !important;
   }
 
   .side-title {
-    font-size: 12px;
-    color: #64748b;
-    white-space: nowrap;
+    font-size: 13px !important;
+    text-align: center;
   }
 
   .side-menu {
-    grid-column: 1 / -1;
-    grid-row: 2;
-
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-
-    padding: 0;
-    margin: 0;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
   }
 
   .side-menu li {
-    height: 42px;
-    padding: 0 10px;
+    width: 100%;
+    height: 44px !important;
+    padding: 0 10px !important;
 
-    justify-content: center;
-    text-align: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 
-    border-left: 0;
-    border-radius: 13px;
+    border-left: 0 !important;
+    border-radius: 14px;
 
     background: rgba(15, 23, 42, 0.58);
     border: 1px solid rgba(148, 163, 184, 0.12);
 
-    font-size: 13px;
-    font-weight: 800;
-    white-space: nowrap;
-  }
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    text-align: center;
 
-  .side-menu li:hover {
-    background: rgba(56, 189, 248, 0.10);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .side-menu li.active {
-    border-left: 0;
+    border-left: 0 !important;
     border-color: rgba(56, 189, 248, 0.45);
 
     background:
@@ -1051,90 +1001,71 @@ td {
     box-shadow: 0 10px 22px rgba(56, 189, 248, 0.08);
   }
 
-  .dashboard-main,
-  .admin-users-main,
-  .model-main {
+  .admin-users-main {
     width: 100% !important;
     margin-left: 0 !important;
   }
 
-  .dashboard-header,
-  .admin-users-header,
-  .model-header {
-    position: sticky;
-    top: 118px;
-    z-index: 250;
+  .admin-users-header {
+    position: relative !important;
+    top: auto !important;
 
-    height: 62px;
-    min-height: 62px;
+    height: auto !important;
+    min-height: 62px !important;
 
-    justify-content: flex-end;
-    padding: 0 22px;
+    padding: 10px 22px !important;
 
-    background: rgba(2, 8, 23, 0.88);
-    backdrop-filter: blur(14px);
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
   }
 
   .main-btn,
   .logout-btn,
   .top-action-btn {
-    height: 38px;
-    padding: 0 15px;
-    border-radius: 10px;
-    font-size: 13px;
+    height: 38px !important;
+    padding: 0 15px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
   }
 
-  .dashboard-content,
-  .admin-users-content,
-  .page {
-    padding-top: 24px;
+  .admin-users-content {
+    width: 100%;
+    max-width: none;
+    padding: 24px 22px 76px;
   }
 
-  .top-grid,
-  .mid-grid,
-  .two-col {
-    grid-template-columns: 1fr !important;
-    gap: 18px;
-  }
-
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .stats-grid,
-  .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .chart-stack,
-  .grid-section {
+  .grid-section,
+  .chart-stack {
     width: 100%;
     min-width: 0;
   }
 
-  .reaction-card {
-    width: 100%;
-    max-width: none;
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 
 /* =========================================================
    3. 860px 이하
-   - 카드 / 필터 / 테이블 간격 모바일화
 ========================================================= */
 @media (max-width: 860px) {
-  .dashboard-content,
-  .admin-users-content,
-  .page {
+  .admin-users-content {
     padding: 22px 18px 76px;
   }
 
-  .dashboard-card,
   .admin-card,
   .chart-card,
-  .reaction-card,
-  .card {
+  .reaction-card {
     padding: 20px 18px;
     border-radius: 18px;
   }
@@ -1143,17 +1074,14 @@ td {
   .card-title,
   .sub-title {
     font-size: 20px;
+    line-height: 1.35;
     margin-bottom: 16px;
   }
 
-  .section {
+  .usage-card,
+  .grid-section,
+  .log-card {
     margin-top: 18px;
-  }
-
-  .section-head {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 12px;
   }
 
   .filter,
@@ -1162,26 +1090,28 @@ td {
     align-items: stretch;
   }
 
-  .filter input,
-  .filter select,
-  .filter-row input,
-  .filter-row select,
-  input[type="date"],
-  #logDate,
-  #actionName,
-  #userKeyword,
-  #roleFilter {
-    width: auto;
-    min-width: 0;
-    max-width: none;
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
 
-  .action-btn,
-  .outline-btn,
-  .add-btn,
-  .btn,
-  .btn-primary {
-    min-height: 38px;
+  .stat-box {
+    min-height: 116px;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+
+  .stat-box .label {
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .stat-box .value {
+    font-size: 24px;
+  }
+
+  .graph-box {
+    height: 230px;
   }
 
   .table-box {
@@ -1190,12 +1120,8 @@ td {
     border-radius: 14px;
   }
 
-  .table-box table {
+  table {
     min-width: 760px;
-  }
-
-  .analysis-table {
-    min-width: 1180px;
   }
 
   .reaction-card table {
@@ -1207,516 +1133,564 @@ td {
     padding: 10px 9px;
     font-size: 12px;
   }
-
-  .summary-box {
-    min-height: 112px;
-    padding: 20px;
-    border-radius: 16px;
-  }
-
-  .summary-box span {
-    font-size: 14px;
-  }
-
-  .summary-box strong {
-    font-size: 28px;
-  }
-
-  .stat-box {
-    min-height: 112px;
-    gap: 12px;
-  }
-
-  .stat-box .label {
-    font-size: 13px;
-  }
-
-  .stat-box .value {
-    font-size: 24px;
-  }
-
-  .donut {
-    width: 168px;
-    height: 168px;
-  }
-
-  .donut::after {
-    inset: 38px;
-  }
-
-  .graph-box {
-    height: 230px;
-  }
-
-  .tabs {
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding-bottom: 2px;
-
-    scrollbar-width: thin;
-    scrollbar-color: #334155 #0b1426;
-  }
-
-  .tab {
-    flex: 0 0 auto;
-    padding: 9px 14px;
-    border-radius: 999px;
-    border-bottom: 0;
-    background: rgba(15, 23, 42, 0.72);
-    border: 1px solid rgba(148, 163, 184, 0.14);
-  }
-
-  .tab.active {
-    border-bottom: 0;
-    border-color: rgba(56, 189, 248, 0.55);
-    background: rgba(56, 189, 248, 0.14);
-  }
 }
 
 
 /* =========================================================
    4. 640px 이하
-   - 모바일 최종 레이아웃
+   - 실제 모바일 최종 레이아웃
 ========================================================= */
 @media (max-width: 640px) {
+  /* =========================
+     관리자 상단 메뉴
+  ========================= */
   .sidebar {
-    min-height: 150px;
-    padding: 14px 14px 14px;
-
-    grid-template-columns: 1fr auto;
-    grid-template-rows: 42px auto;
-    column-gap: 10px;
-    row-gap: 12px;
-  }
-
-  .logo-wrap {
-    height: 42px;
+    padding: 14px 12px 12px !important;
+    gap: 12px !important;
   }
 
   .admin-side-logo {
-    width: 118px;
-    max-width: 118px;
-  }
-
-  .side-title-wrap {
-    justify-content: flex-end;
+    width: 126px !important;
+    max-width: 126px !important;
   }
 
   .side-title {
-    font-size: 11px;
+    font-size: 11px !important;
   }
 
   .side-menu {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
   }
 
   .side-menu li {
-    height: 40px;
-    padding: 0 6px;
-    border-radius: 12px;
-    font-size: 12px;
-    letter-spacing: -0.03em;
+    height: 40px !important;
+    padding: 0 4px !important;
+
+    font-size: 11px !important;
+    letter-spacing: -0.04em;
   }
 
-  .dashboard-header,
-  .admin-users-header,
-  .model-header {
-    top: 150px;
-    height: 58px;
-    min-height: 58px;
+  /* =========================
+     메인/로그아웃 버튼
+  ========================= */
+  .admin-users-header {
+    min-height: 58px !important;
+    padding: 10px 12px !important;
 
-    padding: 0 14px;
-    gap: 8px;
-    justify-content: flex-end;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
   }
 
   .main-btn,
-  .logout-btn,
-  .top-action-btn {
-    height: 36px;
-    padding: 0 12px;
-    border-radius: 10px;
-    font-size: 12px;
+  .logout-btn {
+    width: 100% !important;
+    height: 38px !important;
+
+    padding: 0 8px !important;
+
+    font-size: 12px !important;
+    border-radius: 10px !important;
   }
 
-  .dashboard-content,
-  .admin-users-content,
-  .page {
-    padding: 20px 14px 70px;
+  /* =========================
+     본문 폭 / 카드
+  ========================= */
+  .admin-users-content {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 16px 10px 64px !important;
   }
 
-  .dashboard-card,
   .admin-card,
   .chart-card,
-  .reaction-card,
-  .card {
-    padding: 18px 15px;
-    border-radius: 18px;
+  .reaction-card {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: 16px 12px !important;
+    border-radius: 16px !important;
+
+    overflow: hidden !important;
+  }
+
+  .usage-card,
+  .grid-section,
+  .log-card {
+    margin-top: 16px !important;
   }
 
   .dashboard-title,
   .card-title,
   .sub-title {
-    font-size: 18px;
-    line-height: 1.35;
-    margin-bottom: 14px;
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 13px !important;
   }
 
-  .summary-grid,
-  .stats-grid,
-  .metric-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .summary-box,
-  .stat-box,
-  .metric-card {
-    min-height: 96px;
-    padding: 18px 16px;
-  }
-
-  .summary-box {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .summary-box strong {
-    font-size: 27px;
-  }
-
+  /* =========================
+     필터 전체 세로 정렬
+  ========================= */
   .filter,
-  .filter-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 9px;
-  }
-
-  .filter > span,
-  .filter-row > span:not(.filter-label) {
-    display: none;
-  }
-
-  .filter input,
-  .filter select,
-  .filter-row input,
-  .filter-row select,
-  input[type="date"],
-  input[type="text"],
-  select,
-  #summaryStart,
-  #summaryEnd,
-  #analysisStart,
-  #analysisEnd,
-  #reactionStart,
-  #reactionEnd,
-  #logDate,
-  #actionName,
-  #userKeyword,
-  #roleFilter {
-    width: 100% !important;
-    min-width: 0 !important;
-    height: 40px;
-    border-radius: 12px;
-  }
-
-  .search-btn {
-    width: 100%;
-    height: 40px;
-    border-radius: 12px;
-  }
-
-  .outline-btn,
-  .add-btn,
-  .action-btn,
-  .btn-primary,
-  .btn {
-    width: 100%;
-    min-height: 40px;
-    border-radius: 12px;
-    justify-content: center;
-  }
-
-  .section-head .add-btn {
-    width: 100%;
-  }
-
+  .filter-row,
   #pressreaction {
+    width: 100% !important;
+    max-width: 100% !important;
+
     display: grid !important;
     grid-template-columns: 1fr !important;
-    gap: 9px !important;
+    gap: 10px !important;
+
+    align-items: stretch !important;
+    margin-bottom: 18px !important;
+    overflow: hidden !important;
   }
 
   #pressreaction .reaction-title {
     grid-column: auto !important;
+    margin-bottom: 2px !important;
   }
 
-  #pressreaction input#reactionStart,
-  #pressreaction input#reactionEnd {
+  .filter > span,
+  .filter-row > span:not(.filter-label):not(.filter-val),
+  #pressreaction > span {
+    display: none !important;
+  }
+
+  input,
+  select,
+  textarea,
+  input[type="date"],
+  input[type="text"],
+  #userKeyword,
+  #roleFilter,
+  #reactionStart,
+  #reactionEnd,
+  #adminId,
+  #actionName,
+  #logDate {
+    display: block !important;
+
     width: 100% !important;
     min-width: 0 !important;
+    max-width: 100% !important;
+
+    height: 44px !important;
+
+    box-sizing: border-box !important;
+
+    padding: 0 14px !important;
+    margin: 0 !important;
+
+    border-radius: 14px !important;
+
+    font-size: 14px !important;
+    line-height: 44px !important;
+  }
+
+  input[type="date"]::-webkit-date-and-time-value {
+    text-align: center;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  .search-btn,
+  .action-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    height: 44px !important;
+    min-height: 44px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 14px !important;
+    margin: 0 !important;
+
+    border-radius: 14px !important;
+
+    font-size: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .search-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* =========================
+     이용 현황 카드
+  ========================= */
+  .stats-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+
+    overflow: hidden !important;
+  }
+
+  .stat-box {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: 92px !important;
+
+    margin: 0 !important;
+    padding: 18px 16px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 7px !important;
+
+    box-sizing: border-box !important;
+
+    border-radius: 16px !important;
+  }
+
+  .stat-box .label {
+    font-size: 12px !important;
+    text-align: left !important;
+  }
+
+  .stat-box .value {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+  }
+
+  /* =========================
+     그래프
+  ========================= */
+  .grid-section,
+  .chart-stack {
+    width: 100% !important;
+    gap: 14px !important;
   }
 
   .graph-box {
-    height: 210px;
-    padding: 8px;
+    height: 205px !important;
+    padding: 8px !important;
+    overflow: hidden !important;
   }
 
-  .chart-card,
-  .reaction-card {
-    padding: 16px 14px;
+  .graph-box svg {
+    width: 100% !important;
+    height: 100% !important;
   }
 
-  .table-box {
-    max-height: 380px;
-    border: 1px solid rgba(148, 163, 184, 0.10);
-    background: rgba(11, 20, 38, 0.36);
+  /* =========================
+     테이블
+  ========================= */
+  .table-box,
+  .table-box.large {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 360px !important;
+
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+
+    -webkit-overflow-scrolling: touch;
+
+    border-radius: 14px !important;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(11, 20, 38, 0.42);
+  }
+
+  table,
+  .reaction-card table {
+    width: max-content !important;
+    table-layout: auto !important;
+  }
+
+  table {
+    min-width: 760px !important;
+  }
+
+  .reaction-card table {
+    min-width: 520px !important;
+  }
+
+  th,
+  td {
+    padding: 9px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
   }
 
   .table-box::after {
     content: "← 좌우로 밀어서 확인";
     display: block;
+
     position: sticky;
     left: 0;
     bottom: 0;
 
+    width: 100%;
     padding: 8px 10px;
-    background: rgba(2, 8, 23, 0.92);
+
+    background: rgba(2, 8, 23, 0.94);
     color: #64748b;
+
     font-size: 11px;
     text-align: center;
+
     border-top: 1px solid rgba(148, 163, 184, 0.14);
   }
 
-  th,
-  td {
-    padding: 9px 8px;
-    font-size: 12px;
+  td select {
+    height: 32px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
   }
 
-  .status {
-    min-width: 48px;
-    padding: 5px 8px;
-    font-size: 11px;
-  }
+  /* =========================
+     Toast
+  ========================= */
+  .toast {
+    left: 14px !important;
+    right: 14px !important;
+    bottom: 16px !important;
 
-  .btn-small {
-    padding: 6px 9px;
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
-
-  .preview {
-    width: 96px;
-  }
-
-  .banner-info,
-  .banner-title-text,
-  .banner-url-text {
-    max-width: 220px;
-  }
-
-  .toast,
-  #toast {
-    left: 14px;
-    right: 14px;
-    bottom: 16px;
-    width: auto;
+    width: auto !important;
     text-align: center;
   }
 }
 
 
 /* =========================================================
-   5. 520px 이하
-   - 모달 / 모델 보정 내부 요소
+   5. 430px 이하 추가 압축
 ========================================================= */
-@media (max-width: 520px) {
-  .modal,
-  .modal-box {
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
-    max-height: calc(100vh - 28px);
-
-    padding: 20px 16px;
-    border-radius: 20px;
-    overflow-y: auto;
-  }
-
-  .modal-title {
-    font-size: 24px;
-    line-height: 1.25;
-  }
-
-  .modal-top {
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .close-btn {
-    font-size: 30px;
-    line-height: 1;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr !important;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-
-  .form-label strong {
-    font-size: 16px;
-    gap: 8px;
-  }
-
-  .form-label p {
-    font-size: 12px;
-  }
-
-  .upload-box {
-    min-height: 126px;
-    padding: 24px 14px;
-    border-radius: 16px;
-  }
-
-  .help {
-    text-align: left;
-    font-size: 11px;
-  }
-
-  .modal-actions,
-  .modal-footer {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .cancel-btn,
-  .submit-btn,
-  .modal-footer .btn {
-    width: 100%;
-    min-height: 42px;
-  }
-
-  .upload-zone {
-    padding: 28px 16px;
-    border-radius: 16px;
-  }
-
-  .option-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .correct-btns {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .correct-btns .btn {
-    width: 100%;
-  }
-
-  .score-bar-wrap {
-    gap: 6px;
-  }
-
-  .bar-row {
-    display: grid;
-    grid-template-columns: 56px 1fr 42px;
-    gap: 8px;
-  }
-
-  .bar-label {
-    width: auto;
-    text-align: left;
-  }
-
-  .cm-grid {
-    grid-template-columns: 58px repeat(3, 1fr);
-    font-size: 10px;
-  }
-
-  .cm-cell {
-    padding: 8px 3px;
-    font-size: 12px;
-  }
-
-  .pagination {
-    flex-wrap: wrap;
-  }
-}
-
-
-/* =========================================================
-   6. 390px 이하
-========================================================= */
-@media (max-width: 390px) {
+@media (max-width: 430px) {
   .sidebar {
-    min-height: 146px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 12px 10px !important;
   }
 
   .admin-side-logo {
-    width: 108px;
-    max-width: 108px;
+    width: 112px !important;
+    max-width: 112px !important;
   }
 
   .side-menu {
-    gap: 5px;
+    gap: 5px !important;
   }
 
   .side-menu li {
-    height: 38px;
-    font-size: 11px;
-    padding: 0 4px;
+    height: 38px !important;
+    font-size: 10.5px !important;
+    padding: 0 3px !important;
   }
 
-  .dashboard-header,
-  .admin-users-header,
-  .model-header {
-    top: 146px;
-    padding: 0 10px;
+  .admin-users-header {
+    padding: 9px 10px !important;
+    min-height: 56px !important;
   }
 
   .main-btn,
-  .logout-btn,
-  .top-action-btn {
-    padding: 0 10px;
-    font-size: 11px;
+  .logout-btn {
+    height: 36px !important;
+    font-size: 11px !important;
   }
 
-  .dashboard-content,
-  .admin-users-content,
-  .page {
-    padding-left: 10px;
-    padding-right: 10px;
+  .admin-users-content {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
 
-  .dashboard-card,
   .admin-card,
   .chart-card,
-  .reaction-card,
-  .card {
-    padding: 16px 12px;
+  .reaction-card {
+    padding: 15px 11px !important;
   }
 
   .dashboard-title,
   .card-title,
   .sub-title {
-    font-size: 17px;
+    font-size: 16px !important;
   }
 
-  .summary-box strong,
-  .stat-box .value,
-  .metric-value {
-    font-size: 23px;
+  input,
+  select,
+  input[type="date"],
+  input[type="text"],
+  #userKeyword,
+  #roleFilter,
+  #reactionStart,
+  #reactionEnd,
+  #adminId,
+  #actionName,
+  #logDate {
+    height: 42px !important;
+    line-height: 42px !important;
+    font-size: 13px !important;
+    padding: 0 12px !important;
+  }
+
+  .search-btn,
+  .action-btn {
+    height: 42px !important;
+    min-height: 42px !important;
+    font-size: 13px !important;
+  }
+
+  .stat-box .value {
+    font-size: 22px !important;
+  }
+}
+
+
+/* =========================================================
+   6. 360px급 초소형 보정
+========================================================= */
+@media (max-width: 360px) {
+  .side-menu li {
+    font-size: 10px !important;
+    letter-spacing: -0.06em;
+  }
+
+  .main-btn,
+  .logout-btn {
+    font-size: 10.5px !important;
+    padding: 0 6px !important;
+  }
+
+  .dashboard-title,
+  .card-title,
+  .sub-title {
+    font-size: 15px !important;
+  }
+
+  .table-box::after {
+    font-size: 10px !important;
+  }
+}
+
+/* =========================================================
+   admin_users.html 실제 폰 date input 잘림 최종 보정
+   - 언론사 반응도 날짜 / 관리자 로그 날짜 대응
+========================================================= */
+
+@media (max-width: 640px) {
+  .admin-card .filter,
+  .reaction-card .filter-row,
+  #pressreaction {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-card .filter input[type="date"],
+  .reaction-card input[type="date"],
+  #reactionStart,
+  #reactionEnd,
+  #logDate {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+
+    display: block !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    height: 44px !important;
+    min-height: 44px !important;
+
+    box-sizing: border-box !important;
+
+    padding: 0 10px !important;
+    margin: 0 !important;
+
+    border-radius: 14px !important;
+
+    font-size: 13px !important;
+    line-height: 44px !important;
+
+    text-align: center !important;
+    text-align-last: center !important;
+
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  .admin-card .filter input[type="date"]::-webkit-date-and-time-value,
+  .reaction-card input[type="date"]::-webkit-date-and-time-value,
+  #reactionStart::-webkit-date-and-time-value,
+  #reactionEnd::-webkit-date-and-time-value,
+  #logDate::-webkit-date-and-time-value {
+    text-align: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .admin-card .filter input[type="date"]::-webkit-calendar-picker-indicator,
+  .reaction-card input[type="date"]::-webkit-calendar-picker-indicator,
+  #reactionStart::-webkit-calendar-picker-indicator,
+  #reactionEnd::-webkit-calendar-picker-indicator,
+  #logDate::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 10px;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .admin-card .filter input[type="date"],
+  .reaction-card input[type="date"],
+  #reactionStart,
+  #reactionEnd,
+  #logDate {
+    height: 42px !important;
+    min-height: 42px !important;
+    line-height: 42px !important;
+    font-size: 12px !important;
+    padding: 0 8px !important;
+  }
+
+  .admin-card .filter input[type="date"]::-webkit-calendar-picker-indicator,
+  .reaction-card input[type="date"]::-webkit-calendar-picker-indicator,
+  #reactionStart::-webkit-calendar-picker-indicator,
+  #reactionEnd::-webkit-calendar-picker-indicator,
+  #logDate::-webkit-calendar-picker-indicator {
+    right: 8px;
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+/* =========================================================
+   모바일 date placeholder 문구 스타일
+========================================================= */
+@media (max-width: 640px) {
+  input.date-placeholder-mode {
+    color: #697996 !important;
+    text-align: center !important;
+    text-align-last: center !important;
+  }
+
+  input.date-placeholder-mode::placeholder {
+    color: #697996 !important;
+    opacity: 1 !important;
   }
 }
 
@@ -2662,6 +2636,87 @@ document.addEventListener("DOMContentLoaded", function () {
   // 기본: 전체 기간
   loadPressReaction();
 });
+</script>
+<script>
+/* =========================================================
+   모바일 date input placeholder 보정
+   - 비어 있을 때: "연도-월-일" 문구 표시
+   - 터치/포커스 시: date picker 정상 실행
+   - 값 선택 후: 선택한 날짜 그대로 표시
+========================================================= */
+(function initMobileDatePlaceholder() {
+  const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+  if (!isMobile) return;
+
+  const dateInputIds = [
+    /* admin_dashboard.html */
+    "summaryStart",
+    "summaryEnd",
+    "analysisStart",
+    "analysisEnd",
+
+    /* admin_users.html */
+    "reactionStart",
+    "reactionEnd",
+    "logDate",
+
+    /* sentiment_dashboard_dark.html */
+    "conf-date-from",
+    "conf-date-to",
+    "corr-date-from",
+    "corr-date-to"
+  ];
+
+  dateInputIds.forEach(function (id) {
+    const input = document.getElementById(id);
+
+    if (!input) return;
+
+    input.dataset.realType = "date";
+    input.dataset.placeholder = "연도-월-일";
+
+    function showPlaceholderIfEmpty() {
+      if (!input.value) {
+        input.type = "text";
+        input.placeholder = "연도-월-일";
+        input.classList.add("date-placeholder-mode");
+      }
+    }
+
+    function activateDatePicker() {
+      input.type = "date";
+      input.placeholder = "";
+      input.classList.remove("date-placeholder-mode");
+
+      setTimeout(function () {
+        if (typeof input.showPicker === "function") {
+          try {
+            input.showPicker();
+          } catch (e) {}
+        }
+      }, 0);
+    }
+
+    showPlaceholderIfEmpty();
+
+    input.addEventListener("focus", activateDatePicker);
+    input.addEventListener("click", activateDatePicker);
+
+    input.addEventListener("blur", function () {
+      showPlaceholderIfEmpty();
+    });
+
+    input.addEventListener("change", function () {
+      if (input.value) {
+        input.type = "date";
+        input.classList.remove("date-placeholder-mode");
+      } else {
+        showPlaceholderIfEmpty();
+      }
+    });
+  });
+})();
 </script>
 </body>
 </html>
