@@ -119,10 +119,6 @@ body.light-mode .keyword-title {
   text-transform: uppercase;
 }
 
-.summary-title {
-  text-transform: uppercase;
-}
-
 /* ==============================
    Search Suggest Dropdown
    헤더 디자인은 main.css 기준
@@ -1306,7 +1302,7 @@ body.light-mode .header-user-name {
 
 .top-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: 1.4fr 1fr;
   gap: 22px;
   margin-bottom: 22px;
 }
@@ -1317,6 +1313,10 @@ body.light-mode .header-user-name {
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 16px 35px rgba(0, 0, 0, 0.25);
+
+  height: 320px;
+
+  position: relative;
 }
 
 .section-label {
@@ -1333,13 +1333,20 @@ body.light-mode .header-user-name {
 ============================== */
 
 .summary-title {
-  font-size: 23px;
-  line-height: 1.45;
-  font-weight: 900;
+  font-size: 18px;
+  line-height: 2;
+  font-width: 900;
   margin-bottom: 24px;
+  text-transform: uppercase;
 }
 
 .summary-stats {
+  position: absolute;
+  bottom: 35px;
+
+  left: 24px;
+  right: 24px;
+
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
@@ -1378,7 +1385,7 @@ body.light-mode .header-user-name {
 
 .sentiment-layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
   gap: 24px;
   min-height: 170px;
@@ -2629,10 +2636,6 @@ html.light-mode .search-suggest-box {
     grid-template-columns: 1fr;
   }
 
-  .summary-title {
-    font-size: 22px;
-  }
-
   .sentiment-card {
     min-height: 0;
   }
@@ -2732,11 +2735,6 @@ html.light-mode .search-suggest-box {
   .top-grid {
     gap: 18px;
     margin-bottom: 18px;
-  }
-
-  .summary-title {
-    font-size: 21px;
-    margin-bottom: 20px;
   }
 
   .sentiment-layout {
@@ -3022,11 +3020,6 @@ html.light-mode .search-suggest-box {
   /* =========================
      CORE SUMMARY
   ========================= */
-  .summary-title {
-    font-size: 19px;
-    line-height: 1.5;
-    margin-bottom: 18px;
-  }
 
   .summary-stats {
     grid-template-columns: repeat(3, 1fr);
@@ -3317,10 +3310,6 @@ html.light-mode .search-suggest-box {
     padding: 18px 14px;
   }
 
-  .summary-title {
-    font-size: 18px;
-  }
-
   .summary-stats {
     gap: 6px;
   }
@@ -3388,10 +3377,6 @@ html.light-mode .search-suggest-box {
   .random-keyword-btn {
     font-size: 11px;
     padding: 8px 11px;
-  }
-
-  .summary-title {
-    font-size: 17px;
   }
 
   .summary-stats {
