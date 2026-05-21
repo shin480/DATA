@@ -20,7 +20,7 @@ from sqlalchemy import text
 from model.model_main import app as pipeline_app
 from datacleaning.cleaning import get_preprocessed_data
 from schemas import TermsRequest, VoteRequest
-from viewpoint_classify.viewpoint_classify import update_perspective_to_es
+from viewpoint_classify.viewpoint_classify_master import update_perspective_to_es
 
 from regist.emailvalidation import check_email_duplicate, send_cert_email, verify_certification_number
 from regist.regist import regist_user
