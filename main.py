@@ -1603,7 +1603,7 @@ def get_top_keyword():
         total_length += keyword_length
 
         # 최대 6개 제한
-        if len(chips) >= 6:
+        if len(chips) >= 5:
             break
 
     return {
