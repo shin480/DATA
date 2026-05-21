@@ -1,15 +1,19 @@
 """
-scopeTitle 생성 서비스 — 키워드 기반 문장형 타이틀 (Gemini 완전 제거)
+scopeTitle 생성 서비스 — 동사/형용사 포함 서술형 타이틀 (Gemini 완전 제거)
 
 생성 전략:
   1. 스콥 내 뉴스 제목들 수집
-  2. kiwipiepy 형태소 분석으로 명사/고유명사 추출
-  3. TF-IDF로 스콥 대표 키워드 3~5개 선별
-  4. 키워드 역할(주체/사건/상태) 분류 후 패턴 템플릿으로 자연스러운 문장 조합
+  2. kiwipiepy로 명사(NNG/NNP/SL) + 동사 어간(VV/VA/XSV) 분리 추출
+  3. 명사 TF-IDF 상위 3개 (주제어) + 동사 TF-IDF 상위 2개 → 명사형 서술어 변환
+  4. 조합 패턴으로 서술형 타이틀 생성
+     예) "삼성전자 반도체, 수출 급감"
+         "한국은행 금리, 추가 인상"
+         "비트코인 ETF·가상자산 급등"
 
 [수정 이력]
-- Gemini 의존도 완전 제거 (google.genai 삭제)
-- 타이틀 생성 엔진 교체: 최신 기사 제목 복사 → TF-IDF + 문장 패턴 조합
+- Gemini 의존도 완전 제거
+- 타이틀 엔진 v1: 명사 TF-IDF + 역할 분류 사전 → "관련 동향" 남발 문제
+- 타이틀 엔진 v2: 동사 어간 추출 추가 + 명사형 서술어 변환 테이블 + 쉼표 패턴
 - scope_refresh_queue / 배치 구조 유지 (운영 로직 변경 없음)
 - NEWS_COUNT_GEMINI 임계값 제거 → 기사 수 무관하게 동일 로직 적용
 - kiwipiepy Kiwi 인스턴스 모듈 레벨 싱글턴으로 관리
@@ -17,8 +21,7 @@ scopeTitle 생성 서비스 — 키워드 기반 문장형 타이틀 (Gemini 완
 
 import logging
 import math
-import re
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -47,191 +50,179 @@ def _get_kiwi() -> Kiwi:
 
 
 # ── 추출 대상 품사 ─────────────────────────────────────────────────
-# NNG: 일반명사  NNP: 고유명사  SL: 외래어
-_TARGET_POS = {"NNG", "NNP", "SL"}
+# 명사류: NNG(일반명사) NNP(고유명사) SL(외래어)
+# 용언류: VV(동사) VA(형용사) XSV(동사파생접사) → 서술어 재구성용
+_NOUN_POS = {"NNG", "NNP", "SL"}
+_VERB_POS = {"VV", "VA", "XSV"}
 
-# 타이틀에 불필요한 단일 일반 단어 필터 (너무 광범위한 단어)
-_STOPWORDS = {
+# 명사 불용어
+_NOUN_STOPWORDS = {
     "관련", "문제", "상황", "내용", "부분", "경우", "방안", "계획",
-    "결과", "이후", "현재", "최근", "지난", "올해", "이번", "해당",
-    "오늘", "어제", "지금", "당시", "전망", "분석", "발표", "보도",
+    "이후", "현재", "최근", "지난", "올해", "이번", "해당",
+    "오늘", "어제", "지금", "당시", "발표", "보도",
     "뉴스", "기자", "기사", "취재", "종합", "단독", "속보", "업데이트",
+    "기록", "수준", "규모", "이상", "이하", "대비", "대상", "기준",
 }
 
-
-# ── 경제 도메인 키워드 역할 사전 ───────────────────────────────────
-# 주체(subject): 문장 앞에 오는 행위자
-# 사건(event):   핵심 동작/이슈
-# 상태(state):   결과/방향성을 나타내는 명사
-
-_SUBJECT_HINTS = {
-    "한국은행", "기재부", "금융위", "금감원", "정부", "국회", "청와대",
-    "삼성", "삼성전자", "현대", "SK", "LG", "롯데", "포스코", "카카오",
-    "네이버", "쿠팡", "하이닉스", "현대차", "기아", "셀트리온",
-    "연준", "Fed", "ECB", "IMF", "세계은행",
-    "미국", "중국", "일본", "유럽", "러시아", "중동",
+# 동사 불용어: 너무 일반적이어서 서술어로 쓰기 애매한 것
+_VERB_STOPWORDS = {
+    "하다", "되다", "있다", "없다", "이다", "아니다",
+    "말하다", "밝히다", "전하다", "나타나다", "보이다",
+    "받다", "주다", "가다", "오다", "만들다",
 }
 
-_EVENT_HINTS = {
-    "금리", "기준금리", "금리인상", "금리인하",
-    "수출", "수입", "무역", "무역수지", "경상수지",
-    "물가", "인플레이션", "디플레이션", "CPI",
-    "환율", "달러", "원달러", "엔화", "위안화",
-    "주가", "코스피", "코스닥", "증시", "주식",
-    "부동산", "집값", "전세", "매매", "아파트",
-    "고용", "실업", "취업", "일자리",
-    "성장률", "GDP", "경기", "경제성장",
-    "반도체", "배터리", "전기차", "AI", "인공지능",
-    "유가", "원유", "에너지",
-    "회사채", "국채", "채권",
-    "공급망", "공급", "수요",
+# 동사 어간 → 자연스러운 명사형 서술어 변환 테이블
+_VERB_TO_NOUN: dict[str, str] = {
+    # 상승/하락 계열
+    "오르": "상승", "내리": "하락", "떨어지": "하락",
+    "급등하": "급등", "급락하": "급락", "폭등하": "폭등", "폭락하": "폭락",
+    "반등하": "반등", "반락하": "반락",
+    # 확대/축소 계열
+    "늘": "증가", "줄": "감소", "확대되": "확대", "축소되": "축소",
+    "증가하": "증가", "감소하": "감소", "둔화되": "둔화",
+    # 위기/압박 계열
+    "흔들리": "불안", "위협받": "위기", "압박받": "압박",
+    "불안하": "불안", "악화되": "악화", "위축되": "위축",
+    # 회복/개선 계열
+    "회복되": "회복", "개선되": "개선", "호전되": "호전",
+    # 결정/발표 계열
+    "인상하": "인상", "인하하": "인하", "동결하": "동결",
+    "결정하": "결정", "승인하": "승인", "거부하": "거부",
+    "도입하": "도입", "폐지하": "폐지", "규제하": "규제",
+    # 시장 계열
+    "돌파하": "돌파", "하회하": "하회", "상회하": "상회",
+    "초과하": "초과", "급증하": "급증", "급감하": "급감",
+    # 기타
+    "촉구하": "촉구", "반발하": "반발", "우려하": "우려",
+    "기대하": "기대", "전망하": "전망",
 }
 
-_STATE_HINTS = {
-    "상승", "하락", "급등", "급락", "하향", "상향",
-    "위기", "리스크", "불안", "불확실",
-    "호조", "부진", "침체", "회복", "반등",
-    "확대", "축소", "감소", "증가", "둔화", "가속",
-    "흑자", "적자", "손실", "이익",
-    "전망", "우려", "기대",
-}
-
-
-# ── 문장 패턴 템플릿 ───────────────────────────────────────────────
-# {S}: 주체  {E}: 사건  {T}: 상태/방향
-# 키워드 역할 조합에 따라 가장 자연스러운 패턴 선택
-
-def _build_title(subject: str, event: str, state: str) -> str:
-    """주체 / 사건 / 상태 키워드 조합으로 자연스러운 문장형 타이틀 반환"""
-    has_s = bool(subject)
-    has_e = bool(event)
-    has_t = bool(state)
-
-    if has_s and has_e and has_t:
-        return f"{subject} {event} {state} 동향"
-    if has_s and has_e:
-        return f"{subject} {event} 이슈 분석"
-    if has_s and has_t:
-        return f"{subject} 관련 {state} 흐름"
-    if has_e and has_t:
-        return f"{event} {state}과 시장 영향"
-    if has_e:
-        return f"{event} 관련 동향"
-    if has_s:
-        return f"{subject} 주요 경제 이슈"
-    if has_t:
-        return f"경제 {state} 흐름과 전망"
-    return "주요 경제 이슈 동향"
+_VERB_ENDINGS = ["하", "되", "시키", "받", "당하"]
 
 
 # ── 핵심 함수: 타이틀 생성 ─────────────────────────────────────────
 
-def _extract_nouns(titles: list[str]) -> list[list[str]]:
-    """각 제목에서 명사/고유명사 추출 → 문서별 토큰 리스트 반환"""
-    kiwi   = _get_kiwi()
-    result = []
+def _extract_tokens(titles: list[str]) -> tuple[list[list[str]], list[list[str]]]:
+    """
+    각 제목에서 명사 토큰과 동사 어간 토큰을 분리 추출.
+    반환: (noun_docs, verb_docs) — 문서별 리스트
+    """
+    kiwi      = _get_kiwi()
+    noun_docs = []
+    verb_docs = []
+
     for title in titles:
-        tokens = [
-            token.form
-            for token in kiwi.analyze(title)[0][0]
-            if token.tag in _TARGET_POS
-               and len(token.form) >= 2
-               and token.form not in _STOPWORDS
-        ]
-        result.append(tokens)
-    return result
+        nouns = []
+        verbs = []
+        for token in kiwi.analyze(title)[0][0]:
+            form = token.form
+            tag  = token.tag
+            if tag in _NOUN_POS and len(form) >= 2 and form not in _NOUN_STOPWORDS:
+                nouns.append(form)
+            elif tag in _VERB_POS and len(form) >= 2 and form not in _VERB_STOPWORDS:
+                verbs.append(form)
+        noun_docs.append(nouns)
+        verb_docs.append(verbs)
+
+    return noun_docs, verb_docs
 
 
-def _tfidf_keywords(doc_tokens: list[list[str]], top_n: int = 5) -> list[str]:
-    """
-    TF-IDF 방식으로 스콥 대표 키워드 추출.
-
-    - TF  : 전체 스콥 제목을 하나의 문서로 보고 단어 빈도 계산
-    - IDF : 단어가 몇 개의 제목에 등장하는지로 역빈도 계산
-            → 모든 제목에 공통으로 나오는 단어 억제 (너무 일반적인 단어 제거)
-    """
+def _tfidf_top(doc_tokens: list[list[str]], top_n: int) -> list[str]:
+    """TF-IDF 점수 상위 top_n 토큰 반환"""
     if not doc_tokens:
         return []
 
-    # TF: 전체 단어 빈도
     total_counter: Counter = Counter()
     for tokens in doc_tokens:
         total_counter.update(tokens)
 
-    # IDF: 각 단어가 등장한 문서(제목) 수
     doc_count = len(doc_tokens)
     df: Counter = Counter()
     for tokens in doc_tokens:
         for word in set(tokens):
             df[word] += 1
 
-    # TF-IDF 점수 계산
     scores: dict[str, float] = {}
     for word, tf in total_counter.items():
         idf = math.log((doc_count + 1) / (df[word] + 1)) + 1.0
         scores[word] = tf * idf
 
-    # 점수 상위 top_n 반환
     return [w for w, _ in sorted(scores.items(), key=lambda x: -x[1])[:top_n]]
 
 
-def _classify_keywords(keywords: list[str]) -> tuple[str, str, str]:
+def _verb_to_predicate(stem: str) -> str:
     """
-    키워드를 주체 / 사건 / 상태로 분류.
-    사전 미등재 키워드는 등장 순서로 사건(event) 슬롯에 우선 배치.
+    동사 어간 → 타이틀에 쓸 수 있는 명사형 서술어 변환.
+    테이블 히트 → 매핑값 반환
+    테이블 미스 → 어미 제거 후 stem 반환 (예: "인상되" → "인상")
     """
-    subject = ""
-    event   = ""
-    state   = ""
-
-    for kw in keywords:
-        if not subject and kw in _SUBJECT_HINTS:
-            subject = kw
-        elif not state and kw in _STATE_HINTS:
-            state = kw
-        elif not event and kw in _EVENT_HINTS:
-            event = kw
-        elif not event:
-            # 사전 미등재 → 사건 슬롯에 배치 (도메인 고유명사일 가능성 높음)
-            event = kw
-
-    return subject, event, state
+    if stem in _VERB_TO_NOUN:
+        return _VERB_TO_NOUN[stem]
+    for ending in _VERB_ENDINGS:
+        if stem.endswith(ending):
+            return stem[: -len(ending)]
+    return stem
 
 
 def _make_scope_title(titles: list[str]) -> str:
     """
-    뉴스 제목 리스트 → 문장형 스콥 타이틀 생성
+    뉴스 제목 리스트 → 서술형 스콥 타이틀 생성
 
     단계:
-      1. kiwipiepy 명사 추출
-      2. TF-IDF 핵심 키워드 5개 선별
-      3. 역할 분류(주체/사건/상태)
-      4. 패턴 템플릿 조합
+      1. kiwipiepy로 명사 / 동사 어간 분리 추출
+      2. 명사: TF-IDF 상위 3개 (주제어)
+         동사: TF-IDF 상위 2개 → 명사형 서술어로 변환
+      3. 조합 패턴:
+         주제어 2개 + 서술어 → "{noun1} {noun2}, {predicate}"
+         주제어 1~2개 + 서술어 → "{nouns}, {predicate}"
+         서술어 없을 경우 → 명사 나열 (가운뎃점)
     """
-    doc_tokens = _extract_nouns(titles)
-    keywords   = _tfidf_keywords(doc_tokens, top_n=5)
+    noun_docs, verb_docs = _extract_tokens(titles)
 
-    if not keywords:
-        # 형태소 추출 실패 시 — 제목 첫 단어 조합으로 최소 보장
-        fallback_words = []
+    top_nouns = _tfidf_top(noun_docs, top_n=3)
+    top_verbs = _tfidf_top(verb_docs, top_n=2)
+
+    # 동사 어간 → 명사형 서술어 (명사 목록과 중복 제거)
+    predicates = []
+    for stem in top_verbs:
+        pred = _verb_to_predicate(stem)
+        if pred not in top_nouns:
+            predicates.append(pred)
+
+    # 타이틀 조합
+    if len(top_nouns) >= 2 and predicates:
+        # "삼성전자 반도체, 수출 급감"
+        title = f"{top_nouns[0]} {top_nouns[1]}, {predicates[0]}"
+
+    elif len(top_nouns) >= 1 and predicates:
+        # "한국은행 금리, 인상"
+        noun_part = " ".join(top_nouns[:2])
+        title = f"{noun_part}, {predicates[0]}"
+
+    elif len(top_nouns) >= 3:
+        # 서술어 없음 → 가운뎃점 나열
+        title = f"{top_nouns[0]} {top_nouns[1]}·{top_nouns[2]}"
+
+    elif len(top_nouns) >= 2:
+        title = f"{top_nouns[0]}·{top_nouns[1]} 동향"
+
+    elif top_nouns:
+        title = f"{top_nouns[0]} 주요 이슈"
+
+    else:
+        # 형태소 추출 전체 실패 — 제목 앞 단어로 최소 보장
+        words = []
         for t in titles[:3]:
             parts = t.split()
             if parts:
-                fallback_words.append(parts[0])
-        return " ".join(dict.fromkeys(fallback_words))[:30] or "주요 경제 이슈"
+                words.append(parts[0])
+        title = " ".join(dict.fromkeys(words)) or "주요 경제 이슈"
 
-    subject, event, state = _classify_keywords(keywords)
-    title = _build_title(subject, event, state)
+    # 30자 초과 시 공백 기준으로 자름
+    if len(title) > 30:
+        title = title[:30].rsplit(" ", 1)[0] if " " in title[:30] else title[:30]
 
-    # 30자 초과 시 상태 키워드 제거 후 재생성
-    if len(title) > 30:
-        title = _build_title(subject, event, "")
-    if len(title) > 30:
-        title = _build_title("", event, state)
-    if len(title) > 30:
-        title = _build_title("", event, "")
-
-    return title[:30]
+    return title
 
 
 # ── ES 헬퍼 ───────────────────────────────────────────────────────
@@ -269,7 +260,6 @@ def _upsert_scope_title(es, scope_id: str, scope_title: str):
 def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> str | None:
     """
     scopeTitle 생성 메인 함수.
-
     기사 수와 무관하게 동일한 TF-IDF 기반 로직 적용.
     내부 예외는 흡수하여 None 반환 (배치 중단 방지).
     """
