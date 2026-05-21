@@ -27,6 +27,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
 
+from util.logger import save_article_process_log,save_article_error_log
+
 logger = logging.getLogger(__name__)
 
 BATCH_SIZE          = 10000
@@ -190,9 +192,12 @@ def run_summary_pipeline():
                         id=article_id,
                         body={"doc": {"summary": summary}},
                     )
+                    save_article_process_log("S501", article_id, "success")
                     total_processed += 1
                 except Exception as e:
                     logger.error(f"요약 실패 article_id={article_id}: {e}")
+                    history_id = save_article_process_log("S501", article_id, "fail")
+                    save_article_error_log(history_id, "E007", f"요약 실패 article_id={article_id}: {e}")
                     try:
                         es.update(
                             index=INDEX_NEWS,
