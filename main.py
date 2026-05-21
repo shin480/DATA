@@ -358,18 +358,14 @@ def get_keyword_detail(keyword: str):
                 }
             },
             "sort": [
+
                 {
-                    "_score": {
+                    "news_count": {
                         "order": "desc"
                     }
                 },
                 {
                     "updated_at": {
-                        "order": "desc"
-                    }
-                },
-                {
-                    "news_count": {
                         "order": "desc"
                     }
                 }
@@ -523,6 +519,19 @@ def get_keyword_detail(keyword: str):
     else:
         flow = "관점 분석 없음"
 
+    core_summary = ""
+
+    if analysis:
+        core_summary = (
+            analysis[0].get("scope_summary", "")
+        )
+
+    if not core_summary:
+        core_summary = (
+                first_article.get("summary")
+                or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다."
+        )
+
     return {
         "category": "ECONOMY",
 
@@ -530,9 +539,7 @@ def get_keyword_detail(keyword: str):
 
         "pressCount": len(press_set),
 
-        "summary":
-            first_article.get("summary")
-            or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
+        "summary":core_summary,
 
         "aiCount": ai_count,
 
