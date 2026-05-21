@@ -1,24 +1,25 @@
 """
-scope 대표 요약 생성 서비스
+scope 대표 요약 생성 서비스 — KR-FinBERT 문장 임베딩 기반
 
 흐름:
   1. news_scopes에서 scope_summary=NULL scope 조회
-  2. news_economy.summary 수집 (동일 언론사 최대 3건)
-  3. 문장 분리 → TextRank 상위 3개 중 scope_keywords 포함 빈도 가장 높은 1문장 선택
-  4. 70자 자연 절단
-  5. news_scopes.scope_summary upsert
+  2. news_economy.content 수집 (동일 언론사 최대 3건, 최신순)
+  3. 본문 클렌징 (언론사 헤더/기자명/저작권 문구 제거)
+  4. 문장 분리 → 중복 제거
+  5. KR-FinBERT [CLS] 임베딩으로 각 문장 벡터화
+     → 전체 문장 임베딩 평균 = "스콥 중심 벡터"
+     → 중심 벡터와 코사인 유사도 가장 높은 문장 선택
+  6. 70자 자연 절단
+  7. news_scopes.scope_summary upsert
 
 [수정 이력]
-- Gemini 완전 제거: _trim_sentence Gemini 트리밍 → 규칙 기반 자연 절단으로 대체
-- 요약 방식 변경: TextRank 다중 문장 → 1문장 (70자 이내)
-- 선택 로직: TextRank 상위 3개 중 scope_keywords 포함 빈도 가장 높은 문장 선택
-- MIN_NEWS_COUNT 제거: 뉴스 1건이어도 요약 생성
-- ES 쿼리 버그 수정: should(OR) → must_not exists 단순화
-  (기존 should + news_count>0 조건으로 이미 처리된 scope까지 조회되던 문제)
-- BATCH_SIZE 제거: 500 제한 → 10000으로 상향 (scope 수 증가 대응)
-- 무한루프 버그 수정: rows/filtered 없을 때 return None → _save(es, scope_id, "") 처리
-  (NULL 탈출 실패로 동일 3건이 배치마다 반복 조회되던 문제)
-- 배치 루프 안전장치 추가: processed_in_batch==0 이면 강제 break + 실패 건도 빈값 저장
+- 요약 엔진 교체: TextRank(그래프 기반) → KR-FinBERT 임베딩 코사인 유사도
+  · TextRank는 표면적 단어 빈도 기반 → 배경 설명 문장이 높은 점수 받는 문제
+  · KR-FinBERT는 의미론적 유사도 기반 → 스콥 전체를 가장 잘 대표하는 문장 선택
+- 입력 소스 유지: news_economy.content (summary 미사용)
+- 본문 클렌징 유지: 언론사 헤더/기자명/날짜/저작권 문구 제거
+- KR-FinBERT 싱글턴: embedding_generator.py와 동일한 모델 재활용
+- 문장 수 부족(1~2개) 시 폴백: 임베딩 없이 첫 번째 유효 문장 사용
 """
 
 import logging
@@ -26,8 +27,10 @@ import re
 from datetime import datetime, timezone
 
 import numpy as np
+import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from transformers import AutoModel, AutoTokenizer
 
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
@@ -36,37 +39,127 @@ logger = logging.getLogger(__name__)
 
 BATCH_SIZE          = 10000
 MAX_NEWS_PER_PRESS  = 3
-TOP_N               = 3
-DAMPING             = 0.85
 DUPLICATE_THRESHOLD = 0.85
 MAX_SENTENCE_LENGTH = 70
+MIN_SENTENCE_LENGTH = 15
 INDEX_NEWS          = "news_economy"
 INDEX_SCOPES        = "news_scopes"
 
 _TRIM_CHARS = set('다며서고은는이가을를에의')
 
+# KR-FinBERT 모델명 (embedding_generator.py와 동일)
+FINBERT_MODEL = "snunlp/KR-FinBert-SC"
 
-def _remove_captions(text: str) -> str:
-    text = re.sub(r"\[[^\]]{1,30}\]", "", text)
-    text = re.sub(r"\s{2,}", " ", text)
+
+# ── KR-FinBERT 싱글턴 ─────────────────────────────────────────────
+
+_tokenizer = None
+_model     = None
+_device    = None
+
+def _get_finbert():
+    global _tokenizer, _model, _device
+    if _model is None:
+        logger.info("KR-FinBERT 로드 중...")
+        _tokenizer = AutoTokenizer.from_pretrained(FINBERT_MODEL)
+        _model     = AutoModel.from_pretrained(FINBERT_MODEL)
+        _device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        _model.to(_device)
+        _model.eval()
+        logger.info(f"KR-FinBERT 로드 완료 (device={_device})")
+    return _tokenizer, _model, _device
+
+
+def _embed_sentences(sentences: list[str]) -> np.ndarray:
+    """
+    문장 리스트 → KR-FinBERT [CLS] 임베딩 행렬 반환 (shape: N x 768)
+    배치 단위로 처리하여 메모리 효율 확보
+    """
+    tokenizer, model, device = _get_finbert()
+    embeddings = []
+
+    EMBED_BATCH = 16  # 문장 임베딩 배치 크기
+    for i in range(0, len(sentences), EMBED_BATCH):
+        batch = sentences[i: i + EMBED_BATCH]
+        encoded = tokenizer(
+            batch,
+            padding=True,
+            truncation=True,
+            max_length=128,
+            return_tensors="pt",
+        ).to(device)
+        with torch.no_grad():
+            output = model(**encoded)
+        # [CLS] 토큰 임베딩 (첫 번째 토큰)
+        cls_vecs = output.last_hidden_state[:, 0, :].cpu().numpy()
+        embeddings.append(cls_vecs)
+
+    return np.vstack(embeddings)  # (N, 768)
+
+
+def _most_central_sentence(sentences: list[str]) -> int:
+    """
+    KR-FinBERT 임베딩으로 스콥 중심 벡터와 가장 유사한 문장 인덱스 반환.
+
+    중심 벡터 = 전체 문장 임베딩의 평균
+    → 스콥 전체 맥락을 가장 잘 대표하는 문장 선택
+    """
+    matrix  = _embed_sentences(sentences)          # (N, 768)
+    centroid = matrix.mean(axis=0, keepdims=True)  # (1, 768)
+    sims    = cosine_similarity(centroid, matrix)[0]  # (N,)
+    return int(np.argmax(sims))
+
+
+# ── 본문 클렌징 ────────────────────────────────────────────────────
+
+_CLEAN_PATTERNS = [
+    # 방송사 태그: [KBS 춘천], [MBC] 등
+    (re.compile(r"^\s*\[[^\]]{1,20}\]\s*"), ""),
+    (re.compile(r"\[[^\]]{1,20}\]"), " "),
+    # 언론사 발신 헤더: (서울=뉴스1) 홍길동 기자 =
+    (re.compile(r"\([^)]{1,20}=[^)]{1,20}\)\s*[가-힣\s]{2,10}기자\s*=?\s*"), ""),
+    # 기자 byline
+    (re.compile(r"[가-힣]{2,4}[·]?[가-힣]{0,4}\s*기자\s*=?\s*"), ""),
+    # ⓒ 저작권 표시
+    (re.compile(r"ⓒ\s*[^\s,]{1,20}"), ""),
+    # 날짜 패턴
+    (re.compile(r"\d{4}[.\-]\d{1,2}[.\-]\d{1,2}"), ""),
+    # 저작권 문구
+    (re.compile(r"무단\s*전재[^.]*재배포\s*금지[^.]*\.?"), ""),
+    (re.compile(r"저작권자[^.]*\.?"), ""),
+    (re.compile(r"All rights reserved[^.]*\.?", re.IGNORECASE), ""),
+    # 사진/그래픽 캡션
+    (re.compile(r"\([^)]{1,30}=[^)]{1,30}\)"), ""),
+    # 중복 공백
+    (re.compile(r"\s{2,}"), " "),
+]
+
+
+def _clean_content(text: str) -> str:
+    for pattern, repl in _CLEAN_PATTERNS:
+        text = pattern.sub(repl, text)
     return text.strip()
 
 
-def _split_sentences(text: str) -> list:
+# ── 문장 처리 ──────────────────────────────────────────────────────
+
+def _split_sentences(text: str) -> list[str]:
     raw = re.split(r"(?<=[.!?])\s+", text.strip())
-    return [s.strip() for s in raw if len(s.strip()) >= 15]
+    return [s.strip() for s in raw if len(s.strip()) >= MIN_SENTENCE_LENGTH]
 
 
-def _remove_duplicates(sentences: list) -> list:
+def _remove_duplicates(sentences: list[str]) -> list[str]:
     if len(sentences) < 2:
         return sentences
-    vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 3), max_features=2000)
+    vectorizer = TfidfVectorizer(
+        analyzer="char_wb", ngram_range=(2, 3), max_features=2000
+    )
     try:
         matrix = vectorizer.fit_transform(sentences).toarray()
     except ValueError:
         return sentences
-    sim = cosine_similarity(matrix)
-    keep, removed = [], set()
+    sim            = cosine_similarity(matrix)
+    keep, removed  = [], set()
     for i in range(len(sentences)):
         if i in removed:
             continue
@@ -77,28 +170,7 @@ def _remove_duplicates(sentences: list) -> list:
     return keep
 
 
-def _textrank_scores(sentences: list):
-    vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 3), max_features=2000)
-    try:
-        tfidf = vectorizer.fit_transform(sentences).toarray()
-    except ValueError:
-        return np.ones(len(sentences)) / len(sentences), None
-    sim = cosine_similarity(tfidf)
-    np.fill_diagonal(sim, 0)
-    n      = len(sentences)
-    scores = np.ones(n) / n
-    for _ in range(50):
-        prev = scores.copy()
-        for i in range(n):
-            s = sum(sim[i][j] * prev[j] / (sim[j].sum() or 1) for j in range(n) if i != j)
-            scores[i] = (1 - DAMPING) / n + DAMPING * s
-        if np.abs(scores - prev).sum() < 1e-5:
-            break
-    return scores, tfidf
-
-
 def _natural_trim(sentence: str, limit: int = MAX_SENTENCE_LENGTH) -> str:
-    """70자 초과 시 조사/어미 단위로 자연스럽게 절단"""
     if len(sentence) <= limit:
         return sentence
     cut = sentence[:limit]
@@ -108,20 +180,10 @@ def _natural_trim(sentence: str, limit: int = MAX_SENTENCE_LENGTH) -> str:
     return cut[:limit] + "…"
 
 
-def _keyword_score(sentence: str, keywords: list) -> int:
-    """문장에 scope_keywords가 몇 개 포함되는지 카운트"""
-    return sum(1 for kw in keywords if kw in sentence)
-
+# ── 메인 생성 함수 ─────────────────────────────────────────────────
 
 def generate_scope_summary(es, scope_id: str):
-    # scope_keywords 조회
-    scope_res = es.get(index=INDEX_SCOPES, id=scope_id, ignore=404)
-    scope_keywords = []
-    if scope_res.get("found"):
-        kw_str = scope_res["_source"].get("scope_keywords", "")
-        scope_keywords = [k.strip() for k in kw_str.split(",") if k.strip()]
-
-    # 뉴스 summary 수집
+    # 뉴스 content 수집
     res = es.search(
         index=INDEX_NEWS,
         body={
@@ -129,11 +191,11 @@ def generate_scope_summary(es, scope_id: str):
                 "bool": {
                     "must": [
                         {"term":   {"scopeID": scope_id}},
-                        {"exists": {"field": "summary"}},
+                        {"exists": {"field":   "content"}},
                     ]
                 }
             },
-            "_source": ["summary", "press"],
+            "_source": ["content", "press"],
             "sort":    [{"published_at": "desc"}],
             "size":    100,
         },
@@ -148,22 +210,17 @@ def generate_scope_summary(es, scope_id: str):
     for r in rows:
         press = r.get("press") or "unknown"
         press_count[press] = press_count.get(press, 0) + 1
-        if press_count[press] <= MAX_NEWS_PER_PRESS and r.get("summary"):
-            filtered.append(r["summary"])
+        if press_count[press] <= MAX_NEWS_PER_PRESS and r.get("content"):
+            filtered.append(_clean_content(r["content"]))
 
     if not filtered:
         _save(es, scope_id, "")
         return None
 
-    # 뉴스 1건이면 그대로 절단
-    if len(filtered) == 1:
-        summary = _natural_trim(_remove_captions(filtered[0]))
-        _save(es, scope_id, summary)
-        return summary
-
     # 문장 분리 → 중복 제거
-    combined  = " ".join([_remove_captions(s) for s in filtered])
+    combined  = " ".join(filtered)
     sentences = _split_sentences(combined)
+
     if not sentences:
         summary = _natural_trim(combined)
         _save(es, scope_id, summary)
@@ -171,19 +228,18 @@ def generate_scope_summary(es, scope_id: str):
 
     sentences = _remove_duplicates(sentences)
 
-    if len(sentences) == 1:
+    # 문장 3개 미만이면 임베딩 없이 첫 번째 문장 사용
+    if len(sentences) < 3:
         summary = _natural_trim(sentences[0])
         _save(es, scope_id, summary)
         return summary
 
-    # TextRank 상위 TOP_N개 중 scope_keywords 포함 빈도 가장 높은 1문장 선택
-    scores, _ = _textrank_scores(sentences)
-    top_n_idx = np.argsort(scores)[-TOP_N:].tolist()
-
-    if scope_keywords:
-        best_idx = max(top_n_idx, key=lambda i: _keyword_score(sentences[i], scope_keywords))
-    else:
-        best_idx = int(np.argmax(scores))
+    # KR-FinBERT 임베딩 기반 중심 문장 선택
+    try:
+        best_idx = _most_central_sentence(sentences)
+    except Exception as e:
+        logger.warning(f"임베딩 실패, 첫 문장 폴백 (scope_id={scope_id}): {e}")
+        best_idx = 0
 
     summary = _natural_trim(sentences[best_idx])
     _save(es, scope_id, summary)
@@ -202,10 +258,15 @@ def _save(es, scope_id: str, summary: str):
     logger.info(f"scope_summary 저장: {scope_id} ({len(summary)}자)")
 
 
+# ── 배치 처리 ─────────────────────────────────────────────────────
+
 def run_scope_summary_batch():
     """scope_summary 없는 scope 전체를 배치 루프로 처리합니다."""
     try:
         es = get_es()
+
+        # 배치 시작 전 모델 미리 로드 (첫 scope에서 지연 방지)
+        _get_finbert()
 
         total_processed = 0
         batch_num       = 0
@@ -242,7 +303,7 @@ def run_scope_summary_batch():
                 scope_id = hit["_source"]["scopeID"]
                 try:
                     generate_scope_summary(es, scope_id)
-                    total_processed += 1
+                    total_processed    += 1
                     processed_in_batch += 1
                 except Exception as e:
                     logger.error(f"scope_summary 생성 실패 scopeID={scope_id}: {e}")
