@@ -714,8 +714,10 @@ o-tag.sentiment-tag:hover {
   border-radius: 24px;
   padding: 32px;
   margin-top: 25px;
-  position: relative;
   min-height: 380px;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .quote-icon {
@@ -730,9 +732,12 @@ o-tag.sentiment-tag:hover {
   line-height: 1.6;
   color: #e2e8f0;
   font-weight: 500;
-  min-height: 110px;   /* 핵심 */
-  max-height: 72px;   /* 핵심 (완전 고정) */
+
+  min-height: 0;
+  max-height: none;
   overflow: hidden;
+
+  margin-bottom: 18px;
 
   cursor: pointer;
   transition: color 0.18s ease;
@@ -746,12 +751,28 @@ body.light-mode .opinion-text:hover {
   color: #4cb7d3;
 }
 
-.opinion-tags {
-  position: absolute;
-  bottom: 32px;
-  left: 32px;
+.opinion-meta {
+  position: static;
+
   display: flex;
+  align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
+
+  margin-bottom: 34px;
+}
+
+.opinion-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.opinion-sentiment {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .o-tag {
@@ -764,9 +785,10 @@ body.light-mode .opinion-text:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
+  white-space: nowrap;
 }
 
-/* 버튼형 키워드 태그 */
 .keyword-btn {
   all: unset;
 
@@ -788,12 +810,12 @@ body.light-mode .keyword-btn:hover {
 }
 
 .nav-btns {
-  position: absolute;
-  bottom: 32px;
-  right: 32px;
+  margin-top: auto;
+
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 28px;
 }
 
 .nav-btn {
@@ -2465,13 +2487,6 @@ body.light-mode .view-bar-bg {
     min-height: 96px;
   }
 
-  .opinion-tags {
-    left: 22px;
-    bottom: 78px;
-    max-width: calc(100% - 44px);
-    flex-wrap: wrap;
-  }
-
   .nav-btns {
     left: 22px;
     right: 22px;
@@ -2722,6 +2737,63 @@ body.light-mode .view-bar-bg {
     font-size: 23px;
   }
 
+  .opinion-card {
+    min-height: auto;
+    padding: 22px 18px;
+  }
+
+  .opinion-text {
+    font-size: 16px;
+    line-height: 1.65;
+
+    min-height: 0;
+    max-height: none;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+
+  .opinion-meta {
+    position: static;
+    margin-top: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .opinion-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    width: auto;
+  }
+
+  .o-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: auto;
+    min-width: fit-content;
+
+    white-space: nowrap;
+  }
+
+  .nav-btns {
+    position: static;
+    margin-top: 18px;
+
+    display: flex;
+    justify-content: space-between;
+  }
+
   /* 감성 게이지 3개 한 줄 */
   .gauge-container {
     display: grid;
@@ -2753,55 +2825,195 @@ body.light-mode .view-bar-bg {
     width: calc(100vw - 36px);
   }
 
-  .opinion-card {
-    min-height: 336px;
-    padding: 22px 18px;
+    /* 감성 비교: 세로 3개 리스트형 */
+.sentiment-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sentiment-grid .news-card {
+  min-height: auto;
+  padding: 18px 16px;
+  border-radius: 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+}
+
+.news-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.media-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #00e5ff;
+  white-space: nowrap;
+}
+
+.s-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.sentiment-grid .news-card h3 {
+  font-size: 14px;
+  line-height: 1.45;
+  margin-bottom: 10px;
+  text-align: left;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sentiment-grid .news-card p {
+  display: -webkit-box;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #94a3b8;
+  margin-bottom: 16px;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sentiment-grid .action-btn {
+  width: 100%;
+  height: 38px;
+  margin-top: 0;
+  font-size: 12px;
+}
+
+  /* 관점 비교: 펼치기 전 4개 보이기 */
+  .view-grid:not(.expanded) > :nth-child(-n+4) {
+    display: flex !important;
   }
 
-  .opinion-text {
-    font-size: 17px;
-    line-height: 1.7;
-  }
-
-  .opinion-tags {
-    left: 18px;
-    right: 18px;
-    bottom: 80px;
-    max-width: none;
-  }
-
-  .nav-btns {
-    left: 18px;
-    right: 18px;
-    bottom: 18px;
+  .view-grid:not(.expanded) > :nth-child(n+5) {
+    display: none !important;
   }
 
   .view-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
+  .view-card {
+  padding: 16px 14px;
+  border-radius: 18px;
+}
+
+.view-top {
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.view-icon-box {
+  width: 38px;
+  height: 38px;
+}
+
+.view-icon-img {
+  width: 20px;
+  height: 20px;
+}
+
+.view-title-group .vt {
+  font-size: 12px;
+}
+
+.view-title-group .vp {
+  font-size: 18px;
+}
+
+.view-bar-bg {
+  margin-bottom: 14px;
+}
+
+.reason-label {
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+
+.view-reason {
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.detail-btn {
+  width: fit-content;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 11px;
+
+  margin-top: 0;
+}
+
+  /* 지금 뜨는 뉴스: 슬라이드 */
   .news-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .news-card h3 {
-    font-size: 19px;
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
   }
 
   .news-item-card {
-    padding: 22px 18px;
+    min-width: 78%;
+    padding: 18px 15px;
+    border-radius: 18px;
+    scroll-snap-align: start;
   }
 
-  .news-rank-circle {
-    min-width: 38px;
-    height: 38px;
-    font-size: 17px;
-  }
+  .news-title {
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-line-clamp: 2;
+}
 
-  .news-footer-btn {
-    height: 42px;
-  }
+.news-quote {
+  font-size: 12px;
+  line-height: 1.5;
+  -webkit-line-clamp: 2;
+}
+
+.news-rank-circle {
+  min-width: 34px;
+  height: 34px;
+  font-size: 15px;
+}
+
+.reaction-row {
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.react-item {
+  font-size: 13px;
+}
+
+.news-footer-btn {
+  height: 36px;
+  font-size: 12px;
+}
 
   .footer-inner {
     gap: 12px;
@@ -2981,12 +3193,6 @@ body.light-mode .view-bar-bg {
     font-size: 16px;
   }
 
-  .view-card,
-  .news-card,
-  .news-item-card {
-    padding: 18px 15px;
-  }
-
   .view-title-group .vt {
     font-size: 13px;
   }
@@ -3131,24 +3337,18 @@ body.light-mode .view-bar-bg {
 
   <!-- TAG + SENTIMENT -->
   <div class="opinion-meta">
-
     <div class="opinion-tags"></div>
 
     <div class="opinion-sentiment">
       <o-tag class="o-tag sentiment-tag"></o-tag>
     </div>
+  </div>
 
-<!-- NAV BUTTON (절대 위치 안정화 대상) -->
-           <div class="nav-btns">
-
+  <div class="nav-btns">
     <div class="nav-btn" onclick="prevOpinion()">&lt;</div>
-
     <div class="opinion-page">- / -</div>
-
     <div class="nav-btn" onclick="nextOpinion()">&gt;</div>
-          </div>
-        </div>
-      </div>
+  </div>
 
     </section>
 
