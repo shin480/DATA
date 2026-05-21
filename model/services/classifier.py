@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 # embedding cosine similarity 기준
 # 너무 섞이면 0.80~0.82로 올리고,
 # 너무 잘게 쪼개지면 0.75 정도로 낮추면 됨.
-SIMILARITY_THRESHOLD = 0.78
+SIMILARITY_THRESHOLD = 0.82
 
 BATCH_SIZE               = 10000
 MAX_SCOPE_SIZE           = 10000   # _build_faiss_index / _initialize_scope_sequence 공용 상한

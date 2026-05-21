@@ -4087,7 +4087,7 @@ def get_analysis_logs(
     if where:
         where_sql = "WHERE " + " AND ".join(where)
 
-    rows = db.execute(
+    process_rows = db.execute(
         text(f"""
             SELECT
                 pl.history_id,
@@ -4109,7 +4109,65 @@ def get_analysis_logs(
         params
     ).fetchall()
 
+    # =========================
+    # pipeline_error_log 추가
+    # =========================
+    pipeline_where = []
+    pipeline_params = {}
+
+    if start_date:
+        pipeline_where.append("DATE(occurred_at) >= :start_date")
+        pipeline_params["start_date"] = start_date
+
+    if end_date:
+        pipeline_where.append("DATE(occurred_at) <= :end_date")
+        pipeline_params["end_date"] = end_date
+
+    pipeline_where_sql = ""
+    if pipeline_where:
+        pipeline_where_sql = "WHERE " + " AND ".join(pipeline_where)
+
+    pipeline_rows = []
+
+    if type != "성공 데이터":
+        pipeline_rows = db.execute(
+            text(f"""
+                    SELECT
+                        'pipeline' AS log_type,
+
+                        NULL AS history_id,
+                        NULL AS job_id,
+                        NULL AS code_id,
+
+                        article_id,
+                        'fail' AS status,
+                        occurred_at,
+
+                        error_code,
+                        error_message
+
+                    FROM pipeline_error_log
+
+                    {pipeline_where_sql}
+
+                    ORDER BY occurred_at DESC
+                    LIMIT 100
+                """),
+            pipeline_params
+        ).fetchall()
+
     db.close()
+
+    # =========================
+    # 합치기
+    # =========================
+
+    rows = list(process_rows) + list(pipeline_rows)
+
+    rows.sort(
+        key=lambda row: row._mapping.get("occurred_at"),
+        reverse=True
+    )
 
     es = get_es()
     logs = []
