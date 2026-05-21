@@ -1892,6 +1892,282 @@ td,
     font-size: 10px !important;
   }
 }
+
+/* =========================================================
+   데스크톱 관리자 사이드바 / 상단바 최종 보정
+   모바일은 이미 맞으므로 1101px 이상만 강제 적용
+========================================================= */
+
+@media (min-width: 1101px) {
+  .admin-dashboard-layout,
+  .admin-users-layout,
+  .admin-model-layout {
+    display: flex !important;
+    min-height: 100vh !important;
+    background: #020817 !important;
+  }
+
+  /* ==============================
+     Desktop Sidebar
+  ============================== */
+
+  .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+
+    width: 270px !important;
+    min-width: 270px !important;
+    max-width: 270px !important;
+
+    height: auto !important;
+    min-height: 100vh !important;
+
+    padding: 28px 0 0 0 !important;
+    margin: 0 !important;
+
+    display: block !important;
+
+    background:
+      radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
+      linear-gradient(180deg, #0b1020 0%, #020817 100%) !important;
+
+    border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+    border-bottom: 0 !important;
+
+    box-shadow: 18px 0 45px rgba(0, 0, 0, 0.22) !important;
+
+    z-index: 100 !important;
+  }
+
+  .logo-wrap {
+    width: auto !important;
+    height: auto !important;
+
+    margin: 0 24px 30px !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    transform: none !important;
+  }
+
+  .logo-wrap:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .admin-side-logo {
+    display: block !important;
+
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+
+    height: auto !important;
+
+    object-fit: contain !important;
+  }
+
+  .side-title-wrap {
+    width: auto !important;
+    height: auto !important;
+
+    margin: 0 0 18px 0 !important;
+    padding: 0 24px 14px !important;
+
+    display: block !important;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+  }
+
+  .side-title {
+    color: #64748b !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: normal !important;
+    letter-spacing: 0.04em !important;
+
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+
+  .side-menu {
+    width: 100% !important;
+
+    display: block !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    list-style: none !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 50px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    padding: 0 0 0 28px !important;
+    margin: 0 !important;
+
+    color: #94a3b8 !important;
+
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: normal !important;
+    letter-spacing: 0 !important;
+
+    text-align: left !important;
+
+    background: transparent !important;
+
+    border-left: 4px solid transparent !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+
+    cursor: pointer !important;
+    transition: 0.2s ease !important;
+  }
+
+  .side-menu li:hover {
+    background: rgba(56, 189, 248, 0.08) !important;
+    color: #e0f2fe !important;
+  }
+
+  .side-menu li.active {
+    background: linear-gradient(
+      90deg,
+      rgba(56, 189, 248, 0.18),
+      rgba(139, 92, 246, 0.12)
+    ) !important;
+
+    color: #7dd3fc !important;
+    border-left-color: #38bdf8 !important;
+    font-weight: 800 !important;
+  }
+
+  /* ==============================
+     Desktop Main / Header
+  ============================== */
+
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    width: calc(100% - 270px) !important;
+    margin-left: 270px !important;
+
+    min-height: 100vh !important;
+    padding-top: 0 !important;
+
+    background: #020817 !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    position: sticky !important;
+    top: 0 !important;
+
+    width: 100% !important;
+
+    height: 74px !important;
+    min-height: 74px !important;
+    max-height: 74px !important;
+
+    padding: 0 30px !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    background: rgba(2, 8, 23, 0.86) !important;
+
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+    border-top: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+
+    box-shadow: none !important;
+    backdrop-filter: blur(14px) !important;
+
+    z-index: 50 !important;
+  }
+
+  .dashboard-header .main-btn,
+  .dashboard-header .logout-btn,
+  .admin-users-header .main-btn,
+  .admin-users-header .logout-btn,
+  .model-header .main-btn,
+  .model-header .logout-btn,
+  .model-header .top-action-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    padding: 9px 16px !important;
+    margin: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: transparent !important;
+    color: #cbd5e1 !important;
+
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    border-radius: 8px !important;
+
+    font-family: "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: normal !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+
+    cursor: pointer !important;
+    box-shadow: none !important;
+  }
+
+  .dashboard-header .main-btn:hover,
+  .dashboard-header .logout-btn:hover,
+  .admin-users-header .main-btn:hover,
+  .admin-users-header .logout-btn:hover,
+  .model-header .main-btn:hover,
+  .model-header .logout-btn:hover,
+  .model-header .top-action-btn:hover {
+    border-color: #38bdf8 !important;
+    color: #38bdf8 !important;
+    background: transparent !important;
+  }
+}
+
 </style>
 </head>
 <body>
