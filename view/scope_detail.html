@@ -592,15 +592,12 @@ body {
 .scope-box {
   min-height: 270px;
   padding: 30px 32px;
-  width: 605px;
-
   display: flex;
   flex-direction: column;
 }
 
 .stat-box {
   padding: 22px 24px;
-  width: 420px;
 }
 
 .scope-label {
@@ -757,15 +754,24 @@ body {
 .fill.neutral { background: #f0b83a; }
 .fill.negative { background: #ff6578; }
 
+/* ==============================
+   관점 상위 4개 - 정보 라벨
+   - 예전 파일 기준 복구
+   - 4개 한 줄 유지
+   - 박스 고정 X / grid X / 말줄임 X / 가로스크롤 X
+============================== */
+
 .viewpoints {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 8px;
 
   width: 100%;
   margin-top: 10px;
+
+  overflow: visible;
 }
 
 .viewpoint {
@@ -776,6 +782,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
 
   border-radius: 999px;
   border: 1px solid rgba(120, 140, 180, 0.18);
@@ -784,8 +791,14 @@ body {
   color: #9fb0ca;
   font-size: 11px;
   font-weight: 500;
-  text-align: center;
+  letter-spacing: -0.02em;
   white-space: nowrap;
+
+  flex: 0 1 auto;
+  overflow: visible;
+  text-overflow: clip;
+
+  cursor: default;
 }
 
 .meta-info {
@@ -2499,6 +2512,707 @@ body.light-mode .nav a.active::after {
     border-color: #8ee3f2 !important;
     color: #087d96 !important;
     outline: none !important;
+  }
+}
+
+
+/* =========================================================
+   scope_detail.html 모바일/관점분포 최종 정리
+   - 중복 보정 제거용 단일 블록
+   - 글씨 겹침 방지: flex: 1 1 0 금지
+   - 칩 크기 유동: flex: 0 0 auto
+   - 4개 한 줄 유지
+   - 박스 고정폭 없음
+========================================================= */
+
+/* 박스는 고정폭 없이 그리드 비율로만 움직임 */
+.scope-box,
+.stat-box {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.top-area {
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr) !important;
+}
+
+/* 텍스트/키워드 잘림 방지 */
+.scope-title,
+.scope-summary {
+  max-width: 100% !important;
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+}
+
+.keyword-list {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  overflow: visible !important;
+}
+
+.keyword {
+  flex: 0 1 auto !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+#sentimentArea,
+.meta-info {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.sentiment-row {
+  grid-template-columns: 55px minmax(0, 1fr) 40px !important;
+}
+
+/* 관점 칩 기본: 유동 너비 + 한 줄 + 겹침 없음 */
+.viewpoints {
+  width: 100% !important;
+  max-width: 100% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+
+  gap: 7px !important;
+  margin-top: 10px !important;
+
+  overflow: visible !important;
+}
+
+.viewpoint {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+
+  min-height: 28px !important;
+  padding: 5px 9px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+
+  border-radius: 999px !important;
+  border: 1px solid rgba(120, 140, 180, 0.18) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+
+  color: #9fb0ca !important;
+  font-size: 10.8px !important;
+  font-weight: 500 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.025em !important;
+  white-space: nowrap !important;
+
+  overflow: visible !important;
+  text-overflow: clip !important;
+
+  cursor: default !important;
+}
+
+body.light-mode .viewpoint {
+  color: #64748b !important;
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+@media (max-width: 980px) {
+  .wrap {
+    width: calc(100% - 48px) !important;
+    max-width: none !important;
+    padding: 30px 0 72px !important;
+  }
+
+  .top-area {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  .scope-box {
+    padding: 28px !important;
+  }
+
+  .stat-box {
+    padding: 24px !important;
+  }
+
+  .viewpoints {
+    gap: 8px !important;
+  }
+
+  .viewpoint {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  html,
+  body,
+  .page {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .wrap {
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+    padding: 26px 0 60px !important;
+  }
+
+  .top-area {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  .scope-box,
+  .stat-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 16px !important;
+  }
+
+  .scope-box {
+    padding: 22px 18px !important;
+  }
+
+  .stat-box {
+    padding: 20px 18px !important;
+  }
+
+  .scope-title {
+    font-size: 21px !important;
+    line-height: 1.38 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+  }
+
+  .scope-summary {
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    -webkit-line-clamp: 3 !important;
+  }
+
+  .keyword {
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .sentiment-row {
+    grid-template-columns: 48px minmax(0, 1fr) 36px !important;
+    gap: 9px !important;
+    font-size: 11px !important;
+  }
+
+  .viewpoints {
+    justify-content: center !important;
+    gap: 5px !important;
+    overflow: visible !important;
+  }
+
+  .viewpoint {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+
+    min-height: 28px !important;
+    padding: 5px 6px !important;
+
+    font-size: 10px !important;
+    letter-spacing: -0.04em !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .wrap {
+    width: calc(100% - 24px) !important;
+  }
+
+  .scope-box {
+    padding: 21px 16px !important;
+  }
+
+  .stat-box {
+    padding: 19px 16px !important;
+  }
+
+  .scope-title {
+    font-size: 20px !important;
+  }
+
+  .keyword {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .viewpoints {
+    gap: 4px !important;
+  }
+
+  .viewpoint {
+    min-height: 27px !important;
+    padding: 4px 5px !important;
+    font-size: 9.5px !important;
+    letter-spacing: -0.05em !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .wrap {
+    width: calc(100% - 20px) !important;
+  }
+
+  .scope-box {
+    padding: 20px 15px !important;
+  }
+
+  .stat-box {
+    padding: 18px 15px !important;
+  }
+
+  .scope-title {
+    font-size: 19px !important;
+  }
+
+  .keyword-list {
+    gap: 7px !important;
+  }
+
+  .keyword {
+    padding: 8px 11px !important;
+    font-size: 11.5px !important;
+  }
+
+  .viewpoints {
+    gap: 3px !important;
+  }
+
+  .viewpoint {
+    padding: 4px 4px !important;
+    font-size: 9px !important;
+    letter-spacing: -0.055em !important;
+  }
+}
+
+/* =========================================================
+   관점 칩이 커질 때 통계 박스도 같이 커지게 보정
+   - 칩 크기 유지
+   - 칩 4개 한 줄 유지
+   - stat-box 배경이 칩 너비까지 감싸도록 처리
+========================================================= */
+
+@media (max-width: 620px) {
+  .top-area {
+    justify-items: center !important;
+    overflow: visible !important;
+  }
+
+  .stat-box {
+    width: max-content !important;
+    min-width: 100% !important;
+    max-width: none !important;
+
+    justify-self: center !important;
+    overflow: visible !important;
+  }
+
+  .viewpoints {
+    width: max-content !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .stat-box {
+    width: max-content !important;
+    min-width: 100% !important;
+    max-width: none !important;
+  }
+
+  .viewpoints {
+    width: max-content !important;
+    max-width: none !important;
+  }
+}
+
+
+/* =========================================================
+   ABSOLUTE FINAL OVERRIDE
+   - 중복 보정 최종 정리
+   - 박스 고정폭 제거
+   - 관점 칩은 글자 길이대로 유동
+   - 모바일에서는 칩 너비에 맞춰 통계 박스 배경도 함께 확장
+   - 글씨 겹침/말줄임/가로스크롤 없음
+========================================================= */
+
+.scope-box,
+.stat-box {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.top-area {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr) !important;
+  gap: 20px !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+.stat-box {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+#sentimentArea,
+.meta-info {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.viewpoints {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 10px auto 0 !important;
+  gap: 7px !important;
+
+  overflow: visible !important;
+}
+
+.viewpoint {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+
+  min-height: 28px !important;
+  padding: 5px 9px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 999px !important;
+  border: 1px solid rgba(120, 140, 180, 0.18) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+
+  color: #9fb0ca !important;
+  font-size: 10.8px !important;
+  font-weight: 500 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.025em !important;
+  white-space: nowrap !important;
+
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+body.light-mode .viewpoint {
+  color: #64748b !important;
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* 태블릿: 카드 1열 */
+@media (max-width: 980px) {
+  .top-area {
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: stretch !important;
+  }
+
+  .scope-box,
+  .stat-box {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .stat-box {
+    padding: 24px !important;
+  }
+
+  .viewpoints {
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .viewpoint {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* 모바일:
+   - 기본 박스는 화면폭 기준
+   - 관점 칩 묶음이 더 넓을 경우 stat-box가 같이 넓어짐
+   - 칩 자체는 유동 폭 유지
+*/
+@media (max-width: 620px) {
+  html,
+  body,
+  .page {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .wrap {
+    width: calc(100% - 28px) !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding: 26px 0 60px !important;
+    overflow: visible !important;
+  }
+
+  .top-area {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center !important;
+    gap: 18px !important;
+    overflow: visible !important;
+  }
+
+  .scope-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 22px 18px !important;
+    border-radius: 16px !important;
+    overflow: visible !important;
+  }
+
+  .stat-box {
+    width: fit-content !important;
+    min-width: 100% !important;
+    max-width: calc(100vw - 20px) !important;
+
+    justify-self: center !important;
+    padding: 20px 18px !important;
+    border-radius: 16px !important;
+    overflow: visible !important;
+  }
+
+  .scope-title {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 21px !important;
+    line-height: 1.38 !important;
+    white-space: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
+    overflow: visible !important;
+  }
+
+  .scope-summary {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
+    -webkit-line-clamp: 3 !important;
+  }
+
+  .keyword-list {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .keyword {
+    flex: 0 1 auto !important;
+    max-width: 100% !important;
+    padding: 9px 14px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+  }
+
+  .sentiment-row {
+    grid-template-columns: 48px minmax(0, 1fr) 36px !important;
+    gap: 9px !important;
+    font-size: 11px !important;
+  }
+
+  .viewpoints {
+    width: max-content !important;
+    max-width: none !important;
+
+    display: flex !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: visible !important;
+  }
+
+  .viewpoint {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+
+    min-height: 28px !important;
+    padding: 5px 6px !important;
+
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    line-height: 1.1 !important;
+    letter-spacing: -0.04em !important;
+    white-space: nowrap !important;
+
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .wrap {
+    width: calc(100% - 24px) !important;
+  }
+
+  .scope-box {
+    padding: 21px 16px !important;
+  }
+
+  .stat-box {
+    width: fit-content !important;
+    min-width: 100% !important;
+    max-width: calc(100vw - 16px) !important;
+    padding: 19px 16px !important;
+  }
+
+  .scope-title {
+    font-size: 20px !important;
+  }
+
+  .keyword {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .viewpoints {
+    width: max-content !important;
+    max-width: none !important;
+    gap: 4px !important;
+  }
+
+  .viewpoint {
+    min-height: 27px !important;
+    padding: 4px 5px !important;
+    font-size: 9.5px !important;
+    letter-spacing: -0.05em !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .wrap {
+    width: calc(100% - 20px) !important;
+  }
+
+  .scope-box {
+    padding: 20px 15px !important;
+  }
+
+  .stat-box {
+    max-width: calc(100vw - 12px) !important;
+    padding: 18px 15px !important;
+  }
+
+  .scope-title {
+    font-size: 19px !important;
+  }
+
+  .keyword-list {
+    gap: 7px !important;
+  }
+
+  .keyword {
+    padding: 8px 11px !important;
+    font-size: 11.5px !important;
+  }
+
+  .viewpoints {
+    gap: 3px !important;
+  }
+
+  .viewpoint {
+    padding: 4px 4px !important;
+    font-size: 9px !important;
+    letter-spacing: -0.055em !important;
+  }
+}
+
+/* =========================================================
+   DESKTOP 관점 칩 박스 삐져나감 보정
+   - 모바일은 기존 상태 유지
+   - 데스크탑에서 오른쪽 stat-box 영역만 비율로 조금 확보
+   - 고정 width 아님
+========================================================= */
+
+@media (min-width: 981px) {
+  .top-area {
+    grid-template-columns: minmax(0, 1.62fr) minmax(390px, 1.08fr) !important;
+  }
+
+  .scope-box,
+  .stat-box {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .stat-box {
+    overflow: visible !important;
+  }
+
+  .viewpoints {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    gap: 7px !important;
+    overflow: visible !important;
+  }
+
+  .viewpoint {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+
+    padding-left: 9px !important;
+    padding-right: 9px !important;
+
+    font-size: 10.8px !important;
+    letter-spacing: -0.035em !important;
+
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
 }
 

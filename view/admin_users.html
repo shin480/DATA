@@ -822,8 +822,10 @@ td select {
 
 
 /* =========================================================
-   0. 공통 안정화
+   반응형 CSS 정리본 - admin_users.html
 ========================================================= */
+
+/* 공통 안정화 */
 html,
 body {
   width: 100%;
@@ -865,11 +867,11 @@ td {
   overflow-wrap: break-word;
 }
 
-
 /* =========================================================
-   1. 1280px 이하
+   1280px 이하
 ========================================================= */
 @media (max-width: 1280px) {
+
   .admin-users-content {
     max-width: none;
     width: 100%;
@@ -888,23 +890,17 @@ td {
   }
 }
 
-
 /* =========================================================
-   2. 1100px 이하
-   - 사이드바를 상단 관리자 메뉴로 전환
+   1100px 이하
 ========================================================= */
 @media (max-width: 1100px) {
+
   .admin-users-layout {
-    display: flex;
     flex-direction: column;
   }
 
   .sidebar {
     position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
 
     width: 100% !important;
     height: auto !important;
@@ -917,25 +913,18 @@ td {
     gap: 14px !important;
 
     border-right: 0 !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+    border-bottom: 1px solid rgba(148,163,184,.16);
   }
 
   .logo-wrap {
     width: 100%;
-    height: auto !important;
     margin: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
     justify-content: center !important;
   }
 
   .admin-side-logo {
     width: 148px !important;
     max-width: 148px !important;
-    height: auto !important;
-    object-fit: contain !important;
   }
 
   .side-title-wrap {
@@ -956,8 +945,9 @@ td {
 
   .side-menu {
     width: 100%;
+
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
     gap: 8px !important;
   }
 
@@ -966,39 +956,22 @@ td {
     height: 44px !important;
     padding: 0 10px !important;
 
-    display: flex !important;
-    align-items: center !important;
     justify-content: center !important;
 
     border-left: 0 !important;
     border-radius: 14px;
 
-    background: rgba(15, 23, 42, 0.58);
-    border: 1px solid rgba(148, 163, 184, 0.12);
+    background: rgba(15,23,42,.58);
+    border: 1px solid rgba(148,163,184,.12);
 
     font-size: 13px !important;
     font-weight: 800 !important;
-    line-height: 1.2 !important;
+
     text-align: center;
 
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .side-menu li.active {
-    border-left: 0 !important;
-    border-color: rgba(56, 189, 248, 0.45);
-
-    background:
-      linear-gradient(
-        135deg,
-        rgba(56, 189, 248, 0.20),
-        rgba(139, 92, 246, 0.14)
-      );
-
-    color: #7dd3fc;
-    box-shadow: 0 10px 22px rgba(56, 189, 248, 0.08);
   }
 
   .admin-users-main {
@@ -1008,7 +981,6 @@ td {
 
   .admin-users-header {
     position: relative !important;
-    top: auto !important;
 
     height: auto !important;
     min-height: 62px !important;
@@ -1018,8 +990,6 @@ td {
     display: flex !important;
     justify-content: flex-end !important;
     gap: 10px !important;
-
-    border-top: 1px solid rgba(148, 163, 184, 0.1);
   }
 
   .main-btn,
@@ -1034,6 +1004,7 @@ td {
 
     border-radius: 10px !important;
     font-size: 13px !important;
+
     white-space: nowrap;
   }
 
@@ -1043,22 +1014,16 @@ td {
     padding: 24px 22px 76px;
   }
 
-  .grid-section,
-  .chart-stack {
-    width: 100%;
-    min-width: 0;
-  }
-
   .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0,1fr));
   }
 }
 
-
 /* =========================================================
-   3. 860px 이하
+   860px 이하
 ========================================================= */
 @media (max-width: 860px) {
+
   .admin-users-content {
     padding: 22px 18px 76px;
   }
@@ -1091,7 +1056,6 @@ td {
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
   }
 
@@ -1103,7 +1067,6 @@ td {
 
   .stat-box .label {
     font-size: 13px;
-    text-align: center;
   }
 
   .stat-box .value {
@@ -1135,18 +1098,41 @@ td {
   }
 }
 
-
 /* =========================================================
-   4. 640px 이하
-   - 실제 모바일 최종 레이아웃
+   640px 이하 모바일
 ========================================================= */
 @media (max-width: 640px) {
-  /* =========================
-     관리자 상단 메뉴
-  ========================= */
+
+  /* 상단 */
   .sidebar {
-    padding: 14px 12px 12px !important;
-    gap: 12px !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    z-index: 300 !important;
+
+    width: 100% !important;
+    height: 104px !important;
+    min-height: 104px !important;
+
+    padding: 0 10px 10px !important;
+
+    display: grid !important;
+    grid-template-columns: auto minmax(84px, 1fr) auto !important;
+    grid-template-rows: 60px 42px !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 0 !important;
+  }
+
+  .logo-wrap {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    height: 60px !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
   }
 
   .admin-side-logo {
@@ -1154,49 +1140,133 @@ td {
     max-width: 126px !important;
   }
 
+  .side-title-wrap {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    width: 100% !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 126px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
   .side-title {
-    font-size: 11px !important;
+    color: #dbeafe !important;
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.02em !important;
+    white-space: nowrap !important;
   }
 
   .side-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .side-menu li {
-    height: 40px !important;
+    width: 100% !important;
+    height: 38px !important;
     padding: 0 4px !important;
 
+    border-left: 0 !important;
+    border-radius: 13px !important;
+
     font-size: 11px !important;
-    letter-spacing: -0.04em;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em !important;
   }
 
-  /* =========================
-     메인/로그아웃 버튼
-  ========================= */
-  .admin-users-header {
-    min-height: 58px !important;
-    padding: 10px 12px !important;
+  .dashboard-header {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 400 !important;
 
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
+    width: auto !important;
+    height: 60px !important;
+    min-height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .admin-users-header {
+    position: fixed !important;
+
+    top: 0 !important;
+    right: 0 !important;
+
+    z-index: 400 !important;
+
+    width: auto !important;
+    height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .main-btn,
-  .logout-btn {
-    width: 100% !important;
-    height: 38px !important;
+  .logout-btn,
+  .top-action-btn {
+    width: auto !important;
+    min-width: 58px !important;
 
-    padding: 0 8px !important;
+    height: 34px !important;
 
-    font-size: 12px !important;
-    border-radius: 10px !important;
+    padding: 0 9px !important;
+
+    border-radius: 9px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+
+    white-space: nowrap !important;
+
+    background: rgba(2, 8, 23, 0.36) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
   }
 
-  /* =========================
-     본문 폭 / 카드
-  ========================= */
+  .admin-users-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 104px !important;
+  }
+
   .admin-users-content {
     width: 100% !important;
     max-width: 100% !important;
@@ -1216,45 +1286,78 @@ td {
     overflow: hidden !important;
   }
 
-  .usage-card,
-  .grid-section,
-  .log-card {
-    margin-top: 16px !important;
-  }
-
   .dashboard-title,
   .card-title,
   .sub-title {
     font-size: 17px !important;
-    line-height: 1.35 !important;
     margin-bottom: 13px !important;
   }
 
-  /* =========================
-     필터 전체 세로 정렬
-  ========================= */
-  .filter,
+  /* 검색 */
+  .filter {
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns:
+      1fr
+      1fr
+      36px !important;
+
+    gap: 8px !important;
+
+    align-items: center !important;
+    margin-bottom: 18px !important;
+  }
+
+  /* 관리자 로그 검색 전용 */
+  .log-card .filter {
+    display: grid !important;
+
+    grid-template-columns:
+      1fr
+      1fr !important;
+
+    gap: 8px !important;
+
+    align-items: center !important;
+  }
+
+  #adminId {
+    grid-column: 1 !important;
+  }
+
+  #actionName {
+    grid-column: 2 !important;
+  }
+
+  #logDate {
+    grid-column: 1 !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .log-card .search-btn {
+    grid-column: 2 !important;
+    justify-self: end !important;
+  }
+
   .filter-row,
   #pressreaction {
     width: 100% !important;
-    max-width: 100% !important;
 
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
+    grid-template-columns: 1fr 1fr !important;
 
-    align-items: stretch !important;
-    margin-bottom: 18px !important;
-    overflow: hidden !important;
+    gap: 8px !important;
+
+    align-items: center !important;
   }
 
   #pressreaction .reaction-title {
-    grid-column: auto !important;
-    margin-bottom: 2px !important;
+    grid-column: 1 / -1 !important;
   }
 
-  .filter > span,
-  .filter-row > span:not(.filter-label):not(.filter-val),
   #pressreaction > span {
     display: none !important;
   }
@@ -1271,141 +1374,108 @@ td {
   #adminId,
   #actionName,
   #logDate {
-    display: block !important;
-
     width: 100% !important;
     min-width: 0 !important;
-    max-width: 100% !important;
 
-    height: 44px !important;
+    height: 36px !important;
+    min-height: 36px !important;
 
-    box-sizing: border-box !important;
+    padding: 0 12px !important;
 
-    padding: 0 14px !important;
-    margin: 0 !important;
+    border-radius: 10px !important;
 
-    border-radius: 14px !important;
-
-    font-size: 14px !important;
-    line-height: 44px !important;
+    font-size: 12px !important;
+    line-height: 36px !important;
   }
 
-  input[type="date"]::-webkit-date-and-time-value {
-    text-align: center;
+  select,
+  #roleFilter,
+  #actionName {
+    padding-right: 30px !important;
+
+    background-position:
+      calc(100% - 16px) 13px,
+      calc(100% - 11px) 13px !important;
+
+    background-size: 5px 5px !important;
   }
 
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    margin-left: 0 !important;
+  .search-btn {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+
+    height: 36px !important;
+    min-height: 36px !important;
+
     padding: 0 !important;
-  }
 
-  .search-btn,
-  .action-btn {
-    width: 100% !important;
-    max-width: 100% !important;
-
-    height: 44px !important;
-    min-height: 44px !important;
+    border-radius: 50% !important;
 
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-
-    padding: 0 14px !important;
-    margin: 0 !important;
-
-    border-radius: 14px !important;
-
-    font-size: 14px !important;
-    white-space: nowrap !important;
   }
 
   .search-icon {
-    width: 20px !important;
-    height: 20px !important;
+    width: 17px !important;
+    height: 17px !important;
   }
 
-  /* =========================
-     이용 현황 카드
-  ========================= */
-  .stats-grid {
-    width: 100% !important;
-    max-width: 100% !important;
+  .action-btn {
+    min-width: 86px !important;
 
-    display: grid !important;
+    height: 36px !important;
+
+    padding: 0 12px !important;
+
+    border-radius: 10px !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  /* 통계 */
+  .stats-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
-
-    overflow: hidden !important;
   }
 
   .stat-box {
-    width: 100% !important;
-    max-width: 100% !important;
-
     min-height: 92px !important;
-
-    margin: 0 !important;
     padding: 18px 16px !important;
 
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
     gap: 7px !important;
-
-    box-sizing: border-box !important;
 
     border-radius: 16px !important;
   }
 
   .stat-box .label {
     font-size: 12px !important;
-    text-align: left !important;
   }
 
   .stat-box .value {
     font-size: 24px !important;
-    line-height: 1.15 !important;
   }
 
-  /* =========================
-     그래프
-  ========================= */
-  .grid-section,
-  .chart-stack {
-    width: 100% !important;
-    gap: 14px !important;
-  }
-
+  /* 그래프 */
   .graph-box {
     height: 205px !important;
     padding: 8px !important;
-    overflow: hidden !important;
   }
 
-  .graph-box svg {
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  /* =========================
-     테이블
-  ========================= */
+  /* 테이블 */
   .table-box,
   .table-box.large {
     width: 100% !important;
     max-width: 100% !important;
+
     max-height: 360px !important;
 
     overflow-x: auto !important;
     overflow-y: auto !important;
 
-    -webkit-overflow-scrolling: touch;
-
     border-radius: 14px !important;
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    background: rgba(11, 20, 38, 0.42);
   }
 
   table,
@@ -1429,37 +1499,15 @@ td {
     white-space: nowrap !important;
   }
 
-  .table-box::after {
-    content: "← 좌우로 밀어서 확인";
-    display: block;
-
-    position: sticky;
-    left: 0;
-    bottom: 0;
-
-    width: 100%;
-    padding: 8px 10px;
-
-    background: rgba(2, 8, 23, 0.94);
-    color: #64748b;
-
-    font-size: 11px;
-    text-align: center;
-
-    border-top: 1px solid rgba(148, 163, 184, 0.14);
-  }
-
   td select {
-    height: 32px !important;
-    width: 96px !important;
-    min-width: 96px !important;
+    height: 30px !important;
+    width: 90px !important;
+
     border-radius: 8px !important;
-    font-size: 12px !important;
+
+    font-size: 11.5px !important;
   }
 
-  /* =========================
-     Toast
-  ========================= */
   .toast {
     left: 14px !important;
     right: 14px !important;
@@ -1470,13 +1518,25 @@ td {
   }
 }
 
-
 /* =========================================================
-   5. 430px 이하 추가 압축
+   430px 이하
 ========================================================= */
 @media (max-width: 430px) {
+
   .sidebar {
-    padding: 12px 10px !important;
+    height: 100px !important;
+    min-height: 100px !important;
+
+    padding: 0 8px 9px !important;
+
+    grid-template-columns:
+      auto
+      minmax(70px,1fr)
+      auto !important;
+
+    grid-template-rows:
+      58px
+      40px !important;
   }
 
   .admin-side-logo {
@@ -1484,25 +1544,40 @@ td {
     max-width: 112px !important;
   }
 
-  .side-menu {
-    gap: 5px !important;
+  .side-title-wrap {
+    padding: 0 112px 0 0 !important;
   }
 
-  .side-menu li {
-    height: 38px !important;
-    font-size: 10.5px !important;
-    padding: 0 3px !important;
+  .side-title {
+    font-size: 12.5px !important;
   }
 
   .admin-users-header {
-    padding: 9px 10px !important;
-    min-height: 56px !important;
+    height: 58px !important;
+    min-height: 58px !important;
+
+    padding-right: 8px !important;
   }
 
   .main-btn,
-  .logout-btn {
+  .logout-btn,
+  .top-action-btn {
+    min-width: 52px !important;
+
+    height: 32px !important;
+
+    padding: 0 7px !important;
+
+    font-size: 10.5px !important;
+  }
+
+  .side-menu li {
     height: 36px !important;
-    font-size: 11px !important;
+    font-size: 10.5px !important;
+  }
+
+  .admin-users-main {
+    padding-top: 100px !important;
   }
 
   .admin-users-content {
@@ -1522,6 +1597,15 @@ td {
     font-size: 16px !important;
   }
 
+  .filter {
+    grid-template-columns:
+      1fr
+      1fr
+      34px !important;
+
+    gap: 6px !important;
+  }
+
   input,
   select,
   input[type="date"],
@@ -1533,17 +1617,35 @@ td {
   #adminId,
   #actionName,
   #logDate {
-    height: 42px !important;
-    line-height: 42px !important;
-    font-size: 13px !important;
-    padding: 0 12px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+
+    line-height: 34px !important;
+
+    font-size: 11.5px !important;
+
+    padding: 0 9px !important;
+
+    border-radius: 9px !important;
   }
 
-  .search-btn,
+  .search-btn {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+
+    height: 34px !important;
+    min-height: 34px !important;
+  }
+
+  .search-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
   .action-btn {
-    height: 42px !important;
-    min-height: 42px !important;
-    font-size: 13px !important;
+    height: 34px !important;
+    font-size: 11.5px !important;
   }
 
   .stat-box .value {
@@ -1551,478 +1653,11 @@ td {
   }
 }
 
-
 /* =========================================================
-   6. 360px급 초소형 보정
+   360px 이하
 ========================================================= */
 @media (max-width: 360px) {
-  .side-menu li {
-    font-size: 10px !important;
-    letter-spacing: -0.06em;
-  }
 
-  .main-btn,
-  .logout-btn {
-    font-size: 10.5px !important;
-    padding: 0 6px !important;
-  }
-
-  .dashboard-title,
-  .card-title,
-  .sub-title {
-    font-size: 15px !important;
-  }
-
-  .table-box::after {
-    font-size: 10px !important;
-  }
-}
-
-/* =========================================================
-   admin_users.html 실제 폰 date input 잘림 최종 보정
-   - 언론사 반응도 날짜 / 관리자 로그 날짜 대응
-========================================================= */
-
-@media (max-width: 640px) {
-  .admin-card .filter,
-  .reaction-card .filter-row,
-  #pressreaction {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  .admin-card .filter input[type="date"],
-  .reaction-card input[type="date"],
-  #reactionStart,
-  #reactionEnd,
-  #logDate {
-    -webkit-appearance: none !important;
-    appearance: none !important;
-
-    display: block !important;
-
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-
-    height: 44px !important;
-    min-height: 44px !important;
-
-    box-sizing: border-box !important;
-
-    padding: 0 10px !important;
-    margin: 0 !important;
-
-    border-radius: 14px !important;
-
-    font-size: 13px !important;
-    line-height: 44px !important;
-
-    text-align: center !important;
-    text-align-last: center !important;
-
-    overflow: hidden !important;
-    position: relative !important;
-  }
-
-  .admin-card .filter input[type="date"]::-webkit-date-and-time-value,
-  .reaction-card input[type="date"]::-webkit-date-and-time-value,
-  #reactionStart::-webkit-date-and-time-value,
-  #reactionEnd::-webkit-date-and-time-value,
-  #logDate::-webkit-date-and-time-value {
-    text-align: center !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .admin-card .filter input[type="date"]::-webkit-calendar-picker-indicator,
-  .reaction-card input[type="date"]::-webkit-calendar-picker-indicator,
-  #reactionStart::-webkit-calendar-picker-indicator,
-  #reactionEnd::-webkit-calendar-picker-indicator,
-  #logDate::-webkit-calendar-picker-indicator {
-    position: absolute;
-    right: 10px;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 18px !important;
-    height: 18px !important;
-  }
-}
-
-@media (max-width: 390px) {
-  .admin-card .filter input[type="date"],
-  .reaction-card input[type="date"],
-  #reactionStart,
-  #reactionEnd,
-  #logDate {
-    height: 42px !important;
-    min-height: 42px !important;
-    line-height: 42px !important;
-    font-size: 12px !important;
-    padding: 0 8px !important;
-  }
-
-  .admin-card .filter input[type="date"]::-webkit-calendar-picker-indicator,
-  .reaction-card input[type="date"]::-webkit-calendar-picker-indicator,
-  #reactionStart::-webkit-calendar-picker-indicator,
-  #reactionEnd::-webkit-calendar-picker-indicator,
-  #logDate::-webkit-calendar-picker-indicator {
-    right: 8px;
-    width: 16px !important;
-    height: 16px !important;
-  }
-}
-
-/* =========================================================
-   모바일 date placeholder 문구 스타일
-========================================================= */
-@media (max-width: 640px) {
-  input.date-placeholder-mode {
-    color: #697996 !important;
-    text-align: center !important;
-    text-align-last: center !important;
-  }
-
-  input.date-placeholder-mode::placeholder {
-    color: #697996 !important;
-    opacity: 1 !important;
-  }
-}
-/* =========================================================
-   관리자 페이지 모바일 상단바 최종본
-   - 모바일에서만 적용
-   - 1줄: DATA 다타 로고 / 관리자 페이지 / 메인으로 / 로그아웃
-   - 2줄: 수집 정보 / 회원 정보 / 모델 보정
-========================================================= */
-
-@media (max-width: 640px) {
-  /* 전체 관리자 상단 영역 */
-  .sidebar {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: auto !important;
-    z-index: 300 !important;
-
-    width: 100% !important;
-    height: 104px !important;
-    min-height: 104px !important;
-
-    padding: 0 10px 10px !important;
-
-    display: grid !important;
-    grid-template-columns: auto minmax(84px, 1fr) auto !important;
-    grid-template-rows: 60px 42px !important;
-    align-items: center !important;
-    column-gap: 8px !important;
-    row-gap: 0 !important;
-
-    background:
-      radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
-      linear-gradient(180deg, #0b1020 0%, #020817 100%) !important;
-
-    border-right: 0 !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
-  }
-
-  /* 로고: 왼쪽 위 */
-  .logo-wrap {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-
-    width: auto !important;
-    height: 60px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-
-  .logo-wrap:hover {
-    transform: none !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-
-  .admin-side-logo {
-    display: block !important;
-    width: 126px !important;
-    max-width: 126px !important;
-    height: auto !important;
-    object-fit: contain !important;
-  }
-
-  /* 관리자 페이지 문구: 로고와 버튼 사이 중앙 */
-  .side-title-wrap {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-
-    width: 100% !important;
-    height: 60px !important;
-
-    margin: 0 !important;
-    padding: 0 126px 0 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border-bottom: 0 !important;
-  }
-
-  .side-title {
-    color: #dbeafe !important;
-    font-size: 14px !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.02em !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-  }
-
-  /* 관리자 메뉴 탭: 두 번째 줄 */
-  .side-menu {
-    grid-column: 1 / -1 !important;
-    grid-row: 2 !important;
-
-    width: 100% !important;
-
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
-  }
-
-  .side-menu li {
-    width: 100% !important;
-    height: 38px !important;
-    padding: 0 4px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border-left: 0 !important;
-    border-radius: 13px !important;
-
-    background: rgba(15, 23, 42, 0.58) !important;
-    border: 1px solid rgba(148, 163, 184, 0.12) !important;
-
-    color: #94a3b8 !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    line-height: 1.2 !important;
-    letter-spacing: -0.04em !important;
-    text-align: center !important;
-
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-
-    cursor: pointer !important;
-  }
-
-  .side-menu li:hover {
-    background: rgba(56, 189, 248, 0.08) !important;
-    color: #e0f2fe !important;
-  }
-
-  .side-menu li.active {
-    border-left: 0 !important;
-    border-color: rgba(56, 189, 248, 0.45) !important;
-
-    background:
-      linear-gradient(
-        135deg,
-        rgba(56, 189, 248, 0.20),
-        rgba(139, 92, 246, 0.14)
-      ) !important;
-
-    color: #7dd3fc !important;
-    box-shadow: 0 10px 22px rgba(56, 189, 248, 0.08) !important;
-  }
-
-  /* 메인으로 / 로그아웃: 오른쪽 위 */
-  .dashboard-header,
-  .admin-users-header,
-  .model-header {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    left: auto !important;
-    z-index: 400 !important;
-
-    width: auto !important;
-    min-width: 0 !important;
-    height: 60px !important;
-    min-height: 60px !important;
-
-    padding: 0 10px 0 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 6px !important;
-
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-  }
-
-  .main-btn,
-  .logout-btn,
-  .top-action-btn {
-    width: auto !important;
-    min-width: 58px !important;
-    height: 34px !important;
-
-    padding: 0 9px !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    border-radius: 9px !important;
-
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    white-space: nowrap !important;
-
-    background: rgba(2, 8, 23, 0.36) !important;
-    border: 1px solid rgba(148, 163, 184, 0.35) !important;
-    color: #cbd5e1 !important;
-
-    cursor: pointer !important;
-  }
-
-  .main-btn:hover,
-  .logout-btn:hover,
-  .top-action-btn:hover {
-    border-color: #38bdf8 !important;
-    color: #38bdf8 !important;
-    background: rgba(56, 189, 248, 0.08) !important;
-  }
-
-  /* 본문이 fixed 상단바 아래에서 시작하도록 보정 */
-  .dashboard-main,
-  .admin-users-main,
-  .model-main {
-    width: 100% !important;
-    margin-left: 0 !important;
-    padding-top: 104px !important;
-  }
-
-  .dashboard-content,
-  .admin-users-content,
-  .page {
-    padding-top: 16px !important;
-  }
-}
-
-
-/* =========================================================
-   430px 이하 작은 모바일
-========================================================= */
-
-@media (max-width: 430px) {
-  .sidebar {
-    height: 100px !important;
-    min-height: 100px !important;
-
-    padding: 0 8px 9px !important;
-
-    grid-template-columns: auto minmax(70px, 1fr) auto !important;
-    grid-template-rows: 58px 40px !important;
-    column-gap: 6px !important;
-  }
-
-  .logo-wrap {
-    height: 58px !important;
-  }
-
-  .admin-side-logo {
-    width: 112px !important;
-    max-width: 112px !important;
-  }
-
-  .side-title-wrap {
-    height: 58px !important;
-    margin: 0 !important;
-    padding: 0 112px 0 0 !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .side-title {
-    font-size: 12.5px !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.03em !important;
-  }
-
-  .dashboard-header,
-  .admin-users-header,
-  .model-header {
-    height: 58px !important;
-    min-height: 58px !important;
-
-    padding-right: 8px !important;
-    gap: 5px !important;
-  }
-
-  .main-btn,
-  .logout-btn,
-  .top-action-btn {
-    min-width: 52px !important;
-    height: 32px !important;
-
-    padding: 0 7px !important;
-
-    font-size: 10.5px !important;
-    border-radius: 8px !important;
-  }
-
-  .side-menu {
-    gap: 5px !important;
-  }
-
-  .side-menu li {
-    height: 36px !important;
-    font-size: 10.5px !important;
-    padding: 0 3px !important;
-  }
-
-  .dashboard-main,
-  .admin-users-main,
-  .model-main {
-    padding-top: 100px !important;
-  }
-}
-
-
-/* =========================================================
-   360px 이하 초소형 보정
-========================================================= */
-
-@media (max-width: 360px) {
   .admin-side-logo {
     width: 100px !important;
     max-width: 100px !important;
@@ -2034,22 +1669,28 @@ td {
 
   .side-title {
     font-size: 11.5px !important;
-    font-weight: 950 !important;
-    letter-spacing: -0.04em !important;
   }
 
   .main-btn,
   .logout-btn,
   .top-action-btn {
     min-width: 46px !important;
+
     height: 31px !important;
+
     padding: 0 5px !important;
+
     font-size: 9.8px !important;
   }
 
   .side-menu li {
     font-size: 10px !important;
-    letter-spacing: -0.06em !important;
+  }
+
+  .dashboard-title,
+  .card-title,
+  .sub-title {
+    font-size: 15px !important;
   }
 }
 </style>
