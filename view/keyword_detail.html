@@ -3051,10 +3051,12 @@ html.light-mode .search-suggest-box {
   }
 
   .sentiment-layout {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    gap: 18px;
-    min-height: 0;
+    display: grid !important;
+    grid-template-columns: 1fr 140px !important;
+
+    align-items: center !important;
+
+    gap: 12px !important;
   }
 
   .sentiment-list {
@@ -3085,6 +3087,22 @@ html.light-mode .search-suggest-box {
     font-size: 11px;
     line-height: 1.55;
   }
+
+  .sentiment-card {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 16px !important;
+}
+
+.sentiment-layout {
+  grid-template-columns: 1fr 160px !important;
+  gap: 6px !important;
+}
+
+.sentiment-guide {
+  margin-top: 14px !important;
+  padding-top: 14px !important;
+}
 
   /* =========================
      PERSPECTIVE CONTRAST
