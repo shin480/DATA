@@ -1,5 +1,6 @@
 import re
 from util.es import get_es, NEWS_ECONOMY_INDEX
+from util.logger import save_article_process_log,save_article_error_log
 
 # 1. 유의어 사전 (기존과 동일하게 유지하되 '강화' 관련 억지 매핑 제거)
 synonym_map = {
@@ -588,6 +589,8 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         cat, score = sorted_res[i]
         top3.append((cat, round(score, 1)) if score > 0 else ("미분류", 0.0))
     print(top3)
+
+
     return top3
 
 def update_perspective_to_es(all:bool=False):
@@ -642,34 +645,57 @@ def update_perspective_to_es(all:bool=False):
 
         for hit in hits:
             doc_id = hit["_id"]
-            src = hit["_source"]
 
-            title = src.get("title", "")
-            clean_text = src.get("clean_text", "")
+            try:
+                src = hit["_source"]
 
-            sentiment = src.get("sentiment")
-            sentiment_score = src.get("sentiment_score", 0.0)
+                title = src.get("title", "")
+                clean_text = src.get("clean_text", "")
 
-            top3 = smart_classify(title, clean_text, sentiment, sentiment_score)
+                sentiment = src.get("sentiment")
+                sentiment_score = src.get("sentiment_score", 0.0)
 
-            perspective = [
-                {
-                    "rank": i + 1,
-                    "category": cat,
-                    "score": score
-                }
-                for i, (cat, score) in enumerate(top3)
-            ]
+                top3 = smart_classify(title, clean_text, sentiment, sentiment_score)
 
-            es.update(
-                index=NEWS_ECONOMY_INDEX,
-                id=doc_id,
-                body={
-                    "doc": {
-                        "perspective": perspective
+                perspective = [
+                    {
+                        "rank": i + 1,
+                        "category": cat,
+                        "score": score
                     }
-                }
-            )
+                    for i, (cat, score) in enumerate(top3)
+                ]
+
+                es.update(
+                    index=NEWS_ECONOMY_INDEX,
+                    id=doc_id,
+                    body={
+                        "doc": {
+                            "perspective": perspective
+                        }
+                    }
+                )
+                save_article_process_log("A202", doc_id, "success")
+            except Exception as e:
+                print("관점 분석 실패:", doc_id, e)
+
+                # =========================
+                # 실패 process log
+                # =========================
+                history_id = save_article_process_log(
+                    "A202",
+                    doc_id,
+                    "fail"
+                )
+
+                # =========================
+                # 상세 에러 로그
+                # =========================
+                save_article_error_log(
+                    history_id=history_id,
+                    error_code="E005",
+                    error_message=str(e)
+                )
 
         resp = es.scroll(scroll_id=scroll_id, scroll="2m")
 
