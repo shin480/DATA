@@ -358,18 +358,14 @@ def get_keyword_detail(keyword: str):
                 }
             },
             "sort": [
+
                 {
-                    "_score": {
+                    "news_count": {
                         "order": "desc"
                     }
                 },
                 {
                     "updated_at": {
-                        "order": "desc"
-                    }
-                },
-                {
-                    "news_count": {
                         "order": "desc"
                     }
                 }
@@ -523,6 +519,19 @@ def get_keyword_detail(keyword: str):
     else:
         flow = "관점 분석 없음"
 
+    core_summary = ""
+
+    if analysis:
+        core_summary = (
+            analysis[0].get("scope_summary", "")
+        )
+
+    if not core_summary:
+        core_summary = (
+                first_article.get("summary")
+                or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다."
+        )
+
     return {
         "category": "ECONOMY",
 
@@ -530,9 +539,7 @@ def get_keyword_detail(keyword: str):
 
         "pressCount": len(press_set),
 
-        "summary":
-            first_article.get("summary")
-            or f"{keyword} 관련 뉴스 {total_count}건 분석 결과입니다.",
+        "summary":core_summary,
 
         "aiCount": ai_count,
 
@@ -3354,60 +3361,55 @@ def get_viewpoint_detail(
 def get_random_scope_detail():
     es = get_es()
 
-    result = es.search(
-        index="news_scopes",
-        body={
-            "size": 1,
-            "query": {
-                "function_score": {
-                    "query": {
-                        "bool": {
-                            "must": [
-                                {
-                                    "range": {
-                                        "news_count": {
-                                            "gte": 5
+    for _ in range(20):
+        result = es.search(
+            index="news_scopes",
+            body={
+                "size": 1,
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {"range": {"news_count": {"gte": 5}}},
+                                    {
+                                        "range": {
+                                            "created_at": {
+                                                "gte": "now-7d/d",
+                                                "lte": "now"
+                                            }
                                         }
                                     }
-                                },
-                                {
-                                    "range": {
-                                        "created_at": {
-                                            "gte": "now-7d/d",
-                                            "lte": "now"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "random_score": {}
+                                ]
+                            }
+                        },
+                        "random_score": {}
+                    }
                 }
             }
-        }
-    )
+        )
 
-    hits = result["hits"]["hits"]
+        hits = result["hits"]["hits"]
 
-    if not hits:
-        return {
-            "title": "분석 데이터 없음",
-            "summary": "표시할 AI 뉴스 분석 데이터가 없습니다.",
-            "keywords": [],
-            "sentimentDist": {
-                "positive": 0,
-                "neutral": 0,
-                "negative": 0
-            },
-            "viewpoints": [],
-            "articleCount": 0,
-            "lastUpdated": "-",
-            "articles": []
-        }
+        if not hits:
+            break
 
-    scope_id = hits[0]["_source"].get("scopeID") or hits[0]["_id"]
+        scope_id = hits[0]["_source"].get("scopeID") or hits[0]["_id"]
+        detail = get_scope_detail(scope_id)
 
-    return get_scope_detail(scope_id)
+        if len(detail.get("articles", [])) >= 4:
+            return detail
+
+    return {
+        "title": "분석 데이터 없음",
+        "summary": "표시할 AI 뉴스 분석 데이터가 없습니다.",
+        "keywords": [],
+        "sentimentDist": {"positive": 0, "neutral": 0, "negative": 0},
+        "viewpoints": [],
+        "articleCount": 0,
+        "lastUpdated": "-",
+        "articles": []
+    }
 
 @app.get("/api/scopes/{scope_id}")
 def get_scope_detail(scope_id: str):
@@ -3527,8 +3529,20 @@ def get_scope_detail(scope_id: str):
         neutral_percent = 0
         negative_percent = 0
 
+    EXCLUDED_VIEWPOINTS = {
+        "관점 미분류",
+        "미분류",
+        "관점 정보 없음",
+        "",
+        None
+    }
+
     top_viewpoints = sorted(
-        viewpoint_count.items(),
+        [
+            (name, count)
+            for name, count in viewpoint_count.items()
+            if name not in EXCLUDED_VIEWPOINTS
+        ],
         key=lambda x: x[1],
         reverse=True
     )[:4]
