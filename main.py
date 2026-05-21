@@ -3529,8 +3529,20 @@ def get_scope_detail(scope_id: str):
         neutral_percent = 0
         negative_percent = 0
 
+    EXCLUDED_VIEWPOINTS = {
+        "관점 미분류",
+        "미분류",
+        "관점 정보 없음",
+        "",
+        None
+    }
+
     top_viewpoints = sorted(
-        viewpoint_count.items(),
+        [
+            (name, count)
+            for name, count in viewpoint_count.items()
+            if name not in EXCLUDED_VIEWPOINTS
+        ],
         key=lambda x: x[1],
         reverse=True
     )[:4]
