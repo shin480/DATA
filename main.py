@@ -3397,8 +3397,20 @@ def get_random_scope_detail():
         scope_id = hits[0]["_source"].get("scopeID") or hits[0]["_id"]
         detail = get_scope_detail(scope_id)
 
-        if len(detail.get("articles", [])) >= 4:
+        if len(detail.get("articles", [])) >= 5:
             return detail
+
+        # 실제 기사 수 기준으로 동기화
+        es.update(
+            index="news_scopes",
+            id=scope_id,
+            body={
+                "doc": {
+                    "news_count": len(detail.get("articles", []))
+                }
+            }
+        )
+
 
     return {
         "title": "분석 데이터 없음",
