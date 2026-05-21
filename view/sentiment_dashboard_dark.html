@@ -1053,44 +1053,166 @@ textarea {
 /* 640px 이하: 모바일 최종 */
 @media (max-width: 640px) {
   .sidebar {
-    padding: 14px 12px 12px !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    z-index: 300 !important;
+
+    width: 100% !important;
+    height: 104px !important;
+    min-height: 104px !important;
+
+    padding: 0 10px 10px !important;
+
+    display: grid !important;
+    grid-template-columns: auto minmax(84px, 1fr) auto !important;
+    grid-template-rows: 60px 42px !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 0 !important;
+  }
+
+  .logo-wrap {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: auto !important;
+    height: 60px !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
   }
 
   .admin-side-logo {
-    width: 126px !important;
-    max-width: 126px !important;
+    width: 116px !important;
+    max-width: 116px !important;
+  }
+
+  .side-title-wrap {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    width: 100% !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 126px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .side-title {
-    font-size: 11px !important;
+    color: #dbeafe !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.02em !important;
+    white-space: nowrap !important;
   }
 
   .side-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .side-menu li {
-    height: 40px !important;
+    width: 100% !important;
+    height: 38px !important;
     padding: 0 4px !important;
+
+    border-left: 0 !important;
+    border-radius: 13px !important;
+
     font-size: 11px !important;
-    letter-spacing: -0.04em;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .dashboard-header {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 400 !important;
+
+    width: auto !important;
+    height: 60px !important;
+    min-height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .model-header {
+    position: fixed !important;
+
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+
+    z-index: 400 !important;
+
+    width: auto !important;
+    height: 58px !important;
     min-height: 58px !important;
-    padding: 10px 12px !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
+
+    padding-right: 8px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    gap: 5px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .top-action-btn {
+    width: auto !important;
+    min-width: 58px !important;
+
+    height: 34px !important;
+
+    padding: 0 9px !important;
+
+    border-radius: 9px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+
+    white-space: nowrap !important;
+
+    background: rgba(2, 8, 23, 0.36) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  }
+
+  .model-main {
     width: 100% !important;
-    height: 38px !important;
-    padding: 0 8px !important;
-    font-size: 12px !important;
-    border-radius: 10px !important;
+    margin-left: 0 !important;
+    padding-top: 100px !important;
   }
 
   .page {

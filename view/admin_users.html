@@ -1110,7 +1110,6 @@ td {
     left: 0 !important;
     right: 0 !important;
     bottom: auto !important;
-
     z-index: 300 !important;
 
     width: 100% !important;
@@ -1120,18 +1119,9 @@ td {
     padding: 0 10px 10px !important;
 
     display: grid !important;
-
-    grid-template-columns:
-      auto
-      minmax(84px,1fr)
-      auto !important;
-
-    grid-template-rows:
-      60px
-      42px !important;
-
+    grid-template-columns: auto minmax(84px, 1fr) auto !important;
+    grid-template-rows: 60px 42px !important;
     align-items: center !important;
-
     column-gap: 8px !important;
     row-gap: 0 !important;
   }
@@ -1139,12 +1129,9 @@ td {
   .logo-wrap {
     grid-column: 1 !important;
     grid-row: 1 !important;
-
     width: auto !important;
     height: 60px !important;
-
     margin: 0 !important;
-
     justify-content: flex-start !important;
   }
 
@@ -1157,15 +1144,15 @@ td {
     grid-column: 2 !important;
     grid-row: 1 !important;
 
+    width: 100% !important;
     height: 60px !important;
 
+    margin: 0 !important;
     padding: 0 126px 0 0 !important;
 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-
-    border-bottom: 0 !important;
   }
 
   .side-title {
@@ -1183,15 +1170,16 @@ td {
     width: 100% !important;
 
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
-
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .side-menu li {
     width: 100% !important;
     height: 38px !important;
-
     padding: 0 4px !important;
 
     border-left: 0 !important;
@@ -1199,9 +1187,32 @@ td {
 
     font-size: 11px !important;
     font-weight: 800 !important;
-
     line-height: 1.2 !important;
-    letter-spacing: -.04em !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .dashboard-header {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 400 !important;
+
+    width: auto !important;
+    height: 60px !important;
+    min-height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .admin-users-header {
