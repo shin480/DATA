@@ -618,11 +618,6 @@ body.light-mode .article-category {
   grid-template-columns: repeat(4, 1fr);
 }
 
-.view-grid.count-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: 520px;
-}
-
 .view-card {
   min-height: 292px;
 
@@ -1352,9 +1347,30 @@ body.light-mode .footer-modal-btn {
   .view-grid,
   .view-grid.count-4,
   .view-grid.count-2 {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
+
+  .view-card {
+  min-height: auto;
+  padding: 14px;
+  border-radius: 16px;
+}
+
+.view-percent {
+  font-size: 22px;
+}
+
+.view-reason {
+  font-size: 11px;
+  line-height: 1.45;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
 
   .footer-inner {
     padding: 0 24px;
@@ -1364,39 +1380,559 @@ body.light-mode .footer-modal-btn {
 
 @media (max-width: 640px) {
   .overview-page {
-    width: calc(100% - 28px);
-    padding-top: 104px;
-  }
-
-  .hero-panel {
-    padding: 30px 24px;
-  }
-
-  .hero-panel h1 {
-    font-size: 30px;
+    width: 100%;
+    padding: 96px 14px 80px;
   }
 
   .group-section {
-    padding: 26px 20px;
+    padding: 20px 14px 22px;
+    border-radius: 22px;
+    margin-bottom: 20px;
+  }
+
+  .group-header {
+    margin-bottom: 16px;
+    gap: 8px;
+  }
+
+  .group-title-wrap span {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .group-title-wrap h2 {
+    font-size: 21px;
+  }
+
+  .group-desc {
+    font-size: 12px;
+    line-height: 1.5;
   }
 
   .view-grid,
-  .view-grid.count-4,
-  .view-grid.count-2 {
-    grid-template-columns: 1fr;
+.view-grid.count-4,
+.view-grid.count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+  .view-card {
+    min-height: auto;
+    border-radius: 16px;
+    padding: 13px;
   }
 
-  .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
+  .view-top {
+    margin-bottom: 12px;
+  }
+
+  .view-icon-box {
+    width: 40px;
+    height: 40px;
+  }
+
+  .view-icon-img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .view-title {
+    font-size: 13px;
+  }
+
+  .view-percent {
+    font-size: 20px;
+  }
+
+  .view-count {
+    margin-bottom: 10px;
+    font-size: 11px;
+  }
+
+  .view-bar-bg {
+    margin-bottom: 12px;
+  }
+
+  .reason-label {
+    margin-bottom: 5px;
+    font-size: 10px;
+  }
+
+  .view-reason {
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .detail-btn {
+    height: 32px;
+    padding: 0 11px;
+    font-size: 11px;
+  }
+  .view-title,
+  .view-reason {
+    word-break: break-word;
+  }
+
+.view-card:hover {
+  box-shadow: none;
+}
+}
+
+/* =========================================================
+   HEADER + FOOTER 반응형 최종본
+   - 본문 레이아웃은 건드리지 않음
+   - 모바일 상단바 기존 페이지와 통일
+   - 로고 왼쪽 위
+   - 테마 / 마이페이지 / 로그아웃 오른쪽 위
+   - 검색창 두 번째 줄 전체 폭
+   - 메뉴 탭 세 번째 줄 중앙 정렬
+   - 푸터 모바일 줄바꿈 안정화
+========================================================= */
+
+
+/* =========================================================
+   1. 검색창 다크모드 반짝임 보정
+========================================================= */
+.main-search-wrap:focus-within {
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.18),
+    0 0 14px rgba(0, 229, 255, 0.32),
+    0 0 28px rgba(0, 229, 255, 0.14);
+}
+
+
+/* =========================================================
+   2. 1300px 이하 - 상단바만 자연스럽게 축소
+========================================================= */
+@media (max-width: 1300px) {
+  .header {
+    padding: 0 38px;
+  }
+
+  .nav {
+    gap: 24px;
+    margin-left: 18px;
+  }
+
+  .main-search-wrap {
+    width: 320px;
   }
 
   .footer-inner {
-    padding: 0 18px;
+    padding: 0 42px;
   }
 }
+
+
+/* =========================================================
+   3. 1180px 이하
+========================================================= */
+@media (max-width: 1180px) {
+  .header {
+    padding: 0 28px;
+  }
+
+  .logo {
+    width: 144px;
+  }
+
+  .header-logo-full {
+    height: 50px;
+  }
+
+  .nav {
+    gap: 18px;
+    margin-left: 16px;
+    font-size: 14px;
+  }
+
+  .main-search-wrap {
+    width: 260px;
+  }
+
+  .header-btn {
+    padding: 0 16px;
+  }
+
+  .footer-inner {
+    padding: 0 32px;
+  }
+}
+
+
+/* =========================================================
+   4. 980px 이하 - 태블릿 헤더 2단형
+   1줄: 로고 + 검색/버튼
+   2줄: 메뉴
+========================================================= */
+@media (max-width: 980px) {
+  .header {
+    width: 100%;
+    height: 112px;
+    padding: 0 24px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 64px 48px;
+    align-items: center;
+    column-gap: 16px;
+  }
+
+  .overview-page {
+    padding-top: 162px;
+  }
+
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 145px;
+    height: 48px;
+    overflow: visible;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 48px;
+    max-width: none;
+  }
+
+  .header-right {
+    grid-column: 2;
+    grid-row: 1;
+
+    margin-left: 0;
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .main-search-wrap {
+    width: 250px;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .nav a.active::after {
+    bottom: -17px;
+  }
+
+  .footer-inner {
+    min-height: 88px;
+    padding: 18px 26px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+
+/* =========================================================
+   5. 760px 이하 - 태블릿/모바일 전환 구간
+========================================================= */
+@media (max-width: 760px) {
+  .header {
+    padding: 0 18px;
+    column-gap: 12px;
+  }
+
+  .logo {
+    width: 132px;
+    height: 46px;
+  }
+
+  .header-logo-full {
+    height: 46px;
+  }
+
+  .main-search-wrap {
+    width: 190px;
+    height: 38px;
+  }
+
+  .theme-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-btn {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .nav {
+    gap: 22px;
+  }
+
+  .footer-inner {
+    padding: 18px;
+  }
+}
+
+
+/* =========================================================
+   6. 620px 이하 - 모바일 상단바 최종형
+   1줄: 로고 / 테마 / 마이페이지·로그인 / 로그아웃·회원가입
+   2줄: 검색창 전체 폭
+   3줄: 메뉴 탭 중앙
+========================================================= */
+@media (max-width: 620px) {
+  .header {
+    width: 100%;
+    height: 164px;
+    padding: 0 10px;
+
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) auto auto auto;
+    grid-template-rows: 60px 56px 48px;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 0;
+  }
+
+  .overview-page {
+    padding-top: 214px;
+  }
+
+  /* 로고 */
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 132px;
+    height: 44px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    align-self: center;
+
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 44px;
+    max-width: none;
+    display: block;
+    object-fit: contain;
+  }
+
+  /* header-right 내부 요소를 header grid에 직접 배치 */
+  .header-right {
+    display: contents;
+  }
+
+  /* 테마 버튼 */
+  .theme-btn {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    justify-self: end;
+  }
+
+  /* 로그인 or 마이페이지 */
+  #loginBtn,
+  #primaryUserBtn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  /* 회원가입 or 로그아웃 */
+  #joinBtn,
+  #logoutBtn {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .header-btn {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  /* 검색창 */
+  .main-search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: calc(100vw - 20px);
+    max-width: none;
+    height: 42px;
+    margin: 0 auto;
+    justify-self: center;
+
+    padding: 0 14px 0 18px;
+  }
+
+  .search-box {
+    font-size: 14px;
+  }
+
+  /* 검색 자동완성 */
+  .search-suggest-box {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* 메뉴 탭 */
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    overflow: visible;
+    white-space: nowrap;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .nav a.active::after {
+    bottom: -17px;
+    height: 2px;
+  }
+
+  /* 푸터 */
+  .footer-inner {
+    min-height: 88px;
+    padding: 18px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+
+  .footer-copy {
+    width: 100%;
+    line-height: 1.5;
+  }
+}
+
+
+/* =========================================================
+   7. 430px 이하 - 작은 모바일 보정
+========================================================= */
+@media (max-width: 430px) {
+  .header {
+    height: 164px;
+    padding: 0 8px;
+    grid-template-columns: minmax(100px, 1fr) auto auto auto;
+    column-gap: 5px;
+  }
+
+  .overview-page {
+    padding-top: 214px;
+  }
+
+  .logo {
+    width: 116px;
+    height: 40px;
+  }
+
+  .header-logo-full {
+    height: 40px;
+  }
+
+  .theme-btn {
+    width: 33px;
+    height: 33px;
+  }
+
+  .header-btn {
+    height: 33px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .main-search-wrap {
+    width: calc(100vw - 16px);
+    height: 40px;
+  }
+
+  .search-box {
+    font-size: 13px;
+  }
+
+  .search-suggest-box {
+    left: 8px !important;
+    right: 8px !important;
+  }
+
+  .nav {
+    gap: 15px;
+    font-size: 12px;
+  }
+}
+
+
+/* =========================================================
+   8. 390px 이하
+========================================================= */
+@media (max-width: 390px) {
+  .nav {
+    gap: 13px;
+    font-size: 11px;
+  }
+}
+
 </style>
 </head>
 

@@ -16,12 +16,15 @@
 - [2026-05] 명사 필터: 동사 어간 패턴으로 끝나는 토큰 제거 (_is_noun_like)
 - [2026-05] 제목 가중치 완전 제거: tokens에 없는 단어가 키워드로 생성되는 문제 수정
 - [2026-05] 예외 시 keywords="" 저장: es.update 실패 아티클이 배치마다 재조회되는 무한루프 방지
+- [2026-05] TF-IDF 코퍼스 구조 개선: 단일 문서 fit → 배치 전체 fit 후 개별 transform (IDF 변별력 확보)
+- [2026-05] 제목 가중치 보정: title 필드를 kiwipiepy로 런타임 토큰화 후 tokens 교집합 단어에만 TF-IDF 점수 보정 적용
 """
 
 import logging
 import re
 
 import numpy as np
+from kiwipiepy import Kiwi
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from model.database import get_es
@@ -34,6 +37,27 @@ MAX_KEYWORDS = 5
 MIN_WORD_LEN = 2
 INDEX_NEWS       = "news_economy"
 INDEX_STOPWORDS  = "keyword_stopwords"
+
+# Kiwi 인스턴스 — 모듈 로드 시 1회만 초기화
+_kiwi = Kiwi()
+
+TITLE_BOOST = 0.3  # 제목 등장 단어에 더할 점수 보정값
+
+
+def _extract_title_nouns(title: str) -> set[str]:
+    """
+    제목을 kiwipiepy로 형태소 분석해 명사(NNG/NNP/SL) 토큰 set 반환.
+    tokens 필드에 없는 단어는 호출부에서 교집합으로 걸러낸다.
+    """
+    if not title:
+        return set()
+    nouns = set()
+    for token in _kiwi.tokenize(title):
+        if token.tag in ("NNG", "NNP", "SL"):  # 일반명사 / 고유명사 / 외래어
+            word = token.form.strip()
+            if word:
+                nouns.add(word)
+    return nouns
 
 # ─────────────────────────────────────────────────────────────
 # 불용어 정의
@@ -250,12 +274,11 @@ def _is_valid_keyword(word: str, stopwords: set | None = None) -> bool:
 # 키워드 추출
 # ─────────────────────────────────────────────────────────────
 
-def extract_keywords(tokens: list, max_keywords: int = MAX_KEYWORDS, stopwords: set | None = None) -> list[str]:
+def _build_valid_text(tokens: list, stopwords: set | None) -> tuple[str, set[str]]:
     """
-    tokens: ES에 저장된 형태소 분석 결과 리스트
-    stopwords: 배치 단위 동적 불용어 합산 set (미전달 시 기본 STOPWORDS)
+    tokens 리스트를 정제해 TF-IDF 입력용 문자열과 유효 토큰 set을 반환.
+    반환값: (full_text, valid_token_set)
     """
-    # tokens 필터링: URL/이메일/숫자/특수문자 정제 후 유효 단어만 추출
     valid_tokens = []
     for t in tokens:
         if not isinstance(t, str):
@@ -263,34 +286,62 @@ def extract_keywords(tokens: list, max_keywords: int = MAX_KEYWORDS, stopwords: 
         cleaned = _clean_token(t)
         if cleaned and re.fullmatch(r"[가-힣a-zA-Z]+", cleaned) and _is_valid_keyword(cleaned, stopwords):
             valid_tokens.append(cleaned)
+    return " ".join(valid_tokens), set(valid_tokens)
 
-    if not valid_tokens:
-        return []
 
-    full_text = " ".join(valid_tokens)
+def extract_keywords(
+    tokens: list,
+    max_keywords: int = MAX_KEYWORDS,
+    stopwords: set | None = None,
+    title: str = "",
+    vectorizer: TfidfVectorizer | None = None,
+) -> list[str]:
+    """
+    tokens:     ES에 저장된 형태소 분석 결과 리스트
+    stopwords:  배치 단위 동적 불용어 합산 set (미전달 시 기본 STOPWORDS)
+    title:      기사 제목 원문 — kiwipiepy로 런타임 토큰화 후 tokens 교집합 단어에만 점수 보정
+    vectorizer: 배치 전체로 fit된 TfidfVectorizer (미전달 시 단일 문서 fit fallback)
+    """
+    sw = stopwords if stopwords is not None else STOPWORDS
+    full_text, valid_token_set = _build_valid_text(tokens, sw)
 
     if not full_text.strip():
         return []
 
-    vectorizer = TfidfVectorizer(
-        analyzer="word",
-        token_pattern=r"[가-힣a-zA-Z0-9]{2,}",
-        ngram_range=(1, 1),
-        max_features=1000,
-        sublinear_tf=True,
-    )
+    # ── TF-IDF 점수 계산 ──────────────────────────────────────
     try:
-        tfidf_matrix = vectorizer.fit_transform([full_text])
+        if vectorizer is not None:
+            # 배치 코퍼스로 fit된 vectorizer로 transform만 수행 (IDF 변별력 확보)
+            tfidf_matrix = vectorizer.transform([full_text])
+        else:
+            # fallback: 단건 호출 시 단일 문서 fit (기존 동작 유지)
+            _vec = TfidfVectorizer(
+                analyzer="word",
+                token_pattern=r"[가-힣a-zA-Z0-9]{2,}",
+                ngram_range=(1, 1),
+                max_features=1000,
+                sublinear_tf=True,
+            )
+            tfidf_matrix = _vec.fit_transform([full_text])
+            vectorizer   = _vec
     except ValueError:
         return []
 
     feature_names = vectorizer.get_feature_names_out()
     scores        = tfidf_matrix.toarray()[0]
-    word_scores   = [
-        (word, score)
-        for word, score in zip(feature_names, scores)
-        if score > 0 and _is_valid_keyword(word, stopwords)
-    ]
+
+    # ── 제목 가중치 보정 ──────────────────────────────────────
+    # 제목을 kiwipiepy로 토큰화 후 tokens에 실제로 존재하는 단어에만 보정 적용
+    # tokens에 없는 단어는 교집합에서 탈락 → 제약 조건 유지
+    title_nouns = _extract_title_nouns(title) & valid_token_set
+    title_boost_map = {w: TITLE_BOOST for w in title_nouns}
+
+    word_scores = []
+    for word, score in zip(feature_names, scores):
+        if score > 0 and _is_valid_keyword(word, sw):
+            boosted = score + title_boost_map.get(word, 0.0)
+            word_scores.append((word, boosted))
+
     word_scores.sort(key=lambda x: x[1], reverse=True)
     return [word for word, _ in word_scores[:max_keywords]]
 
@@ -304,6 +355,7 @@ def extract_keywords_single(article_id: str, src: dict) -> None:
     단건 아티클 키워드 추출 후 ES 업데이트.
     classify.py의 reprocess_article 엔드포인트에서 호출됩니다.
     동적 불용어는 단건 실행 시에도 ES에서 로드합니다.
+    vectorizer는 단건이므로 fallback(단일 문서 fit) 동작.
     """
     es = get_es()
     try:
@@ -312,6 +364,8 @@ def extract_keywords_single(article_id: str, src: dict) -> None:
         keywords     = extract_keywords(
             src.get("tokens", []),
             stopwords=batch_stopwords,
+            title=src.get("title", ""),
+            # vectorizer 미전달 → fallback 단일 문서 fit
         )
         keywords_str = ",".join(keywords)
         es.update(
@@ -343,7 +397,7 @@ def run_keyword_pipeline():
                 index=INDEX_NEWS,
                 body={
                     "query": {"bool": {"must_not": {"exists": {"field": "keywords"}}}},
-                    "_source": ["article_id", "tokens"],
+                    "_source": ["article_id", "tokens", "title"],  # title 추가
                     "sort":    [{"published_at": "asc"}],
                     "size":    BATCH_SIZE,
                 },
@@ -360,10 +414,32 @@ def run_keyword_pipeline():
             logger.info(f"[배치 {batch_num}] 키워드 추출 시작: {len(hits)}건")
 
             # 동적 불용어 로드 — 배치 실행마다 새로 로드해 기본 STOPWORDS와 합산
-            # 전역 STOPWORDS를 직접 수정하지 않고 배치 범위 내 local set 사용
             dynamic_sw      = _load_dynamic_stopwords(es)
             batch_stopwords = STOPWORDS | dynamic_sw
 
+            # ── 배치 전체 코퍼스로 TF-IDF fit ────────────────────────
+            # 모든 문서를 함께 fit해야 IDF가 코퍼스 기준으로 계산됨
+            # → "동성로"처럼 여러 기사에 등장하는 단어는 IDF가 낮아져 자연스럽게 억제
+            corpus_texts = []
+            for hit in hits:
+                src = hit["_source"]
+                full_text, _ = _build_valid_text(src.get("tokens", []), batch_stopwords)
+                corpus_texts.append(full_text if full_text.strip() else " ")
+
+            batch_vectorizer = TfidfVectorizer(
+                analyzer="word",
+                token_pattern=r"[가-힣a-zA-Z0-9]{2,}",
+                ngram_range=(1, 1),
+                max_features=1000,
+                sublinear_tf=True,
+            )
+            try:
+                batch_vectorizer.fit(corpus_texts)
+            except ValueError:
+                logger.warning(f"[배치 {batch_num}] vectorizer fit 실패, fallback 단일 문서 모드로 진행")
+                batch_vectorizer = None
+
+            # ── 개별 문서 키워드 추출 ─────────────────────────────────
             for hit in hits:
                 src        = hit["_source"]
                 article_id = src["article_id"]
@@ -371,6 +447,8 @@ def run_keyword_pipeline():
                     keywords     = extract_keywords(
                         src.get("tokens", []),
                         stopwords=batch_stopwords,
+                        title=src.get("title", ""),
+                        vectorizer=batch_vectorizer,  # 배치 fit된 vectorizer 전달
                     )
                     keywords_str = ",".join(keywords)
                     es.update(

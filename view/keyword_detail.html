@@ -2411,18 +2411,19 @@ html.light-mode .search-suggest-box {
 /* =========================================================
    키워드 상세 페이지 반응형 CSS 최종본
    - 데스크톱 / 태블릿 / 모바일 대응
-   - 메인과 동일한 모바일 상단바 구조
+   - 모바일 상단바 기존 페이지와 동일하게 통일
    - 검색창 넓게 중앙 정렬
    - 메뉴 탭 가운데 정렬
-   - 키워드 제목 / 다른 키워드 버튼 정리
-   - CORE SUMMARY 통계 3칸 모바일에서도 가로 유지
-   - 요약 카드 / 감성 카드 / 관점 카드 / 기사 카드 모바일 최적화
+   - 키워드 상단 영역 더 자연스럽게 정리
+   - CORE SUMMARY 3칸 모바일 가로 유지
+   - 감성 카드 / 관점 카드 / 기사 카드 모바일 미관 개선
+   - REFERENCE + 탭 정렬 보정
    - Footer 안정화
 ========================================================= */
 
 
 /* =========================================================
-   0. 공통 안정화
+   0. 공통 반응형 안정화
 ========================================================= */
 .page {
   width: 100%;
@@ -2449,7 +2450,6 @@ html.light-mode .search-suggest-box {
   overflow-wrap: break-word;
 }
 
-
 /* 다크모드 검색창 반짝임 */
 .main-search-wrap:focus-within {
   border-color: rgba(0, 229, 255, 0.85);
@@ -2459,8 +2459,7 @@ html.light-mode .search-suggest-box {
     0 0 28px rgba(0, 229, 255, 0.14);
 }
 
-
-/* 고정 높이 제거 */
+/* 기존 고정 높이 제거 */
 .keyword-desc {
   height: auto !important;
   min-height: 0 !important;
@@ -2534,7 +2533,7 @@ html.light-mode .search-suggest-box {
 /* =========================================================
    3. 980px 이하
    - 태블릿 상단바 2단
-   - 상단 요약 영역 1열
+   - 상단 분석 카드 1열 전환
 ========================================================= */
 @media (max-width: 980px) {
   .header {
@@ -2617,6 +2616,10 @@ html.light-mode .search-suggest-box {
     padding: 34px 24px 96px;
   }
 
+  .title-row {
+    gap: 14px;
+  }
+
   .keyword-title {
     font-size: 35px;
   }
@@ -2628,6 +2631,10 @@ html.light-mode .search-suggest-box {
 
   .summary-title {
     font-size: 22px;
+  }
+
+  .sentiment-card {
+    min-height: 0;
   }
 
   .perspective-card {
@@ -2719,7 +2726,7 @@ html.light-mode .search-suggest-box {
 
   .keyword-card {
     padding: 22px;
-    border-radius: 18px;
+    border-radius: 20px;
   }
 
   .top-grid {
@@ -2770,12 +2777,13 @@ html.light-mode .search-suggest-box {
 
   .news-card {
     padding: 18px;
+    border-radius: 16px;
   }
 
   .article-header-row {
     flex-wrap: wrap;
     gap: 10px 14px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   .article-tab-bar {
@@ -2785,6 +2793,7 @@ html.light-mode .search-suggest-box {
   .article-card {
     flex-direction: column;
     padding: 20px 18px;
+    border-radius: 16px;
   }
 
   .original-btn {
@@ -2801,12 +2810,12 @@ html.light-mode .search-suggest-box {
 
 /* =========================================================
    5. 620px 이하
-   모바일 최종 상단바
-   - 1줄: 로고 / 테마 / 마이페이지·로그인 / 로그아웃·회원가입
-   - 2줄: 검색창 넓게 중앙
-   - 3줄: 메뉴 탭 중앙
+   모바일 최종 구조
 ========================================================= */
 @media (max-width: 620px) {
+  /* =========================
+     모바일 상단바
+  ========================= */
   .header {
     width: 100%;
     height: 164px;
@@ -2824,7 +2833,6 @@ html.light-mode .search-suggest-box {
     padding-top: 164px;
   }
 
-  /* 로고 */
   .logo {
     grid-column: 1;
     grid-row: 1;
@@ -2850,12 +2858,10 @@ html.light-mode .search-suggest-box {
     object-fit: contain;
   }
 
-  /* header-right 해체 */
   .header-right {
     display: contents;
   }
 
-  /* 오른쪽 위 버튼 */
   .theme-btn {
     grid-column: 2;
     grid-row: 1;
@@ -2892,7 +2898,6 @@ html.light-mode .search-suggest-box {
     display: none !important;
   }
 
-  /* 검색창 */
   .main-search-wrap {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -2910,7 +2915,6 @@ html.light-mode .search-suggest-box {
     font-size: 14px;
   }
 
-  /* 검색 자동완성 */
   .search-suggest-box {
     left: 10px !important;
     right: 10px !important;
@@ -2918,7 +2922,6 @@ html.light-mode .search-suggest-box {
     max-width: none !important;
   }
 
-  /* 메뉴 탭 */
   .nav {
     grid-column: 1 / -1;
     grid-row: 3;
@@ -2949,7 +2952,9 @@ html.light-mode .search-suggest-box {
     height: 2px;
   }
 
-  /* 본문 */
+  /* =========================
+     모바일 본문 공통
+  ========================= */
   .keyword-detail-page {
     padding: 26px 16px 72px;
   }
@@ -2965,10 +2970,13 @@ html.light-mode .search-suggest-box {
     margin-bottom: 14px;
   }
 
+  /* =========================
+     상단 키워드 영역
+  ========================= */
   .title-row {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 12px;
   }
 
@@ -2979,6 +2987,7 @@ html.light-mode .search-suggest-box {
   }
 
   .random-keyword-btn {
+    width: fit-content;
     margin-left: 0;
     font-size: 12px;
     padding: 9px 12px;
@@ -2991,6 +3000,9 @@ html.light-mode .search-suggest-box {
     margin-bottom: 24px;
   }
 
+  /* =========================
+     카드 공통
+  ========================= */
   .top-grid {
     gap: 16px;
     margin-bottom: 16px;
@@ -3007,13 +3019,15 @@ html.light-mode .search-suggest-box {
     margin-bottom: 14px;
   }
 
+  /* =========================
+     CORE SUMMARY
+  ========================= */
   .summary-title {
     font-size: 19px;
     line-height: 1.5;
     margin-bottom: 18px;
   }
 
-  /* CORE SUMMARY 통계 3칸 가로 유지 */
   .summary-stats {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
@@ -3022,6 +3036,7 @@ html.light-mode .search-suggest-box {
   .stat-box {
     padding: 12px 8px;
     text-align: center;
+    border-radius: 12px;
   }
 
   .stat-label {
@@ -3035,6 +3050,9 @@ html.light-mode .search-suggest-box {
     white-space: nowrap;
   }
 
+  /* =========================
+     PUBLIC SENTIMENT
+  ========================= */
   .sentiment-card {
     min-height: 0;
   }
@@ -3042,13 +3060,13 @@ html.light-mode .search-suggest-box {
   .sentiment-layout {
     grid-template-columns: 1fr;
     justify-items: center;
-    gap: 20px;
+    gap: 18px;
     min-height: 0;
   }
 
   .sentiment-list {
     width: 100%;
-    gap: 14px;
+    gap: 13px;
   }
 
   .sentiment-item {
@@ -3075,8 +3093,11 @@ html.light-mode .search-suggest-box {
     line-height: 1.55;
   }
 
+  /* =========================
+     PERSPECTIVE CONTRAST
+  ========================= */
   .perspective-card {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
 
   .perspective-title {
@@ -3090,7 +3111,7 @@ html.light-mode .search-suggest-box {
 
   .news-card {
     padding: 16px;
-    border-radius: 14px;
+    border-radius: 16px;
     min-height: 0;
   }
 
@@ -3121,22 +3142,45 @@ html.light-mode .search-suggest-box {
     margin-bottom: 8px;
   }
 
+  /* =========================
+     REFERENCE + 기사 탭
+  ========================= */
   .article-header-row {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 14px;
-    margin-bottom: 12px;
+    gap: 14px;
+    flex-wrap: nowrap;
+    margin-bottom: 16px;
+  }
+
+  .article-header-row .section-label {
+    margin-bottom: 0 !important;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    white-space: nowrap;
   }
 
   .article-tab-bar {
-    gap: 8px;
-    margin-bottom: 0;
+    height: 36px;
+    margin-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .article-tab {
+    height: 36px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
     font-size: 13px;
-    padding: 8px 4px;
+  }
+
+  .article-tab::after {
+    bottom: 0;
   }
 
   .article-list {
@@ -3182,6 +3226,9 @@ html.light-mode .search-suggest-box {
     text-align: center;
   }
 
+  /* =========================
+     Footer
+  ========================= */
   .footer-inner {
     min-height: 88px;
     padding: 18px 16px;
@@ -3274,7 +3321,6 @@ html.light-mode .search-suggest-box {
     font-size: 18px;
   }
 
-  /* CORE SUMMARY 초소형 모바일 보정 */
   .summary-stats {
     gap: 6px;
   }
@@ -3314,6 +3360,14 @@ html.light-mode .search-suggest-box {
 
   .article-desc {
     font-size: 11px;
+  }
+
+  .article-header-row {
+    gap: 12px;
+  }
+
+  .article-tab-bar {
+    gap: 8px;
   }
 }
 
@@ -3378,7 +3432,6 @@ html.light-mode .search-suggest-box {
     font-size: 12px;
   }
 }
-
 </style>
 </head>
 

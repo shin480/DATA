@@ -1222,53 +1222,1014 @@ body.light-mode .footer-modal-content h3 {
   color: #0f172a;
 }
 
-/* ==============================
-   RESPONSIVE
-============================== */
+/* =========================================================
+   viewpoint_detail.html 반응형 CSS 최종본
+   - 데스크톱 / 태블릿 / 모바일 대응
+   - 다른 페이지와 동일한 모바일 상단바 구조
+   - 검색창 길게 중앙 정렬
+   - 메뉴 탭 가운데 정렬
+   - 관점 상세 상단 타이틀 영역 모바일 재배치
+   - 관점 해석 / 감성 분포 카드 정리
+   - 관련 기사 TOP 5 모바일 카드형 배치
+   - 관점 비교 카드 모바일 최적화
+   - Footer 안정화
+========================================================= */
 
-@media (max-width: 900px) {
+
+/* =========================================================
+   0. 공통 안정화
+========================================================= */
+.detail-page {
+  width: min(800px, 100%);
+}
+
+.panel,
+.analysis-box,
+.article-row,
+.compare-card,
+.press,
+.article-title,
+.compare-title,
+.compare-core {
+  min-width: 0;
+}
+
+.title-section h1,
+.title-section p,
+.analysis-box p,
+.article-title,
+.compare-core {
+  overflow-wrap: break-word;
+}
+
+
+/* 다크모드 검색창 반짝임 */
+.main-search-wrap:focus-within {
+  border-color: rgba(0, 229, 255, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.18),
+    0 0 14px rgba(0, 229, 255, 0.32),
+    0 0 28px rgba(0, 229, 255, 0.14);
+}
+
+
+/* =========================================================
+   1. 1300px 이하
+========================================================= */
+@media (max-width: 1300px) {
   .header {
-    padding: 0 20px;
+    padding: 0 38px;
+  }
+
+  .nav {
+    gap: 24px;
+    margin-left: 18px;
+  }
+
+  .main-search-wrap {
+    width: 320px;
+  }
+
+  .footer-inner {
+    padding: 0 42px;
+  }
+}
+
+
+/* =========================================================
+   2. 1180px 이하
+========================================================= */
+@media (max-width: 1180px) {
+  .header {
+    padding: 0 28px;
+  }
+
+  .logo {
+    width: 144px;
+  }
+
+  .header-logo-full {
+    height: 50px;
+  }
+
+  .nav {
+    gap: 18px;
+    margin-left: 16px;
+    font-size: 14px;
   }
 
   .main-search-wrap {
     width: 260px;
   }
 
-  .detail-page {
-    width: calc(100% - 32px);
+  .header-btn {
+    padding: 0 16px;
   }
 
-  .title-section,
-  .top-grid,
+  .footer-inner {
+    padding: 0 32px;
+  }
+}
+
+
+/* =========================================================
+   3. 980px 이하
+   - 태블릿 상단바 2단형
+   - 본문 폭 안정화
+========================================================= */
+@media (max-width: 980px) {
+  .header {
+    width: 100%;
+    height: 112px;
+    padding: 0 24px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 64px 48px;
+    align-items: center;
+    column-gap: 16px;
+  }
+
+  .detail-page {
+    width: calc(100% - 48px);
+    padding-top: 160px;
+    padding-bottom: 96px;
+  }
+
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 145px;
+    height: 48px;
+    overflow: visible;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 48px;
+    max-width: none;
+  }
+
+  .header-right {
+    grid-column: 2;
+    grid-row: 1;
+
+    margin-left: 0;
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .main-search-wrap {
+    width: 250px;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  .top-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 30px;
+  }
+
+  .title-section {
+    grid-template-columns: 120px 1fr;
+    column-gap: 18px;
+    row-gap: 10px;
+  }
+
+  .date {
+    grid-column: 2;
+    justify-self: start;
+    transform: none;
+    margin-top: 2px;
+  }
+
+  .compare-grid.compare-count-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .compare-grid.compare-count-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .compare-grid.compare-count-4plus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-inner {
+    min-height: 88px;
+    padding: 18px 26px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+
+/* =========================================================
+   4. 760px 이하
+========================================================= */
+@media (max-width: 760px) {
+  .header {
+    padding: 0 18px;
+    column-gap: 12px;
+  }
+
+  .logo {
+    width: 132px;
+    height: 46px;
+  }
+
+  .header-logo-full {
+    height: 46px;
+  }
+
+  .main-search-wrap {
+    width: 190px;
+    height: 38px;
+  }
+
+  .theme-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-btn {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .nav {
+    gap: 22px;
+  }
+
+  .detail-page {
+    width: calc(100% - 36px);
+    padding-top: 150px;
+    padding-bottom: 84px;
+  }
+
+  .back-btn {
+    margin-bottom: 22px;
+  }
+
+  .title-section {
+    margin-top: 24px;
+    grid-template-columns: 102px 1fr;
+    column-gap: 16px;
+    row-gap: 8px;
+  }
+
+  .main-icon {
+    width: 92px;
+    height: 92px;
+  }
+
+  .main-icon img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .title-section h1 {
+    font-size: 29px;
+    line-height: 1.35;
+  }
+
+  .title-section h1 strong {
+    display: block;
+    margin-left: 0;
+    margin-top: 6px;
+    font-size: 30px;
+  }
+
+  .title-section p {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .date {
+    font-size: 11px;
+  }
+
+  .panel {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .panel h2 {
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+
+  .analysis-box {
+    min-height: 0;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .check-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 26px;
+  }
+
+  .analysis-box h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .analysis-box p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .sentiment-labels strong {
+    font-size: 28px;
+    margin-top: 14px;
+  }
+
+  .count-link {
+    font-size: 13px;
+  }
+
+  .keyword-panel {
+    margin-top: 18px;
+  }
+
+  .keywords {
+    gap: 10px;
+  }
+
+  .keywords span,
+  .keywords a {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .article-panel {
+    margin-top: 20px;
+  }
+
+  .article-row {
+    grid-template-columns: 46px 1fr auto;
+    grid-template-areas:
+      "logo press date"
+      "logo title title"
+      "logo tag tag";
+    gap: 7px 12px;
+    align-items: center;
+    padding: 16px 0;
+  }
+
+  .press-logo-box,
+  .press-logo-fallback,
+  .press-logo-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .press-logo-box {
+    grid-area: logo;
+  }
+
+  .press {
+    grid-area: press;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .article-title {
+    grid-area: title;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .article-tag {
+    grid-area: tag;
+    width: fit-content;
+  }
+
+  .article-date {
+    grid-area: date;
+    font-size: 11px;
+    justify-self: end;
+  }
+
+  .compare-panel {
+    margin-top: 22px;
+  }
+
+  .compare-group {
+    margin-bottom: 22px;
+  }
+
+  .compare-grid,
+  .compare-grid.compare-count-2,
+  .compare-grid.compare-count-3,
+  .compare-grid.compare-count-4plus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .compare-card {
+    min-height: 160px;
+    padding: 13px;
+  }
+
+  .compare-percent {
+    margin-top: 14px;
+    font-size: 24px;
+  }
+
+  .compare-core {
+    margin-top: 10px;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .compare-mini-labels {
+    font-size: 9px;
+  }
+
+  .footer-inner {
+    padding: 18px;
+  }
+}
+
+
+/* =========================================================
+   5. 620px 이하
+   모바일 최종형
+========================================================= */
+@media (max-width: 620px) {
+  /* =========================
+     모바일 상단바
+  ========================= */
+  .header {
+    width: 100%;
+    height: 164px;
+    padding: 0 10px;
+
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) auto auto auto;
+    grid-template-rows: 60px 56px 48px;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 0;
+  }
+
+  .detail-page {
+    width: calc(100% - 28px);
+    padding-top: 206px;
+    padding-bottom: 72px;
+  }
+
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 132px;
+    height: 44px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    align-self: center;
+
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 44px;
+    max-width: none;
+    display: block;
+    object-fit: contain;
+  }
+
+  .header-right {
+    display: contents;
+  }
+
+  .theme-btn {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    justify-self: end;
+  }
+
+  #loginBtn,
+  #primaryUserBtn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  #joinBtn,
+  #logoutBtn {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .header-btn {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  .main-search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: calc(100vw - 20px);
+    max-width: none;
+    height: 42px;
+    margin: 0 auto;
+    justify-self: center;
+
+    padding: 0 14px 0 18px;
+  }
+
+  .search-box {
+    font-size: 14px;
+  }
+
+  .search-suggest-box {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    overflow: visible;
+    white-space: nowrap;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
+  /* =========================
+     상단 제목 영역
+  ========================= */
+  .back-btn {
+    margin-bottom: 18px;
+    font-size: 11px;
+  }
+
+  .title-section {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .main-icon {
+    width: 88px;
+    height: 88px;
+  }
+
+  .main-icon img {
+    width: 45px;
+    height: 45px;
+  }
+
+  .title-section h1 {
+    font-size: 27px;
+    line-height: 1.35;
+  }
+
+  .title-section h1 strong {
+    display: inline-block;
+    margin-left: 8px;
+    margin-top: 0;
+    font-size: 28px;
+  }
+
+  .title-section p {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  .date {
+    grid-column: auto;
+    justify-self: center;
+    transform: none;
+    font-size: 11px;
+    margin-top: -2px;
+  }
+
+  /* =========================
+     상단 카드
+  ========================= */
+  .top-grid {
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .panel {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .panel h2 {
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+
+  .analysis-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 0;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .check-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
+  }
+
+  .analysis-box h3 {
+    font-size: 19px;
+    margin-bottom: 10px;
+  }
+
+  .analysis-box p {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  /* =========================
+     감성 분포
+  ========================= */
+  .sentiment-bar {
+    height: 10px;
+  }
+
+  .sentiment-labels {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 18px;
+  }
+
+  .tag,
+  .article-tag {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+
+  .sentiment-labels strong {
+    margin-top: 12px;
+    font-size: 22px;
+  }
+
+  .count-link {
+    margin-top: 6px;
+    font-size: 11px;
+  }
+
+  /* =========================
+     주요 키워드
+  ========================= */
+  .keyword-panel {
+    margin-top: 18px;
+  }
+
+  .keywords {
+    gap: 8px;
+  }
+
+  .keywords span,
+  .keywords a {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
+  /* =========================
+     관련 기사 TOP 5
+  ========================= */
+  .article-panel {
+    margin-top: 18px;
+  }
+
+  .article_list {
+    margin-top: 12px;
+  }
+
+  .article-row {
+    grid-template-columns: 42px 1fr auto;
+    grid-template-areas:
+      "logo press date"
+      "logo title title"
+      "logo tag tag";
+    gap: 6px 10px;
+    padding: 15px 0;
+  }
+
+  .press-logo-box,
+  .press-logo-fallback,
+  .press-logo-img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .press-logo-fallback {
+    font-size: 9px;
+  }
+
+  .press {
+    font-size: 11px;
+  }
+
+  .article-title {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .article-date {
+    font-size: 10px;
+  }
+
+  /* =========================
+     관점 비교
+  ========================= */
+  .compare-panel {
+    margin-top: 20px;
+  }
+
+  .compare-group-title {
+    font-size: 12px;
+  }
+
   .compare-grid,
   .compare-grid.compare-count-2,
   .compare-grid.compare-count-3,
   .compare-grid.compare-count-4plus {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
-  .article-row {
-    grid-template-columns: 1fr;
+  .compare-card {
+    min-height: 0;
+    padding: 16px;
+    border-radius: 14px;
   }
 
+  .compare-title {
+    font-size: 13px;
+  }
+
+  .compare-percent {
+    margin-top: 12px;
+    font-size: 26px;
+  }
+
+  .compare-core {
+    margin-top: 10px;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .compare-mini-sentiment {
+    margin-top: 12px;
+  }
+
+  .compare-mini-labels {
+    margin-top: 7px;
+    font-size: 10px;
+  }
+
+  /* =========================
+     Footer
+  ========================= */
   .footer-inner {
-    padding: 0 24px;
+    min-height: 88px;
+    padding: 18px 16px;
+    gap: 12px;
     flex-wrap: wrap;
+  }
+
+  .footer-divider {
+    display: none;
+  }
+
+  .footer-copy {
+    width: 100%;
+    line-height: 1.5;
   }
 }
 
-@media (max-width: 640px) {
+
+/* =========================================================
+   6. 430px 이하
+========================================================= */
+@media (max-width: 430px) {
+  .header {
+    height: 164px;
+    padding: 0 8px;
+    grid-template-columns: minmax(100px, 1fr) auto auto auto;
+    column-gap: 5px;
+  }
+
+  .detail-page {
+    width: calc(100% - 24px);
+    padding-top: 204px;
+  }
+
+  .logo {
+    width: 116px;
+    height: 40px;
+  }
+
+  .header-logo-full {
+    height: 40px;
+  }
+
+  .theme-btn {
+    width: 33px;
+    height: 33px;
+  }
+
+  .header-btn {
+    height: 33px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .main-search-wrap {
+    width: calc(100vw - 16px);
+    height: 40px;
+  }
+
+  .search-box {
+    font-size: 13px;
+  }
+
   .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
+    left: 8px !important;
+    right: 8px !important;
+  }
+
+  .nav {
+    gap: 15px;
+    font-size: 12px;
+  }
+
+  .title-section h1 {
+    font-size: 24px;
+  }
+
+  .title-section h1 strong {
+    font-size: 25px;
+    margin-left: 6px;
+  }
+
+  .panel {
+    padding: 18px 14px;
+  }
+
+  .analysis-box {
+    padding: 16px 14px;
+  }
+
+  .analysis-box h3 {
+    font-size: 18px;
+  }
+
+  .sentiment-labels strong {
+    font-size: 20px;
+  }
+
+  .count-link {
+    font-size: 10px;
+  }
+
+  .keywords span,
+  .keywords a {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .article-row {
+    grid-template-columns: 40px 1fr auto;
+  }
+
+  .compare-card {
+    padding: 14px;
+  }
+
+  .compare-percent {
+    font-size: 24px;
+  }
+}
+
+
+/* =========================================================
+   7. 390px 이하
+========================================================= */
+@media (max-width: 390px) {
+  .nav {
+    gap: 13px;
+    font-size: 11px;
+  }
+
+  .detail-page {
+    width: calc(100% - 20px);
+  }
+
+  .title-section h1 {
+    font-size: 22px;
+  }
+
+  .title-section h1 strong {
+    font-size: 23px;
   }
 
   .sentiment-labels {
-    grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 4px;
+  }
+
+  .tag,
+  .article-tag {
+    font-size: 8px;
+    padding: 5px 7px;
+  }
+
+  .sentiment-labels strong {
+    font-size: 18px;
+  }
+
+  .press {
+    font-size: 10px;
+  }
+
+  .article-title {
+    font-size: 12px;
+  }
+
+  .compare-title {
+    font-size: 12px;
   }
 }
 </style>
