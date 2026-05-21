@@ -27,6 +27,8 @@ from transformers import BertForSequenceClassification, BertTokenizer
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
 
+from util.logger import save_article_process_log,save_article_error_log
+
 logger = logging.getLogger(__name__)
 
 MODEL_NAME   = "snunlp/KR-FinBert-SC"
@@ -224,9 +226,12 @@ def run_sentiment_pipeline():
                             "sentiment_score": round(score, 6),
                         }},
                     )
+                    save_article_process_log("A201", article_id, "success")
                     total_processed += 1
                 except Exception as e:
                     logger.error(f"감성 분류 실패 article_id={article_id}: {e}")
+                    history_id = save_article_process_log("A201", article_id, "fail")
+                    save_article_error_log(history_id, "E004", f"감성 분류 실패 article_id={article_id}: {e}")
                     try:
                         es.update(
                             index=INDEX_NEWS,
