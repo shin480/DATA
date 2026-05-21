@@ -528,7 +528,15 @@ def run_classification_pipeline() -> dict:
                 logger.warning(f"scope bulk update 일부 실패: {len(errors)}건")
 
         # -------------------------------------------------
-        # 7. scope title 트리거: scope당 1회만 호출
+        # 7. 인덱스 refresh (trigger_scope_title 전에 수행)
+        # refresh 전에는 bulk로 저장한 scopeID가 검색에 반영되지 않아
+        # _fetch_titles가 빈 결과를 반환하는 문제 방지
+        # -------------------------------------------------
+        es.indices.refresh(index=INDEX_NEWS)
+        es.indices.refresh(index=INDEX_SCOPES)
+
+        # -------------------------------------------------
+        # 8. scope title 트리거: scope당 1회만 호출
         # -------------------------------------------------
         for scope_id in triggered_scopes:
             trigger_scope_title(
@@ -536,12 +544,6 @@ def run_classification_pipeline() -> dict:
                 scope_id=scope_id,
                 news_count=scope_count_map.get(scope_id, 1),
             )
-
-        # -------------------------------------------------
-        # 8. 인덱스 refresh
-        # -------------------------------------------------
-        es.indices.refresh(index=INDEX_NEWS)
-        es.indices.refresh(index=INDEX_SCOPES)
 
         es.close()
 
