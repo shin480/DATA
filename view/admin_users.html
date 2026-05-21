@@ -1678,6 +1678,22 @@ td {
   }
 }
 
+/* =========================================================
+   모바일 date placeholder 문구 스타일
+========================================================= */
+@media (max-width: 640px) {
+  input.date-placeholder-mode {
+    color: #697996 !important;
+    text-align: center !important;
+    text-align-last: center !important;
+  }
+
+  input.date-placeholder-mode::placeholder {
+    color: #697996 !important;
+    opacity: 1 !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2620,6 +2636,87 @@ document.addEventListener("DOMContentLoaded", function () {
   // 기본: 전체 기간
   loadPressReaction();
 });
+</script>
+<script>
+/* =========================================================
+   모바일 date input placeholder 보정
+   - 비어 있을 때: "연도-월-일" 문구 표시
+   - 터치/포커스 시: date picker 정상 실행
+   - 값 선택 후: 선택한 날짜 그대로 표시
+========================================================= */
+(function initMobileDatePlaceholder() {
+  const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
+  if (!isMobile) return;
+
+  const dateInputIds = [
+    /* admin_dashboard.html */
+    "summaryStart",
+    "summaryEnd",
+    "analysisStart",
+    "analysisEnd",
+
+    /* admin_users.html */
+    "reactionStart",
+    "reactionEnd",
+    "logDate",
+
+    /* sentiment_dashboard_dark.html */
+    "conf-date-from",
+    "conf-date-to",
+    "corr-date-from",
+    "corr-date-to"
+  ];
+
+  dateInputIds.forEach(function (id) {
+    const input = document.getElementById(id);
+
+    if (!input) return;
+
+    input.dataset.realType = "date";
+    input.dataset.placeholder = "연도-월-일";
+
+    function showPlaceholderIfEmpty() {
+      if (!input.value) {
+        input.type = "text";
+        input.placeholder = "연도-월-일";
+        input.classList.add("date-placeholder-mode");
+      }
+    }
+
+    function activateDatePicker() {
+      input.type = "date";
+      input.placeholder = "";
+      input.classList.remove("date-placeholder-mode");
+
+      setTimeout(function () {
+        if (typeof input.showPicker === "function") {
+          try {
+            input.showPicker();
+          } catch (e) {}
+        }
+      }, 0);
+    }
+
+    showPlaceholderIfEmpty();
+
+    input.addEventListener("focus", activateDatePicker);
+    input.addEventListener("click", activateDatePicker);
+
+    input.addEventListener("blur", function () {
+      showPlaceholderIfEmpty();
+    });
+
+    input.addEventListener("change", function () {
+      if (input.value) {
+        input.type = "date";
+        input.classList.remove("date-placeholder-mode");
+      } else {
+        showPlaceholderIfEmpty();
+      }
+    });
+  });
+})();
 </script>
 </body>
 </html>
