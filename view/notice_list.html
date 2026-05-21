@@ -474,6 +474,131 @@
 .footer-modal-btn:hover {
   filter: brightness(1.08);
 }
+
+/* =========================================================
+   공지 페이지 반응형 푸터 최종 보정
+========================================================= */
+
+@media (max-width: 720px) {
+  #footer {
+    width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+
+  .footer {
+    width: 100% !important;
+    min-height: auto !important;
+  }
+
+  .footer-inner {
+    width: 100% !important;
+    min-height: auto !important;
+
+    padding: 22px 18px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
+
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .footer-logo-white {
+    width: 34px !important;
+    height: 34px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .footer-link {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  .footer-divider {
+    display: none !important;
+  }
+
+  .footer-copy {
+    width: 100% !important;
+    margin: 0 !important;
+
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    white-space: normal !important;
+  }
+
+  .footer-modal {
+    padding: 16px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .footer-modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100dvh - 32px) !important;
+
+    padding: 22px 18px !important;
+    border-radius: 18px !important;
+
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .footer-modal-content {
+    font-size: 13px !important;
+    line-height: 1.75 !important;
+  }
+
+  .footer-modal-content h3 {
+    margin-bottom: 14px !important;
+    font-size: 17px !important;
+  }
+
+  .footer-modal-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+
+    margin-top: 22px !important;
+    padding: 0 14px !important;
+
+    border-radius: 12px !important;
+
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .footer-inner {
+    padding: 20px 14px !important;
+    gap: 9px 12px !important;
+  }
+
+  .footer-logo-white {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .footer-link,
+  .footer-copy {
+    font-size: 11px !important;
+  }
+
+  .footer-divider {
+    height: 10px !important;
+  }
+
+  .footer-modal {
+    padding: 12px !important;
+  }
+
+  .footer-modal-box {
+    max-height: calc(100dvh - 24px) !important;
+    padding: 20px 14px !important;
+  }
+}
   </style>
 </head>
 

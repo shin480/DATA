@@ -432,10 +432,12 @@ body.light-mode .header-user-name {
   background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 28px;
-  padding: 40px;
+  padding: clamp(24px, 3vw, 40px);
   position: relative;
-  weight: 575px;
-  height: 576px;
+
+  width: min(575px, 100%);
+  min-height: 576px;
+  height: auto;
 }
 
 .section-title-wrap span {
@@ -652,6 +654,10 @@ body.light-mode .header-user-name {
   border-radius: 20px;
   padding: 24px;
   margin-top: 20px;
+
+  width: 100%;
+  align-self: stretch;
+  box-sizing: border-box;
 }
 
 .keyword-box-title {
@@ -769,12 +775,6 @@ body.light-mode .opinion-text:hover {
   flex-wrap: nowrap;
 }
 
-.opinion-sentiment {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
 .o-tag {
   padding: 6px 12px;
   border-radius: 6px;
@@ -788,6 +788,19 @@ body.light-mode .opinion-text:hover {
   justify-content: center;
 
   white-space: nowrap;
+}
+.opinion-sentiment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sentiment-label {
+  font-size: 11px;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  line-height: 1;
 }
 
 .keyword-btn {
@@ -2064,10 +2077,6 @@ body.light-mode .view-bar-bg {
     gap: 22px;
   }
 
-  .card {
-    padding: 36px;
-  }
-
   .view-grid,
   .news-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -2457,11 +2466,6 @@ body.light-mode .view-bar-bg {
 
   .gauge-circle .percent {
     font-size: 21px;
-  }
-
-  .keyword-box {
-    padding: 20px;
-    margin-top: 18px;
   }
 
   .chip-group {
@@ -3197,10 +3201,6 @@ body.light-mode .view-bar-bg {
     font-size: 15px;
   }
 
-  .keyword-box {
-    padding: 16px;
-  }
-
   .opinion-card {
     min-height: 362px;
   }
@@ -3378,7 +3378,7 @@ body.light-mode .view-bar-bg {
       <!-- 오늘의 지배적 여론 -->
       <div class="card">
         <div class="section-title-wrap">
-          <span>한줄 요약</span>
+          <span>한 줄 요약</span>
           <h2>오늘의 주요 이슈 여론</h2>
         </div>
 
@@ -3391,10 +3391,11 @@ body.light-mode .view-bar-bg {
 
   <!-- TAG + SENTIMENT -->
   <div class="opinion-meta">
-    <div class="opinion-tags"></div>
 
     <div class="opinion-sentiment">
       <o-tag class="o-tag sentiment-tag"></o-tag>
+      <div class="opinion-tags"></div>
+
     </div>
   </div>
 
