@@ -10,7 +10,7 @@ from datetime import date, datetime
 from crawling.crawler import run_crawling_job
 from datacleaning.cleaning import get_preprocessed_data
 from model.model_main import classification_job
-from viewpoint_classify.viewpoint_classify import update_perspective_to_es
+from viewpoint_classify.viewpoint_classify_master import update_perspective_to_es
 from datacleaning.dailytopissue import save_daily_top_issue_report
 from model.services.embedding_generator import run_embedding_pipeline
 from model.model_main import (
