@@ -1531,8 +1531,10 @@ td {
   .btn-primary,
   .btn-danger,
   .btn-sm {
-    width: 100% !important;
-    min-height: 40px !important;
+    width: auto !important;
+    min-width: 72px !important;
+    height: 36px !important;
+    min-height: 36px !important;
 
     display: inline-flex !important;
     align-items: center !important;
@@ -1541,10 +1543,21 @@ td {
     padding: 0 12px !important;
     margin: 0 !important;
 
-    border-radius: 12px !important;
+    border-radius: 10px !important;
 
-    font-size: 13px !important;
+    font-size: 12px !important;
     white-space: nowrap !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  .filter-row .btn,
+  .filter-row .btn-primary,
+  .filter-row .btn-sm {
+    min-width: 64px !important;
+    height: 34px !important;
+    font-size: 11px !important;
+    padding: 0 10px !important;
   }
 
   .btn-sm {
@@ -1761,6 +1774,188 @@ td {
     width: auto !important;
     text-align: center;
   }
+
+  /* 모바일 - 정답 레이블 평가 상단 정리 */
+@media (max-width: 640px) {
+
+  #panel-evaluate > div:first-child {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+
+    margin-bottom: 12px !important;
+  }
+
+  #panel-evaluate > div:first-child span,
+  #panel-evaluate > div:first-child code {
+    width: auto !important;
+    max-width: 100% !important;
+
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* 구분선 제거 */
+  #panel-evaluate > div:first-child span[style*="|"] {
+    display: none !important;
+  }
+
+  /* 버튼 작게 */
+  #download-sample-csv,
+  #bulk-upload-btn {
+    width: auto !important;
+    min-width: 0 !important;
+
+    height: 32px !important;
+    min-height: 32px !important;
+
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+
+    font-size: 11px !important;
+  }
+
+  /* 결과 문구 줄바꿈 */
+  #bulk-upload-result {
+    width: 100% !important;
+    font-size: 10px !important;
+  }
+}
+/* 모바일에서도 숨겨야 하는 input 유지 */
+input[type="file"],
+#csv-input,
+#bulk-upload-input,
+#corr-search[style*="display:none"] {
+  display: none !important;
+}
+
+/* 모바일 - 감성 정정 필터 최종 */
+@media (max-width: 640px) {
+  #panel-correction .filter-row:first-child {
+    display: grid !important;
+    grid-template-columns: 122px 90px 54px 58px !important;
+    gap: 8px !important;
+    align-items: center !important;
+    justify-content: start !important;
+  }
+
+  #corr-mode {
+    grid-column: 1 !important;
+    width: 122px !important;
+    min-width: 122px !important;
+    max-width: 122px !important;
+  }
+
+  #corr-sentiment {
+    grid-column: 2 !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+  }
+
+  #corr-page-size {
+    grid-column: 3 !important;
+    width: 54px !important;
+    min-width: 54px !important;
+    max-width: 54px !important;
+  }
+
+  #panel-correction .filter-row:first-child .btn-primary {
+    grid-column: 4 !important;
+    width: 58px !important;
+    min-width: 58px !important;
+    max-width: 58px !important;
+  }
+
+  #panel-correction .filter-row:first-child > div {
+    grid-column: 1 / -1 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+
+    margin-left: 0 !important;
+  }
+
+  #panel-correction select,
+  #panel-correction .btn {
+    height: 34px !important;
+    min-height: 34px !important;
+    font-size: 11px !important;
+    border-radius: 9px !important;
+    padding: 0 8px !important;
+  }
+
+  #panel-correction .filter-row:first-child > div .check-label {
+    width: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 11px !important;
+  }
+
+  #panel-correction .filter-row:first-child > div .btn-sm {
+    width: auto !important;
+    min-width: 72px !important;
+    height: 32px !important;
+    font-size: 11px !important;
+  }
+}
+/* 모바일 - 낮은 확신도 샘플 최종 고정 */
+@media (max-width: 640px) {
+  #panel-samples .filter-row {
+    display: grid !important;
+    grid-template-columns: auto minmax(120px, 1fr) auto !important;
+    grid-template-areas:
+      "thresholdLabel thresholdBar thresholdValue"
+      "sentimentLabel sentimentSelect refreshBtn" !important;
+
+    gap: 8px !important;
+    align-items: center !important;
+
+    overflow: visible !important;
+    margin-bottom: 12px !important;
+  }
+
+  #panel-samples .filter-row > .filter-label:first-child {
+    grid-area: thresholdLabel !important;
+  }
+
+  #panel-samples #thresh {
+    grid-area: thresholdBar !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #panel-samples #thresh-val {
+    grid-area: thresholdValue !important;
+    min-width: 34px !important;
+    font-size: 12px !important;
+  }
+
+  #panel-samples .filter-label[style*="margin-left"] {
+    grid-area: sentimentLabel !important;
+    display: inline-flex !important;
+    width: auto !important;
+    margin-left: 0 !important;
+  }
+
+  #panel-samples #sent-filter {
+    grid-area: sentimentSelect !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    height: 34px !important;
+  }
+
+  #panel-samples #samples-refresh {
+    grid-area: refreshBtn !important;
+    width: auto !important;
+    min-width: 68px !important;
+    height: 34px !important;
+  }
+}
 }
 
 
@@ -1958,28 +2153,30 @@ td {
 
     display: block !important;
 
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
+    width: auto !important;
+    min-width: 118px !important;
+    max-width: 118px !important;
 
-    height: 44px !important;
-    min-height: 44px !important;
+    height: 36px !important;
+    min-height: 36px !important;
 
     box-sizing: border-box !important;
 
-    padding: 0 10px !important;
+    padding: 0 8px !important;
     margin: 0 !important;
 
-    border-radius: 14px !important;
+    border-radius: 10px !important;
 
-    font-size: 13px !important;
-    line-height: 44px !important;
+    font-size: 11px !important;
+    line-height: 36px !important;
 
     text-align: center !important;
     text-align-last: center !important;
 
     overflow: hidden !important;
     position: relative !important;
+
+    flex-shrink: 0 !important;
   }
 
   #conf-filter-row input[type="date"]::-webkit-date-and-time-value,
@@ -2017,11 +2214,16 @@ td {
   #conf-date-to,
   #corr-date-from,
   #corr-date-to {
-    height: 42px !important;
-    min-height: 42px !important;
-    line-height: 42px !important;
-    font-size: 12px !important;
-    padding: 0 8px !important;
+    min-width: 104px !important;
+    max-width: 104px !important;
+
+    height: 34px !important;
+    min-height: 34px !important;
+    line-height: 34px !important;
+
+    font-size: 10px !important;
+
+    padding: 0 6px !important;
   }
 
   #conf-filter-row input[type="date"]::-webkit-calendar-picker-indicator,
@@ -2049,6 +2251,70 @@ td {
   input.date-placeholder-mode::placeholder {
     color: #697996 !important;
     opacity: 1 !important;
+  }
+}
+
+/* 모바일 필터 버튼/입력칸 최종 압축 */
+@media (max-width: 640px) {
+  .filter-row,
+  .option-row,
+  #conf-filter-row,
+  #panel-correction .filter-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    margin-bottom: 12px !important;
+  }
+
+  .filter-row::-webkit-scrollbar,
+  #conf-filter-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-row select,
+  .filter-row input[type="text"],
+  .filter-row input[type="date"],
+  #conf-filter-row input[type="date"],
+  #panel-correction input[type="date"] {
+    width: auto !important;
+    min-width: 96px !important;
+    max-width: 130px !important;
+
+    height: 34px !important;
+    min-height: 34px !important;
+    line-height: 34px !important;
+
+    padding: 0 8px !important;
+    border-radius: 9px !important;
+    font-size: 11px !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  .filter-row .btn,
+  #conf-filter-row .btn,
+  #panel-correction .btn {
+    width: auto !important;
+    min-width: 58px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+
+    padding: 0 10px !important;
+    border-radius: 9px !important;
+    font-size: 11px !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  .filter-label {
+    width: auto !important;
+    flex-shrink: 0 !important;
+    font-size: 11px !important;
   }
 }
 
