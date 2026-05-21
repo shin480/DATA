@@ -1693,7 +1693,365 @@ td {
     opacity: 1 !important;
   }
 }
+/* =========================================================
+   관리자 페이지 모바일 상단바 최종본
+   - 모바일에서만 적용
+   - 1줄: DATA 다타 로고 / 관리자 페이지 / 메인으로 / 로그아웃
+   - 2줄: 수집 정보 / 회원 정보 / 모델 보정
+========================================================= */
 
+@media (max-width: 640px) {
+  /* 전체 관리자 상단 영역 */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    z-index: 300 !important;
+
+    width: 100% !important;
+    height: 104px !important;
+    min-height: 104px !important;
+
+    padding: 0 10px 10px !important;
+
+    display: grid !important;
+    grid-template-columns: auto minmax(84px, 1fr) auto !important;
+    grid-template-rows: 60px 42px !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 0 !important;
+
+    background:
+      radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 34%),
+      linear-gradient(180deg, #0b1020 0%, #020817 100%) !important;
+
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  /* 로고: 왼쪽 위 */
+  .logo-wrap {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+
+    width: auto !important;
+    height: 60px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .logo-wrap:hover {
+    transform: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .admin-side-logo {
+    display: block !important;
+    width: 126px !important;
+    max-width: 126px !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  /* 관리자 페이지 문구: 로고와 버튼 사이 중앙 */
+  .side-title-wrap {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    width: 100% !important;
+    height: 60px !important;
+
+    margin: 0 !important;
+    padding: 0 126px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-bottom: 0 !important;
+  }
+
+  .side-title {
+    color: #dbeafe !important;
+    font-size: 14px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  /* 관리자 메뉴 탭: 두 번째 줄 */
+  .side-menu {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    width: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .side-menu li {
+    width: 100% !important;
+    height: 38px !important;
+    padding: 0 4px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-left: 0 !important;
+    border-radius: 13px !important;
+
+    background: rgba(15, 23, 42, 0.58) !important;
+    border: 1px solid rgba(148, 163, 184, 0.12) !important;
+
+    color: #94a3b8 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.04em !important;
+    text-align: center !important;
+
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+
+    cursor: pointer !important;
+  }
+
+  .side-menu li:hover {
+    background: rgba(56, 189, 248, 0.08) !important;
+    color: #e0f2fe !important;
+  }
+
+  .side-menu li.active {
+    border-left: 0 !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(56, 189, 248, 0.20),
+        rgba(139, 92, 246, 0.14)
+      ) !important;
+
+    color: #7dd3fc !important;
+    box-shadow: 0 10px 22px rgba(56, 189, 248, 0.08) !important;
+  }
+
+  /* 메인으로 / 로그아웃: 오른쪽 위 */
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 400 !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    height: 60px !important;
+    min-height: 60px !important;
+
+    padding: 0 10px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    width: auto !important;
+    min-width: 58px !important;
+    height: 34px !important;
+
+    padding: 0 9px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 9px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+
+    background: rgba(2, 8, 23, 0.36) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    color: #cbd5e1 !important;
+
+    cursor: pointer !important;
+  }
+
+  .main-btn:hover,
+  .logout-btn:hover,
+  .top-action-btn:hover {
+    border-color: #38bdf8 !important;
+    color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+  }
+
+  /* 본문이 fixed 상단바 아래에서 시작하도록 보정 */
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 104px !important;
+  }
+
+  .dashboard-content,
+  .admin-users-content,
+  .page {
+    padding-top: 16px !important;
+  }
+}
+
+
+/* =========================================================
+   430px 이하 작은 모바일
+========================================================= */
+
+@media (max-width: 430px) {
+  .sidebar {
+    height: 100px !important;
+    min-height: 100px !important;
+
+    padding: 0 8px 9px !important;
+
+    grid-template-columns: auto minmax(70px, 1fr) auto !important;
+    grid-template-rows: 58px 40px !important;
+    column-gap: 6px !important;
+  }
+
+  .logo-wrap {
+    height: 58px !important;
+  }
+
+  .admin-side-logo {
+    width: 112px !important;
+    max-width: 112px !important;
+  }
+
+  .side-title-wrap {
+    height: 58px !important;
+    margin: 0 !important;
+    padding: 0 112px 0 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .side-title {
+    font-size: 12.5px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  .dashboard-header,
+  .admin-users-header,
+  .model-header {
+    height: 58px !important;
+    min-height: 58px !important;
+
+    padding-right: 8px !important;
+    gap: 5px !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    min-width: 52px !important;
+    height: 32px !important;
+
+    padding: 0 7px !important;
+
+    font-size: 10.5px !important;
+    border-radius: 8px !important;
+  }
+
+  .side-menu {
+    gap: 5px !important;
+  }
+
+  .side-menu li {
+    height: 36px !important;
+    font-size: 10.5px !important;
+    padding: 0 3px !important;
+  }
+
+  .dashboard-main,
+  .admin-users-main,
+  .model-main {
+    padding-top: 100px !important;
+  }
+}
+
+
+/* =========================================================
+   360px 이하 초소형 보정
+========================================================= */
+
+@media (max-width: 360px) {
+  .admin-side-logo {
+    width: 100px !important;
+    max-width: 100px !important;
+  }
+
+  .side-title-wrap {
+    padding-right: 100px !important;
+  }
+
+  .side-title {
+    font-size: 11.5px !important;
+    font-weight: 950 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .main-btn,
+  .logout-btn,
+  .top-action-btn {
+    min-width: 46px !important;
+    height: 31px !important;
+    padding: 0 5px !important;
+    font-size: 9.8px !important;
+  }
+
+  .side-menu li {
+    font-size: 10px !important;
+    letter-spacing: -0.06em !important;
+  }
+}
 </style>
 </head>
 <body>

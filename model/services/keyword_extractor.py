@@ -45,6 +45,19 @@ _kiwi = Kiwi()
 TITLE_BOOST = 0.3  # 제목 등장 단어에 더할 점수 보정값
 
 
+def _clean_raw_text(text: str) -> str:
+    """
+    원문 텍스트(title 등)에서 방송 크레딧 라인 및 앵커/기자 태그 제거.
+    - <앵커>, <기자> 등 꺾쇠 태그
+    - (영상취재 : 김민철, 디자인 : 박태영) 등 제작진 크레딧 괄호 블록
+    """
+    # 꺾쇠 태그: <앵커>, <기자> 등
+    text = re.sub(r"<[^>]+>", " ", text)
+    # 크레딧 괄호 블록: (영상취재/편집/디자인/촬영/제작 : ...) 패턴
+    text = re.sub(r"\([^)]*(?:취재|편집|디자인|촬영|제작)\s*:\s*[^)]*\)", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def _extract_title_nouns(title: str) -> set[str]:
     """
     제목을 kiwipiepy로 형태소 분석해 명사(NNG/NNP/SL) 토큰 set 반환.
@@ -52,6 +65,7 @@ def _extract_title_nouns(title: str) -> set[str]:
     """
     if not title:
         return set()
+    title = _clean_raw_text(title)
     nouns = set()
     for token in _kiwi.tokenize(title):
         if token.tag in ("NNG", "NNP", "SL"):  # 일반명사 / 고유명사 / 외래어
