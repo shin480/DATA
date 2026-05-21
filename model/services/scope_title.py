@@ -320,38 +320,50 @@ def trigger_scope_title(es, scope_id: str, news_count: int):
 
 def enqueue_missing_scope_titles():
     """
-    scopeTitle이 없는 scope를 전체 조회하여 즉시 생성 처리.
-    실패한 경우에만 queue 등록.
+    scopeTitle이 없는 scope를 전체 조회하여 scope_refresh_queue에 등록.
+
+    즉시 생성 시도 없이 queue 등록만 수행 → API 타임아웃 방지.
+    실제 생성은 run_scope_title_batch()(/classify/scope-titles)에서 처리.
     """
     try:
-        es = get_es()
-        res = es.search(
-            index=INDEX_SCOPES,
-            body={
-                "query": {
-                    "bool": {"must_not": {"exists": {"field": "scopeTitle"}}}
-                },
-                "_source": ["scopeID", "news_count"],
-                "size": 1000,
-            },
-        )
-        hits = res["hits"]["hits"]
-        if not hits:
-            logger.info("scopeTitle 누락 scope 없음")
-            es.close()
-            return 0
+        es       = get_es()
+        count    = 0
+        from_idx = 0
+        page_size = 1000
 
-        count = 0
-        for hit in hits:
-            scope_id = hit["_source"]["scopeID"]
-            nc       = hit["_source"].get("news_count", 0)
-            result   = generate_scope_title(es, scope_id, nc)
-            if result is None:
+        while True:
+            res = es.search(
+                index=INDEX_SCOPES,
+                body={
+                    "query": {
+                        "bool": {"must_not": {"exists": {"field": "scopeTitle"}}}
+                    },
+                    "_source": ["scopeID"],
+                    "size":   page_size,
+                    "from":   from_idx,
+                    "sort":   [{"created_at": "asc"}],
+                },
+            )
+            hits = res["hits"]["hits"]
+            if not hits:
+                break
+
+            for hit in hits:
+                scope_id = hit["_source"]["scopeID"]
                 _enqueue(es, scope_id)
-            count += 1
+                count += 1
+
+            from_idx += page_size
+            if len(hits) < page_size:
+                break
 
         es.close()
-        logger.info(f"scopeTitle 누락 scope {count}건 처리 완료")
+
+        if count == 0:
+            logger.info("scopeTitle 누락 scope 없음")
+        else:
+            logger.info(f"scopeTitle 누락 scope {count}건 queue 등록 완료")
+
         return count
 
     except Exception as e:
