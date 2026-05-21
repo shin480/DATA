@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>공지사항 | DATA 다타</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="/view/img/favicon.png?v=2">
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -213,48 +214,88 @@
     }
 
     @media (max-width: 720px) {
-      .notice-wrap {
-        width: calc(100% - 28px);
-        padding-top: 36px;
-      }
+  .notice-wrap {
+    width: 100%;
+    padding: 24px 16px 70px;
+  }
 
-      .top-bar {
-        margin-bottom: 34px;
-      }
+  .top-bar {
+    margin-bottom: 30px;
+  }
 
-      .notice-head h1 {
-        font-size: 28px;
-      }
+  .notice-logo-img {
+    height: 42px;
+  }
 
-      .notice-table-head {
-        display: none;
-      }
+  .back-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
 
-      .notice-item {
-        grid-template-columns: 54px 1fr;
-        grid-template-areas:
-          "no title"
-          "no date";
-        gap: 4px 10px;
-        min-height: 82px;
-        padding: 16px 18px;
-      }
+  .notice-head {
+    margin-bottom: 24px;
+  }
 
-      .notice-no {
-        grid-area: no;
-      }
+  .notice-head h1 {
+    font-size: 26px;
+  }
 
-      .notice-title {
-        grid-area: title;
-        padding-right: 0;
-      }
+  .notice-head p {
+    font-size: 14px;
+  }
 
-      .notice-date {
-        grid-area: date;
-        text-align: left;
-        font-size: 12px;
-      }
-    }
+  .notice-panel {
+    border-radius: 16px;
+  }
+
+  .notice-table-head {
+    display: none;
+  }
+
+  .notice-item {
+    grid-template-columns: 44px 1fr;
+    grid-template-areas:
+      "no title"
+      "no date";
+    gap: 5px 10px;
+    min-height: 78px;
+    padding: 15px 14px;
+  }
+
+  .notice-title {
+    font-size: 14px;
+    white-space: normal;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .notice-date {
+    text-align: left;
+    font-size: 12px;
+  }
+
+  .notice-pagination {
+    gap: 6px;
+    padding: 20px 10px 22px;
+    flex-wrap: wrap;
+  }
+
+  .notice-page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .footer-inner {
+    min-height: auto;
+    padding: 22px 18px;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+  }
+}
 
 .notice-pagination {
   display: flex;

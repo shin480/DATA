@@ -1934,14 +1934,17 @@ body.light-mode .view-bar-bg {
 
 /* =========================================================
    14. 반응형 최종본
-   - 데스크톱 / 노트북 / 태블릿 / 모바일 전부 대응
-   - 기존 디자인 톤은 유지
-   - 카드, 헤더, 그리드, 게이지, 뉴스 영역 균형 보정
+   - 데스크톱 / 노트북 / 태블릿 / 모바일 대응
+   - 모바일 헤더 예쁘게 정리
+   - 검색창 중앙 + 넓게
+   - 내비게이션 탭 중앙 정렬
+   - 관점 펼쳐보기 18개 안 잘림
+   - 모바일 본문 카드 간격 및 크기 최적화
 ========================================================= */
 
 
 /* =========================================================
-   14-0. 반응형 기본 안정화
+   14-0. 공통 반응형 안정화
 ========================================================= */
 .page {
   width: min(1300px, 100%);
@@ -1972,7 +1975,49 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-1. 대형 노트북 / 1300px 이하
+   14-1. 관점 분석 펼쳐보기 안정화
+========================================================= */
+.view-grid {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* 기본 접힘 상태: 데스크톱은 첫 5개 */
+.view-grid:not(.expanded) > :nth-child(n+6) {
+  display: none !important;
+}
+
+/* 데스크톱에서만 줄 맞춤 spacer 유지 */
+@media (min-width: 1181px) {
+  .view-spacer {
+    display: block;
+  }
+}
+
+/* 태블릿 이하 spacer 제거 */
+@media (max-width: 1180px) {
+  .view-spacer {
+    display: none !important;
+  }
+}
+
+/* 태블릿 접힘 상태: 첫 4개 */
+@media (max-width: 980px) {
+  .view-grid:not(.expanded) > :nth-child(n+5) {
+    display: none !important;
+  }
+}
+
+/* 모바일 접힘 상태: 첫 3개 */
+@media (max-width: 640px) {
+  .view-grid:not(.expanded) > :nth-child(n+4) {
+    display: none !important;
+  }
+}
+
+
+/* =========================================================
+   14-2. 1300px 이하
 ========================================================= */
 @media (max-width: 1300px) {
   .main {
@@ -2022,7 +2067,7 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-2. 일반 노트북 / 1180px 이하
+   14-3. 1180px 이하
 ========================================================= */
 @media (max-width: 1180px) {
   .main {
@@ -2082,9 +2127,8 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-3. 태블릿 가로 / 1050px 이하
-   - 상단 2열 카드 → 1열
-   - 카드 높이 고정 해제
+   14-4. 1050px 이하
+   - 상단 2개 카드 1열 전환
 ========================================================= */
 @media (max-width: 1050px) {
   .grid-2 {
@@ -2124,47 +2168,80 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-4. 태블릿 세로 / 980px 이하
-   - 헤더 2단 구성
-   - 본문 상단 여백 보정
+   14-5. 980px 이하
+   - 태블릿 헤더 2단
 ========================================================= */
 @media (max-width: 980px) {
   .header {
-    height: auto;
-    min-height: 108px;
-    padding: 10px 24px 12px;
-    flex-wrap: wrap;
-    row-gap: 10px;
+    width: 100%;
+    height: 112px;
+    padding: 0 24px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 64px 48px;
+    align-items: center;
+    column-gap: 16px;
   }
 
   .page {
-    padding-top: 118px;
+    padding-top: 112px;
   }
 
   .logo {
+    grid-column: 1;
+    grid-row: 1;
+
     width: 145px;
     height: 48px;
+    overflow: visible;
   }
 
   .header-logo-full {
+    width: auto;
     height: 48px;
-  }
-
-  .nav {
-    order: 3;
-    width: 100%;
-    margin-left: 0;
-    justify-content: center;
-    gap: 28px;
-    font-size: 14px;
+    max-width: none;
   }
 
   .header-right {
-    margin-left: auto;
+    grid-column: 2;
+    grid-row: 1;
+
+    margin-left: 0;
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .main-search-wrap {
-    width: 280px;
+    width: 250px;
+  }
+
+  .header-user-name {
+    display: none;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
   }
 
   .main {
@@ -2212,7 +2289,6 @@ body.light-mode .view-bar-bg {
 
   .view-grid {
     grid-template-columns: repeat(2, 1fr);
-    max-height: 880px;
   }
 
   .news-grid {
@@ -2240,43 +2316,25 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-5. 모바일 가로 / 760px 이하
-   - 헤더 요소 간격 축소
-   - 카드 패딩 축소
+   14-6. 760px 이하
 ========================================================= */
 @media (max-width: 760px) {
   .header {
-    padding: 10px 18px 12px;
-  }
-
-  .page {
-    padding-top: 120px;
+    padding: 0 18px;
+    column-gap: 12px;
   }
 
   .logo {
-    width: 128px;
-    height: 44px;
+    width: 132px;
+    height: 46px;
   }
 
   .header-logo-full {
-    height: 44px;
-  }
-
-  .nav {
-    gap: 20px;
-    justify-content: flex-start;
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
+    height: 46px;
   }
 
   .main-search-wrap {
-    width: 210px;
+    width: 190px;
     height: 38px;
   }
 
@@ -2291,8 +2349,8 @@ body.light-mode .view-bar-bg {
     font-size: 13px;
   }
 
-  .header-user-name {
-    display: none;
+  .nav {
+    gap: 22px;
   }
 
   .main {
@@ -2436,7 +2494,6 @@ body.light-mode .view-bar-bg {
 
   .view-grid {
     gap: 16px;
-    max-height: 1260px;
   }
 
   .view-card {
@@ -2482,22 +2539,154 @@ body.light-mode .view-bar-bg {
   .footer-inner {
     padding: 18px;
   }
-
-  .search-suggest-box {
-    left: 18px !important;
-    right: 18px !important;
-    width: auto !important;
-    max-width: none;
-  }
 }
 
 
 /* =========================================================
-   14-6. 일반 모바일 / 640px 이하
-   - 관점/뉴스 카드 1열
-   - 게이지 3개는 한 줄 유지하되 크기 조절
+   14-7. 620px 이하
+   모바일 최종 레이아웃
+   - 1줄: 로고 / 테마 / 로그인·마이페이지 / 회원가입·로그아웃
+   - 2줄: 검색창 넓게 중앙
+   - 3줄: 메뉴 탭 가운데
 ========================================================= */
-@media (max-width: 640px) {
+@media (max-width: 620px) {
+  .header {
+    width: 100%;
+    height: 164px;
+    padding: 0 10px;
+
+    display: grid;
+    grid-template-columns: minmax(110px, 1fr) auto auto auto;
+    grid-template-rows: 60px 56px 48px;
+    align-items: center;
+    column-gap: 6px;
+    row-gap: 0;
+  }
+
+  .page {
+    padding-top: 164px;
+  }
+
+  /* 로고 */
+  .logo {
+    grid-column: 1;
+    grid-row: 1;
+
+    width: 132px;
+    height: 44px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    align-self: center;
+
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .header-logo-full {
+    width: auto;
+    height: 44px;
+    max-width: none;
+    display: block;
+    object-fit: contain;
+  }
+
+  /* header-right 해체 */
+  .header-right {
+    display: contents;
+  }
+
+  /* 오른쪽 위 버튼 */
+  .theme-btn {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    justify-self: end;
+  }
+
+  #loginBtn,
+  #primaryUserBtn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  #joinBtn,
+  #logoutBtn {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .header-btn {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .header-user-name {
+    display: none !important;
+  }
+
+  /* 검색창 */
+  .main-search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
+    width: calc(100vw - 20px);
+    max-width: none;
+    height: 42px;
+    margin: 0 auto;
+    justify-self: center;
+
+    padding: 0 14px 0 18px;
+  }
+
+  .search-box {
+    font-size: 14px;
+  }
+
+  /* 검색 자동완성 */
+  .search-suggest-box {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* 메뉴 탭 */
+  .nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
+
+    width: 100%;
+    height: 48px;
+    margin-left: 0;
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    overflow: visible;
+    white-space: nowrap;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+  }
+
+  body.light-mode .nav {
+    border-top: 1px solid rgba(85, 99, 92, 0.1);
+  }
+
   .main {
     padding: 22px 16px 48px;
   }
@@ -2533,6 +2722,7 @@ body.light-mode .view-bar-bg {
     font-size: 23px;
   }
 
+  /* 감성 게이지 3개 한 줄 */
   .gauge-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -2588,7 +2778,7 @@ body.light-mode .view-bar-bg {
 
   .view-grid {
     grid-template-columns: 1fr;
-    max-height: 1800px;
+    gap: 14px;
   }
 
   .news-grid {
@@ -2630,51 +2820,57 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-7. 작은 모바일 / 520px 이하
-   - 헤더 3단 안정화
-   - 검색창 전체 폭
+   14-8. 430px 이하
 ========================================================= */
-@media (max-width: 520px) {
+@media (max-width: 430px) {
   .header {
-    justify-content: center;
-    padding: 12px 16px 14px;
-    row-gap: 10px;
+    height: 164px;
+    padding: 0 8px;
+    grid-template-columns: minmax(100px, 1fr) auto auto auto;
+    column-gap: 5px;
   }
 
   .page {
-    padding-top: 188px;
+    padding-top: 164px;
   }
 
   .logo {
-    width: 136px;
-    height: 44px;
-    margin: 0 auto;
-  }
-
-  .header-logo-full {
-    height: 44px;
-  }
-
-  .header-right {
-    width: 100%;
-    margin-left: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .main-search-wrap {
-    order: -1;
-    width: 100%;
+    width: 116px;
     height: 40px;
   }
 
-  .nav {
-    width: 100%;
-    justify-content: flex-start;
-    gap: 18px;
+  .header-logo-full {
+    height: 40px;
+  }
+
+  .theme-btn {
+    width: 33px;
+    height: 33px;
+  }
+
+  .header-btn {
+    height: 33px;
+    padding: 0 7px;
+    font-size: 11px;
+  }
+
+  .main-search-wrap {
+    width: calc(100vw - 16px);
+    height: 40px;
+  }
+
+  .search-box {
     font-size: 13px;
+  }
+
+  .search-suggest-box {
+    left: 8px !important;
+    right: 8px !important;
+  }
+
+  .nav {
+    gap: 15px;
+    font-size: 12px;
   }
 
   .hero {
@@ -2718,7 +2914,7 @@ body.light-mode .view-bar-bg {
 
 
 /* =========================================================
-   14-8. 초소형 모바일 / 390px 이하
+   14-9. 390px 이하
 ========================================================= */
 @media (max-width: 390px) {
   .main {
@@ -2817,194 +3013,6 @@ body.light-mode .view-bar-bg {
 
   .react-item {
     font-size: 14px;
-  }
-}
-
-/* =========================================================
-   모바일 상단바 최종 재배치
-   - 로고: 왼쪽 위
-   - 테마 / 마이페이지 / 로그아웃: 오른쪽 위
-   - 검색창: 그 아래 전체 폭
-   - 메뉴: 맨 아래
-========================================================= */
-@media (max-width: 620px) {
-  .header {
-    height: 158px;
-    padding: 0 16px;
-
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: 58px 52px 48px;
-    align-items: center;
-    column-gap: 10px;
-    row-gap: 0;
-  }
-
-  .page {
-    padding-top: 158px;
-  }
-
-  /* 로고: 왼쪽 위 */
-  .logo {
-    grid-column: 1;
-    grid-row: 1;
-
-    width: 126px;
-    height: 44px;
-    margin: 0;
-
-    justify-self: start;
-    align-self: center;
-  }
-
-  .header-logo-full {
-    height: 44px;
-  }
-
-  /* 오른쪽 버튼 영역 */
-  .header-right {
-    grid-column: 2;
-    grid-row: 1 / 3;
-
-    width: 100%;
-    height: 110px;
-    margin-left: 0;
-
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    grid-template-rows: 58px 52px;
-    align-items: center;
-    column-gap: 8px;
-  }
-
-  /* 검색창: 두 번째 줄 전체 */
-  .main-search-wrap {
-    grid-column: 1 / 5;
-    grid-row: 2;
-
-    width: 100%;
-    height: 40px;
-    padding: 0 12px 0 16px;
-  }
-
-  /* 테마 버튼: 오른쪽 위 */
-  .theme-btn {
-    grid-column: 2;
-    grid-row: 1;
-
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-  }
-
-  /* 마이페이지 or 로그인 */
-  #primaryUserBtn,
-  #loginBtn {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  /* 로그아웃 or 회원가입 */
-  #logoutBtn,
-  #joinBtn {
-    grid-column: 4;
-    grid-row: 1;
-  }
-
-  .header-btn {
-    height: 36px;
-    padding: 0 11px;
-    border-radius: 9px;
-    font-size: 12px;
-    white-space: nowrap;
-  }
-
-  .header-user-name {
-    display: none;
-  }
-
-  /* 메뉴: 맨 아래 */
-  .nav {
-    grid-column: 1 / -1;
-    grid-row: 3;
-
-    width: 100%;
-    height: 48px;
-    margin-left: 0;
-    padding: 0 2px;
-
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 22px;
-
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
-
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
-    font-size: 13px;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  body.light-mode .nav {
-    border-top: 1px solid rgba(85, 99, 92, 0.1);
-  }
-}
-
-
-/* =========================================================
-   초소형 모바일 보정
-========================================================= */
-@media (max-width: 430px) {
-  .header {
-    padding: 0 12px;
-    column-gap: 8px;
-  }
-
-  .page {
-    padding-top: 158px;
-  }
-
-  .logo {
-    width: 108px;
-    height: 40px;
-  }
-
-  .header-logo-full {
-    height: 40px;
-  }
-
-  .header-right {
-    grid-template-columns: 1fr auto auto auto;
-    column-gap: 5px;
-  }
-
-  .theme-btn {
-    width: 33px;
-    height: 33px;
-  }
-
-  .header-btn {
-    height: 33px;
-    padding: 0 7px;
-    font-size: 11px;
-  }
-
-  .main-search-wrap {
-    height: 38px;
-  }
-
-  .search-box {
-    font-size: 13px;
-  }
-
-  .nav {
-    gap: 18px;
-    font-size: 12px;
   }
 }
 </style>
