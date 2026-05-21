@@ -2075,6 +2075,8 @@ def get_dominant_opinions():
             "scope_id": scope_id,
             "title": opinion_sentence,
             "keyword": scope_keywords[0] if scope_keywords else top_keyword,
+            # 오늘의 이슈 여론 태그를 scope 키워드들로 채움
+            "chips": scope_keywords[:3] if scope_keywords else [top_keyword],
             "sentiment": dominant
         })
 
