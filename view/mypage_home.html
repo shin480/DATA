@@ -164,10 +164,23 @@
     }
 
     .news-item .title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 768px) {
+      .news-item .title {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: keep-all;
+      }
+    }
 
     .news-item:hover {
       background: #111a33;
