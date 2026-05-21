@@ -503,6 +503,9 @@ def get_keyword_detail(keyword: str):
 
         top_perspective = perspectives[0].get("category")
 
+        if top_perspective in ["관점 미분류", "미분류", "관점 정보 없음"]:
+            continue
+
         if not top_perspective:
             continue
 
@@ -2845,7 +2848,12 @@ def get_rank1_count_map(es, keyword: str = ""):
                                 "categories": {
                                     "terms": {
                                         "field": "perspective.category",
-                                        "size": 100
+                                        "size": 100,
+                                        "exclude": [
+                                            "관점 미분류",
+                                            "미분류",
+                                            "관점 정보 없음"
+                                        ]
                                     }
                                 }
                             }
@@ -3408,7 +3416,8 @@ def get_random_scope_detail():
                 "doc": {
                     "news_count": len(detail.get("articles", []))
                 }
-            }
+            },
+            refresh=True
         )
 
 
