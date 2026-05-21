@@ -30,7 +30,7 @@ STOPWORDS = ["은", "는", "이", "가", "을", "를", "의", "에서", "에", "
  "게티이미지뱅크", "사진", "제공",
  "기자", "특파원", "앵커", "포토", "사진", "이미지", "캡처", "닷컴",
 "헤럴드", "경제", "뉴스", "기자",
-"이상섭", "최혁", "정호원", "김익환"]
+"이상섭", "최혁", "정호원", "김익환", "제보"]
 
 DEBUG_MODE = False
 target_index = "news_economy"
@@ -58,32 +58,92 @@ def kiwi_noun_tokenizer(text: str, author: str = "") -> list[str]:
     # =========================
     # 본문 내 기자명 패턴 제거
     # =========================
+    # 기자명
     text = re.sub(
         r'[가-힣]{2,4}\s?(기자|앵커|특파원|리포터|캐스터)',
         ' ',
         text
     )
 
-    text = re.sub(
-        r'(사진|제공|연합뉴스|뉴시스|한경DB|게티이미지뱅크)[=:\s]*[가-힣A-Za-z0-9· ]{0,20}',
-        ' ',
-        text
-    )
-
+    # 기자명 역순
     text = re.sub(
         r'(기자|앵커|특파원|리포터|캐스터)\s?[가-힣]{2,4}',
         ' ',
         text
     )
 
+    # =========================
+    # 제작진 / 크레딧 제거
+    # =========================
+
+    CREDIT_ROLES = [
+        "촬영기자",
+        "영상취재",
+        "영상편집",
+        "영상기자",
+        "자료조사",
+        "그래픽",
+        "디자인",
+        "촬영",
+        "영상",
+        "작가",
+        "편집",
+        "사진",
+        "자막",
+        "CG"
+    ]
+
+    role_pattern = "|".join(
+        sorted(map(re.escape, CREDIT_ROLES), key=len, reverse=True)
+    )
+
+    # 기본 패턴
     text = re.sub(
-        r'\[[가-힣]{2,4}의 [^\]]+\]',
+        rf'({role_pattern})\s*[:：]?\s*[가-힣]{{2,4}}',
+        ' ',
+        text
+    )
+
+    # 띄어쓰기 변형 패턴
+    text = re.sub(
+        r'(영상\s*편집|영상\s*취재|영상\s*기자|촬영\s*기자)'
+        r'\s*[:：]?\s*[가-힣]{2,4}',
+        ' ',
+        text
+    )
+
+    # 제작진 크레딧 제거
+    text = re.sub(
+        r'(영상\s*기자|영상\s*편집|영상\s*취재|촬영\s*기자|그래픽|디자인|작가|편집|촬영)'
+        r'\s*[:：]?\s*[가-힣]{2,4}',
+        ' ',
+        text
+    )
+
+    # =========================
+    # 방송 리포트 엔딩 멘트 제거
+    # =========================
+    text = re.sub(
+        r'(YTN|KBS|SBS|MBC|JTBC|TV조선|채널A|MBN|연합뉴스TV)'
+        r'\s*[가-힣]{2,4}입니다\.?',
+        ' ',
+        text
+    )
+
+    # =========================
+    # 뉴스 크레딧/제보 문구 이후 제거
+    # =========================
+    text = re.sub(
+        r'[가-힣]{2,4}\s+'
+        r'(영상\s*편집|영상\s*취재|영상\s*기자|촬영\s*기자|그래픽|디자인|작가|편집|촬영)'
+        r'\s*[:：]?\s*[가-힣]{2,4}'
+        r'.*$',
         ' ',
         text
     )
 
     text = re.sub(
-        r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}',
+        r'※?\s*[\'"‘’“”]?\s*당신의\s*제보가\s*뉴스가\s*됩니다.*$',
         ' ',
         text
     )
@@ -143,7 +203,8 @@ def advanced_clean_text(text: str) -> str:
 
     # 영상편집/그래픽 제거
     text = re.sub(
-        r'(영상편집|그래픽|촬영|편집)\s*([가-힣]{2,4})',
+        r'(영상편집|영상취재|영상기자|그래픽|촬영기자|촬영|편집|디자인|작가)'
+        r'\s*[:：]?\s*([가-힣]{2,4})',
         ' ',
         text
     )
@@ -186,6 +247,36 @@ def advanced_clean_text(text: str) -> str:
     # 포즈 / 사진설명 제거
     text = re.sub(
         r'(포즈|캡처|자료사진)',
+        ' ',
+        text
+    )
+
+    # 방송사 리포트 엔딩 제거
+    text = re.sub(
+        r'(YTN|KBS|SBS|MBC|JTBC|TV조선|채널A|MBN|연합뉴스TV)'
+        r'\s*[가-힣]{2,4}입니다\.?',
+        ' ',
+        text
+    )
+
+    # 제작진 제거
+    text = re.sub(
+        r'(영상\s*기자|영상\s*편집|영상\s*취재|촬영\s*기자|영상기자|영상편집|영상취재|촬영기자|그래픽|디자인|작가|편집|촬영)'
+        r'\s*[:：]?\s*[가-힣]{2,4}',
+        ' ',
+        text
+    )
+
+    # 제보문구 제거
+    text = re.sub(
+        r'※?\s*[\'"‘’“”]?\s*당신의\s*제보가\s*뉴스가\s*됩니다.*$',
+        ' ',
+        text
+    )
+
+    # 카카오톡 / 전화 / 메일 제거
+    text = re.sub(
+        r'(카카오톡|전화|메일)\s*.*$',
         ' ',
         text
     )
@@ -717,9 +808,9 @@ def retokenize_news_economy(): # news_economy 전체 재토큰화
 
         try:
             source = doc.get("_source", {})
-            clean_text = source.get("clean_text", "")
+            content = source.get("content", "")
             author = source.get("author", "")
-            tokens = kiwi_noun_tokenizer(clean_text, author)
+            tokens = kiwi_noun_tokenizer(content, author)
 
             actions.append({
                 "_op_type": "update",
