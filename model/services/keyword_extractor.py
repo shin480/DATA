@@ -29,6 +29,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from model.database import get_es
 from model.services.error_logger import log_pipeline_error
+from util.logger import save_article_process_log,save_article_error_log
 
 logger = logging.getLogger(__name__)
 
@@ -456,9 +457,12 @@ def run_keyword_pipeline():
                         id=article_id,
                         body={"doc": {"keywords": keywords_str}},
                     )
+                    save_article_process_log("K401", article_id, "success")
                     total_processed += 1
                 except Exception as e:
                     logger.error(f"키워드 추출 실패 article_id={article_id}: {e}")
+                    history_id = save_article_process_log("K401", article_id, "fail")
+                    save_article_error_log(history_id, "E006", f"키워드 추출 실패 article_id={article_id}: {e}")
                     try:
                         es.update(
                             index=INDEX_NEWS,
