@@ -435,23 +435,14 @@ def enqueue_missing_scope_titles():
             _enqueue(es, scope_id)
             count += 1
 
-        es.close()
-
         if count == 0:
             logger.info("등록할 scope 없음 (전부 유령 스콥)")
         else:
-            # 등록 후 반드시 refresh → 배치가 즉시 검색 가능하도록
+            # 등록 후 refresh → 배치가 즉시 검색 가능하도록
             es.indices.refresh(index=INDEX_QUEUE)
             logger.info(f"scopeTitle queue 등록 완료: {count}건")
 
         es.close()
-        return count
-
-        if count == 0:
-            logger.info("scopeTitle 누락 scope 없음")
-        else:
-            logger.info(f"scopeTitle 누락 scope {count}건 queue 등록 완료")
-
         return count
 
     except Exception as e:
