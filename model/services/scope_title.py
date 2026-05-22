@@ -52,9 +52,7 @@ def _get_kiwi() -> Kiwi:
 
 # ── 추출 대상 품사 ─────────────────────────────────────────────────
 # 명사류: NNG(일반명사) NNP(고유명사) SL(외래어)
-# 용언류: VV(동사) VA(형용사) XSV(동사파생접사) → 서술어 재구성용
 _NOUN_POS = {"NNG", "NNP", "SL"}
-_VERB_POS = {"VV", "VA", "XSV"}
 
 # 명사 불용어
 _NOUN_STOPWORDS = {
@@ -63,83 +61,30 @@ _NOUN_STOPWORDS = {
     "오늘", "어제", "지금", "당시", "발표", "보도",
     "뉴스", "기자", "기사", "취재", "종합", "단독", "속보", "업데이트",
     "기록", "수준", "규모", "이상", "이하", "대비", "대상", "기준",
-    # 언론사 섹션 태그에서 추출되는 일반 단어
-    "분석", "이슈", "스퀘어", "넘버스", "단독", "특집", "기획",
+    "분석", "이슈", "스퀘어", "넘버스", "특집", "기획",
     "동향", "전망", "현황", "정리", "요약", "심층", "집중",
-    # 서비스명/미디어 관련
-    "AI", "뉴스", "미디어", "채널", "방송", "라이브", "온라인",
+    "미디어", "채널", "방송", "라이브", "온라인",
+    "결과", "영향", "효과", "변화", "추이", "흐름", "움직임",
+    "가운데", "속에서", "상황에서", "따라서",
 }
-
-# 동사 불용어: 너무 일반적이어서 서술어로 쓰기 애매한 것
-_VERB_STOPWORDS = {
-    "하다", "되다", "있다", "없다", "이다", "아니다",
-    "말하다", "밝히다", "전하다", "나타나다", "보이다",
-    "받다", "주다", "가다", "오다", "만들다",
-    # 감정/평가 형용사 — 타이틀 서술어로 부적절
-    "황당하", "어이없다", "놀랍다", "황망하", "허탈하",
-    "심각하", "우려스럽", "안타깝", "답답하",
-    # 타이틀 서술어로 부적절한 동사
-    "물리", "물리다", "당하", "당하다", "맞다", "걸리", "빠지",
-    "터지", "무너지", "흔들리", "떠나", "사라지",
-    # 너무 일반적인 형용사/가능성 표현
-    "가능", "가능하", "불가능", "필요", "필요하", "중요", "중요하",
-    "어렵", "쉽", "빠르", "느리",
-}
-
-# 동사 어간 → 자연스러운 명사형 서술어 변환 테이블
-_VERB_TO_NOUN: dict[str, str] = {
-    # 상승/하락 계열
-    "오르": "상승", "내리": "하락", "떨어지": "하락",
-    "급등하": "급등", "급락하": "급락", "폭등하": "폭등", "폭락하": "폭락",
-    "반등하": "반등", "반락하": "반락",
-    # 확대/축소 계열
-    "늘": "증가", "줄": "감소", "확대되": "확대", "축소되": "축소",
-    "증가하": "증가", "감소하": "감소", "둔화되": "둔화",
-    # 위기/압박 계열
-    "흔들리": "불안", "위협받": "위기", "압박받": "압박",
-    "불안하": "불안", "악화되": "악화", "위축되": "위축",
-    # 회복/개선 계열
-    "회복되": "회복", "개선되": "개선", "호전되": "호전",
-    # 결정/발표 계열
-    "인상하": "인상", "인하하": "인하", "동결하": "동결",
-    "결정하": "결정", "승인하": "승인", "거부하": "거부",
-    "도입하": "도입", "폐지하": "폐지", "규제하": "규제",
-    # 시장 계열
-    "돌파하": "돌파", "하회하": "하회", "상회하": "상회",
-    "초과하": "초과", "급증하": "급증", "급감하": "급감",
-    # 기타
-    "촉구하": "촉구", "반발하": "반발", "우려하": "우려",
-    "기대하": "기대", "전망하": "전망",
-}
-
-_VERB_ENDINGS = ["하", "되", "시키", "받", "당하"]
 
 
 # ── 핵심 함수: 타이틀 생성 ─────────────────────────────────────────
 
-def _extract_tokens(titles: list[str]) -> tuple[list[list[str]], list[list[str]]]:
-    """
-    각 제목에서 명사 토큰과 동사 어간 토큰을 분리 추출.
-    반환: (noun_docs, verb_docs) — 문서별 리스트
-    """
+def _extract_nouns(titles: list[str]) -> list[list[str]]:
+    """각 제목에서 명사 토큰 추출 → 문서별 리스트 반환"""
     kiwi      = _get_kiwi()
     noun_docs = []
-    verb_docs = []
-
     for title in titles:
-        nouns = []
-        verbs = []
-        for token in kiwi.analyze(title)[0][0]:
-            form = token.form
-            tag  = token.tag
-            if tag in _NOUN_POS and len(form) >= 2 and form not in _NOUN_STOPWORDS:
-                nouns.append(form)
-            elif tag in _VERB_POS and len(form) >= 2 and form not in _VERB_STOPWORDS:
-                verbs.append(form)
+        nouns = [
+            token.form
+            for token in kiwi.analyze(title)[0][0]
+            if token.tag in _NOUN_POS
+            and len(token.form) >= 2
+            and token.form not in _NOUN_STOPWORDS
+        ]
         noun_docs.append(nouns)
-        verb_docs.append(verbs)
-
-    return noun_docs, verb_docs
+    return noun_docs
 
 
 def _tfidf_top(doc_tokens: list[list[str]], top_n: int) -> list[str]:
@@ -165,73 +110,31 @@ def _tfidf_top(doc_tokens: list[list[str]], top_n: int) -> list[str]:
     return [w for w, _ in sorted(scores.items(), key=lambda x: -x[1])[:top_n]]
 
 
-def _verb_to_predicate(stem: str) -> str:
-    """
-    동사 어간 → 타이틀에 쓸 수 있는 명사형 서술어 변환.
-    테이블 히트 → 매핑값 반환
-    테이블 미스 → 어미 제거 후 stem 반환 (예: "인상되" → "인상")
-    """
-    if stem in _VERB_TO_NOUN:
-        return _VERB_TO_NOUN[stem]
-    for ending in _VERB_ENDINGS:
-        if stem.endswith(ending):
-            return stem[: -len(ending)]
-    return stem
-
-
 def _make_scope_title(titles: list[str]) -> str:
     """
-    뉴스 제목 리스트 → 서술형 스콥 타이틀 생성
+    뉴스 제목 리스트 → 명사 TF-IDF 기반 스콥 타이틀 생성
 
     단계:
-      1. kiwipiepy로 명사 / 동사 어간 분리 추출
-      2. 명사: TF-IDF 상위 3개 (주제어)
-         동사: TF-IDF 상위 2개 → 명사형 서술어로 변환
-      3. 조합 패턴:
-         주제어 2개 + 서술어 → "{noun1} {noun2}, {predicate}"
-         주제어 1~2개 + 서술어 → "{nouns}, {predicate}"
-         서술어 없을 경우 → 명사 나열 (가운뎃점)
+      1. kiwipiepy로 명사(NNG/NNP/SL) 추출
+      2. TF-IDF 상위 5개 선별
+      3. 중요도 순 공백 조합
+         예) "트럼프 관세 수출 무역수지 충격"
+             "한국은행 기준금리 인상 물가 대응"
+             "삼성전자 반도체 실적 영업이익 하락"
     """
-    noun_docs, verb_docs = _extract_tokens(titles)
+    noun_docs = _extract_nouns(titles)
+    top_nouns = _tfidf_top(noun_docs, top_n=5)
 
-    top_nouns = _tfidf_top(noun_docs, top_n=3)
-    top_verbs = _tfidf_top(verb_docs, top_n=2)
-
-    # 동사 어간 → 명사형 서술어 (명사 목록과 중복 제거)
-    predicates = []
-    for stem in top_verbs:
-        pred = _verb_to_predicate(stem)
-        if pred not in top_nouns:
-            predicates.append(pred)
-
-    # 타이틀 조합
-    if len(top_nouns) >= 2 and predicates:
-        # "삼성전자 반도체, 수출 급감"
-        title = f"{top_nouns[0]} {top_nouns[1]}, {predicates[0]}"
-
-    elif len(top_nouns) >= 1 and predicates:
-        # "한국은행 금리, 인상"
-        noun_part = " ".join(top_nouns[:2])
-        title = f"{noun_part}, {predicates[0]}"
-
-    elif len(top_nouns) >= 3:
-        # 서술어 없음 → 가운뎃점 나열
-        title = f"{top_nouns[0]} {top_nouns[1]}·{top_nouns[2]}"
-
-    elif len(top_nouns) >= 2:
-        title = f"{top_nouns[0]}·{top_nouns[1]} 동향"
-
-    elif top_nouns:
-        title = f"{top_nouns[0]} 주요 이슈"
-
-    else:
+    if not top_nouns:
         # 형태소 추출 전체 실패 — 제목 앞 단어로 최소 보장
         words = []
         for t in titles[:3]:
             parts = t.split()
             if parts:
                 words.append(parts[0])
-        title = " ".join(dict.fromkeys(words)) or "주요 경제 이슈"
+        return " ".join(dict.fromkeys(words)) or "주요 경제 이슈"
+
+    title = " ".join(top_nouns)
 
     # 50자 초과 시 공백 기준으로 자름
     if len(title) > 50:
