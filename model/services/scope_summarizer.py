@@ -101,6 +101,28 @@ _CLEAN_PATTERNS = [
     (re.compile(r"이전\s+다음"), ""),
     # "관련 뉴스" 이하 블록 제거 (연합뉴스 관련기사 목록)
     (re.compile(r"관련\s*뉴스.+", re.DOTALL), ""),
+    # URL 제거 (http/https 링크 전체)
+    (re.compile(r"https?://\S+"), ""),
+    # SNS 계정: @노컷뉴스, @연합뉴스 등
+    (re.compile(r"@[가-힣a-zA-Z0-9_]{2,20}"), ""),
+    # 언론사 SNS/연락처 블록: "이메일 : ... 카카오톡 : ... 사이트 : ..."
+    (re.compile(r"이메일\s*:\s*.+", re.DOTALL), ""),
+    (re.compile(r"카카오톡\s*:\s*\S+"), ""),
+    (re.compile(r"사이트\s*:\s*\S+"), ""),
+    (re.compile(r"유튜브\s*:\s*\S+"), ""),
+    (re.compile(r"텔레그램\s*:\s*\S+"), ""),
+    (re.compile(r"인스타그램\s*:\s*\S+"), ""),
+    # 전화번호 패턴
+    (re.compile(r"\d{2,4}[-\s]?\d{3,4}[-\s]?\d{4}"), ""),
+    # 언론사 구독 유도 문구
+    (re.compile(r"구독하기.+", re.DOTALL), ""),
+    (re.compile(r"뉴스레터.+", re.DOTALL), ""),
+    (re.compile(r"더\s*많은\s*뉴스.+", re.DOTALL), ""),
+    (re.compile(r"자세한\s*내용은.+", re.DOTALL), ""),
+    # 기사 말미 광고/홍보 문구 패턴
+    (re.compile(r"▶.+", re.DOTALL), ""),
+    (re.compile(r"☞.+", re.DOTALL), ""),
+    (re.compile(r"※.+", re.DOTALL), ""),
     # 중복 공백
     (re.compile(r"\s{2,}"), " "),
 ]
