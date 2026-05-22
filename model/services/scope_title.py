@@ -21,6 +21,7 @@ scopeTitle 생성 서비스 — 동사/형용사 포함 서술형 타이틀 (Gem
 
 import logging
 import math
+import re
 from collections import Counter
 from datetime import datetime, timezone
 from typing import Optional
