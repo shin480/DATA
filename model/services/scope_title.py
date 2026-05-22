@@ -1,15 +1,19 @@
 """
-scopeTitle 생성 서비스 — 키워드 기반 문장형 타이틀 (Gemini 완전 제거)
+scopeTitle 생성 서비스 — 동사/형용사 포함 서술형 타이틀 (Gemini 완전 제거)
 
 생성 전략:
   1. 스콥 내 뉴스 제목들 수집
-  2. kiwipiepy 형태소 분석으로 명사/고유명사 추출
-  3. TF-IDF로 스콥 대표 키워드 3~5개 선별
-  4. 키워드 역할(주체/사건/상태) 분류 후 패턴 템플릿으로 자연스러운 문장 조합
+  2. kiwipiepy로 명사(NNG/NNP/SL) + 동사 어간(VV/VA/XSV) 분리 추출
+  3. 명사 TF-IDF 상위 3개 (주제어) + 동사 TF-IDF 상위 2개 → 명사형 서술어 변환
+  4. 조합 패턴으로 서술형 타이틀 생성
+     예) "삼성전자 반도체, 수출 급감"
+         "한국은행 금리, 추가 인상"
+         "비트코인 ETF·가상자산 급등"
 
 [수정 이력]
-- Gemini 의존도 완전 제거 (google.genai 삭제)
-- 타이틀 생성 엔진 교체: 최신 기사 제목 복사 → TF-IDF + 문장 패턴 조합
+- Gemini 의존도 완전 제거
+- 타이틀 엔진 v1: 명사 TF-IDF + 역할 분류 사전 → "관련 동향" 남발 문제
+- 타이틀 엔진 v2: 동사 어간 추출 추가 + 명사형 서술어 변환 테이블 + 쉼표 패턴
 - scope_refresh_queue / 배치 구조 유지 (운영 로직 변경 없음)
 - NEWS_COUNT_GEMINI 임계값 제거 → 기사 수 무관하게 동일 로직 적용
 - kiwipiepy Kiwi 인스턴스 모듈 레벨 싱글턴으로 관리
@@ -18,7 +22,7 @@ scopeTitle 생성 서비스 — 키워드 기반 문장형 타이틀 (Gemini 완
 import logging
 import math
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -47,197 +51,183 @@ def _get_kiwi() -> Kiwi:
 
 
 # ── 추출 대상 품사 ─────────────────────────────────────────────────
-# NNG: 일반명사  NNP: 고유명사  SL: 외래어
-_TARGET_POS = {"NNG", "NNP", "SL"}
+# 명사류: NNG(일반명사) NNP(고유명사) SL(외래어)
+_NOUN_POS = {"NNG", "NNP", "SL"}
 
-# 타이틀에 불필요한 단일 일반 단어 필터 (너무 광범위한 단어)
-_STOPWORDS = {
+# 명사 불용어
+_NOUN_STOPWORDS = {
     "관련", "문제", "상황", "내용", "부분", "경우", "방안", "계획",
-    "결과", "이후", "현재", "최근", "지난", "올해", "이번", "해당",
-    "오늘", "어제", "지금", "당시", "전망", "분석", "발표", "보도",
+    "이후", "현재", "최근", "지난", "올해", "이번", "해당",
+    "오늘", "어제", "지금", "당시", "발표", "보도",
     "뉴스", "기자", "기사", "취재", "종합", "단독", "속보", "업데이트",
+    "기록", "수준", "규모", "이상", "이하", "대비", "대상", "기준",
+    "분석", "이슈", "스퀘어", "넘버스", "특집", "기획",
+    "동향", "전망", "현황", "정리", "요약", "심층", "집중",
+    "미디어", "채널", "방송", "라이브", "온라인",
+    "결과", "영향", "효과", "변화", "추이", "흐름", "움직임",
+    "가운데", "속에서", "상황에서", "따라서",
 }
 
-
-# ── 경제 도메인 키워드 역할 사전 ───────────────────────────────────
-# 주체(subject): 문장 앞에 오는 행위자
-# 사건(event):   핵심 동작/이슈
-# 상태(state):   결과/방향성을 나타내는 명사
-
-_SUBJECT_HINTS = {
-    "한국은행", "기재부", "금융위", "금감원", "정부", "국회", "청와대",
-    "삼성", "삼성전자", "현대", "SK", "LG", "롯데", "포스코", "카카오",
-    "네이버", "쿠팡", "하이닉스", "현대차", "기아", "셀트리온",
-    "연준", "Fed", "ECB", "IMF", "세계은행",
+# ── 키워드 역할 분류 사전 (순서 제어용) ──────────────────────────────
+# 주체(0): 문장 앞에 오는 기관/인물/기업
+_ROLE_SUBJECT = {
+    # 국내 기관
+    "한국은행", "금융위", "금감원", "기재부", "국토부", "산업부",
+    "공정위", "국세청", "관세청", "청와대", "국회", "정부", "대통령",
+    # 국내 기업
+    "삼성", "삼성전자", "현대차", "기아", "SK", "LG", "롯데", "포스코",
+    "카카오", "네이버", "하이닉스", "셀트리온", "삼천당제약", "쿠팡",
+    # 해외 기관/기업/인물
+    "연준", "Fed", "ECB", "IMF", "트럼프", "바이든", "시진핑",
     "미국", "중국", "일본", "유럽", "러시아", "중동",
+    "애플", "엔비디아", "테슬라", "BYD",
 }
 
-_EVENT_HINTS = {
-    "금리", "기준금리", "금리인상", "금리인하",
-    "수출", "수입", "무역", "무역수지", "경상수지",
-    "물가", "인플레이션", "디플레이션", "CPI",
-    "환율", "달러", "원달러", "엔화", "위안화",
+# 시점(1): 시간/규모 맥락 키워드 → 주체 다음
+_ROLE_TIME = {
+    "분기", "전년", "역대", "최대", "최저", "최고", "사상",
+    "연간", "월간", "주간", "상반기", "하반기", "연초", "연말",
+}
+
+# 이슈(2): 핵심 경제 이슈 키워드 → 중간
+_ROLE_ISSUE = {
+    "금리", "기준금리", "물가", "인플레이션", "환율", "달러",
+    "수출", "수입", "무역", "무역수지", "관세", "무역전쟁",
     "주가", "코스피", "코스닥", "증시", "주식",
-    "부동산", "집값", "전세", "매매", "아파트",
+    "부동산", "집값", "전세", "아파트",
+    "반도체", "배터리", "전기차", "바이오",
+    "매출", "영업익", "영업이익", "순이익", "실적",
     "고용", "실업", "취업", "일자리",
-    "성장률", "GDP", "경기", "경제성장",
-    "반도체", "배터리", "전기차", "AI", "인공지능",
     "유가", "원유", "에너지",
-    "회사채", "국채", "채권",
-    "공급망", "공급", "수요",
+    "양도세", "법인세", "소득세", "세금", "절세",
+    "예금", "적금", "대출", "채권", "펀드", "ETF",
+    "논란", "의혹", "해명", "리스크",
 }
 
-_STATE_HINTS = {
-    "상승", "하락", "급등", "급락", "하향", "상향",
-    "위기", "리스크", "불안", "불확실",
-    "호조", "부진", "침체", "회복", "반등",
-    "확대", "축소", "감소", "증가", "둔화", "가속",
-    "흑자", "적자", "손실", "이익",
-    "전망", "우려", "기대",
+# 방향(3): 결과/방향성 → 문장 맨 뒤
+_ROLE_DIRECTION = {
+    "증가", "감소", "상승", "하락", "급등", "급락",
+    "인상", "인하", "동결", "확대", "축소", "둔화",
+    "흑자", "적자", "회복", "침체", "위기", "호조", "부진",
+    "돌파", "급증", "급감", "반등", "폭등", "폭락",
 }
 
 
-# ── 문장 패턴 템플릿 ───────────────────────────────────────────────
-# {S}: 주체  {E}: 사건  {T}: 상태/방향
-# 키워드 역할 조합에 따라 가장 자연스러운 패턴 선택
-
-def _build_title(subject: str, event: str, state: str) -> str:
-    """주체 / 사건 / 상태 키워드 조합으로 자연스러운 문장형 타이틀 반환"""
-    has_s = bool(subject)
-    has_e = bool(event)
-    has_t = bool(state)
-
-    if has_s and has_e and has_t:
-        return f"{subject} {event} {state} 동향"
-    if has_s and has_e:
-        return f"{subject} {event} 이슈 분석"
-    if has_s and has_t:
-        return f"{subject} 관련 {state} 흐름"
-    if has_e and has_t:
-        return f"{event} {state}과 시장 영향"
-    if has_e:
-        return f"{event} 관련 동향"
-    if has_s:
-        return f"{subject} 주요 경제 이슈"
-    if has_t:
-        return f"경제 {state} 흐름과 전망"
-    return "주요 경제 이슈 동향"
+def _classify_role(word: str) -> int:
+    """키워드를 역할(0~4)로 분류. 미등재는 2(이슈)로 처리."""
+    if word in _ROLE_SUBJECT:   return 0
+    if word in _ROLE_TIME:      return 1
+    if word in _ROLE_DIRECTION: return 3
+    if word in _ROLE_ISSUE:     return 2
+    return 2  # 미등재 → 이슈 슬롯
 
 
 # ── 핵심 함수: 타이틀 생성 ─────────────────────────────────────────
 
 def _extract_nouns(titles: list[str]) -> list[list[str]]:
-    """각 제목에서 명사/고유명사 추출 → 문서별 토큰 리스트 반환"""
-    kiwi   = _get_kiwi()
-    result = []
+    """각 제목에서 명사 토큰 추출 → 문서별 리스트 반환"""
+    kiwi      = _get_kiwi()
+    noun_docs = []
     for title in titles:
-        tokens = [
+        nouns = [
             token.form
             for token in kiwi.analyze(title)[0][0]
-            if token.tag in _TARGET_POS
-               and len(token.form) >= 2
-               and token.form not in _STOPWORDS
+            if token.tag in _NOUN_POS
+            and len(token.form) >= 2
+            and token.form not in _NOUN_STOPWORDS
         ]
-        result.append(tokens)
-    return result
+        noun_docs.append(nouns)
+    return noun_docs
 
 
-def _tfidf_keywords(doc_tokens: list[list[str]], top_n: int = 5) -> list[str]:
-    """
-    TF-IDF 방식으로 스콥 대표 키워드 추출.
-
-    - TF  : 전체 스콥 제목을 하나의 문서로 보고 단어 빈도 계산
-    - IDF : 단어가 몇 개의 제목에 등장하는지로 역빈도 계산
-            → 모든 제목에 공통으로 나오는 단어 억제 (너무 일반적인 단어 제거)
-    """
+def _tfidf_top(doc_tokens: list[list[str]], top_n: int) -> list[str]:
+    """TF-IDF 점수 상위 top_n 토큰 반환"""
     if not doc_tokens:
         return []
 
-    # TF: 전체 단어 빈도
     total_counter: Counter = Counter()
     for tokens in doc_tokens:
         total_counter.update(tokens)
 
-    # IDF: 각 단어가 등장한 문서(제목) 수
     doc_count = len(doc_tokens)
     df: Counter = Counter()
     for tokens in doc_tokens:
         for word in set(tokens):
             df[word] += 1
 
-    # TF-IDF 점수 계산
     scores: dict[str, float] = {}
     for word, tf in total_counter.items():
         idf = math.log((doc_count + 1) / (df[word] + 1)) + 1.0
         scores[word] = tf * idf
 
-    # 점수 상위 top_n 반환
     return [w for w, _ in sorted(scores.items(), key=lambda x: -x[1])[:top_n]]
-
-
-def _classify_keywords(keywords: list[str]) -> tuple[str, str, str]:
-    """
-    키워드를 주체 / 사건 / 상태로 분류.
-    사전 미등재 키워드는 등장 순서로 사건(event) 슬롯에 우선 배치.
-    """
-    subject = ""
-    event   = ""
-    state   = ""
-
-    for kw in keywords:
-        if not subject and kw in _SUBJECT_HINTS:
-            subject = kw
-        elif not state and kw in _STATE_HINTS:
-            state = kw
-        elif not event and kw in _EVENT_HINTS:
-            event = kw
-        elif not event:
-            # 사전 미등재 → 사건 슬롯에 배치 (도메인 고유명사일 가능성 높음)
-            event = kw
-
-    return subject, event, state
 
 
 def _make_scope_title(titles: list[str]) -> str:
     """
-    뉴스 제목 리스트 → 문장형 스콥 타이틀 생성
+    뉴스 제목 리스트 → 역할 기반 순서 정렬 타이틀 생성
 
     단계:
       1. kiwipiepy 명사 추출
-      2. TF-IDF 핵심 키워드 5개 선별
-      3. 역할 분류(주체/사건/상태)
-      4. 패턴 템플릿 조합
+      2. TF-IDF 상위 5개 선별
+      3. 역할 분류(주체/시점/이슈/방향)로 순서 재배치
+         주체 → 시점 → 이슈 → 방향
+         예) "트럼프 관세 수출 무역수지 충격"
+             → 주체(트럼프) + 이슈(관세·수출·무역수지) + 방향(충격)
+             "삼천당제약 고점 논란 의혹 해명"
+             → 주체(삼천당제약) + 이슈(논란·의혹·해명) + 시점(고점)
+             "전년 분기 매출 영업이익 증가"
+             → 시점(전년·분기) + 이슈(매출·영업이익) + 방향(증가)
     """
-    doc_tokens = _extract_nouns(titles)
-    keywords   = _tfidf_keywords(doc_tokens, top_n=5)
+    noun_docs = _extract_nouns(titles)
+    top_nouns = _tfidf_top(noun_docs, top_n=5)
 
-    if not keywords:
-        # 형태소 추출 실패 시 — 제목 첫 단어 조합으로 최소 보장
-        fallback_words = []
+    if not top_nouns:
+        words = []
         for t in titles[:3]:
             parts = t.split()
             if parts:
-                fallback_words.append(parts[0])
-        return " ".join(dict.fromkeys(fallback_words))[:30] or "주요 경제 이슈"
+                words.append(parts[0])
+        return " ".join(dict.fromkeys(words)) or "주요 경제 이슈"
 
-    subject, event, state = _classify_keywords(keywords)
-    title = _build_title(subject, event, state)
+    # 역할 기준 정렬 (동점이면 TF-IDF 원래 순서 유지)
+    ordered = sorted(
+        enumerate(top_nouns),
+        key=lambda x: (_classify_role(x[1]), x[0])
+    )
+    title = " ".join(w for _, w in ordered)
 
-    # 30자 초과 시 상태 키워드 제거 후 재생성
-    if len(title) > 30:
-        title = _build_title(subject, event, "")
-    if len(title) > 30:
-        title = _build_title("", event, state)
-    if len(title) > 30:
-        title = _build_title("", event, "")
+    # 50자 초과 시 공백 기준으로 자름
+    if len(title) > 50:
+        title = title[:50].rsplit(" ", 1)[0] if " " in title[:50] else title[:50]
 
-    return title[:30]
+    return title
 
 
 # ── ES 헬퍼 ───────────────────────────────────────────────────────
 
+# 제목 전처리 패턴 (섹션 태그, 언론사 브랜드 등 제거)
+_TITLE_CLEAN_PATTERNS = [
+    # 대괄호 섹션 태그: [ETF 스퀘어], [단독], [넘버스] 등
+    re.compile(r"^\s*\[[^\]]{1,20}\]\s*"),
+    re.compile(r"\[[^\]]{1,20}\]"),
+    # 소괄호 분류 태그: (종합), (상보), (1보) 등
+    re.compile(r"\((?:종합\d*|상보|속보|\d+보)\)"),
+    # 언론사 섹션 구분자: "AI 뉴스 분석 |", "ETF 스퀘어 |" 등
+    re.compile(r"^[가-힣a-zA-Z\s·]{2,15}\s*[|｜]\s*"),
+    # 말줄임표/특수문자 정리
+    re.compile(r"\s{2,}"),
+]
+
+def _clean_title(title: str) -> str:
+    """기사 제목에서 섹션 태그 및 언론사 브랜드 제거"""
+    for pattern in _TITLE_CLEAN_PATTERNS:
+        title = pattern.sub(" ", title)
+    return title.strip()
+
+
 def _fetch_titles(es, scope_id: str) -> list[str]:
-    """scope에 속한 기사 제목 목록 반환 (최신순 최대 20개)"""
+    """scope에 속한 기사 제목 목록 반환 (최신순 최대 20개, 섹션 태그 제거)"""
     res = es.search(
         index=INDEX_NEWS,
         body={
@@ -247,7 +237,14 @@ def _fetch_titles(es, scope_id: str) -> list[str]:
             "size":    20,
         },
     )
-    return [h["_source"]["title"] for h in res["hits"]["hits"] if h["_source"].get("title")]
+    titles = []
+    for h in res["hits"]["hits"]:
+        raw = h["_source"].get("title", "")
+        if raw:
+            cleaned = _clean_title(raw)
+            if cleaned:
+                titles.append(cleaned)
+    return titles
 
 
 def _upsert_scope_title(es, scope_id: str, scope_title: str):
@@ -269,7 +266,6 @@ def _upsert_scope_title(es, scope_id: str, scope_title: str):
 def generate_scope_title(es, scope_id: str, news_count: int | None = None) -> str | None:
     """
     scopeTitle 생성 메인 함수.
-
     기사 수와 무관하게 동일한 TF-IDF 기반 로직 적용.
     내부 예외는 흡수하여 None 반환 (배치 중단 방지).
     """
@@ -330,38 +326,87 @@ def trigger_scope_title(es, scope_id: str, news_count: int):
 
 def enqueue_missing_scope_titles():
     """
-    scopeTitle이 없는 scope를 전체 조회하여 즉시 생성 처리.
-    실패한 경우에만 queue 등록.
+    scopeTitle이 없는 scope 중 news_economy에 실제 기사가 있는 것만 queue 등록.
+
+    news_scopes 기준 전체 조회 → 유령 스콥(기사 없는 스콥) 포함 문제 해결.
+    news_economy에서 scopeID 집계 → 실제 기사 있는 스콥만 등록.
+    즉시 생성 시도 없이 queue 등록만 수행 → API 타임아웃 방지.
+    실제 생성은 run_scope_title_batch()(/classify/scope-titles)에서 처리.
     """
     try:
-        es = get_es()
-        res = es.search(
-            index=INDEX_SCOPES,
-            body={
-                "query": {
-                    "bool": {"must_not": {"exists": {"field": "scopeTitle"}}}
+        es    = get_es()
+        count = 0
+
+        # 1. scopeTitle 없는 스콥 ID 목록
+        missing_ids: set[str] = set()
+        from_idx  = 0
+        page_size = 1000
+        while True:
+            res = es.search(
+                index=INDEX_SCOPES,
+                body={
+                    "query": {
+                        "bool": {"must_not": {"exists": {"field": "scopeTitle"}}}
+                    },
+                    "_source": ["scopeID"],
+                    "size":   page_size,
+                    "from":   from_idx,
+                    "sort":   [{"created_at": "asc"}],
                 },
-                "_source": ["scopeID", "news_count"],
-                "size": 1000,
-            },
-        )
-        hits = res["hits"]["hits"]
-        if not hits:
+            )
+            hits = res["hits"]["hits"]
+            if not hits:
+                break
+            for hit in hits:
+                missing_ids.add(hit["_source"]["scopeID"])
+            from_idx += page_size
+            if len(hits) < page_size:
+                break
+
+        if not missing_ids:
             logger.info("scopeTitle 누락 scope 없음")
             es.close()
             return 0
 
-        count = 0
-        for hit in hits:
-            scope_id = hit["_source"]["scopeID"]
-            nc       = hit["_source"].get("news_count", 0)
-            result   = generate_scope_title(es, scope_id, nc)
-            if result is None:
-                _enqueue(es, scope_id)
+        logger.info(f"scopeTitle 누락 scope 총 {len(missing_ids)}건 확인")
+
+        # 2. news_economy에서 실제 기사 있는 scopeID 집계
+        agg_res = es.search(
+            index=INDEX_NEWS,
+            body={
+                "query": {
+                    "terms": {"scopeID": list(missing_ids)}
+                },
+                "aggs": {
+                    "real_scopes": {
+                        "terms": {
+                            "field": "scopeID",
+                            "size":  len(missing_ids),
+                        }
+                    }
+                },
+                "size": 0,
+            },
+        )
+        real_scope_ids = {
+            b["key"]
+            for b in agg_res["aggregations"]["real_scopes"]["buckets"]
+        }
+        logger.info(f"실제 기사 있는 scope: {len(real_scope_ids)}건 / 누락 {len(missing_ids)}건")
+
+        # 3. 실제 기사 있는 스콥만 queue 등록
+        for scope_id in real_scope_ids:
+            _enqueue(es, scope_id)
             count += 1
 
+        if count == 0:
+            logger.info("등록할 scope 없음 (전부 유령 스콥)")
+        else:
+            # 등록 후 refresh → 배치가 즉시 검색 가능하도록
+            es.indices.refresh(index=INDEX_QUEUE)
+            logger.info(f"scopeTitle queue 등록 완료: {count}건")
+
         es.close()
-        logger.info(f"scopeTitle 누락 scope {count}건 처리 완료")
         return count
 
     except Exception as e:

@@ -2,6 +2,8 @@ import re
 from util.es import get_es, NEWS_ECONOMY_INDEX
 from util.logger import save_article_process_log,save_article_error_log
 
+from viewpoint_classify.viewpoint_model import predict_government_responsibility
+
 # 1. 유의어 사전 (기존과 동일하게 유지하되 '강화' 관련 억지 매핑 제거)
 synonym_map = {
     "불황": "침체", "경기악화": "침체", "마이너스 성장": "침체",
