@@ -15,6 +15,8 @@
 - 캡션 제거: [출처명] 패턴 전처리 추가
 - [2026-05] summarize_single_article 추가: 단건 재처리용 래퍼
 - [2026-05] 예외 시 summary 폴백 저장: es.update 실패 아티클이 배치마다 재조회되는 무한루프 방지
+- [2026-05] 노이즈 문장 필터 추가: (자료사진), [출처명], ※ 패턴 등 메타 노이즈 제거
+- [2026-05] article_id를 hit["_id"]에서 가져오도록 수정 (NoneType 오류 방지)
 """
 
 import logging
@@ -50,9 +52,30 @@ def _remove_captions(text: str) -> str:
     return text.strip()
 
 
+# 노이즈 문장 필터 패턴
+_NOISE_PATTERNS = [
+    re.compile(r"^\(.*?사진.*?\)"),       # (자료사진), (사진=연합뉴스) 등
+    re.compile(r"^사진\s*[=:]"),            # 사진 = ~
+    re.compile(r"※.*?금지"),               # ※재판매 및 DB 금지
+    re.compile(r"^\[.*?\]"),               # [서울=뉴시스], [편집자주], [속보] 등 대괄호 시작 문장
+    re.compile(r"^[가-힣]{1,4}\s*기자"),   # 홍길동 기자
+    re.compile(r"@\w+"),                    # 이메일/계정 포함 문장
+    re.compile(r"^\d{4}\.\s*\d{1,2}"),  # 날짜 단독 문장 (2026. 5.)
+    re.compile(r"무단\s*전재"),             # 무단 전재 금지
+]
+
+
+def _is_noise_sentence(sentence: str) -> bool:
+    s = sentence.strip()
+    for pattern in _NOISE_PATTERNS:
+        if pattern.search(s):
+            return True
+    return False
+
+
 def _split_sentences(text: str) -> list[str]:
     raw = re.split(r"(?<=[.!?])\s+", text.strip())
-    return [s.strip() for s in raw if len(s.strip()) >= 15]
+    return [s.strip() for s in raw if len(s.strip()) >= 15 and not _is_noise_sentence(s)]
 
 
 def _textrank_scores(sentences: list[str]) -> np.ndarray:
@@ -166,7 +189,7 @@ def run_summary_pipeline():
                             "must_not": {"exists": {"field": "summary"}},
                         }
                     },
-                    "_source": ["article_id", "content"],
+                    "_source": ["content"],
                     "sort":    [{"published_at": "asc"}],
                     "size":    BATCH_SIZE,
                 },
@@ -183,8 +206,8 @@ def run_summary_pipeline():
             logger.info(f"[배치 {batch_num}] 요약 시작: {len(hits)}건")
 
             for hit in hits:
+                article_id = hit["_id"]
                 src        = hit["_source"]
-                article_id = src["article_id"]
                 try:
                     summary = summarize(src.get("content", ""))
                     es.update(
