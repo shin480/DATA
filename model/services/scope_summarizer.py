@@ -154,7 +154,7 @@ def generate_scope_summary(es, scope_id: str):
                     "must": [
                         {"term":   {"scopeID": scope_id}},
                         {"exists": {"field":   "content"}},
-                        {"term":   {"has_embedding": True}},
+                        {"exists": {"field":   "embedding"}},
                     ]
                 }
             },
