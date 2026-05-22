@@ -23,6 +23,25 @@ def clean_and_normalize(text):
     return text
 
 
+def has_nearby_terms(text, anchors, context_words, window=24):
+    """Return True when an anchor and its context occur in the same short span."""
+    for anchor in anchors:
+        start = 0
+        while True:
+            idx = text.find(anchor, start)
+            if idx < 0:
+                break
+
+            left = max(0, idx - window)
+            right = min(len(text), idx + len(anchor) + window)
+            if any(word in text[left:right] for word in context_words):
+                return True
+
+            start = idx + len(anchor)
+
+    return False
+
+
 # 2. [스마트 딕셔너리] 중의적 단어 제거 + 핵심 단어/짧은 N-gram 혼합
 category_keywords = {
     # [책임 소재 그룹]
@@ -31,6 +50,8 @@ category_keywords = {
         "행정 실패", "감독 부실", "관리 감독 부실", "관리 실패",
         "늑장 대응", "정책 혼선", "정책 부작용", "규제 실패",
         "제도 미비", "허술한 관리", "당국의 관리", "당국의 감독",
+        "감독당국 책임", "당국 책임 피", "정부 책임 피", "행정 책임",
+        "방치 책임", "책임 떠넘긴 정부",
         "정부 탓", "당국 탓", "정부가 방치", "당국이 방치"
     ],
     "기업 책임": ["경영진 책임","경영 실패","의사 결정 실패","책임 전가",
@@ -38,9 +59,21 @@ category_keywords = {
         "부실 경영","기업 과실","방만 경영","도덕적 해이","불법 영업",
         "불법 대출", "불법 사채", "불법 유통", "불법 반입", "불법 조업",
         "불법 도박장 출입", "불법 촬영", "불법 행위"],
-    "개인 책임": ["개인 과실", "투자자 책임", "본인 부주의", "개인 탓"],
-    "외부 책임": ["외생 변수", "불가항력", "외부 충격", "어쩔 수 없는"],
-    "복합 책임": ["공동 책임", "복합적", "상호 작용", "맞물려"],
+    "개인 책임": [
+        "개인 과실","투자자 책임","본인 부주의","개인 탓",
+        "무리한 투자","과도한 투자","묻지마 투자","투자 실패","잘못된 투자 판단","자기 책임","본인 책임",
+        "영끌","빚투","투기 수요","투기 심리","과도한 레버리지","고위험 투자","위험을 감수","리스크를 감수",
+        "충분히 고지","충분히 설명","설명을 들었음에도","도박성 투자","무분별한 투자","과도한 대출", "스스로 선택",
+        "자발적 선택","투자자 스스로","개인 선택의 결과","판단 착오","판단 미스","본인이 감수","책임은 투자자에게","투자자의 몫"
+    ],
+    "외부 책임": [
+        "외생 변수", "불가항력", "불가항력적", "외부 충격",
+        "천재지변", "전쟁 탓", "글로벌 변수"
+    ],
+    "복합 책임": [
+        "공동 책임", "공동 과실", "책임 분담", "책임이 엇갈",
+        "책임을 나눠", "책임을 함께", "여러 주체의 책임", "책임 소재가 복합"
+    ],
 
     # [태도 및 감성 그룹]
     "비판적 태도": ["비판", "논란", "지적", "규탄", "부당", "소송", "반발", "의혹", "갈등"],
@@ -69,8 +102,19 @@ category_keywords = {
     "전망 분석": ["전망", "예상", "할 것으로", "될 듯", "향후"],
 
     # [정책 개입/자율 주장 그룹] (팩트가 아닌 '주장'만 필터링)
-    "정부 개입 강조": ["개입해야", "정부가 나서야", "대책 마련 시급", "제도적 지원 절실", "적극적인 역할", "법제화 필요", "촉구", "가이드라인 마련해야"],
-    "시장 자율 강조": ["자율에 맡겨야", "규제 완화 시급", "시장 논리에", "민간 주도로 풀어야", "불필요한 규제 철폐", "관치 벗어나야", "자율성 보장", "과도한 개입"],
+    "정부 개입 강조": [
+        "개입해야", "정부가 나서야", "당국이 나서야", "대책 마련 시급",
+        "제도적 지원 절실", "적극적인 역할", "법제화 필요",
+        "가이드라인 마련해야", "정부 지원 필요", "공적 지원 필요",
+        "보호 장치 필요", "규제 필요"
+    ],
+    "시장 자율 강조": [
+        "자율에 맡겨야", "시장에 맡겨야", "규제 완화 시급", "시장 논리에",
+        "민간 주도로 풀어야", "불필요한 규제 철폐", "관치 벗어나야",
+        "자율성 보장", "정부 개입 최소화", "규제보다 혁신",
+        "규제 풀어야", "규제 걷어", "규제 철폐해야", "민간에 맡겨야",
+        "시장 자율", "민간 활력"
+    ],
 
     # [팩트성 환경 요인 그룹] (기존의 팩트성 정책/통제 단어는 '정책 요인'으로 흡수)
     "외부 요인(글로벌)": ["국제 유가", "유가 상승", "고환율", "환율 급등", "환율", "공급망", "공급망 차질", "전쟁 여파", "관세", "글로벌 공급망", "유가 상승", "지정학적 리스크"],
@@ -184,7 +228,10 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "횡령",
         "배임",
         "허위 공시",
-        "조작",
+        "가격 조작",
+        "시세 조작",
+        "회계 조작",
+        "불법 조작",
         "리콜 은폐",
         "불법 영업",
         "부당거래",
@@ -333,6 +380,67 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         scores["비판적 태도"] += 1.5
         scores["정책 요인(국내)"] += 1.0
 
+    responsibility_anchors = [
+        "정부 책임",
+        "당국 책임",
+        "금융당국 책임",
+        "기업 책임",
+        "회사 책임",
+        "투자자 책임",
+        "개인 책임",
+        "본인 책임"
+    ]
+
+    responsibility_denial_words = [
+        "아니다",
+        "없다",
+        "없다고",
+        "반박",
+        "부인",
+        "일축",
+        "선 긋",
+        "해명",
+        "사실과 다르"
+    ]
+
+    responsibility_claim_words = [
+        "주장",
+        "공방",
+        "논쟁",
+        "책임 떠넘기",
+        "책임을 둘러싼"
+    ]
+
+    responsibility_fact_words = [
+        "감사 결과",
+        "조사 결과",
+        "판결",
+        "확인됐다",
+        "드러났다",
+        "적발"
+    ]
+
+    responsibility_text = c_title + c_content
+
+    has_responsibility_denial = has_nearby_terms(
+            responsibility_text,
+            responsibility_anchors,
+            responsibility_denial_words
+    )
+
+    has_unverified_responsibility_claim = (
+            has_nearby_terms(
+                responsibility_text,
+                responsibility_anchors,
+                responsibility_claim_words
+            )
+            and not any(w in responsibility_text for w in responsibility_fact_words)
+    )
+
+    # 책임 반박/공방 문맥은 책임 점수 가산이 끝난 뒤 최종 감점한다.
+    if has_responsibility_denial or has_unverified_responsibility_claim:
+        scores["비판적 태도"] += 1.0
+
 
     strict_government_subject_words = [
         "정부", "당국", "국토부", "금융당국", "공정위", "금감원",
@@ -347,6 +455,8 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "정책 실패", "행정 실패", "감독 부실", "관리 실패",
         "늑장 대응", "부실 대응", "정책 혼선",
         "규제 실패", "규제 공백", "제도 허점", "허술한 관리",
+        "감독 실패", "행정 공백", "정책 공백", "규제 사각지대",
+        "제도 방치", "방치 책임", "책임 회피",
         "관리 소홀", "감독 소홀", "대응 미흡", "대책 부재",
         "예산 삭감", "전액 삭감", "사업 무산", "감사 적발",
 
@@ -410,6 +520,18 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "정부 확대",
         "정부 도입",
         "정부 출범"
+    ]
+
+    government_guidance_patterns = [
+        "유의사항 안내",
+        "소비자 안내",
+        "민원 사례",
+        "안내했다",
+        "설명했다",
+        "가입자 유의",
+        "계약 전환",
+        "보험료 납입",
+        "보험료 납부"
     ]
 
     negative_context_words = [
@@ -526,6 +648,28 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         scores["정부 책임"] -= 2.0
         scores["기업 책임"] += 1.0
 
+    regulator_enforcement_patterns = [
+        "점검에 나섰",
+        "검사에 착수",
+        "조사에 착수",
+        "제재에 나섰",
+        "시정 명령",
+        "과징금 부과",
+        "고발 조치",
+        "영업정지 처분"
+    ]
+
+    if (
+            any(s in c_title + c_content for s in strict_government_subject_words)
+            and any(w in c_title + c_content for w in regulator_enforcement_patterns)
+    ):
+        scores["정부 책임"] -= 2.0
+        scores["정책 요인(국내)"] += 1.5
+        scores["대응 분석"] += 1.0
+
+        if any(w in c_title + c_content for w in company_failure_words):
+            scores["기업 책임"] += 1.5
+
     if (
             any(w in c_title + c_content for w in policy_announcement_patterns)
             and not any(w in c_title + c_content for w in strong_blame_context)
@@ -537,6 +681,196 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
     if any(w in c_title + c_content for w in government_victim_patterns):
         scores["정부 책임"] -= 1.5
         scores["정책 요인(국내)"] += 1.0
+
+    market_autonomy_claim_words = [
+        "시장에 맡",
+        "자율에 맡",
+        "민간 주도",
+        "민간 자율",
+        "기업 자율",
+        "자율 규제",
+        "시장 기능 회복",
+        "시장 논리",
+        "정부 개입 최소화",
+        "개입 줄여",
+        "규제보다 혁신",
+        "과도한 규제",
+        "관치 논란",
+        "관치 벗어나",
+        "규제 풀어",
+        "규제 걷어",
+        "민간에 맡",
+        "시장 자율",
+        "민간 활력"
+    ]
+
+    market_autonomy_direct_claim_words = [
+        "시장에 맡겨야",
+        "자율에 맡겨야",
+        "민간 주도로 풀어야",
+        "민간에 맡겨야",
+        "정부 개입 최소화",
+        "개입 줄여야",
+        "관치 벗어나야",
+        "규제 풀어야",
+        "규제 걷어야",
+        "규제 철폐해야",
+        "규제보다 혁신"
+    ]
+
+    market_autonomy_normative_words = [
+        "필요",
+        "해야",
+        "시급",
+        "주장",
+        "촉구",
+        "요구",
+        "건의",
+        "제안",
+        "권고",
+        "요청",
+        "풀어야",
+        "걷어야",
+        "폐지해야"
+    ]
+
+    market_autonomy_announcement_words = [
+        "정부가 발표",
+        "당국이 발표",
+        "지원책 발표",
+        "대책 발표",
+        "시행한다",
+        "도입한다",
+        "확대한다"
+    ]
+
+    market_autonomy_regulation_words = [
+        "규제 완화",
+        "규제 철폐",
+        "규제 개선",
+        "규제 혁신",
+        "진입 규제",
+        "인허가 규제"
+    ]
+
+    market_autonomy_execution_words = [
+        "공공주도",
+        "공공 주도",
+        "감시 강화",
+        "감시 고삐",
+        "보호 체계",
+        "보호 강화",
+        "점검에 나섰",
+        "검사에 착수",
+        "규제 강화",
+        "관리 강화"
+    ]
+
+    has_market_autonomy_anchor = any(
+        w in c_title + c_content for w in market_autonomy_claim_words
+    )
+
+    has_direct_market_autonomy_claim = any(
+        w in c_title + c_content for w in market_autonomy_direct_claim_words
+    )
+
+    has_normative_regulation_claim = has_nearby_terms(
+        c_title + c_content,
+        market_autonomy_regulation_words,
+        market_autonomy_normative_words,
+        window=18
+    )
+
+    has_normative_market_autonomy_claim = (
+            has_normative_regulation_claim
+            or has_nearby_terms(
+                c_title + c_content,
+                market_autonomy_claim_words,
+                market_autonomy_normative_words,
+                window=14
+            )
+    )
+
+    has_market_autonomy_claim = (
+            has_direct_market_autonomy_claim
+            or has_normative_market_autonomy_claim
+    )
+
+    if has_market_autonomy_claim:
+        scores["시장 자율 강조"] += 2.0
+
+        if has_normative_market_autonomy_claim:
+            scores["시장 자율 강조"] += 2.0
+
+        if any(w in c_title + c_content for w in market_autonomy_announcement_words):
+            scores["시장 자율 강조"] *= 0.5
+
+    if (
+            has_market_autonomy_anchor
+            and any(w in c_title + c_content for w in market_autonomy_execution_words)
+            and not has_market_autonomy_claim
+    ):
+        scores["시장 자율 강조"] *= 0.25
+
+    intervention_direct_claim_words = [
+        "정부가 나서야",
+        "당국이 나서야",
+        "정부 개입 필요",
+        "당국 개입 필요",
+        "공적 지원 필요",
+        "정부 지원 필요",
+        "제도적 지원 절실",
+        "보호 장치 필요",
+        "규제 필요",
+        "법제화 필요"
+    ]
+
+    intervention_context_words = [
+        "정부",
+        "당국",
+        "공공",
+        "법제",
+        "규제",
+        "보호"
+    ]
+
+    intervention_action_words = [
+        "나서야",
+        "개입해야",
+        "지원해야",
+        "필요",
+        "절실",
+        "마련해야",
+        "강화해야",
+        "입법해야"
+    ]
+
+    has_intervention_claim = (
+            any(w in c_title + c_content for w in intervention_direct_claim_words)
+            or has_nearby_terms(
+                c_title + c_content,
+                intervention_context_words,
+                intervention_action_words,
+                window=16
+            )
+    )
+
+    if has_intervention_claim:
+        scores["정부 개입 강조"] += 3.0
+
+    anti_intervention_words = [
+        "정부 개입을 줄",
+        "정부 개입 최소화",
+        "개입 줄여",
+        "과도한 개입",
+        "관치 벗어나"
+    ]
+
+    if (
+            has_market_autonomy_claim
+            and any(w in c_title + c_content for w in anti_intervention_words)
+    ):
+        scores["정부 개입 강조"] *= 0.25
 
     if any(w in c_title for w in ["정부 책임론", "금융당국 책임론", "당국 책임론"]):
         scores["정부 책임"] += 6
@@ -574,6 +908,255 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         scores["성과 예찬"] += bias
         scores["비판적 태도"] -= bias * 0.5
         scores["우려"] -= bias * 0.5
+
+    # =========================
+    # 개인 책임
+    # =========================
+
+    personal_words = [
+        "영끌",
+        "빚투",
+        "묻지마 투자",
+        "고위험 투자",
+        "레버리지 투자",
+        "신용융자",
+        "신용거래",
+        "투기 심리",
+        "무리한 투자",
+        "과도한 대출",
+        "투자 실패",
+        "자기 책임",
+        "본인 책임"
+    ]
+
+    personal_subject_words = [
+        "개인",
+        "본인",
+        "투자자",
+        "차주",
+        "영끌",
+        "빚투"
+    ]
+
+    has_personal_subject = any(
+        w in c_title + c_content for w in personal_subject_words
+    )
+
+    if (
+            has_personal_subject
+            and any(w in (c_title + c_content) for w in personal_words)
+    ):
+        scores["개인 책임"] += 3.0
+
+    personal_research_context_words = [
+        "연구 결과",
+        "보고서",
+        "결혼 확률",
+        "출산",
+        "임대주택",
+        "연구진",
+        "통계 분석"
+    ]
+
+    personal_strong_blame_words = [
+        "영끌",
+        "빚투",
+        "묻지마 투자",
+        "투자자 책임",
+        "자기 책임",
+        "본인 책임",
+        "스스로 선택",
+        "투기 심리"
+    ]
+
+    investor_victim_words = [
+        "투자자 피해",
+        "피해 투자자",
+        "피해자",
+        "피해 구제",
+        "구제 방안",
+        "배상",
+        "보상",
+        "설명의무 위반",
+        "불완전판매",
+        "기망",
+        "속여"
+    ]
+
+    has_investor_victim_context = (
+            "투자자" in c_title + c_content
+            and any(w in c_title + c_content for w in investor_victim_words)
+    )
+
+    if (
+            "투자자" in c_title + c_content
+            and
+            any(w in c_title + c_content for w in [
+                "손실",
+                "피해",
+                "판단",
+                "선택",
+                "위험"
+            ])
+            and not has_investor_victim_context
+    ):
+        scores["개인 책임"] += 2.0
+
+    if has_investor_victim_context:
+        scores["개인 책임"] *= 0.25
+        scores["대응 분석"] += 1.0
+
+    if any(w in (c_title + c_content) for w in [
+        "사기",
+        "횡령",
+        "배임",
+        "불완전판매",
+        "개인정보 유출",
+        "내부통제 부실",
+        "담합"
+    ]):
+        scores["개인 책임"] *= 0.3
+        scores["기업 책임"] += 2.0
+
+    if (
+            any(w in c_title + c_content for w in personal_research_context_words)
+            and not any(w in c_title + c_content for w in personal_strong_blame_words)
+    ):
+        scores["개인 책임"] *= 0.35
+
+    external_shock_words = [
+        "전쟁 여파",
+        "기상이변",
+        "자연재해",
+        "공급망 차질",
+        "공급망 교란",
+        "국제 유가",
+        "환율 충격",
+        "글로벌 수요 둔화"
+    ]
+
+    external_responsibility_context_words = [
+        "불가항력",
+        "외부 충격",
+        "외생 변수",
+        "통제하기 어려",
+        "피할 수 없",
+        "어쩔 수 없"
+    ]
+
+    external_impact_words = [
+        "타격",
+        "악화",
+        "급등",
+        "급락",
+        "차질",
+        "침체",
+        "부담",
+        "리스크"
+    ]
+
+    if (
+            any(w in c_title + c_content for w in external_shock_words)
+            and any(w in c_title + c_content for w in external_responsibility_context_words)
+    ):
+        scores["외부 책임"] += 2.5
+
+    if (
+            any(w in c_title + c_content for w in [
+                "전쟁 여파",
+                "기상이변",
+                "자연재해",
+                "공급망 차질",
+                "공급망 교란",
+                "환율 충격",
+                "글로벌 수요 둔화"
+            ])
+            and any(w in c_title + c_content for w in external_impact_words)
+    ):
+        scores["외부 책임"] += 0.8
+
+    mixed_responsibility_words = [
+        "공동 책임",
+        "책임이 엇갈",
+        "책임 소재가 복합",
+        "여러 주체의 책임",
+        "정부와 업계 모두 책임",
+        "감독당국과 금융사 책임",
+        "공동 과실",
+        "책임 분담",
+        "책임을 나눠",
+        "책임을 함께"
+    ]
+
+    if any(w in c_title + c_content for w in mixed_responsibility_words):
+        scores["복합 책임"] += 2.5
+
+    if has_nearby_terms(
+            c_title + c_content,
+            ["책임", "과실", "책임 소재"],
+            ["공동", "복합", "맞물", "여러 주체", "엇갈"]
+    ):
+        scores["복합 책임"] += 2.0
+
+    if has_responsibility_denial:
+        scores["정부 책임"] *= 0.03
+        scores["기업 책임"] *= 0.2
+        scores["개인 책임"] *= 0.2
+    elif has_unverified_responsibility_claim:
+        scores["정부 책임"] *= 0.55
+        scores["기업 책임"] *= 0.75
+        scores["개인 책임"] *= 0.75
+
+    if (
+            any(w in c_title + c_content for w in government_guidance_patterns)
+            and any(w in c_title + c_content for w in government_actor_patterns)
+            and not any(w in c_title + c_content for w in strong_blame_context)
+    ):
+        scores["정부 책임"] *= 0.2
+        scores["정책 요인(국내)"] += 0.5
+
+    # 넓은 기사 형식/감성 카테고리가 책임·정책 주장 카테고리를 덮지 않도록
+    # 단일 Top-3 경쟁에서만 점수 균형을 보정한다.
+    dominant_category_scales = {
+        "정책 요인(국내)": 0.72,
+        "결과 분석": 0.78,
+        "단순 전달": 0.72,
+        "성과 예찬": 0.84,
+        "기대": 0.86,
+        "우려": 0.86,
+        "비판적 태도": 0.9,
+        "외부 요인(글로벌)": 0.9
+    }
+
+    for category, scale in dominant_category_scales.items():
+        scores[category] *= scale
+
+    responsibility_categories = [
+        "정부 책임",
+        "기업 책임",
+        "개인 책임",
+        "외부 책임",
+        "복합 책임"
+    ]
+
+    responsibility_boost_floors = {
+        "정부 책임": 1.0,
+        "기업 책임": 2.5,
+        "개인 책임": 3.0,
+        "외부 책임": 2.5,
+        "복합 책임": 2.5
+    }
+
+    for category in responsibility_categories:
+        if scores[category] >= responsibility_boost_floors[category]:
+            scores[category] = scores[category] * 1.2 + 0.8
+
+    if scores["정부 책임"] >= 2.0:
+        scores["정부 책임"] += 1.2
+
+    for category in ["정부 개입 강조", "시장 자율 강조"]:
+        if scores[category] >= 2.0:
+            scores[category] = scores[category] * 1.25 + 1.0
 
 
     # 음수 방지
@@ -677,7 +1260,7 @@ def update_perspective_to_es(all:bool=False):
                         }
                     }
                 )
-                save_article_process_log("A202", doc_id, "success")
+                # save_article_process_log("A202", doc_id, "success")
             except Exception as e:
                 print("관점 분석 실패:", doc_id, e)
 
