@@ -230,8 +230,7 @@ def _is_valid_sentence(sentence: str) -> bool:
     기준:
       1. 20자 이상
       2. 한글 비율 40% 이상 (이미지 캡션, 영문 URL 등 제거)
-      3. 경제 키워드 1개 이상 포함
-      4. 캡션/인용/메타/이미지출처 패턴 없음
+      3. 노이즈 패턴(캡션/인용/메타/이미지출처) 없음
     """
     # 1. 길이 기준
     if len(sentence) < 20:
@@ -242,11 +241,7 @@ def _is_valid_sentence(sentence: str) -> bool:
     if korean_chars / len(sentence) < 0.4:
         return False
 
-    # 3. 경제 키워드 최소 1개
-    if not any(kw in sentence for kw in _ECON_KEYWORDS):
-        return False
-
-    # 4. 노이즈 패턴 없음
+    # 3. 노이즈 패턴 없음
     if _is_caption_sentence(sentence):
         return False
     if _is_meta_sentence(sentence):
