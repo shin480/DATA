@@ -16,6 +16,7 @@ KR-FinBert-SC 감성 분류 서비스
 - 토크나이저: ElectraTokenizer → BertTokenizer 변경
 - [2026-05] classify_single_article 추가: 단건 재처리용 래퍼
 - [2026-05] 예외 시 sentiment 폴백 저장: 추론 실패 아티클이 배치마다 재조회되는 무한루프 방지
+- [2026-05] article_id를 _source가 아닌 hit["_id"]에서 가져오도록 수정 (NoneType 오류 방지)
 """
 
 import logging
@@ -193,7 +194,7 @@ def run_sentiment_pipeline():
                             "must_not": {"exists": {"field": "sentiment"}},
                         }
                     },
-                    "_source": ["article_id", "title", "content"],
+                    "_source": ["title", "content"],
                     "sort":    [{"published_at": "asc"}],
                     "size":    BATCH_SIZE,
                 },
@@ -210,8 +211,8 @@ def run_sentiment_pipeline():
             logger.info(f"[배치 {batch_num}] 감성 분류 시작: {len(hits)}건")
 
             for hit in hits:
+                article_id = hit["_id"]        # _source가 아닌 _id에서 가져옴
                 src        = hit["_source"]
-                article_id = src["article_id"]
                 try:
                     sentiment, score = predict_single(
                         src.get("title", ""),
