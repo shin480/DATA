@@ -444,9 +444,8 @@ def enqueue_missing_scope_titles():
             es.indices.refresh(index=INDEX_QUEUE)
             logger.info(f"scopeTitle queue 등록 완료: {count}건")
 
-        return count
-
         es.close()
+        return count
 
         if count == 0:
             logger.info("scopeTitle 누락 scope 없음")
