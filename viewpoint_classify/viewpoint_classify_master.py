@@ -72,7 +72,7 @@ category_keywords = {
     ],
     "복합 책임": [
         "공동 책임", "공동 과실", "책임 분담", "책임이 엇갈",
-        "책임을 나눠", "책임을 함께", "여러 주체의 책임", "책임 소재가 복합"
+        "여러 주체의 책임", "책임 소재가 복합"
     ],
 
     # [태도 및 감성 그룹]
@@ -458,7 +458,7 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "감독 실패", "행정 공백", "정책 공백", "규제 사각지대",
         "제도 방치", "방치 책임", "책임 회피",
         "관리 소홀", "감독 소홀", "대응 미흡", "대책 부재",
-        "예산 삭감", "전액 삭감", "사업 무산", "감사 적발",
+        "사업 무산", "감사 적발",
 
         "성과 부실", "규제 논란", "규제 잣대", "법적 허점",
         "관리 체계 문제", "구조조정 대상", "폐지 등급",
@@ -500,7 +500,6 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "허점",
         "구조적 문제",
         "부정수급",
-        "실질적 조치",
         "근본 대책"
     ]
 
@@ -587,10 +586,11 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
             any(w in c_title + c_content for w in risky_government_failure_words)
     )
 
-    if (
-            any(s in c_title + c_content for s in strict_government_subject_words)
-            and
-            any(w in c_title + c_content for w in official_blame_words)
+    if has_nearby_terms(
+            c_title + c_content,
+            strict_government_subject_words,
+            official_blame_words,
+            window=40
     ):
         scores["정부 책임"] += 2.5
 
@@ -756,6 +756,19 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
     market_autonomy_execution_words = [
         "공공주도",
         "공공 주도",
+        "정부 핫라인",
+        "활성화 방안",
+        "시행령 개정",
+        "시행하기로",
+        "개정해 다음",
+        "확대하기로",
+        "확대될 전망",
+        "추진됐습니다",
+        "추진됐다",
+        "소통간담회",
+        "건의사항을 정리",
+        "지원 강화",
+        "상생 프로그램",
         "감시 강화",
         "감시 고삐",
         "보호 체계",
@@ -764,6 +777,15 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "검사에 착수",
         "규제 강화",
         "관리 강화"
+    ]
+
+    market_autonomy_opposition_words = [
+        "할 것이 아니라",
+        "자제해야",
+        "검토하지 않",
+        "반대",
+        "막아야",
+        "신중해야"
     ]
 
     has_market_autonomy_anchor = any(
@@ -806,11 +828,18 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
             scores["시장 자율 강조"] *= 0.5
 
     if (
-            has_market_autonomy_anchor
+            (has_market_autonomy_anchor or has_market_autonomy_claim)
             and any(w in c_title + c_content for w in market_autonomy_execution_words)
-            and not has_market_autonomy_claim
     ):
         scores["시장 자율 강조"] *= 0.25
+
+    if has_nearby_terms(
+            c_title + c_content,
+            market_autonomy_regulation_words,
+            market_autonomy_opposition_words,
+            window=28
+    ):
+        scores["시장 자율 강조"] *= 0.05
 
     intervention_direct_claim_words = [
         "정부가 나서야",
@@ -820,6 +849,12 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "공적 지원 필요",
         "정부 지원 필요",
         "제도적 지원 절실",
+        "정부 역할 필요",
+        "정부 역할 절실",
+        "당국 역할 필요",
+        "당국 역할 절실",
+        "정부 차원 지원 필요",
+        "당국 차원 지원 필요",
         "보호 장치 필요",
         "규제 필요",
         "법제화 필요"
@@ -828,18 +863,13 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
     intervention_context_words = [
         "정부",
         "당국",
-        "공공",
-        "법제",
-        "규제",
-        "보호"
+        "규제"
     ]
 
     intervention_action_words = [
         "나서야",
         "개입해야",
         "지원해야",
-        "필요",
-        "절실",
         "마련해야",
         "강화해야",
         "입법해야"
@@ -1083,9 +1113,7 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
         "정부와 업계 모두 책임",
         "감독당국과 금융사 책임",
         "공동 과실",
-        "책임 분담",
-        "책임을 나눠",
-        "책임을 함께"
+        "책임 분담"
     ]
 
     if any(w in c_title + c_content for w in mixed_responsibility_words):
@@ -1097,6 +1125,20 @@ def smart_classify(title, content, sentiment=None, sentiment_score=0.0):
             ["공동", "복합", "맞물", "여러 주체", "엇갈"]
     ):
         scores["복합 책임"] += 2.0
+
+    non_blame_responsibility_words = [
+        "사회적 책임",
+        "책임 있는 AI",
+        "책임 있는 개발",
+        "책임 투자",
+        "책임 경영"
+    ]
+
+    if any(w in c_title + c_content for w in non_blame_responsibility_words):
+        scores["복합 책임"] *= 0.05
+
+    if scores["복합 책임"] < 2.5:
+        scores["복합 책임"] = 0
 
     if has_responsibility_denial:
         scores["정부 책임"] *= 0.03
@@ -1260,7 +1302,7 @@ def update_perspective_to_es(all:bool=False):
                         }
                     }
                 )
-                # save_article_process_log("A202", doc_id, "success")
+                save_article_process_log("A202", doc_id, "success")
             except Exception as e:
                 print("관점 분석 실패:", doc_id, e)
 
