@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 BATCH_SIZE          = 10000
 MAX_NEWS_PER_PRESS  = 3
 DUPLICATE_THRESHOLD = 0.85
-MAX_SENTENCE_LENGTH = 70
+MAX_SENTENCE_LENGTH = 100
 MIN_SENTENCE_LENGTH = 15
 INDEX_NEWS          = "news_economy"
 INDEX_SCOPES        = "news_scopes"
@@ -50,6 +50,13 @@ _CLEAN_PATTERNS = [
     # 방송사 태그: [KBS 춘천], [MBC] 등
     (re.compile(r"^\s*\[[^\]]{1,20}\]\s*"), ""),
     (re.compile(r"\[[^\]]{1,20}\]"), " "),
+    # 방송 스크립트 앵커/리포트 블록 제거
+    # "[앵커] ...문장들... [리포트]" 구간 전체 제거
+    (re.compile(r"\[앵커\].+?(?=\[리포트\])", re.DOTALL), ""),
+    (re.compile(r"\[앵커\].+", re.DOTALL), ""),
+    (re.compile(r"\[리포트\]\s*"), ""),
+    # 인터뷰 인용 태그: [홍길동/직책 : "..."] → 태그만 제거, 내용 유지
+    (re.compile(r"\[[가-힣\s/·]{2,30}\s*:\s*"), ""),
     # 언론사 발신 헤더: (서울=뉴스1) 홍길동 기자 =
     (re.compile(r"\([^)]{1,20}=[^)]{1,20}\)\s*[가-힣\s]{2,10}기자\s*=?\s*"), ""),
     # 기자 byline
@@ -69,6 +76,19 @@ _CLEAN_PATTERNS = [
     (re.compile(r"\d+건을?\s*분석한\s*결과[^.]*\.?"), ""),
     (re.compile(r"이\s*기사[는은]\s*AI[^.]*\.?"), ""),
     (re.compile(r"AI\s*(가|이|로)\s*[^.]{1,30}(작성|생성|요약)[^.]*\.?"), ""),
+    # 언론사 기사 분류 태그: (종합), (종합2보), (상보), (1보), (속보) 등
+    (re.compile(r"^\s*\((?:종합\d*|상보|속보|\d+보)\)\s*"), ""),
+    (re.compile(r"\((?:종합\d*|상보|속보|\d+보)\)"), ""),
+    # 기자 이메일 포함 byline: [김혜인 haileykim0516@gmail.com]
+    (re.compile(r"\[[가-힣a-zA-Z\s]+\s+[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\]"), ""),
+    # 이메일 주소 단독
+    (re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"), ""),
+    # 연합뉴스 모바일 UI 네비게이션 텍스트
+    # "최찬흥 기자 구독 구독중 이전 다음" 패턴
+    (re.compile(r"구독중?\s*"), ""),
+    (re.compile(r"이전\s+다음"), ""),
+    # "관련 뉴스" 이하 블록 제거 (연합뉴스 관련기사 목록)
+    (re.compile(r"관련\s*뉴스.+", re.DOTALL), ""),
     # 중복 공백
     (re.compile(r"\s{2,}"), " "),
 ]
