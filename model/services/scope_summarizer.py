@@ -55,6 +55,10 @@ _CLEAN_PATTERNS = [
     (re.compile(r"\[앵커\].+?(?=\[리포트\])", re.DOTALL), ""),
     (re.compile(r"\[앵커\].+", re.DOTALL), ""),
     (re.compile(r"\[리포트\]\s*"), ""),
+    # 【 앵커멘트 】 패턴 (KBS 등 방송 스크립트)
+    (re.compile(r"【\s*앵커멘트\s*】.+?(?=【)", re.DOTALL), ""),
+    (re.compile(r"【\s*앵커멘트\s*】.+", re.DOTALL), ""),
+    (re.compile(r"【[^】]{1,20}】\s*"), ""),
     # MBC 방송 스크립트: ◀앵커▶, ◀리포트▶ 패턴
     (re.compile(r"◀\s*앵커\s*▶.+?(?=◀\s*(?:리포트|기자)\s*▶)", re.DOTALL), ""),
     (re.compile(r"◀\s*앵커\s*▶.+", re.DOTALL), ""),
@@ -83,6 +87,12 @@ _CLEAN_PATTERNS = [
     (re.compile(r"사진은\s*기사와\s*관련\s*없음"), ""),
     (re.compile(r"/?\s*사진=게티이미지[^\s/]*"), ""),
     (re.compile(r"/?\s*사진=[^\s/]{1,30}"), ""),
+    # 유료/선공개 안내 문구
+    (re.compile(r"이\s*기사는?\s*\d{4}년.+?(?:선공개|공개)\s*되었습니다[.。]?"), ""),
+    (re.compile(r"이\s*기사는?\s*.{1,30}(?:프리미엄|유료)\s*콘텐츠.+?[.。]"), ""),
+    (re.compile(r"(?:프리미엄|유료)\s*콘텐츠로?\s*선공개.+?[.。]"), ""),
+    (re.compile(r"구독자\s*전용.+?[.。]"), ""),
+    (re.compile(r"유료\s*기사입니다.+?[.。]"), ""),
     # AI 분석 문구: "관련 기사 N건을 분석한 결과입니다" 등
     (re.compile(r"관련\s*기사\s*\d+건[^.]*\.?"), ""),
     (re.compile(r"\d+건을?\s*분석한\s*결과[^.]*\.?"), ""),
@@ -123,6 +133,18 @@ _CLEAN_PATTERNS = [
     (re.compile(r"▶.+", re.DOTALL), ""),
     (re.compile(r"☞.+", re.DOTALL), ""),
     (re.compile(r"※.+", re.DOTALL), ""),
+    # 사진 캡션 패턴: "~하는 모습.", "~장면.", "~모습이다." 등
+    (re.compile(r"[^.!?]{5,60}(?:하는|된|찍은|촬영한|모인|참석한)\s*모습[.。]?"), ""),
+    (re.compile(r"[^.!?]{5,60}(?:장면|광경)[.。]?"), ""),
+    (re.compile(r"[^.!?]{5,60}모습이다[.。]?"), ""),
+    # 날짜 + 인물 + 행위 + "모습" 패턴: "27일 홍길동이 ~하는 모습"
+    (re.compile(r"\d{1,2}일\s+[가-힣]{2,10}(?:이|가|은|는)\s+[^.]{5,50}모습[.。]?"), ""),
+    # 제작진 크레딧 블록
+    # "그래픽 홍길동 / 영상취재 김철수 / 영상편집 이영희" 등 패턴
+    (re.compile(
+        r"(?:그래픽|디자인|영상취재|영상촬영|영상기자|촬영기자|영상편집|작가)"
+        r"[^.!?\n]{0,50}"
+    ), ""),
     # 중복 공백
     (re.compile(r"\s{2,}"), " "),
 ]
@@ -163,6 +185,95 @@ def _remove_duplicates(sentences: list[str]) -> list[str]:
     return keep
 
 
+# ── 인용구 문장 필터 ──────────────────────────────────────────────
+
+# 이 패턴이 포함된 문장은 요약 후보에서 제외
+# 사진 캡션 문장 감지 패턴
+_CAPTION_PATTERNS = [
+    re.compile(r"(?:하는|된|찍은|모인|참석한)\s*모습[.。]?\s*$"),
+    re.compile(r"(?:장면|광경)[.。]?\s*$"),
+    re.compile(r"모습이다[.。]?\s*$"),
+    re.compile(r"\d{1,2}일\s+[가-힣]{2,10}(?:이|가)\s+[^.]{5,40}모습"),
+]
+
+def _is_caption_sentence(sentence: str) -> bool:
+    """사진 캡션 문장이면 True 반환"""
+    return any(p.search(sentence) for p in _CAPTION_PATTERNS)
+
+
+# 메타/안내 문장 감지 패턴 (유료 안내, 날짜 고지 등)
+_META_PATTERNS = [
+    re.compile(r"이\s*기사는?\s*\d{4}년"),
+    re.compile(r"프리미엄\s*콘텐츠"),
+    re.compile(r"선공개\s*되었"),
+    re.compile(r"구독자\s*전용"),
+    re.compile(r"유료\s*기사"),
+    re.compile(r"본\s*기사는?\s*.{1,30}제공"),
+]
+
+def _is_meta_sentence(sentence: str) -> bool:
+    """유료안내/메타 문장이면 True 반환"""
+    return any(p.search(sentence) for p in _META_PATTERNS)
+
+
+# ── 문장 품질 필터 ─────────────────────────────────────────────────
+
+# 이미지 출처 패턴
+_IMAGE_SOURCE_PATTERN = re.compile(
+    r"(?:\[|\()?[가-힣a-zA-Z\s]{2,20}(?:홈페이지|캡처|제공|촬영|AFP|AP|EPA|로이터)[.\])]?"
+)
+
+def _is_valid_sentence(sentence: str) -> bool:
+    """
+    최소 품질 기준을 통과한 문장만 요약 후보로 허용.
+
+    기준:
+      1. 20자 이상
+      2. 한글 비율 40% 이상 (이미지 캡션, 영문 URL 등 제거)
+      3. 경제 키워드 1개 이상 포함
+      4. 캡션/인용/메타/이미지출처 패턴 없음
+    """
+    # 1. 길이 기준
+    if len(sentence) < 20:
+        return False
+
+    # 2. 한글 비율
+    korean_chars = sum(1 for c in sentence if '가' <= c <= '힣')
+    if korean_chars / len(sentence) < 0.4:
+        return False
+
+    # 3. 경제 키워드 최소 1개
+    if not any(kw in sentence for kw in _ECON_KEYWORDS):
+        return False
+
+    # 4. 노이즈 패턴 없음
+    if _is_caption_sentence(sentence):
+        return False
+    if _is_meta_sentence(sentence):
+        return False
+    if _IMAGE_SOURCE_PATTERN.search(sentence):
+        return False
+
+    return True
+
+
+_QUOTE_PATTERNS = [
+    re.compile(r"익명"),
+    re.compile(r"한\s*전문가"),
+    re.compile(r"관계자[는은]\s*"),
+    re.compile(r"당국자[는은]\s*"),
+    re.compile(r"[가-힣]{2,4}\s*(?:장관|의원|대표|대통령|총리|장|회장|사장|이사)[는은이가]\s*[""']"),
+    re.compile(r"^[""']"),           # 따옴표로 시작
+    re.compile(r"라고\s*(?:말했|밝혔|전했|했)"),
+    re.compile(r"라며\s*"),
+    re.compile(r"고\s*(?:말했|밝혔|전했|했)"),
+]
+
+def _is_quote_sentence(sentence: str) -> bool:
+    """인용구/익명 발언 문장이면 True 반환"""
+    return any(p.search(sentence) for p in _QUOTE_PATTERNS)
+
+
 def _natural_trim(sentence: str, limit: int = MAX_SENTENCE_LENGTH) -> str:
     if len(sentence) <= limit:
         return sentence
@@ -173,32 +284,99 @@ def _natural_trim(sentence: str, limit: int = MAX_SENTENCE_LENGTH) -> str:
     return cut[:limit] + "…"
 
 
+# ── 문장 품질 점수 ────────────────────────────────────────────────
+
+# 경제 관련성 키워드
+_ECON_KEYWORDS = {
+    "은행", "증권", "금융", "보험", "투자", "펀드", "자산",
+    "기업", "회사", "법인", "계열사", "자회사", "지주",
+    "인수", "합병", "매각", "계약", "협약", "협력", "제휴",
+    "상장", "공모", "IPO", "유상증자",
+    "금리", "환율", "물가", "GDP", "성장률", "실업률",
+    "수출", "수입", "무역", "관세", "경상수지",
+    "주가", "코스피", "코스닥", "증시", "시가총액",
+    "매출", "영업이익", "순이익", "실적", "분기", "연간",
+    "부동산", "집값", "전세", "아파트", "분양",
+    "세금", "세율", "과세", "감세", "세제", "절세",
+    "규제", "완화", "정책", "예산", "재정", "국채",
+    "금통위", "한국은행", "연준", "기재부", "금감원",
+}
+
+# 수치/변화 키워드: 구체적 팩트 문장 우선
+_FACT_PATTERNS = [
+    re.compile(r"\d+[\.,]?\d*\s*(?:%|퍼센트|배|조|억|만|천|달러|원|위안|엔)"),
+    re.compile(r"역대|최초|처음|사상|최대|최소|최고|최저|신기록"),
+    re.compile(r"전년\s*(?:대비|동기|동월)"),
+    re.compile(r"전월\s*(?:대비|대비)"),
+    re.compile(r"(?:증가|감소|상승|하락|급등|급락|돌파|하회|상회)\s*(?:했|했다|했으며|했고)"),
+]
+
+def _fact_score(sentence: str) -> float:
+    """수치/구체적 변화 포함 문장에 가중치 반환 (0.0 ~ 0.15)"""
+    count = sum(1 for p in _FACT_PATTERNS if p.search(sentence))
+    return min(count * 0.05, 0.15)
+
+def _econ_score(sentence: str) -> float:
+    """경제 키워드 포함 가중치 반환 (0.0 ~ 0.10)"""
+    count = sum(1 for kw in _ECON_KEYWORDS if kw in sentence)
+    return min(count * 0.05, 0.10)
+
+def _keyword_overlap_penalty(sentence: str, scope_keywords: list[str]) -> float:
+    """scope_keywords와 겹치는 단어가 많을수록 패널티 (중복 정보 방지)"""
+    if not scope_keywords:
+        return 0.0
+    overlap = sum(1 for kw in scope_keywords if kw in sentence)
+    # 키워드 3개 이상 겹치면 -0.10 (타이틀과 차별화)
+    return -min(overlap * 0.03, 0.10)
+
+
 # ── 임베딩 기반 중심 문장 선택 ────────────────────────────────────
 
 def _select_central_sentence(
     sentences: list[str],
     sent_embeddings: list[np.ndarray],
+    scope_keywords: list[str] | None = None,
 ) -> int:
     """
-    기사 embedding을 문장 벡터로 사용하여 스콥 중심에 가장 가까운 문장 선택.
+    최적 요약 문장 선택:
+      코사인유사도 + 경제관련성 + 수치/팩트 가중치 - 인용구 패널티 - 키워드 중복 패널티
 
-    sent_embeddings: 각 문장이 속한 기사의 embedding (문장과 1:1 대응)
-    중심 벡터 = 전체 embedding 평균
-    → 코사인 유사도 가장 높은 문장 인덱스 반환
+    타이틀/키워드와 중복되지 않는 구체적 팩트 문장을 우선 선택.
     """
-    matrix   = np.vstack(sent_embeddings).astype(np.float32)  # (N, 768)
-    centroid = matrix.mean(axis=0, keepdims=True)              # (1, 768)
-    # L2 정규화
+    matrix   = np.vstack(sent_embeddings).astype(np.float32)
+    centroid = matrix.mean(axis=0, keepdims=True)
     norm = np.linalg.norm(centroid)
     if norm > 0:
         centroid = centroid / norm
-    sims = cosine_similarity(centroid, matrix)[0]              # (N,)
-    return int(np.argmax(sims))
+    sims = cosine_similarity(centroid, matrix)[0]
+
+    kws = scope_keywords or []
+    final_scores = np.array([
+        sim
+        + _econ_score(sent)
+        + _fact_score(sent)
+        + _keyword_overlap_penalty(sent, kws)
+        + (-0.5 if _is_quote_sentence(sent) else 0.0)
+        + (-0.5 if _is_caption_sentence(sent) else 0.0)
+        + (-0.5 if _is_meta_sentence(sent) else 0.0)
+        for sim, sent in zip(sims, sentences)
+    ])
+    return int(np.argmax(final_scores))
 
 
 # ── 메인 생성 함수 ─────────────────────────────────────────────────
 
 def generate_scope_summary(es, scope_id: str):
+    # scope_keywords 조회 (키워드 중복 패널티용)
+    scope_keywords: list[str] = []
+    try:
+        scope_res = es.get(index=INDEX_SCOPES, id=scope_id, ignore=404)
+        if scope_res.get("found"):
+            kw_str = scope_res["_source"].get("scope_keywords", "")
+            scope_keywords = [k.strip() for k in kw_str.split(",") if k.strip()]
+    except Exception:
+        pass
+
     # 뉴스 content + embedding 수집
     res = es.search(
         index=INDEX_NEWS,
@@ -254,6 +432,22 @@ def generate_scope_summary(es, scope_id: str):
         _save(es, scope_id, summary)
         return summary
 
+    # 품질 필터: 최소 기준 통과한 문장만 후보로
+    valid_sentences  = []
+    valid_embeddings = []
+    for s, e in zip(all_sentences, all_embeddings):
+        if _is_valid_sentence(s):
+            valid_sentences.append(s)
+            valid_embeddings.append(e)
+
+    # 유효 문장이 없으면 저장 안 함 (유료기사/노이즈만 있는 스콥)
+    if not valid_sentences:
+        logger.warning(f"유효 문장 없음, 스킵: scope_id={scope_id}")
+        return None
+
+    all_sentences  = valid_sentences
+    all_embeddings = valid_embeddings
+
     # 중복 제거 (embedding도 같이 필터링)
     if len(all_sentences) >= 2:
         vectorizer = TfidfVectorizer(
@@ -283,7 +477,7 @@ def generate_scope_summary(es, scope_id: str):
         return summary
 
     # embedding 기반 중심 문장 선택
-    best_idx = _select_central_sentence(all_sentences, all_embeddings)
+    best_idx = _select_central_sentence(all_sentences, all_embeddings, scope_keywords)
     summary  = _natural_trim(all_sentences[best_idx])
     _save(es, scope_id, summary)
     return summary
