@@ -55,6 +55,10 @@ _CLEAN_PATTERNS = [
     (re.compile(r"\[앵커\].+?(?=\[리포트\])", re.DOTALL), ""),
     (re.compile(r"\[앵커\].+", re.DOTALL), ""),
     (re.compile(r"\[리포트\]\s*"), ""),
+    # MBC 방송 스크립트: ◀앵커▶, ◀리포트▶ 패턴
+    (re.compile(r"◀\s*앵커\s*▶.+?(?=◀\s*(?:리포트|기자)\s*▶)", re.DOTALL), ""),
+    (re.compile(r"◀\s*앵커\s*▶.+", re.DOTALL), ""),
+    (re.compile(r"◀\s*(?:리포트|기자|END)\s*▶\s*"), ""),
     # 인터뷰 인용 태그: [홍길동/직책 : "..."] → 태그만 제거, 내용 유지
     (re.compile(r"\[[가-힣\s/·]{2,30}\s*:\s*"), ""),
     # 언론사 발신 헤더: (서울=뉴스1) 홍길동 기자 =
@@ -71,6 +75,14 @@ _CLEAN_PATTERNS = [
     (re.compile(r"All rights reserved[^.]*\.?", re.IGNORECASE), ""),
     # 사진/그래픽 캡션
     (re.compile(r"\([^)]{1,30}=[^)]{1,30}\)"), ""),
+    # 외신 사진 크레딧: (REUTERS/Mohammed Aty), (AP/...), (AFP/...)
+    (re.compile(r"\((?:REUTERS|AP|AFP|EPA|Getty)[^)]*\)"), ""),
+    # 이미지 확대 텍스트
+    (re.compile(r"이미지\s*확대\s*"), ""),
+    # 사진 면책 문구: "사진은 기사와 관련 없음", "사진=게티이미지뱅크"
+    (re.compile(r"사진은\s*기사와\s*관련\s*없음"), ""),
+    (re.compile(r"/?\s*사진=게티이미지[^\s/]*"), ""),
+    (re.compile(r"/?\s*사진=[^\s/]{1,30}"), ""),
     # AI 분석 문구: "관련 기사 N건을 분석한 결과입니다" 등
     (re.compile(r"관련\s*기사\s*\d+건[^.]*\.?"), ""),
     (re.compile(r"\d+건을?\s*분석한\s*결과[^.]*\.?"), ""),

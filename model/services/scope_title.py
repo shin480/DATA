@@ -65,6 +65,8 @@ _NOUN_STOPWORDS = {
     # 언론사 섹션 태그에서 추출되는 일반 단어
     "분석", "이슈", "스퀘어", "넘버스", "단독", "특집", "기획",
     "동향", "전망", "현황", "정리", "요약", "심층", "집중",
+    # 서비스명/미디어 관련
+    "AI", "뉴스", "미디어", "채널", "방송", "라이브", "온라인",
 }
 
 # 동사 불용어: 너무 일반적이어서 서술어로 쓰기 애매한 것
@@ -72,6 +74,15 @@ _VERB_STOPWORDS = {
     "하다", "되다", "있다", "없다", "이다", "아니다",
     "말하다", "밝히다", "전하다", "나타나다", "보이다",
     "받다", "주다", "가다", "오다", "만들다",
+    # 감정/평가 형용사 — 타이틀 서술어로 부적절
+    "황당하", "어이없다", "놀랍다", "황망하", "허탈하",
+    "심각하", "우려스럽", "안타깝", "답답하",
+    # 타이틀 서술어로 부적절한 동사
+    "물리", "물리다", "당하", "당하다", "맞다", "걸리", "빠지",
+    "터지", "무너지", "흔들리", "떠나", "사라지",
+    # 너무 일반적인 형용사/가능성 표현
+    "가능", "가능하", "불가능", "필요", "필요하", "중요", "중요하",
+    "어렵", "쉽", "빠르", "느리",
 }
 
 # 동사 어간 → 자연스러운 명사형 서술어 변환 테이블
@@ -221,17 +232,37 @@ def _make_scope_title(titles: list[str]) -> str:
                 words.append(parts[0])
         title = " ".join(dict.fromkeys(words)) or "주요 경제 이슈"
 
-    # 30자 초과 시 공백 기준으로 자름
-    if len(title) > 30:
-        title = title[:30].rsplit(" ", 1)[0] if " " in title[:30] else title[:30]
+    # 50자 초과 시 공백 기준으로 자름
+    if len(title) > 50:
+        title = title[:50].rsplit(" ", 1)[0] if " " in title[:50] else title[:50]
 
     return title
 
 
 # ── ES 헬퍼 ───────────────────────────────────────────────────────
 
+# 제목 전처리 패턴 (섹션 태그, 언론사 브랜드 등 제거)
+_TITLE_CLEAN_PATTERNS = [
+    # 대괄호 섹션 태그: [ETF 스퀘어], [단독], [넘버스] 등
+    re.compile(r"^\s*\[[^\]]{1,20}\]\s*"),
+    re.compile(r"\[[^\]]{1,20}\]"),
+    # 소괄호 분류 태그: (종합), (상보), (1보) 등
+    re.compile(r"\((?:종합\d*|상보|속보|\d+보)\)"),
+    # 언론사 섹션 구분자: "AI 뉴스 분석 |", "ETF 스퀘어 |" 등
+    re.compile(r"^[가-힣a-zA-Z\s·]{2,15}\s*[|｜]\s*"),
+    # 말줄임표/특수문자 정리
+    re.compile(r"\s{2,}"),
+]
+
+def _clean_title(title: str) -> str:
+    """기사 제목에서 섹션 태그 및 언론사 브랜드 제거"""
+    for pattern in _TITLE_CLEAN_PATTERNS:
+        title = pattern.sub(" ", title)
+    return title.strip()
+
+
 def _fetch_titles(es, scope_id: str) -> list[str]:
-    """scope에 속한 기사 제목 목록 반환 (최신순 최대 20개)"""
+    """scope에 속한 기사 제목 목록 반환 (최신순 최대 20개, 섹션 태그 제거)"""
     res = es.search(
         index=INDEX_NEWS,
         body={
@@ -241,7 +272,14 @@ def _fetch_titles(es, scope_id: str) -> list[str]:
             "size":    20,
         },
     )
-    return [h["_source"]["title"] for h in res["hits"]["hits"] if h["_source"].get("title")]
+    titles = []
+    for h in res["hits"]["hits"]:
+        raw = h["_source"].get("title", "")
+        if raw:
+            cleaned = _clean_title(raw)
+            if cleaned:
+                titles.append(cleaned)
+    return titles
 
 
 def _upsert_scope_title(es, scope_id: str, scope_title: str):
