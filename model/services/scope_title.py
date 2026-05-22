@@ -362,17 +362,21 @@ def trigger_scope_title(es, scope_id: str, news_count: int):
 
 def enqueue_missing_scope_titles():
     """
-    scopeTitle이 없는 scope를 전체 조회하여 scope_refresh_queue에 등록.
+    scopeTitle이 없는 scope 중 news_economy에 실제 기사가 있는 것만 queue 등록.
 
+    news_scopes 기준 전체 조회 → 유령 스콥(기사 없는 스콥) 포함 문제 해결.
+    news_economy에서 scopeID 집계 → 실제 기사 있는 스콥만 등록.
     즉시 생성 시도 없이 queue 등록만 수행 → API 타임아웃 방지.
     실제 생성은 run_scope_title_batch()(/classify/scope-titles)에서 처리.
     """
     try:
-        es       = get_es()
-        count    = 0
-        from_idx = 0
-        page_size = 1000
+        es    = get_es()
+        count = 0
 
+        # 1. scopeTitle 없는 스콥 ID 목록
+        missing_ids: set[str] = set()
+        from_idx  = 0
+        page_size = 1000
         while True:
             res = es.search(
                 index=INDEX_SCOPES,
@@ -389,15 +393,56 @@ def enqueue_missing_scope_titles():
             hits = res["hits"]["hits"]
             if not hits:
                 break
-
             for hit in hits:
-                scope_id = hit["_source"]["scopeID"]
-                _enqueue(es, scope_id)
-                count += 1
-
+                missing_ids.add(hit["_source"]["scopeID"])
             from_idx += page_size
             if len(hits) < page_size:
                 break
+
+        if not missing_ids:
+            logger.info("scopeTitle 누락 scope 없음")
+            es.close()
+            return 0
+
+        logger.info(f"scopeTitle 누락 scope 총 {len(missing_ids)}건 확인")
+
+        # 2. news_economy에서 실제 기사 있는 scopeID 집계
+        agg_res = es.search(
+            index=INDEX_NEWS,
+            body={
+                "query": {
+                    "terms": {"scopeID": list(missing_ids)}
+                },
+                "aggs": {
+                    "real_scopes": {
+                        "terms": {
+                            "field": "scopeID",
+                            "size":  len(missing_ids),
+                        }
+                    }
+                },
+                "size": 0,
+            },
+        )
+        real_scope_ids = {
+            b["key"]
+            for b in agg_res["aggregations"]["real_scopes"]["buckets"]
+        }
+        logger.info(f"실제 기사 있는 scope: {len(real_scope_ids)}건 / 누락 {len(missing_ids)}건")
+
+        # 3. 실제 기사 있는 스콥만 queue 등록
+        for scope_id in real_scope_ids:
+            _enqueue(es, scope_id)
+            count += 1
+
+        es.close()
+
+        if count == 0:
+            logger.info("등록할 scope 없음 (전부 유령 스콥)")
+        else:
+            logger.info(f"scopeTitle queue 등록 완료: {count}건")
+
+        return count
 
         es.close()
 
