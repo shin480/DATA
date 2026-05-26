@@ -258,6 +258,17 @@ def get_main_top5_keywords():
 # •	scope cardinality 집계: scopeID cardinality 계산은 있으나 반환에는 직접 사용 안 됨
 # •	언론사 수: 내려받은 상위 50건 기준 unique press count
 # •	흐름 집계: 내려받은 상위 50건의 perspective[0].category 최빈값
+# 키워드 상세 AI 분석 scope
+# •	호출 API: GET /api/keywords/{keyword} 안에서 함께 반환
+# •	scope 검색: news_scopes, size: 1000
+# •	필수 조건: scope_keywords에 keyword wildcard 포함
+# •	필수 조건: news_count >= 5
+# •	점수 가산: scopeTitle phrase boost: 5
+# •	점수 가산: scope_summary phrase boost: 3
+# •	정렬: news_count desc, updated_at desc
+# •	주의: _score 정렬이 아니라 boost가 실제 순서에는 거의 반영되지 않음
+# •	최종 출력: 최대 1000개까지 반환 가능, 화면에서는 관련 AI 분석 카드/목록으로 사용
+
 # =========================================
 @app.get("/api/keywords/{keyword}")
 def get_keyword_detail(keyword: str):
@@ -2955,6 +2966,13 @@ def get_rank1_count_map(es, keyword: str = ""):
 # =========================================
 # 전체 기사 기준 2차 관점 분석 개요 API
 # 헤더 > 관점 분석(viewpoint_overview.html)용
+# •	호출 API: GET /api/viewpoints/overview
+# •	집계 검색: news_economy, size: 0
+# •	제외 조건: is_disabled == true
+# •	nested 집계 조건: perspective.rank == 1
+# •	집계 category size: 100
+# •	제외 카테고리: 관점 미분류, 미분류, 관점 정보 없음
+# •	최종 출력: 고정 관점 카테고리 18개를 그룹별 출력
 # =========================================
 @app.get("/api/viewpoints/overview")
 def get_viewpoint_overview():
@@ -3215,7 +3233,23 @@ def get_articles_by_perspective(
 
     return articles
 
-
+# =============================
+# 관점 상세
+# •	호출 API: GET /api/viewpoints/detail?viewpoint=...&keyword=...
+# •	선택 관점 기준: viewpoint_master, size: 100
+# •	선택 관점 전체 기사 검색: news_economy, size: 10000
+# •	필수 조건: nested perspective.rank == 1
+# •	필수 조건: nested perspective.category == 선택 category
+# •	제외 조건: is_disabled == true
+# •	키워드가 있으면 추가 조건: multi_match
+# •	키워드 필드 가중치: title^3, summary, keywords, clean_text
+# •	정렬: published_at desc
+# •	감성/키워드 집계: 최대 10000건 기준
+# •	대표 기사 후보 검색: size: 500, 최근 7일 조건
+# •	대표 기사 후처리: 주요 키워드 Top5와 교집합 있는 기사 우선
+# •	최종 대표 기사 출력: 최대 5건
+# •	같은 그룹 비교용 검색: 그룹 내 각 관점마다 size: 500
+# =============================
 @app.get("/api/viewpoints/detail")
 def get_viewpoint_detail(
     viewpoint: str = "",
@@ -3333,25 +3367,14 @@ def get_viewpoint_detail(
     ]
 
     # 관련 기사 TOP 5
-    # 기준: 최근 7일 + 선택 관점 + 대표 키워드 포함 + 최신순
-    recent_articles = get_articles_by_perspective(
+    # 기준: 선택 관점 + 대표 키워드 포함 + 최신순
+    filtered_articles = get_articles_by_perspective(
         es=es,
         es_category=selected_es_category,
         size=500,
-        recent_7days=True,
+        recent_7days=False,
         keyword=keyword
     )
-
-    representative_keywords = set(keywords[:5])
-
-    if representative_keywords:
-        filtered_articles = [
-            article
-            for article in recent_articles
-            if representative_keywords.intersection(set(article["keywords"]))
-        ]
-    else:
-        filtered_articles = recent_articles
 
     filtered_articles.sort(
         key=lambda article: article["published_at"] or "",
@@ -3437,7 +3460,18 @@ def get_viewpoint_detail(
         "compare_groups": compare_groups
     }
 
-# 스콥 상세
+# ===============================
+# •	호출 API: GET /api/scopes/random
+# •	검색: news_scopes, size: 1
+# •	반복 시도: 최대 20번
+# •	필수 조건: news_count >= 5
+# •	필수 조건: created_at 최근 7일
+# •	점수 조건: random_score
+# •	후처리: 선택된 scope로 상세 조회
+# •	상세 기사 수가 5건 이상이면 출력
+# •	상세 기사 수가 5건 미만이면 news_count를 실제 기사 수로 보정 후 재시도
+# •	최종 출력: scope 1개
+# ===============================
 @app.get("/api/scopes/random")
 def get_random_scope_detail():
     es = get_es()
@@ -3505,6 +3539,19 @@ def get_random_scope_detail():
         "articles": []
     }
 
+# ==========================
+# 특정 이슈 상세
+# •	호출 API: GET /api/scopes/{scope_id}
+# •	기사 검색: news_economy, size: 100
+# •	필수 조건: scopeID == scope_id
+# •	제외 조건: is_disabled == true
+# •	정렬: published_at desc
+# •	기사 출력: 최대 100건
+# •	감성 집계: 반환된 최대 100건 기준 직접 카운트
+# •	관점 집계: 반환된 최대 100건의 perspective 배열 전체 카운트
+# •	관점 출력: 미분류 제외 후 상위 4개
+# •	키워드 출력: scope_keywords split 후 최대 5개
+# ==========================
 @app.get("/api/scopes/{scope_id}")
 def get_scope_detail(scope_id: str):
     es = get_es()
