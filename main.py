@@ -1264,6 +1264,14 @@ def get_article_detail(article_id: str, req: Request):
         "deepNews": deep_news
     }
 
+# =======================
+# 마이페이지 본 뉴스
+# •	호출 API: GET /api/mypage/viewed-news?page=...&size=10
+# •	호출 위치: view/mypage_home.html
+# •	프론트 요청 size: 10
+# •	조건: 현재 세션 사용자 조회 이력
+# •	최종 출력: 페이지당 최대 10건, 전체 count 별도 반환
+# =======================
 @app.get("/api/mypage/viewed-news")
 def get_viewed_news(
     req: Request,
@@ -1352,6 +1360,14 @@ def get_viewed_news(
     finally:
         db.close()
 
+# ========================
+# 마이페이지 좋아요/싫어요 기사
+# •	호출 API: GET /api/mypage/reactions?type=like|dislike&page=...&size=...
+# •	호출 위치: view/mypage_home.html
+# •	프론트 요청 size: pageSize
+# •	조건: 현재 세션 사용자, reaction type
+# •	최종 출력: 페이지 단위 기사 목록과 total_count
+# ========================
 @app.get("/api/mypage/reactions")
 def get_my_reactions(
     req: Request,
@@ -2890,14 +2906,43 @@ def get_rank1_count_map(es, keyword: str = ""):
             "bool": {
                 "must": [
                     {
-                        "multi_match": {
-                            "query": keyword,
-                            "fields": [
-                                "title^3",
-                                "summary",
-                                "keywords",
-                                "clean_text"
-                            ]
+                        "bool": {
+                            "should": [
+                                {
+                                    "wildcard": {
+                                        "keywords": {
+                                            "value": f"*{keyword}*",
+                                            "case_insensitive": True,
+                                            "boost": 8
+                                        }
+                                    }
+                                },
+                                {
+                                    "match_phrase": {
+                                        "title": {
+                                            "query": keyword,
+                                            "boost": 5
+                                        }
+                                    }
+                                },
+                                {
+                                    "match_phrase": {
+                                        "summary": {
+                                            "query": keyword,
+                                            "boost": 3
+                                        }
+                                    }
+                                },
+                                {
+                                    "match_phrase": {
+                                        "clean_text": {
+                                            "query": keyword,
+                                            "boost": 2
+                                        }
+                                    }
+                                }
+                            ],
+                            "minimum_should_match": 1
                         }
                     }
                 ],
@@ -3157,14 +3202,43 @@ def get_articles_by_perspective(
     # 해당 키워드가 포함된 기사만 조회
     if keyword:
         must_query.append({
-            "multi_match": {
-                "query": keyword,
-                "fields": [
-                    "title^3",
-                    "summary",
-                    "keywords",
-                    "clean_text"
-                ]
+            "bool": {
+                "should": [
+                    {
+                        "wildcard": {
+                            "keywords": {
+                                "value": f"*{keyword}*",
+                                "case_insensitive": True,
+                                "boost": 8
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase": {
+                            "title": {
+                                "query": keyword,
+                                "boost": 5
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase": {
+                            "summary": {
+                                "query": keyword,
+                                "boost": 3
+                            }
+                        }
+                    },
+                    {
+                        "match_phrase": {
+                            "clean_text": {
+                                "query": keyword,
+                                "boost": 2
+                            }
+                        }
+                    }
+                ],
+                "minimum_should_match": 1
             }
         })
 
@@ -3235,20 +3309,32 @@ def get_articles_by_perspective(
 
 # =============================
 # 관점 상세
-# •	호출 API: GET /api/viewpoints/detail?viewpoint=...&keyword=...
-# •	선택 관점 기준: viewpoint_master, size: 100
-# •	선택 관점 전체 기사 검색: news_economy, size: 10000
-# •	필수 조건: nested perspective.rank == 1
-# •	필수 조건: nested perspective.category == 선택 category
-# •	제외 조건: is_disabled == true
-# •	키워드가 있으면 추가 조건: multi_match
-# •	키워드 필드 가중치: title^3, summary, keywords, clean_text
-# •	정렬: published_at desc
-# •	감성/키워드 집계: 최대 10000건 기준
-# •	대표 기사 후보 검색: size: 500, 최근 7일 조건
-# •	대표 기사 후처리: 주요 키워드 Top5와 교집합 있는 기사 우선
-# •	최종 대표 기사 출력: 최대 5건
-# •	같은 그룹 비교용 검색: 그룹 내 각 관점마다 size: 500
+# • 호출 API: GET /api/viewpoints/detail?viewpoint=...&keyword=...
+# • 선택 관점 기준: viewpoint_master, size: 100
+# • count/percent 집계: get_rank1_count_map(keyword)
+# • count/percent 집계 검색: news_economy, size: 0
+# • 선택 관점 전체 기사 검색: news_economy, size: 10000
+# • 필수 조건: nested perspective.rank == 1
+# • 필수 조건: nested perspective.category == 선택 category
+# • 제외 조건: is_disabled == true
+# • keyword가 없으면:
+#   전체 기사 기준으로 관점 count/percent와 기사 목록 계산
+# • keyword가 있으면 추가 조건:
+#   아래 should 중 최소 1개 매칭
+# • keyword 점수/매칭 조건:
+#   keywords wildcard *keyword* boost: 8
+#   title match_phrase boost: 5
+#   summary match_phrase boost: 3
+#   clean_text match_phrase boost: 2
+#   minimum_should_match: 1
+# • 정렬: published_at desc
+# • 감성/키워드 집계: 선택 관점 전체 기사 검색 결과 최대 10000건 기준
+# • 주요 키워드 출력: 선택 관점 기사 keywords 최빈 8개
+# • 대표 기사 후보 검색: 같은 조건으로 news_economy, size: 500
+# • 대표 기사 후보 최근 7일 조건: 없음
+# • 대표 기사 후보 대표 키워드 교집합 필터: 없음
+# • 최종 대표 기사 출력: 최신순 최대 5건
+# • 같은 그룹 비교용 검색: 그룹 내 각 관점마다 같은 keyword 조건으로 size: 500
 # =============================
 @app.get("/api/viewpoints/detail")
 def get_viewpoint_detail(
@@ -4164,18 +4250,64 @@ def create_all_daily_keyword_metrics():
         "results": results
     }
 
+# ==========================
+# 관리자 수집/처리 요약
+# •	호출 API: GET /search-summary?start_date=...&end_date=...
+# •	수집 수 검색: article_raw count, 전체 매칭 count
+# •	처리 수 검색: news_economy count, 전체 매칭 count
+# •	필수 조건: collected_at이 선택 기간 안
+# •	언론사 집계 검색: news_economy, size: 0
+# •	언론사 terms size: 100
+# •	scope 집계 검색: news_economy, size: 0
+# •	scope terms size: 100
+# •	감성 집계 검색: news_economy, size: 0
+# •	감성 terms size: 10
+# •	최종 출력: 수집/처리/제외 수, 언론사 최대 100개, scope 최대 100개, 감성 3종 건수
+# ==========================
 @app.get("/search-summary")
 def search_summary(start_date: str, end_date: str):
     return get_search_summary(start_date, end_date)
 
+# ======================
+# 사용자 목록/반응 수
+# •	호출 API: GET /search-users?user_id=...&role=...
+# •	검색: users 기준 SQL
+# •	SQL 제한: LIMIT 300
+# •	검색 조건: user_id 또는 name LIKE
+# •	권한 조건: role 필터
+# •	반응 집계: article_reactions 전체를 user별 like/dislike count
+# •	로그인 집계: login_logs에서 user별 MAX(created_at)
+# •	정렬: users.created_at desc
+# •	최종 출력: 최대 300명
+# ======================
 @app.get("/search-users")
 def search_users(user_id:str, role:str):
     return get_user_search(user_id, role)
 
+# ====================
+# 관리자 서비스 이용 현황 통계
+# •	호출 API: POST /user_usage
+# •	로그인 로그 검색: 오늘 날짜 전체 row 조회, 별도 LIMIT 없음
+# •	필수 조건: DATE(created_at) == 오늘
+# •	필수 조건: user_id is not null
+# •	필수 조건: result == success
+# •	정렬: user_id, created_at asc
+# •	기사 조회 검색: article_views count
+# •	기사 조회 조건: 오늘, user_id is not null, is_valid_view = 1
+# •	최종 출력: 평균 체류시간, 접속자 수, 총 체류시간, 오늘 기사 조회 수
+# ====================
 @app.post("/user_usage")
 def user_usage():
     return get_user_usage_stats()
 
+# ==================
+# 관리자 scope 통계
+# •	호출 API: GET /api/admin/scope-stats
+# •	검색: news_scopes, size: 20
+# •	필수 조건: 없음
+# •	정렬: news_count desc
+# •	최종 출력: scope 최대 20개
+# ==================
 @app.get("/api/admin/scope-stats")
 def get_scope_stats():
 
@@ -4221,6 +4353,17 @@ def get_scope_stats():
 def change_role(info:Dict[str,str], req:Request):
     return change_user_role(info, req)
 
+# ======================
+# 관리자 분석 로그
+# •	호출 API: GET /api/admin/analysis-logs?type=...&start_date=...&end_date=...
+# •	처리 로그 검색: article_process_logs, SQL LIMIT 100
+# •	파이프라인 에러 로그 검색: pipeline_error_log, SQL LIMIT 100
+# •	기간 조건: occurred_at 날짜 기준
+# •	타입 조건: 성공/오류 status 필터
+# •	후처리: 두 로그를 합친 뒤 occurred_at desc 재정렬
+# •	기사 보강: 각 article_id마다 ES news_economy 단건 조회
+# •	최종 출력: 최대 200건 후보를 합쳐 정렬한 로그 목록
+# ======================
 @app.get("/api/admin/analysis-logs")
 def get_analysis_logs(
     type: str = "전체",
@@ -4405,6 +4548,19 @@ def get_analysis_logs(
         "logs": logs
     }
 
+# ==========================
+# 언론사별 반응
+# •	호출 API: GET /press_reaction?start_date=...&end_date=...
+# •	DB 검색: article_views, article_reactions
+# •	SQL 제한: 없음
+# •	날짜 조건: 선택 기간 있으면 DATE(created_at) 기준
+# •	조회수 집계: article_id별 view count
+# •	좋아요 집계: article_id별 reaction_type == like count
+# •	dislike: 포함 안 함
+# •	ES 보강 검색: article_id를 500개씩 batch로 news_economy 검색
+# •	각 ES batch size: batch article_id 개수, 최대 500
+# •	최종 출력: 언론사 전체, 정렬은 views desc, likes desc
+# ==========================
 @app.get("/press_reaction")
 def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = ""):
     return get_press_reaction({
@@ -4412,6 +4568,15 @@ def press_reaction(start_date: Optional[str] = "", end_date: Optional[str] = "")
         "end_date": end_date
     })
 
+# ================
+# 관리자 조회/가입 추이
+# •	호출 API: GET /admin_trends?start_date=...&end_date=...
+# •	조회수 검색: article_views 날짜별 group by, LIMIT 없음
+# •	가입수 검색: users 날짜별 group by, LIMIT 없음
+# •	기간 기본값: 시작일 없으면 첫 가입일, 종료일 없으면 오늘
+# •	기간 보정: 7일 미만이면 최소 7일로 확장
+# •	최종 출력: 기간 내 날짜별 조회수/가입수, 빠진 날짜는 0
+# ================
 @app.get("/admin_trends") # 이용자 그래프
 def admin_trends(start_date: str = "", end_date: str = ""):
     return get_admin_trends(start_date, end_date)
