@@ -160,6 +160,17 @@ def viewpoint_classify():
         "message": "관점 분류 Top-3 저장 완료"
     }
 
+# =======================================
+# 메인 카드 키워드 5개 가져오기
+# •	호출 API: GET /api/main/top5-keywords
+# •	1차 검색: daily_keyword_metrics, size: 1
+# •	1차 출력: 최신 날짜 1개
+# •	2차 검색: 최신 날짜 daily_keyword_metrics, size: 5
+# •	필수 조건: date == latest_date
+# •	정렬: article_count desc
+# •	최종 출력: 키워드 최대 5개
+# •	화면 출력: 히어로 #키워드 태그 영역
+# =======================================
 @app.get("/api/main/top5-keywords")
 def get_main_top5_keywords():
     es = get_es()
@@ -235,6 +246,18 @@ def get_main_top5_keywords():
 
 # =========================================
 # 키워드 상세 조회 API
+# •	호출 API: GET /api/keywords/{keyword}
+# •	기사 검색: news_economy, size: 50
+# •	필수 조건: keywords에 keyword wildcard 포함
+# •	제외 조건: is_disabled == true
+# •	정렬: published_at desc
+# •	기사 출력: 최대 50건 내려줌
+# •	화면 초기 출력: 프론트에서 처음 5건부터 보여주고 스크롤로 추가
+# •	기사 수: ES total hit 전체 수
+# •	감성 집계: 같은 검색 조건으로 전체 결과 대상 aggregation
+# •	scope cardinality 집계: scopeID cardinality 계산은 있으나 반환에는 직접 사용 안 됨
+# •	언론사 수: 내려받은 상위 50건 기준 unique press count
+# •	흐름 집계: 내려받은 상위 50건의 perspective[0].category 최빈값
 # =========================================
 @app.get("/api/keywords/{keyword}")
 def get_keyword_detail(keyword: str):
@@ -589,7 +612,7 @@ def get_random_keyword():
     result = es.search(
         index="daily_keyword_metrics",
         body={
-            "size": 100,
+            "size": 10,
             "query": {
                 "term": {
                     "date": latest_date
@@ -1411,6 +1434,16 @@ def get_my_reactions(
 
 # =========================
 # 메인 1위 키워드
+# •	호출 API: GET /api/main/top-keyword
+# •	1차 검색: daily_top_issue_report, size: 1
+# •	정렬: date desc
+# •	출력: 최신 톱 키워드 1개
+# •	칩용 2차 검색: news_economy, size: 30
+# •	필수 조건: 톱 키워드 multi_match, scopeID exists, is_disabled != true
+# •	필드 가중치: title^3, summary^2, keywords^4, clean_text
+# •	정렬: published_at desc
+# •	후처리: 중복 scope 제거 후 scope keywords 재집계
+# •	최종 칩 출력: 최대 5개, 총 글자 수 32자 이하
 # =========================
 @app.get("/api/main/top-keyword")
 def get_top_keyword():
@@ -1462,6 +1495,7 @@ def get_top_keyword():
 
     # =========================
     # 1위 키워드 관련 주요 키워드 추출
+    # (tiile 가중치:3, 요약 가중치:2, 키워드 가중치:4, 클리어텍스트로 is_disable=false고 scopeID를 가진 기사들만 가져와 날짜순으로 정렬해 30개 반환)
     # =========================
 
     scope_result = es.search(
@@ -1619,7 +1653,16 @@ def get_top_keyword():
     }
 
 # =========================
-# 지금 뜨는 뉴스 - 최근 1시간 반응순
+# 지금 뜨는 뉴스
+# •	호출 API: GET /api/main/hot-news
+# •	DB 검색: article_reactions
+# •	SQL 제한: LIMIT 5
+# •	시간 조건: 없음. 현재 전체 기간
+# •	집계: article_id별 like_count, hate/dislike_count, reaction_count
+# •	정렬: reaction_count desc
+# •	후처리: 각 article_id를 ES news_economy에서 단건 조회
+# •	제외 조건: is_disabled == true
+# •	최종 출력: 최대 5건
 # =========================
 @app.get("/api/main/hot-news")
 def get_hot_news():
@@ -1889,7 +1932,20 @@ def make_dominant_opinion_sentence(
         f"{topic} 이슈는 사실 전달 중심의 중립적 보도가 우세하게 나타납니다."
     )
 
-
+# ==========================================
+# 1위 키워드 관련 지배적 여론 집계.
+# •	호출 API: GET /api/main/dominant-opinions
+# •	검색: news_scopes, size: 5
+# •	필수 조건: scope_keywords에 최신 톱 키워드 wildcard 포함
+# •	필수 조건: news_count >= 5
+# •	점수 가산: scopeTitle phrase 매칭 boost: 6
+# •	점수 가산: scope_summary phrase 매칭 boost: 3
+# •	정렬: _score desc, updated_at desc, news_count desc
+# •	출력: 중복 제거 후 scope 최대 5개
+# •	감성 재집계 검색: scope마다 news_economy, size: 0
+# •	감성 집계 조건: scopeID == scope_id, is_disabled != true
+# •	최종 화면 출력: 여론 문장 최대 5개, 각 문장 칩 최대 3개
+# ==========================================
 @app.get("/api/main/dominant-opinions")
 def get_dominant_opinions():
     es = get_es()
@@ -2103,6 +2159,19 @@ def get_dominant_opinions():
 
 # =========================
 # 같은 이슈, 다른 해석
+# •	호출 API: GET /api/main/sentiment-compare
+# •	검색: news_economy
+# •	반복: positive, negative, neutral 각각 1번
+# •	각 감성별 검색 건수: size: 1
+# •	필수 조건: sentiment == 현재 감성
+# •	필수 조건: published_at >= now-3d/d
+# •	제외 조건: is_disabled == true
+# •	should 조건: 아래 중 최소 1개
+# •	점수 가산: keywords wildcard boost: 8
+# •	점수 가산: title phrase boost: 5
+# •	점수 가산: summary phrase boost: 2
+# •	정렬: published_at desc, _score desc
+# •	최종 출력: 감성별 최대 1건, 총 최대 3건
 # =========================
 @app.get("/api/main/sentiment-compare")
 def get_sentiment_compare(keyword: str):
@@ -2470,6 +2539,17 @@ async def crawl():
 
 # =========================
 # 메인 2차 관점 분석
+# •	호출 API: GET /api/main/viewpoint-analysis
+# •	1차 검색: daily_top_issue_report, size: 1
+# •	기준: 최신 톱 키워드 1개
+# •	관점 집계 검색: news_economy, size: 0
+# •	필수 조건: 톱 키워드 multi_match
+# •	필드 가중치: title^3, summary, keywords, clean_text
+# •	제외 조건: is_disabled == true
+# •	nested 집계 조건: perspective.rank == 1
+# •	집계 category size: 100
+# •	제외 카테고리: 관점 미분류, 미분류, 관점 정보 없음
+# •	최종 출력: 고정 관점 카테고리 18개를 그룹별 카드로 출력
 # =========================
 @app.get("/api/main/viewpoint-analysis")
 def get_main_viewpoint_analysis():
@@ -3604,6 +3684,12 @@ def get_scope_detail(scope_id: str):
         "articles": articles
     }
 
+# =============================================
+# 데일리키워드 메트릭스 집계
+# (특정 날짜의 news_economy 기사 중 keywords가 있고 is_disabled가 아닌 기사들을 대상으로 target_date가 있다면 그 날짜를 기준으로, 없다면 최신 기사를 기준으로
+# 각 기사 안의 keywords를 정제한 뒤(빈 값, 1글자, 숫자만 있는 값, 불용어, 문장형 어미로 끝나는 단어, 이메일 포함 단어 제거), 같은 기사 안 중복 키워드는 1번만 세고
+# 키워드별로 몇 개 기사에 등장했는지 계산해서 daily_keyword_metrics에 저장한다.)
+# =============================================
 @app.post("/api/batch/daily-keyword-metrics")
 def create_daily_keyword_metrics(target_date: str = None):
     es = get_es()
@@ -3987,7 +4073,9 @@ def create_daily_keyword_metrics(target_date: str = None):
         "message": "원본 keywords가 없어 기존 daily_keyword_metrics 집계값을 정리해서 다시 저장했습니다."
     }
 
+# =============================================
 # 데일리키워드 재집계
+# =============================================
 @app.post("/api/batch/daily-keyword-metrics/all")
 def create_all_daily_keyword_metrics():
     es = get_es()
